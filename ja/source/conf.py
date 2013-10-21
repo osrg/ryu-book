@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Ryu book'
-copyright = u'2013, NTT研究所 OSRGグループ'
+copyright = u'2013, Ryuプロジェクト'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -185,7 +185,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'Ryubook.tex', u'RyuによるOpenFlowプログラミング',
-   u'NTT研究所 OSRGグループ', 'manual'),
+   u'Ryuプロジェクト', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -216,7 +216,7 @@ latex_docclass = {'manual': 'jsbook'}
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'ryubook', u'RyuによるOpenFlowプログラミング',
-     [u'NTT研究所 OSRGグループ'], 1)
+     [u'Ryuプロジェクト'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -230,7 +230,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'Ryubook', u'RyuによるOpenFlowプログラミング',
-   u'NTT研究所 OSRGグループ', 'Ryubook', 'One line description of project.',
+   u'Ryuプロジェクト', 'Ryubook', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -248,9 +248,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = u'RyuによるOpenFlowプログラミング'
-epub_author = u'NTT研究所 OSRGグループ'
-epub_publisher = u'NTT研究所 OSRGグループ'
-epub_copyright = u'2013, NTT研究所 OSRGグループ'
+epub_author = u'Ryuプロジェクト'
+epub_publisher = u'Ryuプロジェクト'
+epub_copyright = u'2013, Ryuプロジェクト'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
