@@ -171,14 +171,36 @@ htmlhelp_basename = 'Ryubookdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
-
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
-
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'papersize': 'a4paper',
+'pointsize': '10pt',
+'preamble': r"""
+\usepackage{listings}
+\lstset{
+ language={Python},
+ frame=single,
+ framerule=0pt,
+ backgroundcolor={\color[rgb]{0.92,0.92,1}},
+ basicstyle={\ttfamily\footnotesize},
+ commentstyle={\color[rgb]{0.5,0.5,0.5}},
+ keywordstyle={\bfseries\color[rgb]{0,0.4,0.1}},
+ emph={self,super}, emphstyle=\color[rgb]{0.4,0.6,0.5},
+ breaklines=true,
+ breakatwhitespace=false,
+ breakindent=0pt,
+ breakautoindent=false
+ }
+\lstnewenvironment{sourcecode}{}{}
+\lstnewenvironment{console}{\lstset{
+ language={},
+ frame=single,
+ framerule=0pt,
+ backgroundcolor={\color[rgb]{0.1,0.1,0.1}},
+ basicstyle={\ttfamily\footnotesize\color[rgb]{0.9,0.9,0.9}},
+ breaklines=true,
+ breakatwhitespace=false,
+ breakindent=0pt,
+ breakautoindent=false
+ }}{}"""
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -209,6 +231,8 @@ latex_documents = [
 #latex_domain_indices = True
 
 latex_docclass = {'manual': 'jsbook'}
+
+latex_additional_files = ['sources/simple_switch_13.py']
 
 # -- Options for manual page output --------------------------------------------
 

@@ -6,18 +6,7 @@
 RyuによるOpenFlowプログラミング
 ===============================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
    switching_hub.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
