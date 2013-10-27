@@ -232,7 +232,8 @@ latex_documents = [
 
 latex_docclass = {'manual': 'jsbook'}
 
-latex_additional_files = ['sources/simple_switch_13.py']
+latex_additional_files = ['sources/simple_switch_13.py',
+                          'sources/simple_monitor.py']
 
 # -- Options for manual page output --------------------------------------------
 

@@ -10,3 +10,4 @@ RyuによるOpenFlowプログラミング
    :maxdepth: 2
 
    switching_hub.rst
+   traffic_monitor.rst
