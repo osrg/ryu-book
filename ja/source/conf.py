@@ -174,7 +174,7 @@ latex_elements = {
 'papersize': 'a4paper',
 'pointsize': '10pt',
 'preamble': r"""
-\usepackage{listings}
+\usepackage{listings,jlisting}
 \lstset{
  language={Python},
  frame=single,
@@ -184,6 +184,7 @@ latex_elements = {
  commentstyle={\color[rgb]{0.5,0.5,0.5}},
  keywordstyle={\bfseries\color[rgb]{0,0.4,0.1}},
  emph={self,super}, emphstyle=\color[rgb]{0.4,0.6,0.5},
+ showstringspaces=false,
  breaklines=true,
  breakatwhitespace=false,
  breakindent=0pt,
@@ -232,7 +233,8 @@ latex_documents = [
 
 latex_docclass = {'manual': 'jsbook'}
 
-latex_additional_files = ['sources/simple_switch_13.py',
+latex_additional_files = ['jlisting.sty',
+                          'sources/simple_switch_13.py',
                           'sources/simple_monitor.py']
 
 # -- Options for manual page output --------------------------------------------
