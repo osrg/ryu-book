@@ -181,7 +181,12 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
 .. raw:: latex
 
     \begin{sourcecode}
-    self.logger.info('%s', ev.msg.to_jsondict())
+    import json
+
+    # ...
+
+    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=Ture,
+                                      indent=3, sort_keys=True))
     \end{sourcecode}
 
 この場合、以下のように出力されます。
@@ -189,7 +194,109 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
 .. raw:: latex
 
     \begin{console}
-    {'OFPFlowStatsReply': {'body': [{'OFPFlowStats': {'priority': 0, 'length':80, 'hard_timeout': 0, 'byte_count': 182, 'idle_timeout': 0, 'duration_nsec': 17000000, 'packet_count': 3, 'duration_sec': 16, 'flags': 0, 'cookie': 0, 'table_id': 0, 'match': {'OFPMatch': {'type': 1, 'length': 4, 'oxm_fields': []}}, 'instructions': [{'OFPInstructionActions': {'type': 4, 'len':24, 'actions': [{'OFPActionOutput': {'max_len': 65535, 'type': 0, 'port':4294967293, 'len': 16}}]}}]}}, {'OFPFlowStats': {'priority': 1, 'length':96, 'hard_timeout': 0, 'byte_count': 140, 'idle_timeout': 0, 'duration_nsec': 583000000, 'packet_count': 2, 'duration_sec': 6, 'flags': 0, 'cookie': 0, 'table_id': 0, 'match': {'OFPMatch': {'type': 1, 'length': 22, 'oxm_fields': [{'OXMTlv': {'field': 'in_port', 'mask': None, 'value': 2}}, {'OXMTlv': {'field': 'eth_dst', 'mask': None, 'value': '00:00:00:00:00:01'}}]}}, 'instructions': [{'OFPInstructionActions': {'type': 4, 'len': 24, 'actions': [{'OFPActionOutput': {'max_len': 65509, 'type': 0, 'port': 1, 'len': 6}}]}}]}}, {'OFPFlowStats': {'priority': 1, 'length': 96, 'hard_timeout':0, 'byte_count': 42, 'idle_timeout': 0, 'duration_nsec': 541000000, 'packet_count': 1, 'duration_sec': 6, 'flags': 0, 'cookie': 0, 'table_id': 0, 'match': {'OFPMatch': {'type': 1, 'length': 22, 'oxm_fields': [{'OXMTlv': {'field': 'in_port', 'mask': None, 'value': 1}}, {'OXMTlv': {'field': 'eth_dst', 'mask': None, 'value': '00:00:00:00:00:02'}}]}}, 'instructions': [{'OFPInstructionActions': {'type': 4, 'len': 24, 'actions': [{'OFPActionOutput': {'max_len': 65509, 'type': 0, 'port': 2, 'len': 16}}]}}]}}], 'type': , 'flags': 0}}
+    {
+       "OFPFlowStatsReply": {
+          "body": [
+             {
+                "OFPFlowStats": {
+                   "byte_count": 0, 
+                   "cookie": 0, 
+                   "duration_nsec": 680000000, 
+                   "duration_sec": 4, 
+                   "flags": 0, 
+                   "hard_timeout": 0, 
+                   "idle_timeout": 0, 
+                   "instructions": [
+                      {
+                         "OFPInstructionActions": {
+                            "actions": [
+                               {
+                                  "OFPActionOutput": {
+                                     "len": 16, 
+                                     "max_len": 65535, 
+                                     "port": 4294967293, 
+                                     "type": 0
+                                  }
+                               }
+                            ], 
+                            "len": 24, 
+                            "type": 4
+                         }
+                      }
+                   ], 
+                   "length": 80, 
+                   "match": {
+                      "OFPMatch": {
+                         "length": 4, 
+                         "oxm_fields": [], 
+                         "type": 1
+                      }
+                   }, 
+                   "packet_count": 0, 
+                   "priority": 0, 
+                   "table_id": 0
+                }
+             }, 
+             {
+                "OFPFlowStats": {
+                   "byte_count": 42, 
+                   "cookie": 0, 
+                   "duration_nsec": 72000000, 
+                   "duration_sec": 57, 
+                   "flags": 0, 
+                   "hard_timeout": 0, 
+                   "idle_timeout": 0, 
+                   "instructions": [
+                      {
+                         "OFPInstructionActions": {
+                            "actions": [
+                               {
+                                  "OFPActionOutput": {
+                                     "len": 16, 
+                                     "max_len": 65509, 
+                                     "port": 1, 
+                                     "type": 0
+                                  }
+                               }
+                            ], 
+                            "len": 24, 
+                            "type": 4
+                         }
+                      }
+                   ], 
+                   "length": 96, 
+                   "match": {
+                      "OFPMatch": {
+                         "length": 22, 
+                         "oxm_fields": [
+                            {
+                               "OXMTlv": {
+                                  "field": "in_port", 
+                                  "mask": null, 
+                                  "value": 2
+                               }
+                            }, 
+                            {
+                               "OXMTlv": {
+                                  "field": "eth_dst", 
+                                  "mask": null, 
+                                  "value": "00:00:00:00:00:01"
+                               }
+                            }
+                         ], 
+                         "type": 1
+                      }
+                   }, 
+                   "packet_count": 1, 
+                   "priority": 1, 
+                   "table_id": 0
+                }
+             }
+          ], 
+          "flags": 0, 
+          "type": 1
+       }
+    }
     \end{console}
 
 
