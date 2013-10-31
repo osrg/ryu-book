@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>トラフィックモニター &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="prev" title="スイッチングハブの実装" href="switching_hub.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="switching_hub.html" title="スイッチングハブの実装"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ch-traffic-monitor">
+<span id="id1"></span><h1>トラフィックモニター<a class="headerlink" href="#ch-traffic-monitor" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにOpenFlowスイッチの統計情報をモニターする機能を追加します。</p>
+<div class="section" id="id2">
+<h2>ネットワークの定期健診<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>ネットワークは既に多くのサービスや業務のインフラとなっているため、正常で安定した稼働が維持されることが求められます。とは言え、いつも何かしらの問題が発生するものです。</p>
+<p>ネットワークに異常が発生した場合、迅速に原因を特定し、復旧させなければなりません。本書をお読みの方には言うまでもないことと思いますが、異常を検出し、原因を特定するためには、日頃からネットワークの状態を把握しておく必要があります。例えば、あるネットワーク機器のポートのトラフィック量が非常に高い値を示していたとして、それが異常な状態なのか、いつもそうなのか、あるいはいつからそうなったのかということは、継続してそのポートのトラフィック量を測っていなければ判断することができません。</p>
+<p>というわけで、ネットワークの健康状態を常に監視しつづけるということは、そのネットワークを使うサービスや業務の継続的な安定運用のためにも必須となります。もちろん、トラフィック情報の監視さえしていれば万全などということはありませんが、本章ではOpenFlowによるスイッチの統計情報の取得方法について説明します。</p>
+</div>
+<div class="section" id="id3">
+<h2>トラフィックモニターの実装<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
+<p>SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモニター機能を実装していますので、ここにはパケット転送に関する処理は出てきません。</p>
+<div class="section" id="id4">
+<h3>定周期処理<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>スイッチングハブの処理と並行して、定期的に統計情報取得のリクエストをOpenFlowスイッチへ発行するために、スレッドを生成します。</p>
+<p><tt class="docutils literal"><span class="pre">ryu.lib.hub</span></tt>には、いくつかのeventletのラッパーや基本的なクラスの実装があります。ここではスレッドを生成する<tt class="docutils literal"><span class="pre">hub.spawn()</span></tt>を使用します。実際に生成されるスレッドはeventletのグリーンスレッドです。</p>
+<p>スレッド関数<tt class="docutils literal"><span class="pre">_monitor()</span></tt>では、登録されたスイッチに対する統計情報取得リクエストの発行を10秒間隔で無限に繰り返します。</p>
+<p>接続中のスイッチを監視対象とするため、スイッチの接続および切断の検出に<tt class="docutils literal"><span class="pre">EventOFPStateChange</span></tt>イベントを利用しています。このイベントはRyuフレームワークが発行するもので、Datapathのステートが変わったときに発行されます。</p>
+<p>ここでは、Datapathのステートが<tt class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></tt>になった時に、そのスイッチを監視対象に登録、<tt class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></tt>になった時に登録の削除を行っています。</p>
+<p>定期的に呼び出される<tt class="docutils literal"><span class="pre">_request_stats()</span></tt>では、対象となるスイッチに<tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt>と<tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt>を発行しています。</p>
+<p>OFPFlowStatsRequestは、フローエントリに関する統計情報を取得します。テーブルID、出力ポート、cookie値、マッチの条件などで取得対象のフローエントリを絞ることができますが、ここではすべてのフローエントリを対称としています。</p>
+<p>OFPPortStatsRequestは、スイッチのポートに関する統計情報を取得します。統計情報を取得するポートのポート番号を指定します。ここではOFPP_ANYを指定し、すべてのポートの統計情報を取得しています。</p>
+</div>
+<div class="section" id="flowstats">
+<h3>FlowStats<a class="headerlink" href="#flowstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>FlowStatsReplyメッセージを受信して、フローエントリの統計情報を出力します。</p>
+<p>OPFFlowStatsReplyクラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPFlowStats</span></tt>のリストで、FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。</p>
+<p>ここでは、プライオリティが1である、Table-missフロー以外の通常のフローエントリのみを選択し、受信ポートと宛先MACアドレスでソートして、そのフローエントリにマッチしたパケット数とバイト数を出力しています。</p>
+<p>なお、ここでは選択した一部の数値をログに出しているだけですが、継続的に情報を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような場合、OFPFlowStatsReplyの内容をJSONフォーマットに変換することができます。</p>
+<p>例えば次のように書くことができます。</p>
+<p>この場合、以下のように出力されます。</p>
+</div>
+<div class="section" id="portstats">
+<h3>PortStats<a class="headerlink" href="#portstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>PortStatsReplyメッセージを受信して、ポートの統計情報を出力します。</p>
+<p>OPFPortStatsReplyクラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPPortStats</span></tt>のリストになっています。</p>
+<p>OFPPortStatsには、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ数、エラー数、フレームエラー数、オーバーラン数、CRCエラー数、コリジョン数などの統計情報が格納されます。</p>
+<p>ここでは、ポート番号でソートし、受信パケット数、受信バイト数、受信エラー数、送信パケット数、送信バイト数、送信エラー数を出力しています。</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>トラフィックモニターの実行<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>それでは、実際にこのトラフィックモニターを実行してみます。</p>
+<p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。</p>
+<p>次にいよいよトラフィックモニターの実行です。</p>
+<p>controller: c0:</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
+<p>この時点では、フローエントリが無く(Table-missフローエントリは表示していません)、各ポートのカウントもすべて0です。</p>
+<p>ここで、ホスト1からホスト2へpingを実行してみます。</p>
+<p>host: h1:</p>
+<p>すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報が変化します。</p>
+<p>controller: c0:</p>
+<p>上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィックは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140バイトとなっています。</p>
+<p>下のポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数(rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。</p>
+<p>フローエントリの統計情報とポートの統計情報で数字が合っていませんが、これはフローエントリの統計情報は、そのエントリにマッチしたパケットの情報だからです。つまり、Table-missによりPacket-Inを発行し、Packet-Outで転送されたパケットは、この統計の対象になっていないためです。</p>
+<p>このケースでは、ホスト1が最初にブロードキャストしたARPリクエスト、ホスト2がホスト1に返したARPリプライ、ホスト1がホスト2へ発行したecho requestの3パケットがPacket-Outされています。そのため、ポートの統計情報では、ポート1の受信パケット数が1、ポート2の受信パケット数が2、フローエントリの統計情報より多くなっています。</p>
+</div>
+<div class="section" id="id6">
+<h2>まとめ<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>本章では、統計情報の取得機能の実装追加を題材として、以下の項目について説明しました。</p>
+<ul class="simple">
+<li>Ryuアプリケーションでのスレッドの生成方法</li>
+<li>Datapathの状態遷移の捕捉</li>
+<li>FlowStatsおよびPortStatsの取得方法</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">トラフィックモニター</a><ul>
+<li><a class="reference internal" href="#id2">ネットワークの定期健診</a></li>
+<li><a class="reference internal" href="#id3">トラフィックモニターの実装</a><ul>
+<li><a class="reference internal" href="#id4">定周期処理</a></li>
+<li><a class="reference internal" href="#flowstats">FlowStats</a></li>
+<li><a class="reference internal" href="#portstats">PortStats</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">トラフィックモニターの実行</a></li>
+<li><a class="reference internal" href="#id6">まとめ</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="switching_hub.html"
+                        title="前の章へ">スイッチングハブの実装</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/traffic_monitor.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="switching_hub.html" title="スイッチングハブの実装"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3 で生成しました。
+    </div>
+  </body>
+</html>

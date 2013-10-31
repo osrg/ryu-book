@@ -1,0 +1,471 @@
+.. _ch_traffic_monitor:
+
+トラフィックモニター
+====================
+
+本章では、「 :ref:`ch_switching_hub` 」のスイッチングハブにOpenFlowスイッチ
+の統計情報をモニターする機能を追加します。
+
+
+ネットワークの定期健診
+----------------------
+
+ネットワークは既に多くのサービスや業務のインフラとなっているため、正常で
+安定した稼働が維持されることが求められます。とは言え、いつも何かしらの問題
+が発生するものです。
+
+ネットワークに異常が発生した場合、迅速に原因を特定し、復旧させなければなり
+ません。本書をお読みの方には言うまでもないことと思いますが、異常を検出し、
+原因を特定するためには、日頃からネットワークの状態を把握しておく必要があり
+ます。例えば、あるネットワーク機器のポートのトラフィック量が非常に高い値を
+示していたとして、それが異常な状態なのか、いつもそうなのか、あるいはいつから
+そうなったのかということは、継続してそのポートのトラフィック量を測っていな
+ければ判断することができません。
+
+というわけで、ネットワークの健康状態を常に監視しつづけるということは、その
+ネットワークを使うサービスや業務の継続的な安定運用のためにも必須となります。
+もちろん、トラフィック情報の監視さえしていれば万全などということはありませ
+んが、本章ではOpenFlowによるスイッチの統計情報の取得方法について説明します。
+
+
+トラフィックモニターの実装
+--------------------------
+
+早速ですが、「 :ref:`ch_switching_hub` 」のスイッチングハブにトラフィック
+モニター機能を追加したソースコードです。
+
+.. raw:: latex
+
+    \lstinputlisting{simple_monitor.py}
+
+SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモニター機能を
+実装していますので、ここにはパケット転送に関する処理は出てきません。
+
+
+定周期処理
+^^^^^^^^^^
+
+スイッチングハブの処理と並行して、定期的に統計情報取得のリクエストをOpenFlow
+スイッチへ発行するために、スレッドを生成します。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    from operator import attrgetter
+    
+    from ryu.app import simple_switch_13
+    from ryu.controller import ofp_event
+    from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER
+    from ryu.controller.handler import set_ev_cls
+    from ryu.lib import hub
+
+
+    class SimpleMonitor(simple_switch_13.SimpleSwitch13):
+
+        def __init__(self, *args, **kwargs):
+            super(SimpleMonitor, self).__init__(*args, **kwargs)
+            self.datapaths = {}
+            self.monitor_thread = hub.spawn(self._monitor)
+    # ...
+    \end{sourcecode}
+
+``ryu.lib.hub`` には、いくつかのeventletのラッパーや基本的なクラスの実装
+があります。ここではスレッドを生成する ``hub.spawn()`` を使用します。
+実際に生成されるスレッドはeventletのグリーンスレッドです。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    # ...
+    @set_ev_cls(ofp_event.EventOFPStateChange,
+                [MAIN_DISPATCHER, DEAD_DISPATCHER])
+    def _state_change_handler(self, ev):
+        datapath = ev.datapath
+        if ev.state == MAIN_DISPATCHER:
+            if not datapath.id in self.datapaths:
+                self.logger.debug('register datapath: %016x', datapath.id)
+                self.datapaths[datapath.id] = datapath
+        elif ev.state == DEAD_DISPATCHER:
+            if datapath.id in self.datapaths:
+                self.logger.debug('deregister datapath: %016x', datapath.id)
+                del self.datapaths[datapath.id]
+
+    def _monitor(self):
+        while True:
+            for dp in self.datapaths.values():
+                self._request_stats(dp)
+            hub.sleep(10)
+    # ...
+    \end{sourcecode}
+
+スレッド関数 ``_monitor()`` では、登録されたスイッチに対する統計情報取得
+リクエストの発行を10秒間隔で無限に繰り返します。
+
+接続中のスイッチを監視対象とするため、スイッチの接続および切断の検出に
+``EventOFPStateChange`` イベントを利用しています。このイベントはRyuフレーム
+ワークが発行するもので、Datapathのステートが変わったときに発行されます。
+
+ここでは、Datapathのステートが ``MAIN_DISPATCHER`` になった時に、そのスイッチ
+を監視対象に登録、 ``DEAD_DISPATCHER`` になった時に登録の削除を行っています。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    # ...
+    def _request_stats(self, datapath):
+        self.logger.debug('send stats request: %016x', datapath.id)
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        req = parser.OFPFlowStatsRequest(datapath)
+        datapath.send_msg(req)
+
+        req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
+        datapath.send_msg(req)
+    # ...
+    \end{sourcecode}
+
+定期的に呼び出される ``_request_stats()`` では、対象となるスイッチに
+``OFPFlowStatsRequest`` と ``OFPPortStatsRequest`` を発行しています。
+
+OFPFlowStatsRequestは、フローエントリに関する統計情報を取得します。
+テーブルID、出力ポート、cookie値、マッチの条件などで取得対象のフローエントリ
+を絞ることができますが、ここではすべてのフローエントリを対称としています。
+
+OFPPortStatsRequestは、スイッチのポートに関する統計情報を取得します。
+統計情報を取得するポートのポート番号を指定します。ここではOFPP_ANYを指定し、
+すべてのポートの統計情報を取得しています。
+
+
+FlowStats
+^^^^^^^^^
+
+FlowStatsReplyメッセージを受信して、フローエントリの統計情報を出力します。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    # ...
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def _flow_stats_reply_handler(self, ev):
+        body = ev.msg.body
+
+        self.logger.info('datapath         '
+                         'in-port  eth-dst           '
+                         'out-port packets  bytes')
+        self.logger.info('---------------- '
+                         '-------- ----------------- '
+                         '-------- -------- --------')
+        for stat in sorted([flow for flow in body if flow.priority == 1],
+                           key=lambda flow: (flow.match['in_port'],
+                                             flow.match['eth_dst'])):
+            self.logger.info('%016x %8x %17s %8x %8d %8d',
+                             ev.msg.datapath.id,
+                             stat.match['in_port'], stat.match['eth_dst'],
+                             stat.instructions[0].actions[0].port,
+                             stat.packet_count, stat.byte_count)
+    # ...
+    \end{sourcecode}
+
+OPFFlowStatsReplyクラスの属性 ``body`` は、 ``OFPFlowStats`` のリストで、
+FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。
+
+ここでは、プライオリティが1である、Table-missフロー以外の通常のフローエントリ
+のみを選択し、受信ポートと宛先MACアドレスでソートして、そのフローエントリに
+マッチしたパケット数とバイト数を出力しています。
+
+なお、ここでは選択した一部の数値をログに出しているだけですが、継続的に情報
+を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような
+場合、OFPFlowStatsReplyの内容をJSONフォーマットに変換することができます。
+
+例えば次のように書くことができます。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    import json
+
+    # ...
+
+    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=Ture,
+                                      indent=3, sort_keys=True))
+    \end{sourcecode}
+
+この場合、以下のように出力されます。
+
+.. raw:: latex
+
+    \begin{console}
+    {
+       "OFPFlowStatsReply": {
+          "body": [
+             {
+                "OFPFlowStats": {
+                   "byte_count": 0, 
+                   "cookie": 0, 
+                   "duration_nsec": 680000000, 
+                   "duration_sec": 4, 
+                   "flags": 0, 
+                   "hard_timeout": 0, 
+                   "idle_timeout": 0, 
+                   "instructions": [
+                      {
+                         "OFPInstructionActions": {
+                            "actions": [
+                               {
+                                  "OFPActionOutput": {
+                                     "len": 16, 
+                                     "max_len": 65535, 
+                                     "port": 4294967293, 
+                                     "type": 0
+                                  }
+                               }
+                            ], 
+                            "len": 24, 
+                            "type": 4
+                         }
+                      }
+                   ], 
+                   "length": 80, 
+                   "match": {
+                      "OFPMatch": {
+                         "length": 4, 
+                         "oxm_fields": [], 
+                         "type": 1
+                      }
+                   }, 
+                   "packet_count": 0, 
+                   "priority": 0, 
+                   "table_id": 0
+                }
+             }, 
+             {
+                "OFPFlowStats": {
+                   "byte_count": 42, 
+                   "cookie": 0, 
+                   "duration_nsec": 72000000, 
+                   "duration_sec": 57, 
+                   "flags": 0, 
+                   "hard_timeout": 0, 
+                   "idle_timeout": 0, 
+                   "instructions": [
+                      {
+                         "OFPInstructionActions": {
+                            "actions": [
+                               {
+                                  "OFPActionOutput": {
+                                     "len": 16, 
+                                     "max_len": 65509, 
+                                     "port": 1, 
+                                     "type": 0
+                                  }
+                               }
+                            ], 
+                            "len": 24, 
+                            "type": 4
+                         }
+                      }
+                   ], 
+                   "length": 96, 
+                   "match": {
+                      "OFPMatch": {
+                         "length": 22, 
+                         "oxm_fields": [
+                            {
+                               "OXMTlv": {
+                                  "field": "in_port", 
+                                  "mask": null, 
+                                  "value": 2
+                               }
+                            }, 
+                            {
+                               "OXMTlv": {
+                                  "field": "eth_dst", 
+                                  "mask": null, 
+                                  "value": "00:00:00:00:00:01"
+                               }
+                            }
+                         ], 
+                         "type": 1
+                      }
+                   }, 
+                   "packet_count": 1, 
+                   "priority": 1, 
+                   "table_id": 0
+                }
+             }
+          ], 
+          "flags": 0, 
+          "type": 1
+       }
+    }
+    \end{console}
+
+
+PortStats
+^^^^^^^^^
+
+PortStatsReplyメッセージを受信して、ポートの統計情報を出力します。
+
+.. raw:: latex
+
+    \begin{sourcecode}
+    # ...
+    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    def _port_stats_reply_handler(self, ev):
+        body = ev.msg.body
+
+        self.logger.info('datapath         port     '
+                         'rx-pkts  rx-bytes rx-error '
+                         'tx-pkts  tx-bytes tx-error')
+        self.logger.info('---------------- -------- '
+                         '-------- -------- -------- '
+                         '-------- -------- --------')
+        for stat in sorted(body, key=attrgetter('port_no')):
+            self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d', 
+                             ev.msg.datapath.id, stat.port_no,
+                             stat.rx_packets, stat.rx_bytes, stat.rx_errors,
+                             stat.tx_packets, stat.tx_bytes, stat.tx_errors)
+    \end{sourcecode}
+
+OPFPortStatsReplyクラスの属性 ``body`` は、``OFPPortStats`` のリストになって
+います。
+
+OFPPortStatsには、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ
+数、エラー数、フレームエラー数、オーバーラン数、CRCエラー数、コリジョン数など
+の統計情報が格納されます。
+
+ここでは、ポート番号でソートし、受信パケット数、受信バイト数、受信エラー数、
+送信パケット数、送信バイト数、送信エラー数を出力しています。
+
+
+トラフィックモニターの実行
+--------------------------
+
+それでは、実際にこのトラフィックモニターを実行してみます。
+
+まず、「 :ref:`ch_switching_hub` 」と同様にMininetを実行します。ここで、
+スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。
+
+次にいよいよトラフィックモニターの実行です。
+
+controller: c0:
+
+.. raw:: latex
+
+    \begin{console}
+    ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
+    loading app ./simple_monitor.py
+    loading app ryu.controller.ofp_handler
+    instantiating app ./simple_monitor.py
+    instantiating app ryu.controller.ofp_handler
+    BRICK SimpleMonitor
+      CONSUMES EventOFPStateChange
+      CONSUMES EventOFPFlowStatsReply
+      CONSUMES EventOFPPortStatsReply
+      CONSUMES EventOFPPacketIn
+      CONSUMES EventOFPSwitchFeatures
+    BRICK ofp_event
+      PROVIDES EventOFPStateChange TO {'SimpleMonitor': set(['main', 'dead'])}
+      PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor': set(['main'])}
+      PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor': set(['main'])}
+      PROVIDES EventOFPPacketIn TO {'SimpleMonitor': set(['main'])}
+      PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor': set(['config'])}
+      CONSUMES EventOFPErrorMsg
+      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPHello
+      CONSUMES EventOFPEchoRequest
+      CONSUMES EventOFPSwitchFeatures
+    connected socket:<eventlet.greenio.GreenSocket object at 0x343fb10> address:('127.0.0.1', 55598)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x343fed0>
+    move onto config mode
+    EVENT ofp_event->SimpleMonitor EventOFPSwitchFeatures
+    switch features ev version: 0x4 msg_type 0x6 xid 0x7dd2dc58 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    move onto main mode
+    EVENT ofp_event->SimpleMonitor EventOFPStateChange
+    register datapath: 0000000000000001
+    send stats request: 0000000000000001
+    EVENT ofp_event->SimpleMonitor EventOFPFlowStatsReply
+    datapath         in-port  eth-dst           out-port packets  bytes
+    ---------------- -------- ----------------- -------- -------- --------
+    EVENT ofp_event->SimpleMonitor EventOFPPortStatsReply
+    datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
+    ---------------- -------- -------- -------- -------- -------- -------- --------
+    0000000000000001        1        0        0        0        0        0        0
+    0000000000000001        2        0        0        0        0        0        0
+    0000000000000001        3        0        0        0        0        0        0
+    0000000000000001 fffffffe        0        0        0        0        0        0
+    \end{console}
+
+「 :ref:`ch_switching_hub` 」のスイッチングハブの時は、ryu-managerコマンド
+にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
+ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
+
+この時点では、フローエントリが無く(Table-missフローエントリは表示して
+いません)、各ポートのカウントもすべて0です。
+
+ここで、ホスト1からホスト2へpingを実行してみます。
+
+host: h1:
+
+.. raw:: latex
+
+    \begin{console}
+    root@ryu-vm:~# ping -c1 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
+
+    --- 10.0.0.2 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
+    root@ryu-vm:~# 
+    \end{console}
+
+すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報
+が変化します。
+
+controller: c0:
+
+.. raw:: latex
+
+    \begin{console}
+    datapath         in-port  eth-dst           out-port packets  bytes
+    ---------------- -------- ----------------- -------- -------- --------
+    0000000000000001        1 00:00:00:00:00:02        2        1       42
+    0000000000000001        2 00:00:00:00:00:01        1        2      140
+    datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
+    ---------------- -------- -------- -------- -------- -------- -------- --------
+    0000000000000001        1        3      182        0        3      182        0
+    0000000000000001        2        3      182        0        3      182        0
+    0000000000000001        3        0        0        0        1       42        0
+    0000000000000001 fffffffe        0        0        0        1       42        0
+    \end{console}
+
+上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィッ
+クは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140
+バイトとなっています。
+
+下のポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数
+(rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。
+
+フローエントリの統計情報とポートの統計情報で数字が合っていませんが、これは
+フローエントリの統計情報は、そのエントリにマッチしたパケットの情報だから
+です。つまり、Table-missによりPacket-Inを発行し、Packet-Outで転送された
+パケットは、この統計の対象になっていないためです。
+
+このケースでは、ホスト1が最初にブロードキャストしたARPリクエスト、ホスト2が
+ホスト1に返したARPリプライ、ホスト1がホスト2へ発行したecho requestの3パケット
+がPacket-Outされています。
+そのため、ポートの統計情報では、ポート1の受信パケット数が1、ポート2の受信
+パケット数が2、フローエントリの統計情報より多くなっています。
+
+
+まとめ
+------
+
+本章では、統計情報の取得機能の実装追加を題材として、以下の項目について
+説明しました。
+
+* Ryuアプリケーションでのスレッドの生成方法
+* Datapathの状態遷移の捕捉
+* FlowStatsおよびPortStatsの取得方法
