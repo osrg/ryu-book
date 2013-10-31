@@ -1,8 +1,10 @@
+.. _ch_traffic_monitor:
+
 トラフィックモニター
 ====================
 
-本章では、第1章のスイッチングハブにOpenFlowスイッチの統計情報をモニター
-する機能を追加します。
+本章では、「 :ref:`ch_switching_hub` 」のスイッチングハブにOpenFlowスイッチ
+の統計情報をモニターする機能を追加します。
 
 
 ネットワークの定期健診
@@ -29,8 +31,8 @@
 トラフィックモニターの実装
 --------------------------
 
-早速ですが、第1章のスイッチングハブにトラフィックモニター機能を追加した
-ソースコードです。
+早速ですが、「 :ref:`ch_switching_hub` 」のスイッチングハブにトラフィック
+モニター機能を追加したソースコードです。
 
 .. raw:: latex
 
@@ -342,8 +344,8 @@ OFPPortStatsには、ポート番号、送受信それぞれのパケット数�
 
 それでは、実際にこのトラフィックモニターを実行してみます。
 
-まず、第1章と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョン
-にOpenFlow13を設定することを忘れないでください。
+まず、「 :ref:`ch_switching_hub` 」と同様にMininetを実行します。ここで、
+スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。
 
 次にいよいよトラフィックモニターの実行です。
 
@@ -395,9 +397,9 @@ controller: c0:
     0000000000000001 fffffffe        0        0        0        0        0        0
     \end{console}
 
-第1章のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13の
-モジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、
-SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
+「 :ref:`ch_switching_hub` 」のスイッチングハブの時は、ryu-managerコマンド
+にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
+ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
 
 この時点では、フローエントリが無く(Table-missフローエントリは表示して
 いません)、各ポートのカウントもすべて0です。
