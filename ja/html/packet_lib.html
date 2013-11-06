@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ryu パケットライブラリ &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="prev" title="トラフィックモニター" href="traffic_monitor.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="traffic_monitor.html" title="トラフィックモニター"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ryu">
+<h1>Ryu パケットライブラリ<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>OpenFlowのPacket-InやPacket-Outメッセージには、生のパケット内容をあらわすバイト列が入るフィールドがあります。Ryuには、このような生のパケットをアプリケーションから扱いやすくするためのライブラリが用意されています。本章はこのライブラリについて紹介します。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">OpenFlow 1.2以降では、Packet-Inメッセージのmatchフィールドから、パース済みのパケットヘッダーの内容を取得できる場合があります。ただし、このフィールドにどれだけの情報を入れてくれるかは、スイッチの実装によります。例えばOpen vSwitchは最低限の情報しか入れてくれませんので、多くの場合コントローラー側でパケット内容を解析する必要があります。一方LINCは可能な限り多くの情報を入れてくれます。</p>
+</div>
+<div class="section" id="id1">
+<h2>基本的な使い方<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id2">
+<h3>プロトコルヘッダクラス<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Ryuパケットライブラリには、色々なプロトコルヘッダに対応するクラスが用意されています。</p>
+<p>以下のものを含むプロトコルがサポートされています。各プロトコルに対応するクラスなどの詳細はAPIリファレンスをご参照ください。</p>
+<ul class="simple">
+<li>arp</li>
+<li>bgp</li>
+<li>bpdu</li>
+<li>dhcp</li>
+<li>ethernet</li>
+<li>icmp</li>
+<li>icmpv6</li>
+<li>igmp</li>
+<li>ipv4</li>
+<li>ipv6</li>
+<li>llc</li>
+<li>lldp</li>
+<li>mpls</li>
+<li>pbb</li>
+<li>sctp</li>
+<li>slow</li>
+<li>tcp</li>
+<li>udp</li>
+<li>vlan</li>
+<li>vrrp</li>
+</ul>
+<p>各プロトコルヘッダクラスの__init__引数名は、基本的にはRFCなどで使用されている名前と同じになっています。プロトコルヘッダクラスのインスタンス属性の命名規則も同様です。ただし、typeなど、Python built-inと衝突する名前のフィールドに対応する__init__引数名には、type_のように最後に_が付きます。</p>
+<p>いくつかの__init__引数にはデフォルト値が設定されており省略できます。以下の例ではversion=4等が省略されています。</p>
+</div>
+<div class="section" id="id3">
+<h3>ネットワークアドレス<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>RyuパケットライブラリのAPIでは、基本的に文字列表現のネットワークアドレスが使用されます。例えば以下のようなものです。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">アドレス種別</th>
+<th class="head">python文字列の例</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MACアドレス</td>
+<td>&#8216;00:03:47:8c:a1:b3&#8217;</td>
+</tr>
+<tr class="row-odd"><td>IPv4アドレス</td>
+<td>&#8216;192.0.2.1&#8217;</td>
+</tr>
+<tr class="row-even"><td>IPv6アドレス</td>
+<td>&#8216;2001:db8::2&#8217;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h3>パケットの解析 (パース)<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>パケットのバイト列から、対応するpythonオブジェクトを生成します。</p>
+<p>具体的には以下のようになります。</p>
+<ol class="arabic simple">
+<li>ryu.lib.packet.packet.Packetクラスのオブジェクトを生成(data引数に解析するバイト列を指定)</li>
+<li>1.のオブジェクトのget_protocolメソッド等を使用して、各プロトコルヘッダに対応するオブジェクトを取得</li>
+</ol>
+</div>
+<div class="section" id="id5">
+<h3>パケットの生成 (シリアライズ)<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>pythonオブジェクトから、対応するパケットのバイト列を生成します。</p>
+<p>具体的には以下のようになります。</p>
+<ol class="arabic simple">
+<li>ryu.lib.packet.packet.Packetクラスのオブジェクトを生成</li>
+<li>各プロトコルヘッダに対応するオブジェクトを生成  (ethernet, ipv4, ...)</li>
+<li>1.のオブジェクトのadd_protocolメソッドを使用して2.のヘッダを順番に追加</li>
+<li>1.のオブジェクトのserializeメソッドを呼び出してバイト列を生成</li>
+</ol>
+<p>チェックサムやペイロード長などのいくつかのフィールドは、明示的に値を指定しなくてもserialize時に自動的に計算されます。詳細は各クラスのリファレンスをご参照ください。</p>
+<p>Scapyライクな代替APIも用意されていますので、お好みに応じてご使用ください。</p>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>アプリケーション例<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>上記の例を使用して作成した、pingに返事をするアプリケーションを示します。</p>
+<p>ARP REQUESTとICMP ECHO REQUESTをPacket-Inで受けとり、返事をPacket-Outで送信します。IPアドレス等は__init__メソッド内にハードコードされています。</p>
+<p>以下はping -c 3を実行した場合のログの例です。</p>
+<p>IPフラグメント対応は読者への宿題とします。OpenFlowプロトコル自体にはMTUを取得する方法がありませんので、ハードコードするか、何らかの工夫が必要です。また、Ryuパケットライブラリは常にパケット全体をパース/シリアライズしますので、フラグメント化されたパケットを処理するためのAPI変更が必要です。</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ryu パケットライブラリ</a><ul>
+<li><a class="reference internal" href="#id1">基本的な使い方</a><ul>
+<li><a class="reference internal" href="#id2">プロトコルヘッダクラス</a></li>
+<li><a class="reference internal" href="#id3">ネットワークアドレス</a></li>
+<li><a class="reference internal" href="#id4">パケットの解析 (パース)</a></li>
+<li><a class="reference internal" href="#id5">パケットの生成 (シリアライズ)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">アプリケーション例</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="traffic_monitor.html"
+                        title="前の章へ">トラフィックモニター</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/packet_lib.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="traffic_monitor.html" title="トラフィックモニター"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3 で生成しました。
+    </div>
+  </body>
+</html>
