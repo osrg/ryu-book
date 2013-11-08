@@ -11,4 +11,5 @@ RyuによるOpenFlowプログラミング
 
    switching_hub.rst
    traffic_monitor.rst
+   link_aggregation.rst
    packet_lib.rst

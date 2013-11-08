@@ -236,6 +236,7 @@ latex_docclass = {'manual': 'jsbook'}
 latex_additional_files = ['jlisting.sty',
                           'sources/simple_switch_13.py',
                           'sources/simple_monitor.py',
+                          'sources/simple_switch_lacp_13.py',
                           'sources/ping_responder.py',
                           ]
 
