@@ -80,9 +80,15 @@ Packet-Inメッセージを発行せずにパケット転送するようにし�
     ポート1にホストA、ポート4にホストB、ポート3にホストCが接続されているもの
     とします。
 
+    .. only:: latex
 
-    .. image:: images/switching_hub/fig1.png
-       :scale: 80 %
+       .. image:: images/switching_hub/fig1.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/switching_hub/fig1.png
+          :scale: 80 %
 
 
 2. ホストA→ホストB
@@ -92,9 +98,15 @@ Packet-Inメッセージを発行せずにパケット転送するようにし�
     いないため、パケットはフラッディングされ、パケットはホストBとホストCで受信
     されます。
 
-    .. image:: images/switching_hub/fig2.png
-       :scale: 80 %
+    .. only:: latex
 
+       .. image:: images/switching_hub/fig2.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/switching_hub/fig2.png
+          :scale: 80 %
 
     Packet-In::
 
@@ -113,8 +125,15 @@ Packet-Inメッセージを発行せずにパケット転送するようにし�
     またパケットはポート1に転送されます。そのため、このパケットはホストCでは
     受信されません。
 
-        .. image:: images/switching_hub/fig3.png
-           :scale: 80 %
+    .. only:: latex
+
+       .. image:: images/switching_hub/fig3.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/switching_hub/fig3.png
+          :scale: 80 %
 
 
     Packet-In::
@@ -133,8 +152,15 @@ Packet-Inメッセージを発行せずにパケット転送するようにし�
     再度、ホストAからホストBへのパケットが送信されると、フローテーブルに
     エントリを追加し、またパケットはポート4に転送されます。
 
-        .. image:: images/switching_hub/fig4.png
-           :scale: 80 %
+    .. only:: latex
+
+       .. image:: images/switching_hub/fig4.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/switching_hub/fig4.png
+          :scale: 80 %
 
 
     Packet-In::
