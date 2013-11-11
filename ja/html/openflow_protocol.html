@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenFlowプロトコル &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="prev" title="Ryu パケットライブラリ" href="packet_lib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Ryu パケットライブラリ"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="openflow">
+<span id="ch-openflow-protocol"></span><h1>OpenFlowプロトコル<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、これまで詳しく説明していなかったマッチとインストラクションおよびアクションについて説明します。</p>
+<div class="section" id="id1">
+<h2>マッチ<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>マッチに指定できる条件には様々なものがあり、OpenFlowのバージョンが上がる度にその種類は増えています。OpenFlow 1.0では12種類でしたが、OpenFlow 1.3では40種類もの条件が定義されています。</p>
+<p>個々の詳細については、OpenFlowの仕様書などを参照して頂くとして、ここではOpenFlow 1.3のMatchフィールドを簡単に紹介します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Matchフィールド名</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>in_port</td>
+<td>受信ポートのポート番号</td>
+</tr>
+<tr class="row-odd"><td>in_phy_port</td>
+<td>受信ポートの物理ポート番号</td>
+</tr>
+<tr class="row-even"><td>metadata</td>
+<td>テーブル間で情報を受け渡すために用いられるメタデータ</td>
+</tr>
+<tr class="row-odd"><td>eth_dst</td>
+<td>Ethernetの宛先MACアドレス</td>
+</tr>
+<tr class="row-even"><td>eth_src</td>
+<td>Ethernetの送信元MACアドレス</td>
+</tr>
+<tr class="row-odd"><td>eth_type</td>
+<td>Ethernetのフレームタイプ</td>
+</tr>
+<tr class="row-even"><td>vlan_vid</td>
+<td>VLAN ID</td>
+</tr>
+<tr class="row-odd"><td>vlan_pcp</td>
+<td>VLAN PCP</td>
+</tr>
+<tr class="row-even"><td>ip_dscp</td>
+<td>IP DSCP</td>
+</tr>
+<tr class="row-odd"><td>ip_ecn</td>
+<td>IP ECN</td>
+</tr>
+<tr class="row-even"><td>ip_proto</td>
+<td>IPのプロトコル種別</td>
+</tr>
+<tr class="row-odd"><td>ipv4_src</td>
+<td>IPv4の送信元IPアドレス</td>
+</tr>
+<tr class="row-even"><td>ipv4_dst</td>
+<td>IPv4の宛先IPアドレス</td>
+</tr>
+<tr class="row-odd"><td>tcp_src</td>
+<td>TCPの送信元ポート番号</td>
+</tr>
+<tr class="row-even"><td>tcp_dst</td>
+<td>TCPの宛先ポート番号</td>
+</tr>
+<tr class="row-odd"><td>udp_src</td>
+<td>UDPの送信元ポート番号</td>
+</tr>
+<tr class="row-even"><td>udp_dst</td>
+<td>UDPの宛先ポート番号</td>
+</tr>
+<tr class="row-odd"><td>sctp_src</td>
+<td>SCTPの送信元ポート番号</td>
+</tr>
+<tr class="row-even"><td>sctp_dst</td>
+<td>SCTPの宛先ポート番号</td>
+</tr>
+<tr class="row-odd"><td>icmpv4_type</td>
+<td>ICMPのType</td>
+</tr>
+<tr class="row-even"><td>icmpv4_code</td>
+<td>ICMPのCode</td>
+</tr>
+<tr class="row-odd"><td>arp_op</td>
+<td>ARPのオペコード</td>
+</tr>
+<tr class="row-even"><td>arp_spa</td>
+<td>ARPの送信元IPアドレス</td>
+</tr>
+<tr class="row-odd"><td>arp_tpa</td>
+<td>ARPのターゲットIPアドレス</td>
+</tr>
+<tr class="row-even"><td>arp_sha</td>
+<td>ARPの送信元MACアドレス</td>
+</tr>
+<tr class="row-odd"><td>arp_tha</td>
+<td>ARPのターゲットMACアドレス</td>
+</tr>
+<tr class="row-even"><td>ipv6_src</td>
+<td>IPv6の送信元IPアドレス</td>
+</tr>
+<tr class="row-odd"><td>ipv6_dst</td>
+<td>IPv6の宛先IPアドレス</td>
+</tr>
+<tr class="row-even"><td>ipv6_flabel</td>
+<td>IPv6のフローラベル</td>
+</tr>
+<tr class="row-odd"><td>icmpv6_type</td>
+<td>ICMPv6のType</td>
+</tr>
+<tr class="row-even"><td>icmpv6_code</td>
+<td>ICMPv6のCode</td>
+</tr>
+<tr class="row-odd"><td>ipv6_nd_target</td>
+<td>IPv6ネイバーディスカバリのターゲットアドレス</td>
+</tr>
+<tr class="row-even"><td>ipv6_nd_sll</td>
+<td>IPv6ネイバーディスカバリの送信元リンクレイヤーアドレス</td>
+</tr>
+<tr class="row-odd"><td>ipv6_nd_tll</td>
+<td>IPv6ネイバーディスカバリのターゲットリンクレイヤーアドレス</td>
+</tr>
+<tr class="row-even"><td>mpls_label</td>
+<td>MPLSのラベル</td>
+</tr>
+<tr class="row-odd"><td>mpls_tc</td>
+<td>MPLSのトラフィッククラス(TC)</td>
+</tr>
+<tr class="row-even"><td>mpls_bos</td>
+<td>MPLSのBoSビット</td>
+</tr>
+<tr class="row-odd"><td>pbb_isid</td>
+<td>802.1ah PBBのI-SID</td>
+</tr>
+<tr class="row-even"><td>tunnel_id</td>
+<td>論理ポートに関するメタデータ</td>
+</tr>
+<tr class="row-odd"><td>ipv6_exthdr</td>
+<td>IPv6の拡張ヘッダの擬似フィールド</td>
+</tr>
+</tbody>
+</table>
+<p>MACアドレスやIPアドレスなどのフィールドによっては、さらにマスクを指定することができます。</p>
+</div>
+<div class="section" id="id2">
+<h2>インストラクション<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>インストラクションは、マッチに該当するパケットを受信した時の動作を定義するもので、 次のタイプが規定されています。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="35%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">インストラクション</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Goto Table (必須)</td>
+<td><p class="first">OpenFlow 1.1以降では、複数のフローテーブルがサポートされています。Goto Tableによって、マッチしたパケットの処理を、指定したフローテーブルに引き継ぐことができます。例えば、「ポート1で受信したパケットにVLAN-ID 200を付加して、テーブル2へ飛ぶ」といったフローエントリが設定できます。</p>
+<p class="last">指定するテーブルIDは、現在のテーブルIDより大きい値でなければなりません。</p>
+</td>
+</tr>
+<tr class="row-odd"><td>Write Metadata (オプション)</td>
+<td>以降のテーブルで参照できるメタデータをセットします。</td>
+</tr>
+<tr class="row-even"><td>Write Actions (必須)</td>
+<td>現在のアクションセットに指定されたアクションを追加します。同じタイプのアクションが既にセットされていた場合には、新しいアクションで置き換えられます。</td>
+</tr>
+<tr class="row-odd"><td>Apply Actions (オプション)</td>
+<td>アクションセットは変更せず、指定されたアクションを直ちに適用します。</td>
+</tr>
+<tr class="row-even"><td>Clear Actions (オプション)</td>
+<td>現在のアクションセットのすべてのアクションを削除します。</td>
+</tr>
+<tr class="row-odd"><td>Meter (オプション)</td>
+<td>指定したメーターにパケットを適用します。</td>
+</tr>
+</tbody>
+</table>
+<p>Ryuでは、各インストラクションに対応する次のクラスが実装されています。</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">OFPInstructionGotoTable</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionWriteMetadata</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionActions</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionMeter</span></tt></li>
+</ul>
+<p>Write/Apply/Clear Actionsは、OPFInstructionActionsにまとめられていて、インスタンス生成時に選択します。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">Write Actionsのサポートは必須とされていますが、現時点のOpen vSwitchではサポートされていません。Apply Actionsがサポートされているので、代わりにこちらを使う必要があります。</p>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>アクション<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>OFPActionOutputクラスは、Packet-OutメッセージやFlow Modメッセージで使用するパケット転送を指定するものです。コンストラクタの引数で転送先とコントローラへ送信する最大データサイズ(max_len)を指定します。転送先には、スイッチの物理的なポート番号の他にいくつかの定義された値が指定できます。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">値</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPP_IN_PORT</td>
+<td>受信ポートに転送されます</td>
+</tr>
+<tr class="row-odd"><td>OFPP_TABLE</td>
+<td>先頭のフローテーブルに摘要されます</td>
+</tr>
+<tr class="row-even"><td>OFPP_NORMAL</td>
+<td>スイッチのL2/L3機能で転送されます</td>
+</tr>
+<tr class="row-odd"><td>OFPP_FLOOD</td>
+<td>受信ポートやブロックされているポートを除く当該VLAN内のすべての物理ポートにフラッディングされます</td>
+</tr>
+<tr class="row-even"><td>OFPP_ALL</td>
+<td>受信ポートを除くすべての物理ポートに転送されます</td>
+</tr>
+<tr class="row-odd"><td>OFPP_CONTROLLER</td>
+<td>コントローラにPacket-Inメッセージとして送られます</td>
+</tr>
+<tr class="row-even"><td>OFPP_LOCAL</td>
+<td>スイッチのローカルポートを示します</td>
+</tr>
+<tr class="row-odd"><td>OFPP_ANY</td>
+<td>Flow Mod(delete)メッセージやFlow Stats Requestsメッセージでポートを選択する際にワイルドカードとして使用するもので、パケット転送では使用されません</td>
+</tr>
+</tbody>
+</table>
+<p>max_lenに0を指定すると、Packet-Inメッセージにパケットのバイナリデータは添付されなくなります。<tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt>を指定すると、OpenFlowスイッチ上でそのパケットをバッファせず、Packet-Inメッセージにパケット全体が添付されます。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">max_lenには通常、Packet-Inハンドラ内の処理で必要となるバイト数を指定します。OFPCML_NO_BUFFERを指定するとパケット全体が送られるため、パフォーマンスが悪くなります。ところが、現時点のOpen vSwitchの実装では、例えばmax_lenに128を指定した場合、バッファリングせずにパケットの先頭128バイトのみを添付したPacket-Inが発行されます。これでは128バイトを越えるサイズのパケットが正しく転送できなくなってしまいますので、OFPCML_NO_BUFFERを指定してパケット全体を添付させるなどの対策が必要です。</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenFlowプロトコル</a><ul>
+<li><a class="reference internal" href="#id1">マッチ</a></li>
+<li><a class="reference internal" href="#id2">インストラクション</a></li>
+<li><a class="reference internal" href="#id3">アクション</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="前の章へ">Ryu パケットライブラリ</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/openflow_protocol.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Ryu パケットライブラリ"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3 で生成しました。
+    </div>
+  </body>
+</html>
