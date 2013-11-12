@@ -76,31 +76,78 @@
 <div class="section" id="openflow">
 <h2>OpenFlowによるリンク・アグリゲーション<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>LACPを用いたリンク・アグリゲーションの仕組みは、簡単に言うと以下のようなものです。</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li>物理インターフェースのMACアドレスとは別に、束ねられた論理インターフェースのMACアドレスを用意する(物理インターフェースのMACアドレスのうちのどれかひとつである場合もある)。</li>
 <li>LACPデータユニットには論理インターフェースを表すMACアドレスが記載されており、LACPデータユニット以外のフレーム転送には、この論理インターフェースのMACアドレスを使用する。</li>
 <li>LACPデータユニットの交換には個々の物理インターフェースのMACアドレスを使用する。</li>
-<li>LACPデータユニットの交換に成功した場合、リンク・アグリゲーションを開始する。リンク・アグリゲーション実行中、論理インターフェース間を通過するパケットは、特定の振り分けロジックに従い、いずれかの物理インターフェースから送信される。</li>
+<li>LACPデータユニットを交換する物理インターフェースは、その役割によってACTIVEとPASSIVEに分類される。ACTIVEは一定時間ごとにLACPデータユニットを送信し、疎通を能動的に確認する。PASSIVEはACTIVEから送信されたLACPデータユニットを受信した際に応答を返すことにより、疎通を受動的に確認する。</li>
+<li>LACPデータユニットの交換に成功した場合、リンク・アグリゲーションを開始する。リンク・アグリゲーション実行中、論理インターフェース間を通過するパケットは、特定の振り分けロジックに従い、いずれかの物理インターフェースから送信される(振り分けロジックに関しては仕様で定められていない)。</li>
 <li>リンク・アグリゲーション開始後も、LACPデータユニットを定期的に交換する。一定時間交換が途絶えたら、そのリンクには問題が発生したものとみなし、パケット転送での使用を中止する。交換が再開されたら、そのリンクは復旧したものとみなし、パケット転送での使用を再開する。</li>
 </ul>
-</div></blockquote>
-<p>これをOpenFlowで実現しようとした場合、(以下書きかけ)</p>
+<p>OpenFlowスイッチとOpenFlowコントローラで、リンク・アグリゲーション機能を以下のように実現することにします。実装を簡素化するためにいくつか制限を設けてあります。</p>
+<ul class="simple">
+<li>LACPデータユニットを交換するインターフェースはPASSIVEのみ実装するものとします。これにより、定期送信のためのタイマー処理が不要となります。</li>
+<li>OpenFlowスイッチは、LACPデータユニットを受信した際、応答用のLACPデータユニットを送信します。この動作はOpenFlowスイッチ単体では実現できないので、OpenFlowスイッチにはLACPデータユニット受信時にPacket-Inを送信するフローエントリを登録し、応答用のLACPデータユニットの作成はOpenFlowコントローラで行い、Packet-Outで送信します。</li>
+<li>LACPデータユニットをPacket-Inさせるフローエントリにはidle_timeoutを設定し、一定時間LACPデータユニットを受信しなかった場合にFlowRemovedメッセージがOpenFlowコントローラに飛ぶようにします。</li>
+<li>OpenFlowコントローラは、FlowRemovedメッセージを受信した際、どの物理インターフェースでLACPデータユニットの交換が停止したかを識別し、その物理インターフェースが所属している論理インターフェースに関連するすべてのフローエントリを削除します。また、LACPデータユニットの交換が再開された際にも、当該論理インターフェースに関連するすべてのフローエントリを削除します。これは、選択可能な物理インターフェースの個数が増減したことに伴う再振り分けを想定した処理です。</li>
+<li>振り分けロジックは実装しません。対向インターフェースが振り分けた経路をそのまま使用するものとします。</li>
+<li>LACP以外のパケットは通常のスイッチングハブ機能で処理します。</li>
+</ul>
+<p>上記機能の大部分を実装したLACPライブラリが、Ryuのソースツリーにあります。</p>
+<blockquote>
+<div>ryu/lib/lacplib.py</div></blockquote>
+<p>以降の節で、上記機能が具体的にどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
+<div class="section" id="id3">
+<h3>論理インターフェースの作成<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="admonition caution">
 <p class="first admonition-title">ご用心</p>
 <p>TODO: 以下の内容を書いていく。</p>
 <ul class="last simple">
-<li>OpenFlowでどのようにリンク・アグリゲーションを実現するか</li>
-<li>提供するライブラリの説明(簡易実装であることにも触れる)<ul>
-<li>論理インターフェースのMACアドレスとしてスイッチのLOCALポートのMACアドレスを使用しているため、ひとつのスイッチで複数のリンク・アグリゲーション・グループを構成すると、複数の論理インターフェースが同じMACアドレスを保有することになってしまう。OVSがその実装なので別によいか？</li>
-<li>「同一VLANでなければグループ化不可能」のチェックをしていない。</li>
-</ul>
-</li>
+<li>addの説明</li>
 </ul>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">多くのLACP対応機器は、自発的にLACPデータユニットを送信するACTIVEモードと受信したLACPデータユニットに応答を返すのみのPASSIVEモードが選択できますが、本ライブラリはPASSIVEモードのみ提供しています。LACPデータユニット交換はACTIVE-ACTIVEもしくはACTIVE-PASSIVEの組み合わせで行われるため、本ライブラリ同士でのLACPデータユニット交換はできません。</p>
+</div>
+<div class="section" id="lacp">
+<h3>LACPデータユニットの受信処理<a class="headerlink" href="#lacp" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="admonition caution">
+<p class="first admonition-title">ご用心</p>
+<p>TODO: 以下の内容を書いていく。</p>
+<ul class="last simple">
+<li>ユーザ定義イベントの送信方法</li>
+<li>LACPデータユニットの作成・送信</li>
+</ul>
+</div>
+</div>
+<div class="section" id="lacppacket-in">
+<h3>LACPデータユニットをPacket-Inさせるフローエントリの登録<a class="headerlink" href="#lacppacket-in" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="admonition caution">
+<p class="first admonition-title">ご用心</p>
+<p>TODO: 以下の内容を書いていく。</p>
+<ul class="last simple">
+<li>「when the timeout time has changed, ～」あたりの説明</li>
+<li>OpenFlowのバージョンによるFlowModの違い</li>
+</ul>
+</div>
+</div>
+<div class="section" id="flowremoved">
+<h3>FlowRemovedメッセージの受信処理<a class="headerlink" href="#flowremoved" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="admonition caution">
+<p class="first admonition-title">ご用心</p>
+<p>TODO: 以下の内容を書いていく。</p>
+<ul class="last simple">
+<li>flow_removed_handlerの説明</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>有効な物理インターフェースの個数の増減に伴う処理<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="admonition caution">
+<p class="first admonition-title">ご用心</p>
+<p>TODO: 以下の内容を書いていく。</p>
+<ul class="last simple">
+<li>「when LACP arrived at disabled port, ～」あたりの説明</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="ryu">
@@ -112,10 +159,10 @@
 <li>Ryuを用いたAPLのソース説明</li>
 <li>CONTEXTを用いたLIB適用方法の説明</li>
 <li>ライブラリの初期設定</li>
-<li>ユーザ定義イベントの投げ方</li>
+<li>ユーザ定義イベントの受信方法</li>
 </ul>
 </div>
-<p>リンク・アグリゲーション機能を備えたスイッチングハブのソースコードは、Ryuのソースツリーにあります。</p>
+<p>前章で説明したLACPライブラリを使用してリンク・アグリゲーション機能を実装したスイッチングハブのソースコードが、Ryuのソースツリーにあります。</p>
 <blockquote>
 <div>ryu/app/simple_switch_lacp.py</div></blockquote>
 <p>ただし、上記のソースはOpenFlow 1.0用であるため、新たにOpenFlow 1.3に対応した実装を作成することにします。</p>
@@ -125,8 +172,8 @@
 <p>ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_CONTEXTS」ディクショナリに他のRyuアプリケーションを設定することにより、他のアプリケーションを別スレッドで起動させることができます。ここではryu.lib.lacplibモジュールのLacpLibクラスを「lacplib」という名前で「_CONTEXTS」に設定しています。</p>
 <p>「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsからインスタンスを取得することができます。</p>
 </div>
-<div class="section" id="id3">
-<h3>ライブラリの初期設定<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id5">
+<h3>ライブラリの初期設定<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>「_CONTEXTS」に設定したLACPライブラリの初期設定を行います。ここでは以下の値を設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -154,8 +201,8 @@
 <p>この設定により、データパスID「0000000000000001」のOpenFlowSwitchのポート1とポート2がひとつのリンク・アグリゲーション・グループとして動作します。</p>
 </div>
 </div>
-<div class="section" id="id4">
-<h2>Ryuアプリケーションの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id6">
+<h2>Ryuアプリケーションの実行<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <div class="admonition caution">
 <p class="first admonition-title">ご用心</p>
 <p>TODO: 以下の内容を書いていく。</p>
@@ -169,8 +216,8 @@
 </ul>
 </div>
 </div>
-<div class="section" id="id5">
-<h2>まとめ<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id7">
+<h2>まとめ<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章では、リンク・アグリゲーションライブラリの利用を題材として、以下の項目について説明しました。</p>
 <ul class="simple">
 <li>「_CONTEXTS」を用いたライブラリの使用方法</li>
@@ -189,14 +236,21 @@
   <ul>
 <li><a class="reference internal" href="#">リンク・アグリゲーションの実装</a><ul>
 <li><a class="reference internal" href="#id2">リンク・アグリゲーション</a></li>
-<li><a class="reference internal" href="#openflow">OpenFlowによるリンク・アグリゲーション</a></li>
-<li><a class="reference internal" href="#ryu">Ryuによるリンク・アグリゲーションの実装</a><ul>
-<li><a class="reference internal" href="#contexts">「_CONTEXTS」の設定</a></li>
-<li><a class="reference internal" href="#id3">ライブラリの初期設定</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlowによるリンク・アグリゲーション</a><ul>
+<li><a class="reference internal" href="#id3">論理インターフェースの作成</a></li>
+<li><a class="reference internal" href="#lacp">LACPデータユニットの受信処理</a></li>
+<li><a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a></li>
+<li><a class="reference internal" href="#flowremoved">FlowRemovedメッセージの受信処理</a></li>
+<li><a class="reference internal" href="#id4">有効な物理インターフェースの個数の増減に伴う処理</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">Ryuアプリケーションの実行</a></li>
-<li><a class="reference internal" href="#id5">まとめ</a></li>
+<li><a class="reference internal" href="#ryu">Ryuによるリンク・アグリゲーションの実装</a><ul>
+<li><a class="reference internal" href="#contexts">「_CONTEXTS」の設定</a></li>
+<li><a class="reference internal" href="#id5">ライブラリの初期設定</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">Ryuアプリケーションの実行</a></li>
+<li><a class="reference internal" href="#id7">まとめ</a></li>
 </ul>
 </li>
 </ul>
