@@ -9,6 +9,7 @@ RyuによるOpenFlowプログラミング
 .. toctree::
    :maxdepth: 2
 
+   preface.rst
    switching_hub.rst
    traffic_monitor.rst
    link_aggregation.rst
