@@ -34,9 +34,9 @@
 早速ですが、「 :ref:`ch_switching_hub` 」のスイッチングハブにトラフィック
 モニター機能を追加したソースコードです。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \lstinputlisting{simple_monitor.py}
+.. literalinclude:: sources/simple_monitor.py
 
 SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモニター機能を
 実装していますので、ここにはパケット転送に関する処理は出てきません。
@@ -48,9 +48,10 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 スイッチングハブの処理と並行して、定期的に統計情報取得のリクエストをOpenFlow
 スイッチへ発行するために、スレッドを生成します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     from operator import attrgetter
     
     from ryu.app import simple_switch_13
@@ -67,15 +68,15 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
             self.datapaths = {}
             self.monitor_thread = hub.spawn(self._monitor)
     # ...
-    \end{sourcecode}
 
 ``ryu.lib.hub`` には、いくつかのeventletのラッパーや基本的なクラスの実装
 があります。ここではスレッドを生成する ``hub.spawn()`` を使用します。
 実際に生成されるスレッドはeventletのグリーンスレッドです。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     # ...
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
@@ -96,7 +97,6 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
                 self._request_stats(dp)
             hub.sleep(10)
     # ...
-    \end{sourcecode}
 
 スレッド関数 ``_monitor()`` では、登録されたスイッチに対する統計情報取得
 リクエストの発行を10秒間隔で無限に繰り返します。
@@ -108,9 +108,10 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 ここでは、Datapathのステートが ``MAIN_DISPATCHER`` になった時に、そのスイッチ
 を監視対象に登録、 ``DEAD_DISPATCHER`` になった時に登録の削除を行っています。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     # ...
     def _request_stats(self, datapath):
         self.logger.debug('send stats request: %016x', datapath.id)
@@ -123,7 +124,6 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
         req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
         datapath.send_msg(req)
     # ...
-    \end{sourcecode}
 
 定期的に呼び出される ``_request_stats()`` では、対象となるスイッチに
 ``OFPFlowStatsRequest`` と ``OFPPortStatsRequest`` を発行しています。
@@ -142,9 +142,10 @@ FlowStats
 
 FlowStatsReplyメッセージを受信して、フローエントリの統計情報を出力します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     # ...
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def _flow_stats_reply_handler(self, ev):
@@ -165,7 +166,6 @@ FlowStatsReplyメッセージを受信して、フローエントリの統計情
                              stat.instructions[0].actions[0].port,
                              stat.packet_count, stat.byte_count)
     # ...
-    \end{sourcecode}
 
 OPFFlowStatsReplyクラスの属性 ``body`` は、 ``OFPFlowStats`` のリストで、
 FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。
@@ -180,22 +180,23 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
 
 例えば次のように書くことができます。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     import json
 
     # ...
 
     self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=Ture,
                                       indent=3, sort_keys=True))
-    \end{sourcecode}
 
 この場合、以下のように出力されます。
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     {
        "OFPFlowStatsReply": {
           "body": [
@@ -299,7 +300,6 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
           "type": 1
        }
     }
-    \end{console}
 
 
 PortStats
@@ -307,9 +307,10 @@ PortStats
 
 PortStatsReplyメッセージを受信して、ポートの統計情報を出力します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     # ...
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
@@ -326,7 +327,6 @@ PortStatsReplyメッセージを受信して、ポートの統計情報を出力
                              ev.msg.datapath.id, stat.port_no,
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
-    \end{sourcecode}
 
 OPFPortStatsReplyクラスの属性 ``body`` は、``OFPPortStats`` のリストになって
 います。
@@ -351,9 +351,10 @@ OFPPortStatsには、ポート番号、送受信それぞれのパケット数�
 
 controller: c0:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
     loading app ./simple_monitor.py
     loading app ryu.controller.ofp_handler
@@ -395,7 +396,6 @@ controller: c0:
     0000000000000001        2        0        0        0        0        0        0
     0000000000000001        3        0        0        0        0        0        0
     0000000000000001 fffffffe        0        0        0        0        0        0
-    \end{console}
 
 「 :ref:`ch_switching_hub` 」のスイッチングハブの時は、ryu-managerコマンド
 にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
@@ -408,9 +408,10 @@ controller: c0:
 
 host: h1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ping -c1 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
@@ -419,16 +420,16 @@ host: h1:
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
     root@ryu-vm:~# 
-    \end{console}
 
 すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報
 が変化します。
 
 controller: c0:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     datapath         in-port  eth-dst           out-port packets  bytes
     ---------------- -------- ----------------- -------- -------- --------
     0000000000000001        1 00:00:00:00:00:02        2        1       42
@@ -439,7 +440,6 @@ controller: c0:
     0000000000000001        2        3      182        0        3      182        0
     0000000000000001        3        0        0        0        1       42        0
     0000000000000001 fffffffe        0        0        0        1       42        0
-    \end{console}
 
 上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィッ
 クは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140

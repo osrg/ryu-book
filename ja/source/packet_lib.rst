@@ -58,24 +58,24 @@ __init__引数名には、type_のように最後に_が付きます。
 いくつかの__init__引数にはデフォルト値が設定されており省略できます。
 以下の例ではversion=4等が省略されています。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         from ryu.lib.ofproto import inet
         from ryu.lib.packet import ipv4
 
         pkt_ipv4 = ipv4.ipv4(dst='192.0.2.1',
                              src='192.0.2.2',
                              proto=inet.IPPROTO_UDP)
-    \end{sourcecode}
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         print pkt_ipv4.dst
         print pkt_ipv4.src
         print pkt_ipvr.proto
-    \end{sourcecode}
 
 ネットワークアドレス
 ^^^^^^^^^^^^^^^^^^^^
@@ -103,9 +103,10 @@ IPv6アドレス  '2001:db8::2'
 2. 1.のオブジェクトのget_protocolメソッド等を使用して、
    各プロトコルヘッダに対応するオブジェクトを取得
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         pkt = packet.Packet(data=bin_packet)
         pkt_ethernet = pkt.get_protocol(ethernet.ethernet)
         if not pkt_ethernet:
@@ -114,7 +115,6 @@ IPv6アドレス  '2001:db8::2'
         print pkt_ethernet.dst
         print pkt_ethernet.src
         print pkt_ethernet.ethertype
-    \end{sourcecode}
 
 パケットの生成 (シリアライズ)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -132,9 +132,10 @@ pythonオブジェクトから、対応するパケットのバイト列を生�
 明示的に値を指定しなくてもserialize時に自動的に計算されます。
 詳細は各クラスのリファレンスをご参照ください。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         pkt = packet.Packet()
         pkt.add_protocol(ethernet.ethernet(ethertype=...,
                                            dst=...,
@@ -148,18 +149,17 @@ pythonオブジェクトから、対応するパケットのバイト列を生�
                                    data=...))
         pkt.serialize()
         bin_packet = pkt.data
-    \end{sourcecode}
 
 Scapyライクな代替APIも用意されていますので、お好みに応じてご使用ください。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         e = ethernet.ethernet(...)
         i = ipv4.ipv4(...)
         u = udp.udp(...)
         pkt = e/i/u
-    \end{sourcecode}
 
 アプリケーション例
 ------------------
@@ -170,15 +170,16 @@ ARP REQUESTとICMP ECHO REQUESTをPacket-Inで受けとり、
 返事をPacket-Outで送信します。
 IPアドレス等は__init__メソッド内にハードコードされています。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \lstinputlisting{ping_responder.py}
+.. literalinclude:: sources/ping_responder.py
 
 以下はping -c 3を実行した場合のログの例です。
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     EVENT ofp_event->IcmpResponder EventOFPSwitchFeatures
     switch features ev version: 0x4 msg_type 0x6 xid 0xb63c802c OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=11974852296259,n_buffers=256,n_tables=254)
     move onto main mode
@@ -194,7 +195,6 @@ IPアドレス等は__init__メソッド内にハードコードされていま�
     EVENT ofp_event->IcmpResponder EventOFPPacketIn
     packet-in ethernet(dst='0a:e4:1c:d1:3e:44',ethertype=2048,src='0a:e4:1c:d1:3e:43'), ipv4(csum=47379,dst='192.0.2.9',flags=0,header_length=5,identification=32296,offset=0,option=None,proto=1,src='192.0.2.99',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=26863,data=echo(data='U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=2),type=8)
     packet-out ethernet(dst='0a:e4:1c:d1:3e:43',ethertype=2048,src='0a:e4:1c:d1:3e:44'), ipv4(csum=14140,dst='192.0.2.99',flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src='192.0.2.9',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=28911,data=echo(data='U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=2),type=0)
-    \end{console}
 
 IPフラグメント対応は読者への宿題とします。
 OpenFlowプロトコル自体にはMTUを取得する方法がありませんので、
