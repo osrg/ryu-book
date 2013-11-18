@@ -190,9 +190,9 @@ simple_switch_12.py(OpenFlow 1.2)がありますが、ここではOpenFlow 1.3�
 
 短いソースコードなので、全体をここに掲載します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \lstinputlisting{simple_switch_13.py}
+.. literalinclude:: sources/simple_switch_13.py
 
 
 それでは、それぞれの実装内容について見ていきます。
@@ -213,9 +213,10 @@ OpenFlowプロトコルでは、OpenFlowスイッチとコントローラが通�
 ありません。
 
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     class SimpleSwitch13(app_manager.RyuApp):
         OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -224,7 +225,6 @@ OpenFlowプロトコルでは、OpenFlowスイッチとコントローラが通�
             self.mac_to_port = {}
 
         # ...
-    \end{sourcecode}
 
 
 イベントハンドラ
@@ -267,9 +267,10 @@ OpenFlowスイッチとのハンドシェイク完了後にTable-missフロー�
 具体的には、Switch Features(Features Reply)メッセージを受け取り、そこで
 Table-missフローエントリの追加を行います。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
@@ -277,7 +278,6 @@ Table-missフローエントリの追加を行います。
         parser = datapath.ofproto_parser
 
         # ...
-    \end{sourcecode}
 
 ``ev.msg`` には、イベントに対応するOpenFlowメッセージクラスのインスタンスが
 格納されています。この場合は、
@@ -328,9 +328,10 @@ send_msg(msg)
 使いません。Table-missフローエントリを追加するタイミングを得るための
 イベントとして扱っています。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def switch_features_handler(self, ev):
         # ...
 
@@ -345,7 +346,6 @@ send_msg(msg)
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
-    \end{sourcecode}
 
 Table-missフローエントリを作成します。
 
@@ -366,9 +366,10 @@ Packet-inメッセージ
 
 未知の受信パケットを受け付けるため、Packet-Inメッセージを受け取ります。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
         msg = ev.msg
@@ -377,7 +378,6 @@ Packet-inメッセージ
         parser = datapath.ofproto_parser
 
         # ...
-    \end{sourcecode}
 
 
 OFPPacketInクラスのよく使われる属性には以下のようなものがあります。
@@ -400,9 +400,10 @@ buffer_id 受信パケットがOpenFlowスイッチ上でバッファされて�
 MACアドレステーブルの更新
 """""""""""""""""""""""""
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def _packet_in_handler(self, ev):
         # ...
 
@@ -423,7 +424,6 @@ MACアドレステーブルの更新
         self.mac_to_port[dpid][src] = in_port
 
         # ...
-    \end{sourcecode}
 
 OFPPacketInクラスのmatchから、受信ポート(``in_port``)を取得します。
 宛先MACアドレスと送信元MACアドレスは、Ryuのパケットライブラリを使って、
@@ -443,9 +443,10 @@ OFPPacketInクラスのmatchから、受信ポート(``in_port``)を取得しま
 見つからなかった場合はフラッディング(``OFPP_FLOOD``)を出力ポートに指定した
 OUTPUTアクションクラスのインスタンスを生成します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def _packet_in_handler(self, ev):
         # ...
 
@@ -462,7 +463,6 @@ OUTPUTアクションクラスのインスタンスを生成します。
             self.add_flow(datapath, 1, match, actions)
 
         # ...
-    \end{sourcecode}
 
 
 宛先MACアドレスがみつかった場合は、OpenFlowスイッチのフローテーブルに
@@ -493,9 +493,10 @@ Table-missフローエントリとは違って、今回はマッチに条件を�
 Packet-Inハンドラの処理がまだ終わっていませんが、ここで一旦フローエントリ
 を追加するメソッドの方を見ていきます。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def add_flow(self, datapath, priority, match, actions):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
@@ -504,7 +505,6 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
                                              actions)]
 
         # ...
-    \end{sourcecode}
 
 フローエントリには、対象となるパケットの条件を示すマッチと、そのパケット
 に対する操作を示すインストラクション、エントリの優先度、有効時間などを
@@ -515,16 +515,16 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
 
 最後に、Flow Modメッセージを発行してフローテーブルにエントリを追加します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def add_flow(self, datapath, port, dst, actions):
         # ...
 
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
                                 match=match, instructions=inst)
         datapath.send_msg(mod)
-    \end{sourcecode}
 
 Flow Modメッセージに対応するクラスは ``OFPFlowMod`` クラスです。OFPFlowMod
 クラスのインスタンスを生成して、Datapath.send_msg() メソッドでOpenFlow
@@ -652,9 +652,10 @@ Packet-Inハンドラに戻り、最後の処理の説明です。
 宛先MACアドレスがMACアドレステーブルから見つかったかどうかに関わらず、最終的
 にはPacket-Outメッセージを発行して、受信パケットを転送します。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     def _packet_in_handler(self, ev):
         # ...
 
@@ -665,7 +666,6 @@ Packet-Inハンドラに戻り、最後の処理の説明です。
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
-    \end{sourcecode}
 
 Packet-Outメッセージに対応するクラスは ``OFPPacketOut`` クラスです。
 
@@ -741,11 +741,12 @@ Open vSwitch バージョン1.11.0
 Ryu バージョン3.2
   https://github.com/osrg/ryu/
 
-    .. raw:: latex
+    .. rst-class:: console
 
-        \begin{console}
+    ::
+
         $ sudo pip install ryu
-        \end{console}
+
 
 ここでは、Ryu用OpenFlow TutorialのVMイメージを利用します。
 
@@ -782,9 +783,10 @@ x            なし       xtermを起動する
 
 実行例は以下のようになります。
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     $ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
@@ -803,7 +805,6 @@ x            なし       xtermを起動する
     s1
     *** Starting CLI:
     mininet>
-    \end{console}
 
 実行するとデスクトップPC上でxtermが5つ起動します。
 それぞれ、ホスト1～3、スイッチ、コントローラに対応します。
@@ -816,9 +817,10 @@ x            なし       xtermを起動する
 
 switch: s1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ovs-vsctl show
     fdec0957-12b6-4417-9d02-847654e9cc1f
     Bridge "s1"
@@ -845,7 +847,6 @@ switch: s1:
             port 3: s1-eth2
             port 4: s1-eth3
     root@ryu-vm:~#
-    \end{console}
 
 スイッチ(ブリッジ) *s1* ができていて、ホストに対応するポートが
 3つ追加されています。
@@ -854,24 +855,24 @@ switch: s1:
 
 switch: s1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
     root@ryu-vm:~#
-    \end{console}
 
 空のフローテーブルを確認してみます。
 
 switch: s1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
     root@ryu-vm:~#
-    \end{console}
 
 ovs-ofctlコマンドには、オプションで使用するOpenFlowのバージョンを
 指定する必要があります。デフォルトは *OpenFlow10* です。
@@ -887,9 +888,10 @@ ovs-ofctlコマンドには、オプションで使用するOpenFlowのバージ
 
 controller: c0:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ryu-manager --verbose ryu.app.simple_switch_13
     loading app ryu.app.simple_switch_13
     loading app ryu.controller.ofp_handler
@@ -912,18 +914,17 @@ controller: c0:
     EVENT ofp_event->SimpleSwitch13 EventOFPSwitchFeatures
     switch features ev version: 0x4 msg_type 0x6 xid 0xff9ad15b OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
-    \end{console}
 
 OVSとの接続に時間がかかる場合がありますが、少し待つと上のように
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     connected socket:<....
     hello ev ...
     ...
     move onto main mode
-    \end{console}
 
 と表示されます。
 
@@ -934,14 +935,14 @@ Table-missフローエントリが追加されていることを確認します�
 
 switch: s1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=105.975s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:65535
     root@ryu-vm:~#
-    \end{console}
 
 優先度が0で、マッチがなく、アクションにCONTROLLER、送信データサイズ65535
 (0xffff = OFPCML_NO_BUFFER)が指定されています。
@@ -979,41 +980,42 @@ pingコマンドを実行する前に、各ホストでどのようなパケッ�
 
 host: h1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-    \end{console}
 
 host: h2:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-    \end{console}
 
 host: h3:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-    \end{console}
 
 
 それでは、最初にmnコマンドを実行したコンソールで、次のコマンドを実行して
 ホスト1からホスト2へpingを発行します。
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     mininet> h1 ping -c1 h2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=97.5 ms
@@ -1022,7 +1024,6 @@ host: h3:
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 97.594/97.594/97.594/0.000 ms
     mininet>
-    \end{console}
 
 
 ICMP echo replyは正常に返ってきました。
@@ -1031,16 +1032,16 @@ ICMP echo replyは正常に返ってきました。
 
 switch: s1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=417.838s, table=0, n_packets=3, n_bytes=182, priority=0 actions=CONTROLLER:65535
      cookie=0x0, duration=48.444s, table=0, n_packets=2, n_bytes=140, priority=1,in_port=2,dl_dst=00:00:00:00:00:01 actions=output:1
      cookie=0x0, duration=48.402s, table=0, n_packets=1, n_bytes=42, priority=1,in_port=1,dl_dst=00:00:00:00:00:02 actions=output:2
     root@ryu-vm:~#
-    \end{console}
 
 Table-missフローエントリ以外に、優先度が1のフローエントリが2つ登録されて
 います。
@@ -1061,16 +1062,16 @@ Table-missフローエントリ以外に、優先度が1のフローエントリ
 
 controller: c0:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
     EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
     EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
-    \end{console}
 
 
 1つ目のPacket-Inは、ホスト1が発行したARP requestで、ブロードキャストなので
@@ -1090,9 +1091,10 @@ controller: c0:
 
 host: h1:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -1100,7 +1102,6 @@ host: h1:
     20:38:04.678698 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype ARP (0x0806), length 42: Reply 10.0.0.2 is-at 00:00:00:00:00:02, length 28
     20:38:04.678731 00:00:00:00:00:01 > 00:00:00:00:00:02, ethertype IPv4 (0x0800), length 98: 10.0.0.1 > 10.0.0.2: ICMP echo request, id 3940, seq 1, length 64
     20:38:04.722973 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
-    \end{console}
 
 
 ホスト1では、最初にARP requestがブロードキャストされていて、続いてホスト2から
@@ -1108,12 +1109,12 @@ host: h1:
 次にホスト1が発行したICMP echo request、ホスト2から返されたICMP echo replyが
 受信されています。
 
-
 host: h2:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -1121,7 +1122,6 @@ host: h2:
     20:38:04.638059 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype ARP (0x0806), length 42: Reply 10.0.0.2 is-at 00:00:00:00:00:02, length 28
     20:38:04.722601 00:00:00:00:00:01 > 00:00:00:00:00:02, ethertype IPv4 (0x0800), length 98: 10.0.0.1 > 10.0.0.2: ICMP echo request, id 3940, seq 1, length 64
     20:38:04.722747 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
-    \end{console}
 
 
 ホスト2では、ホスト1が発行したARP requestを受信し、ホスト1にARP replyを
@@ -1130,14 +1130,14 @@ echo replyを返しています。
 
 host: h3:
 
-.. raw:: latex
+.. rst-class:: console
 
-    \begin{console}
+::
+
     root@ryu-vm:~# tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.637954 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
-    \end{console}
 
 
 ホスト3では、最初にホスト1がブロードキャストしたARP requestのみを受信
@@ -1151,4 +1151,3 @@ host: h3:
 本章では、簡単なスイッチングハブの実装を題材に、Ryuアプリケーションの実装
 の基本的な手順と、OpenFlowによるOpenFlowスイッチの簡単な制御方法について
 説明しました。
-

@@ -178,9 +178,9 @@ Ryuによるリンク・アグリゲーションの実装
 ただし、上記のソースはOpenFlow 1.0用であるため、新たにOpenFlow 1.3に対応した
 実装を作成することにします。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \lstinputlisting{simple_switch_lacp_13.py}
+.. literalinclude:: sources/simple_switch_lacp_13.py
 
 これより、「 :ref:`ch_switching_hub` 」のスイッチングハブとの差異を順に説明
 していきます。
@@ -195,9 +195,10 @@ ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_C
 モジュールのLacpLibクラスを「lacplib」という名前で「_CONTEXTS」に設定してい
 ます。
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
     from ryu.lib import lacplib
 
     # ...
@@ -207,23 +208,22 @@ ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_C
         _CONTEXTS = {'lacplib': lacplib.LacpLib}
 
         # ...
-    \end{sourcecode}
 
 
 「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsから
 インスタンスを取得することができます。
 
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         # ...
         def __init__(self, *args, **kwargs):
             super(SimpleSwitchLacp13, self).__init__(*args, **kwargs)
             self.mac_to_port = {}
             self._lacp = kwargs['lacplib']
         # ...
-    \end{sourcecode}
 
 
 ライブラリの初期設定
@@ -243,15 +243,15 @@ ports        [1, 2]                            グループ化するポートの
 ポート2がひとつのリンク・アグリゲーション・グループとして動作します。
 
 
-.. raw:: latex
+.. rst-class:: sourcecode
 
-    \begin{sourcecode}
+::
+
         # ...
             self._lacp = kwargs['lacplib']
             self._lacp.add(
                 dpid=str_to_dpid('0000000000000001'), ports=[1, 2])
         # ...
-    \end{sourcecode}
 
 
 

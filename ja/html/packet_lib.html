@@ -87,6 +87,19 @@
 </ul>
 <p>各プロトコルヘッダクラスの__init__引数名は、基本的にはRFCなどで使用されている名前と同じになっています。プロトコルヘッダクラスのインスタンス属性の命名規則も同様です。ただし、typeなど、Python built-inと衝突する名前のフィールドに対応する__init__引数名には、type_のように最後に_が付きます。</p>
 <p>いくつかの__init__引数にはデフォルト値が設定されており省略できます。以下の例ではversion=4等が省略されています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.ofproto</span> <span class="kn">import</span> <span class="n">inet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ipv4</span>
+
+<span class="n">pkt_ipv4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s">&#39;192.0.2.1&#39;</span><span class="p">,</span>
+                     <span class="n">src</span><span class="o">=</span><span class="s">&#39;192.0.2.2&#39;</span><span class="p">,</span>
+                     <span class="n">proto</span><span class="o">=</span><span class="n">inet</span><span class="o">.</span><span class="n">IPPROTO_UDP</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">dst</span>
+<span class="k">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">src</span>
+<span class="k">print</span> <span class="n">pkt_ipvr</span><span class="o">.</span><span class="n">proto</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id3">
 <h3>ネットワークアドレス<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -122,6 +135,16 @@
 <li>ryu.lib.packet.packet.Packetクラスのオブジェクトを生成(data引数に解析するバイト列を指定)</li>
 <li>1.のオブジェクトのget_protocolメソッド等を使用して、各プロトコルヘッダに対応するオブジェクトを取得</li>
 </ol>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">bin_packet</span><span class="p">)</span>
+<span class="n">pkt_ethernet</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">pkt_ethernet</span><span class="p">:</span>
+    <span class="c"># non ethernet</span>
+    <span class="k">return</span>
+<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">dst</span>
+<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">src</span>
+<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">ethertype</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="id5">
 <h3>パケットの生成 (シリアライズ)<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -134,14 +157,173 @@
 <li>1.のオブジェクトのserializeメソッドを呼び出してバイト列を生成</li>
 </ol>
 <p>チェックサムやペイロード長などのいくつかのフィールドは、明示的に値を指定しなくてもserialize時に自動的に計算されます。詳細は各クラスのリファレンスをご参照ください。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
+<span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=...</span><span class="p">,</span>
+                                   <span class="n">dst</span><span class="o">=...</span><span class="p">,</span>
+                                   <span class="n">src</span><span class="o">=...</span><span class="p">))</span>
+<span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=...</span><span class="p">,</span>
+                           <span class="n">src</span><span class="o">=...</span><span class="p">,</span>
+                           <span class="n">proto</span><span class="o">=...</span><span class="p">))</span>
+<span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="p">(</span><span class="n">type_</span><span class="o">=...</span><span class="p">,</span>
+                           <span class="n">code</span><span class="o">=...</span><span class="p">,</span>
+                           <span class="n">csum</span><span class="o">=...</span><span class="p">,</span>
+                           <span class="n">data</span><span class="o">=...</span><span class="p">))</span>
+<span class="n">pkt</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+<span class="n">bin_packet</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
 <p>Scapyライクな代替APIも用意されていますので、お好みに応じてご使用ください。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">e</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">i</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">udp</span><span class="o">.</span><span class="n">udp</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">pkt</span> <span class="o">=</span> <span class="n">e</span><span class="o">/</span><span class="n">i</span><span class="o">/</span><span class="n">u</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="id6">
 <h2>アプリケーション例<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>上記の例を使用して作成した、pingに返事をするアプリケーションを示します。</p>
 <p>ARP REQUESTとICMP ECHO REQUESTをPacket-Inで受けとり、返事をPacket-Outで送信します。IPアドレス等は__init__メソッド内にハードコードされています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.</span>
+<span class="c"># Copyright (C) 2013 YAMAMOTO Takashi &lt;yamamoto at valinux co jp&gt;</span>
+<span class="c">#</span>
+<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c"># you may not use this file except in compliance with the License.</span>
+<span class="c"># You may obtain a copy of the License at</span>
+<span class="c">#</span>
+<span class="c">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c">#</span>
+<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
+<span class="c"># implied.</span>
+<span class="c"># See the License for the specific language governing permissions and</span>
+<span class="c"># limitations under the License.</span>
+
+<span class="c"># a simple ICMP Echo Responder</span>
+
+<span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">arp</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ipv4</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">icmp</span>
+
+
+<span class="k">class</span> <span class="nc">IcmpResponder</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IcmpResponder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span> <span class="o">=</span> <span class="s">&#39;0a:e4:1c:d1:3e:44&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_addr</span> <span class="o">=</span> <span class="s">&#39;192.0.2.9&#39;</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">max_len</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">type_</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)]</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
+                                <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(),</span>
+                                <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet-in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
+        <span class="n">pkt_ethernet</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pkt_ethernet</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">pkt_arp</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pkt_arp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_arp</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt_ethernet</span><span class="p">,</span> <span class="n">pkt_arp</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">pkt_ipv4</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">)</span>
+        <span class="n">pkt_icmp</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pkt_icmp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_icmp</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt_ethernet</span><span class="p">,</span> <span class="n">pkt_ipv4</span><span class="p">,</span> <span class="n">pkt_icmp</span><span class="p">)</span>
+            <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_handle_arp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt_ethernet</span><span class="p">,</span> <span class="n">pkt_arp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pkt_arp</span><span class="o">.</span><span class="n">opcode</span> <span class="o">!=</span> <span class="n">arp</span><span class="o">.</span><span class="n">ARP_REQUEST</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">ethertype</span><span class="p">,</span>
+                                           <span class="n">dst</span><span class="o">=</span><span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                           <span class="n">src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span><span class="p">))</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">arp</span><span class="o">.</span><span class="n">arp</span><span class="p">(</span><span class="n">opcode</span><span class="o">=</span><span class="n">arp</span><span class="o">.</span><span class="n">ARP_REPLY</span><span class="p">,</span>
+                                 <span class="n">src_mac</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span><span class="p">,</span>
+                                 <span class="n">src_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_addr</span><span class="p">,</span>
+                                 <span class="n">dst_mac</span><span class="o">=</span><span class="n">pkt_arp</span><span class="o">.</span><span class="n">src_mac</span><span class="p">,</span>
+                                 <span class="n">dst_ip</span><span class="o">=</span><span class="n">pkt_arp</span><span class="o">.</span><span class="n">src_ip</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_packet</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_handle_icmp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt_ethernet</span><span class="p">,</span> <span class="n">pkt_ipv4</span><span class="p">,</span> <span class="n">pkt_icmp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">pkt_icmp</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">icmp</span><span class="o">.</span><span class="n">ICMP_ECHO_REQUEST</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">ethertype</span><span class="p">,</span>
+                                           <span class="n">dst</span><span class="o">=</span><span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                           <span class="n">src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span><span class="p">))</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                                   <span class="n">src</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_addr</span><span class="p">,</span>
+                                   <span class="n">proto</span><span class="o">=</span><span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">proto</span><span class="p">))</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">icmp</span><span class="o">.</span><span class="n">icmp</span><span class="p">(</span><span class="n">type_</span><span class="o">=</span><span class="n">icmp</span><span class="o">.</span><span class="n">ICMP_ECHO_REPLY</span><span class="p">,</span>
+                                   <span class="n">code</span><span class="o">=</span><span class="n">icmp</span><span class="o">.</span><span class="n">ICMP_ECHO_REPLY_CODE</span><span class="p">,</span>
+                                   <span class="n">csum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                   <span class="n">data</span><span class="o">=</span><span class="n">pkt_icmp</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_packet</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_send_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">pkt</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet-out </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
+                                  <span class="n">buffer_id</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                  <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span>
+                                  <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>以下はping -c 3を実行した場合のログの例です。</p>
+<div class="console highlight-python"><pre>EVENT ofp_event-&gt;IcmpResponder EventOFPSwitchFeatures
+switch features ev version: 0x4 msg_type 0x6 xid 0xb63c802c OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=11974852296259,n_buffers=256,n_tables=254)
+move onto main mode
+EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
+packet-in ethernet(dst='ff:ff:ff:ff:ff:ff',ethertype=2054,src='0a:e4:1c:d1:3e:43'), arp(dst_ip='192.0.2.9',dst_mac='00:00:00:00:00:00',hlen=6,hwtype=1,opcode=1,plen=4,proto=2048,src_ip='192.0.2.99',src_mac='0a:e4:1c:d1:3e:43'), '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+packet-out ethernet(dst='0a:e4:1c:d1:3e:43',ethertype=2054,src='0a:e4:1c:d1:3e:44'), arp(dst_ip='192.0.2.99',dst_mac='0a:e4:1c:d1:3e:43',hlen=6,hwtype=1,opcode=2,plen=4,proto=2048,src_ip='192.0.2.9',src_mac='0a:e4:1c:d1:3e:44')
+EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
+packet-in ethernet(dst='0a:e4:1c:d1:3e:44',ethertype=2048,src='0a:e4:1c:d1:3e:43'), ipv4(csum=47390,dst='192.0.2.9',flags=0,header_length=5,identification=32285,offset=0,option=None,proto=1,src='192.0.2.99',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=38471,data=echo(data='S,B\x00\x00\x00\x00\x00\x03L)(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=0),type=8)
+packet-out ethernet(dst='0a:e4:1c:d1:3e:43',ethertype=2048,src='0a:e4:1c:d1:3e:44'), ipv4(csum=14140,dst='192.0.2.99',flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src='192.0.2.9',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=40519,data=echo(data='S,B\x00\x00\x00\x00\x00\x03L)(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=0),type=0)
+EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
+packet-in ethernet(dst='0a:e4:1c:d1:3e:44',ethertype=2048,src='0a:e4:1c:d1:3e:43'), ipv4(csum=47383,dst='192.0.2.9',flags=0,header_length=5,identification=32292,offset=0,option=None,proto=1,src='192.0.2.99',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=12667,data=echo(data='T,B\x00\x00\x00\x00\x00Q\x17?(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=1),type=8)
+packet-out ethernet(dst='0a:e4:1c:d1:3e:43',ethertype=2048,src='0a:e4:1c:d1:3e:44'), ipv4(csum=14140,dst='192.0.2.99',flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src='192.0.2.9',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=14715,data=echo(data='T,B\x00\x00\x00\x00\x00Q\x17?(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=1),type=0)
+EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
+packet-in ethernet(dst='0a:e4:1c:d1:3e:44',ethertype=2048,src='0a:e4:1c:d1:3e:43'), ipv4(csum=47379,dst='192.0.2.9',flags=0,header_length=5,identification=32296,offset=0,option=None,proto=1,src='192.0.2.99',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=26863,data=echo(data='U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=2),type=8)
+packet-out ethernet(dst='0a:e4:1c:d1:3e:43',ethertype=2048,src='0a:e4:1c:d1:3e:44'), ipv4(csum=14140,dst='192.0.2.99',flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src='192.0.2.9',tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=28911,data=echo(data='U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00',id=44565,seq=2),type=0)</pre>
+</div>
 <p>IPフラグメント対応は読者への宿題とします。OpenFlowプロトコル自体にはMTUを取得する方法がありませんので、ハードコードするか、何らかの工夫が必要です。また、Ryuパケットライブラリは常にパケット全体をパース/シリアライズしますので、フラグメント化されたパケットを処理するためのAPI変更が必要です。</p>
 </div>
 </div>
