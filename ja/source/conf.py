@@ -233,7 +233,8 @@ latex_documents = [
 
 latex_docclass = {'manual': 'jsbook'}
 
-latex_additional_files = ['jlisting.sty']
+latex_additional_files = ['jlisting.sty',
+                          'sphinxryu.cls', 'images/coverpage.eps']
 
 # -- Options for manual page output --------------------------------------------
 
