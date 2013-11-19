@@ -1,0 +1,358 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>スパニングツリーの実装 &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="next" title="Ryu パケットライブラリ" href="packet_lib.html" />
+    <link rel="prev" title="リンク・アグリゲーションの実装" href="link_aggregation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Ryu パケットライブラリ"
+             accesskey="N">次へ</a> |</li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="リンク・アグリゲーションの実装"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ch-spanning-tree">
+<span id="id1"></span><h1>スパニングツリーの実装<a class="headerlink" href="#ch-spanning-tree" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、Ryuを用いたスパニングツリーの実装方法を解説していきます。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">現時点のRyuにはOpenFlow 1.0にのみ対応したSTPアプリケーションが実装されているため、本章ではOpenFlow 1.0を前提とした内容を記載しています。</p>
+</div>
+<div class="section" id="id2">
+<h2>スパニングツリー<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの冗長性確保の手段としても用いられます。</p>
+<p>スパニングツリーにはSTP、RSTP、PVST+、MSTPなど様々な種別がありますが、本章では最も基本的なSTPの実装を見ていきます。</p>
+<p>STP(spanning tree protocol)はネットワークを論理的なツリーとして扱い、各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first">#TODO: image1.png</p>
+<blockquote class="last">
+<div>ループを持つネットワーク</div></blockquote>
+</td>
+<td><p class="first">#TODO: image2.png</p>
+<blockquote class="last">
+<div>ループを回避したネットワーク</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p>STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換することにより、論理ツリーの頂点であるルートブリッジを決定し、さらに各ブリッジのポートのフレーム転送可否を決定します。</p>
+<p>具体的には、次のような手順により実現されます。</p>
+<ol class="arabic">
+<li><p class="first">ルートブリッジの選出</p>
+<blockquote>
+<div><p>各ブリッジは自身の持つブリッジIDをBPDUパケットに設定してフラッディングします。ブリッジ間のBPDUパケットの交換により、最小のブリッジIDを持つブリッジがルートブリッジとして選出され、以降はルートブリッジのみがオリジナルのBPDUパケットを送信し、他のブリッジはルートブリッジから受信したBPDUパケットを転送します。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>ブリッジIDは次のように計算されます。</p>
+<p class="last">#TODO: ブリッジIDの計算方法</p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">ポートの役割の決定</p>
+<blockquote>
+<div><p>各ポートのルートブリッジに至るまでのコストを元に、ポートの役割を決定します。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>ルートポート(Root port)：</dt>
+<dd><p class="first last">ブリッジ内で最もルートブリッジまでのコストが小さいポート。ルートブリッジからのBPDUパケットを受信するポートになります。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>指定ポート(Designated port)：</dt>
+<dd><p class="first last">各リンクのルートブリッジまでのコストが小さい側のポート。ルートブリッジから受信したBPDUパケットを送信するポートになります。ルートブリッジのポートは全て指定ポートです。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>非指定ポート(Non designated port)：</dt>
+<dd><p class="first last">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
+</dd>
+</dl>
+</li>
+</ul>
+<table border="1" class="docutils">
+<colgroup>
+<col width="100%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first">#TODO: image3.png</p>
+<blockquote class="last">
+<div>各ポートの役割</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">ルートブリッジまでのコストは、BPDUパケットに設定されたroot path cost値などを元に算出されます。</p>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">ポートの状態遷移</p>
+<blockquote>
+<div><p>ブリッジの起動後、各ポートはLISTEN状態になります。その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態またはBLOCK状態に遷移します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="100%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first">#TODO: image4.png</p>
+<blockquote class="last">
+<div>ポート状態遷移</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p>コンフィグで無効なポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
+<ul>
+<li><dl class="first docutils">
+<dt>DISABLE :</dt>
+<dd><p class="first last">無効ポート。全ての受信パケットを無視します。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>LISTEN :</dt>
+<dd><p class="first last">BPDU送受信 を行います。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>LEARN :</dt>
+<dd><p class="first last">BPDU送受信/MAC学習 を行います。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>FORWARD :</dt>
+<dd><p class="first last">BPDU送受信/MAC学習/フレーム転送 を行います。</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>BLOCK :</dt>
+<dd><p class="first last">BPDU受信のみ を行います。</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>これらの動作が各ブリッジで実行されることにより、フレーム転送を行うポートとフレーム転送を抑制するポートが決定され、ネットワーク内のループが解消されます。</p>
+<p>また、リンクダウンやBPDUパケットのmax age(デフォルト20秒)間の未受信による故障検知、あるいはポートの追加等によりトポロジ変更を検出した場合は、各ブリッジで上記の 1. 2. 3. を実行しツリーの再構築が行われます(STPの再計算)。</p>
+</div>
+<div class="section" id="openflow">
+<h2>OpenFlowによるスパニングツリー<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>コントローラはブリッジ間のBPDUパケットの交換を実現するため、各OpenFlowスイッチから受信したSwitch Featuresメッセージの情報を元にBPDUパケットを構築し、Packet-OutメッセージをOpenFlowスイッチに発行します。また、各OpenFlowスイッチが受信したBPDUパケットの設定値を元にコントローラがルートブリッジやポートの役割を決定するため、あらかじめBPDUパケットをPacket-Inするフローエントリを各OpenFlowスイッチに登録しておきます。</p>
+<p>OpenFlow 1.0には次のようなポートの動作を決定するコンフィグが用意されているため、各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行することで、ポートのフレーム転送有無などの動作を制御することができます。</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">値</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPPC_PORT_DOWN</td>
+<td>保守者により無効設定された状態です</td>
+</tr>
+<tr class="row-odd"><td>OFPPC_NO_STP</td>
+<td>802.1D STPに関連する機能を無効にします</td>
+</tr>
+<tr class="row-even"><td>OFPPC_NO_RECV</td>
+<td>802.1D STPパケットを除く全てのパケットを廃棄します</td>
+</tr>
+<tr class="row-odd"><td>OFPPC_NO_RECV_STP</td>
+<td>802.1D STPパケットを廃棄します</td>
+</tr>
+<tr class="row-even"><td>OFPPC_NO_FLOOD</td>
+<td>フラッディング対象外のポートとします</td>
+</tr>
+<tr class="row-odd"><td>OFPPC_NO_FWD</td>
+<td>パケット転送を行いません</td>
+</tr>
+<tr class="row-even"><td>OFPPC_NO_PACKET_IN</td>
+<td>Packet-inメッセージをコントローラに送信しません</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>次に、実際にRyuを使って実装されたスパニングツリーのソースコードを見ていきます。</p>
+</div>
+<div class="section" id="ryu">
+<h2>Ryuによるスパニングツリーの実装<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>スパニングツリーのソースコードは、Ryuのソースツリーにあります。</p>
+<blockquote>
+<div><p>ryu/app/simple_switch_stp.py</p>
+<p>ryu/lib/stplib.py</p>
+</div></blockquote>
+<div class="section" id="id3">
+<h3>アプリケーションの実装<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div><p>#TODO: 以下の内容を書いていく。</p>
+<ul class="simple">
+<li>_CONTEXTの実装</li>
+<li>stplibのコンフィグ設定方法</li>
+<li>EventTopologyChangeイベント受信時の処理</li>
+<li>EventPortStateChangeイベント受信時の処理</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h3>ライブラリの実装<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<blockquote>
+<div><p>#TODO: 以下の内容を書いていく。</p>
+<ul class="simple">
+<li>イベント待ち合わせによる状態遷移処理の実装</li>
+<li></li>
+<li></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>Ryuアプリケーションの実行<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<blockquote>
+<div><p>#TODO: 以下の内容を書いていく。</p>
+<ul class="simple">
+<li>環境構築(スパニングツリー環境)<ul>
+<li>mnコマンドを使用する場合、カスタムトポロジが必要となる</li>
+</ul>
+</li>
+<li>起動方法</li>
+<li>動作確認方法の説明</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id6">
+<h2>まとめ<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>本章では、スパニングツリーライブラリの利用を題材として、以下の項目について説明しました。</p>
+<p>#TODO:</p>
+<ul class="simple">
+<li></li>
+<li></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">スパニングツリーの実装</a><ul>
+<li><a class="reference internal" href="#id2">スパニングツリー</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlowによるスパニングツリー</a></li>
+<li><a class="reference internal" href="#ryu">Ryuによるスパニングツリーの実装</a><ul>
+<li><a class="reference internal" href="#id3">アプリケーションの実装</a></li>
+<li><a class="reference internal" href="#id4">ライブラリの実装</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">Ryuアプリケーションの実行</a></li>
+<li><a class="reference internal" href="#id6">まとめ</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="link_aggregation.html"
+                        title="前の章へ">リンク・アグリゲーションの実装</a></p>
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="次の章へ">Ryu パケットライブラリ</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/spanning_tree.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Ryu パケットライブラリ"
+             >次へ</a> |</li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="リンク・アグリゲーションの実装"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b3 で生成しました。
+    </div>
+  </body>
+</html>
