@@ -13,6 +13,7 @@ RyuによるOpenFlowプログラミング
    switching_hub.rst
    traffic_monitor.rst
    link_aggregation.rst
+   rest_api.rst
    spanning_tree.rst
    packet_lib.rst
    openflow_protocol.rst
