@@ -45,8 +45,8 @@
 クなリンク・アグリゲーション機能を実装していきます。
 
 
-OpenFlowによるリンク・アグリゲーション
---------------------------------------
+実装するリンク・アグリゲーション機能の整理
+------------------------------------------
 
 LACPを用いたリンク・アグリゲーションの仕組みは、簡単に言うと以下のようなもの
 です。
@@ -97,11 +97,21 @@ OpenFlowスイッチとOpenFlowコントローラで、リンク・アグリゲ�
   まま使用するものとします。
 * LACP以外のパケットは通常のスイッチングハブ機能で処理します。
 
-上記機能の大部分を実装したLACPライブラリが、Ryuのソースツリーにあります。
+
+LACPライブラリの実装
+--------------------
+
+前章で整理した機能の大部分を実装したLACPライブラリが、Ryuのソースツリーにあ
+ります。
 
     ryu/lib/lacplib.py
 
-以降の節で、上記機能が具体的にどのように実装されているかを見ていきます。なお、
+.. ATTENTION::
+
+    Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用
+    ください。
+
+以降の節で、各機能が具体的にどのように実装されているかを見ていきます。なお、
 引用されているソースは抜粋です。全体像については実際のソースをご参照ください。
 
 
@@ -469,8 +479,8 @@ send_event_to_observers()メソッドを使用して ``EventSlaveStateChanged``
 イベントを送信します。
 
 
-Ryuによるリンク・アグリゲーションの実装
----------------------------------------
+リンク・アグリゲーション機能搭載スイッチングハブの実装
+------------------------------------------------------
 
 前章で説明したLACPライブラリを使用してリンク・アグリゲーション機能を実装した
 スイッチングハブのソースコードが、Ryuのソースツリーにあります。
@@ -479,6 +489,8 @@ Ryuによるリンク・アグリゲーションの実装
 
 ただし、上記のソースはOpenFlow 1.0用であるため、新たにOpenFlow 1.3に対応した
 実装を作成することにします。
+
+ソース名： ``simple_switch_lacp_13.py``
 
 .. rst-class:: sourcecode
 
@@ -563,14 +575,13 @@ ports        [1, 2]                            グループ化するポートの
 前章で説明したとおり、LACPライブラリはLACPデータユニットの含まれないPacket-In
 メッセージを ``EventPacketIn`` というユーザ定義イベントとして送信します。
 ユーザ定義イベントのイベントハンドラも、Ryuが提供するイベントハンドラと同じ
-ように ``ryu.controller.handler.set_ev_cls`` デコレータで装飾しますが、
-ステートの指定に注意が必要です。
+ように ``ryu.controller.handler.set_ev_cls`` デコレータで装飾します。
 
 .. rst-class:: sourcecode
 
 ::
 
-    @set_ev_cls(lacplib.EventPacketIn, lacplib.LAG_EV_DISPATCHER)
+    @set_ev_cls(lacplib.EventPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
         msg = ev.msg
         datapath = msg.datapath
@@ -580,21 +591,195 @@ ports        [1, 2]                            グループ化するポートの
 
         # ...
 
-.. CAUTION::
+また、LACPライブラリはポートの有効/無効状態が変更されると
+``EventSlaveStateChanged`` イベントを送信しますので、こちらもイベントハンド
+ラを作成しておきます。
 
-    TODO: 続きを書く
+.. rst-class:: sourcecode
+
+::
+
+    @set_ev_cls(lacplib.EventSlaveStateChanged, lacplib.LAG_EV_DISPATCHER)
+    def _slave_state_changed_handler(self, ev):
+        datapath = ev.datapath
+        dpid = datapath.id
+        port_no = ev.port
+        enabled = ev.enabled
+        self.logger.info("slave state changed port: %d enabled: %s",
+                         port_no, enabled)
+        if dpid in self.mac_to_port:
+            for mac in self.mac_to_port[dpid]:
+                match = datapath.ofproto_parser.OFPMatch(eth_dst=mac)
+                self.del_flow(datapath, match)
+            del self.mac_to_port[dpid]
+        self.mac_to_port.setdefault(dpid, {})
+
+「 `実装するリンク・アグリゲーション機能の整理`_ 」で整理したとおり、ポート
+の有効/無効状態が変更され、パケットの転送に使用可能な物理インターフェースの
+個数が増減すると、論理インターフェースを通過するパケットが実際に使用する物理
+インターフェースが変更になる可能性があります。パケットの経路が変更される場合、
+すでに登録されているフローエントリを削除し、新たにフローエントリを登録する必
+要があります。この例では処理を簡略化するため、「ポートの有効/無効状態が変更
+された場合、当該OpenFlowスイッチの全学習結果を削除する」という実装となって
+います。
+
+.. rst-class:: sourcecode
+
+::
+
+    def del_flow(self, datapath, match):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+
+        mod = parser.OFPFlowMod(datapath=datapath,
+                                command=ofproto.OFPFC_DELETE,
+                                match=match)
+        datapath.send_msg(mod)
+
+フローエントリの削除は ``OFPFlowMod`` クラスのインスタンスで行います。
 
 
-Ryuアプリケーションの実行
--------------------------
+リンク・アグリゲーション機能搭載スイッチングハブの実行
+------------------------------------------------------
+
+実際に、リンク・アグリゲーション機能搭載スイッチングハブを実行してみます。
+最初に「 :ref:`ch_switching_hub` 」と同様にMininetを実行しますが、下図の
+ようにトポロジが特殊なため、mnコマンドで作成することができません。
+
+    .. only:: latex
+
+       .. image:: images/link_aggregation/fig3.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/link_aggregation/fig3.png
+          :scale: 80 %
+
+以降の節で、環境構築からリンク・アグリゲーション機能搭載スイッチングハブの実
+行までの手順を説明します。
+
+
+トポロジ構築スクリプトの実行
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+mnコマンドで構築できるトポロジでは、特定ノード間にはひとつのリンクしか作成で
+きません。ここではMininetの低位クラスを直接使用するスクリプトを作成し、トポ
+ロジを作成することにします。
+
+ソース名： ``link_aggregation.py``
+
+.. rst-class:: sourcecode
+
+.. literalinclude:: sources/link_aggregation.py
+
+このプログラムを実行することにより、ホストh1とスイッチs1の間に2本のリンクが
+存在するトポロジが作成されます。netコマンドを実行することでトポロジを確認す
+ることができます。
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo ./link_aggregation.py
+    Unable to contact the remote controller at 127.0.0.1:6633
+    mininet> net
+    c1
+    s1 lo:  s1-eth1:h1-eth0 s1-eth2:h1-eth1 s1-eth3:h2-eth0 s1-eth4:h3-eth0 s1-eth5:h4-eth0
+    h1 h1-eth0:s1-eth1 h1-eth1:s1-eth2
+    h2 h2-eth0:s1-eth3
+    h3 h3-eth0:s1-eth4
+    h4 h4-eth0:s1-eth5
+    mininet>
+
+
+ホストh1でのリンク・アグリゲーションの設定
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+前節のコマンドを実行すると、ホストh1～h4およびスイッチs1のxtermが起動します。
+ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節
+でのコマンド入力は、すべてホストh1のxterm上で行ってください。
+
+まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。
+Linuxではリンク・アグリゲーション機能はボンディングドライバが担当しています。
+事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成してお
+きます。
+
+ファイル名: ``/etc/modprobe.d/bonding.conf``
+
+.. rst-class:: sourcecode
+
+::
+
+    alias bond0 bonding
+    options bonding mode=4
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# modprobe bonding
+
+続いて、bond0という名前の論理インターフェースを新たに作成します。
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip link add bond0 type bond
+
+作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インター
+フェースを参加させます。このとき、物理インターフェースをダウンさせておく必要
+があります。
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip link set h1-eth0 down
+    root@ryu-vm:~# ip link set h1-eth0 master bond0
+    root@ryu-vm:~# ip link set h1-eth1 down
+    root@ryu-vm:~# ip link set h1-eth1 master bond0
+
+論理インターフェースにIPアドレスを割り当てます。mnコマンドでホストを作成した
+場合にならって、10.0.0.1を割り当てることにします。
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr add 10.0.0.1/24 dev bond0
+
+最後に、論理インターフェースをアップさせます。
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip link set bond0 up
+
+
+OpenFlowバージョンの設定
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+「 :ref:`ch_switching_hub` 」で行ったのと同じように、使用するOpenFlowの
+バージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行っ
+てください。
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+スイッチングハブの実行
+^^^^^^^^^^^^^^^^^^^^^^
+
+準備が整ったので、Ryuアプリケーションを実行します。
 
 .. CAUTION::
 
     TODO: 以下の内容を書いていく。
-
-    * 環境構築(リンク・アグリゲーション環境)
-
-      * mnコマンドを使用する場合、カスタムトポロジが必要となる
 
     * 起動方法
     * 動作確認方法の説明

@@ -16,6 +16,7 @@
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER
+from ryu.controller.handler import MAIN_DISPATCHER
 from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib import lacplib
@@ -73,7 +74,7 @@ class SimpleSwitchLacp13(app_manager.RyuApp):
                                 match=match)
         datapath.send_msg(mod)
 
-    @set_ev_cls(lacplib.EventPacketIn, lacplib.LAG_EV_DISPATCHER)
+    @set_ev_cls(lacplib.EventPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
         msg = ev.msg
         datapath = msg.datapath
@@ -115,7 +116,7 @@ class SimpleSwitchLacp13(app_manager.RyuApp):
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
-    @set_ev_cls(lacplib.EventSlaveStateChanged, lacplib.LAG_EV_DISPATCHER)
+    @set_ev_cls(lacplib.EventSlaveStateChanged, MAIN_DISPATCHER)
     def _slave_state_changed_handler(self, ev):
         datapath = ev.datapath
         dpid = datapath.id
