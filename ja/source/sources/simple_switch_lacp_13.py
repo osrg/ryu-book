@@ -71,6 +71,8 @@ class SimpleSwitchLacp13(app_manager.RyuApp):
 
         mod = parser.OFPFlowMod(datapath=datapath,
                                 command=ofproto.OFPFC_DELETE,
+                                out_port=ofproto.OFPP_ANY,
+                                out_group=ofproto.OFPG_ANY,
                                 match=match)
         datapath.send_msg(mod)
 

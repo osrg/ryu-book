@@ -9,7 +9,7 @@ from mininet.term import makeTerm
 if '__main__' == __name__:
     net = Mininet(controller=RemoteController)
 
-    c1 = net.addController('c1')
+    c0 = net.addController('c0')
 
     s1 = net.addSwitch('s1')
 
@@ -25,9 +25,10 @@ if '__main__' == __name__:
     Link(s1, h4)
 
     net.build()
-    c1.start()
-    s1.start([c1])
+    c0.start()
+    s1.start([c0])
 
+    net.terms.append(makeTerm(c0))
     net.terms.append(makeTerm(s1))
     net.terms.append(makeTerm(h1))
     net.terms.append(makeTerm(h2))
