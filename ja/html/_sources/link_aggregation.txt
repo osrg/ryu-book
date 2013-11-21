@@ -696,9 +696,10 @@ mnコマンドで構築できるトポロジでは、特定ノード間にはひ
 ホストh1でのリンク・アグリゲーションの設定
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-前節のコマンドを実行すると、ホストh1～h4およびスイッチs1のxtermが起動します。
-ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節
-でのコマンド入力は、すべてホストh1のxterm上で行ってください。
+前節のコマンドを実行すると、コントローラc0、ホストh1～h4、およびスイッチs1
+のxtermが起動します。ホストh1のxtermで、ホスト側のリンク・アグリゲーション
+の設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってく
+ださい。
 
 まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。
 Linuxではリンク・アグリゲーション機能はボンディングドライバが担当しています。
@@ -714,23 +715,36 @@ Linuxではリンク・アグリゲーション機能はボンディングドラ
     alias bond0 bonding
     options bonding mode=4
 
+Node: h1:
+
 .. rst-class:: console
 
 ::
 
     root@ryu-vm:~# modprobe bonding
 
-続いて、bond0という名前の論理インターフェースを新たに作成します。
+mode=4はLACPを用いたダイナミックなリンク・アグリゲーションを行うことを表しま
+す。デフォルト値であるためここでは設定を省略していますが、LACPデータユニット
+の交換間隔はSLOW（30秒間隔）、振り分けロジックは宛先MACアドレスを元に行うよ
+うに設定されています。
+
+続いて、bond0という名前の論理インターフェースを新たに作成します。また、bond0
+のMACアドレスとして適当な値を設定します。
+
+Node: h1:
 
 .. rst-class:: console
 
 ::
 
     root@ryu-vm:~# ip link add bond0 type bond
+    root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
 
 作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インター
 フェースを参加させます。このとき、物理インターフェースをダウンさせておく必要
 があります。
+
+Node: h1:
 
 .. rst-class:: console
 
@@ -742,21 +756,122 @@ Linuxではリンク・アグリゲーション機能はボンディングドラ
     root@ryu-vm:~# ip link set h1-eth1 master bond0
 
 論理インターフェースにIPアドレスを割り当てます。mnコマンドでホストを作成した
-場合にならって、10.0.0.1を割り当てることにします。
+場合にならって、10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレス
+が割り当てられているので、これを削除します。
+
+Node: h1:
 
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# ip addr add 10.0.0.1/24 dev bond0
+    root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
+    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
 
 最後に、論理インターフェースをアップさせます。
+
+Node: h1:
 
 .. rst-class:: console
 
 ::
 
     root@ryu-vm:~# ip link set bond0 up
+
+ここで各インターフェースの状態を確認しておきます。
+
+Node: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ifconfig
+    bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+              inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
+              UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:10 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:0
+              RX bytes:0 (0.0 B)  TX bytes:1240 (1.2 KB)
+
+    h1-eth0   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+              UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:1000
+              RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+
+    h1-eth1   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+              UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:1000
+              RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+
+    lo        Link encap:Local Loopback
+              inet addr:127.0.0.1  Mask:255.0.0.0
+              UP LOOPBACK RUNNING  MTU:16436  Metric:1
+              RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+              TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+              collisions:0 txqueuelen:0
+              RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+論理インターフェースbond0がMASTERに、物理インターフェースh1-eth0とh1-eth1が
+SLAVEになっていることがわかります。また、bond0、h1-eth0、h1-eth1のMACアドレ
+スがすべて同じものになっていることがわかります。
+
+ボンディングドライバの状態も確認しておきます。
+
+Node: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# cat /proc/net/bonding/bond0
+    Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+    Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+    Transmit Hash Policy: layer2 (0)
+    MII Status: up
+    MII Polling Interval (ms): 100
+    Up Delay (ms): 0
+    Down Delay (ms): 0
+
+    802.3ad info
+    LACP rate: slow
+    Min links: 0
+    Aggregator selection policy (ad_select): stable
+    Active Aggregator Info:
+            Aggregator ID: 1
+            Number of ports: 1
+            Actor Key: 33
+            Partner Key: 1
+            Partner Mac Address: 00:00:00:00:00:00
+
+    Slave Interface: h1-eth0
+    MII Status: up
+    Speed: 10000 Mbps
+    Duplex: full
+    Link Failure Count: 0
+    Permanent HW addr: 96:8f:84:7a:d4:3b
+    Aggregator ID: 1
+    Slave queue ID: 0
+
+    Slave Interface: h1-eth1
+    MII Status: up
+    Speed: 10000 Mbps
+    Duplex: full
+    Link Failure Count: 0
+    Permanent HW addr: fa:55:a9:15:a6:c2
+    Aggregator ID: 2
+    Slave queue ID: 0
+
+LACPデータユニットの交換間隔や振り分けロジックの設定が確認できます。また、
+物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。
+
+以上でホストh1のリンク・アグリゲーションの設定は終了です。
 
 
 OpenFlowバージョンの設定
@@ -766,23 +881,379 @@ OpenFlowバージョンの設定
 バージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行っ
 てください。
 
+Node: s1:
+
 .. rst-class:: console
 
 ::
 
     root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
+
 スイッチングハブの実行
 ^^^^^^^^^^^^^^^^^^^^^^
 
 準備が整ったので、Ryuアプリケーションを実行します。
 
-.. CAUTION::
+.. ATTENTION::
 
-    TODO: 以下の内容を書いていく。
+    Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用
+    ください。
 
-    * 起動方法
-    * 動作確認方法の説明
+ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンド
+を実行します。
+
+Node: c0:
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
+    loading app ./simple_switch_lacp_13.py
+    loading app ryu.controller.ofp_handler
+    creating context lacplib
+    instantiating app ./simple_switch_lacp_13.py
+    instantiating app ryu.controller.ofp_handler
+    ...
+
+ホストh1は30秒に1回LACPデータユニットを送信し続けています。起動してからしば
+らくすると、スイッチはホストh1からのLACPデータユニットを受信し、動作ログに
+出力します。
+
+Node: c0:
+
+.. rst-class:: console
+
+::
+
+    ...
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=1 the slave i/f has just been up.
+    [LACP][INFO] SW=0000000000000001 PORT=1 the timeout time has changed.
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+    slave state changed port: 1 enabled: True
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=2 the slave i/f has just been up.
+    [LACP][INFO] SW=0000000000000001 PORT=2 the timeout time has changed.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+    slave state changed port: 2 enabled: True
+    ...
+
+「LACP received.」はLACPデータユニットを受信したことを、
+「the slave i/f has just been up.」は無効状態だったポートが有効状態に変更
+したことを、「the timeout time has changed.」はLACPデータユニットの無通信
+監視時間が変更されたこと（今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの
+90秒）を、「LACP sent.」は応答用のLACPデータユニットを送信したことを、それ
+ぞれ表します。「slave state changed」の行は、LACPライブラリからの
+``EventSlaveStateChanged`` イベントを受信したスイッチングハブが出力してい
+ます。
+
+その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送
+信します。
+
+Node: c0:
+
+.. rst-class:: console
+
+::
+
+    ...
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+    ...
+
+この時点でのフローエントリを確認します。
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=19.243s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=19.24s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=41.886s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535
+
+1番めのフローエントリは「h1のh1-eth0からLACPデータユニットが送られてきたら
+Packet-Inメッセージを送信する」、2番めのフローエントリは「h1のh1-eth1から
+LACPデータユニットが送られてきたらPacket-Inメッセージを送信する」という内容
+です。なお、3番めのフローエントリは「 :ref:`ch_switching_hub` 」でも登録
+しているTable-missフローエントリです。
+
+
+リンク・アグリゲーション機能の確認
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+通信速度の向上
+~~~~~~~~~~~~~~
+
+まずはリンク・アグリゲーションによる通信速度の向上を確認します。ただし、実際
+に通信性能の確認を行おうとすると大量のデータを間断なく送受信し続ける必要があ
+り、試験が煩雑になってしまいますので、ここでは「スイッチングハブの機能により
+論理インターフェースを経由するフローエントリを複数登録し、その際特定の物理回
+線にのみフローが集中しないこと」をもって動作の確認を行います。
+
+.. NOTE::
+
+    ホストh1のボンディングドライバにより、振り分けロジックには宛先のMACアド
+    レスを使用するよう設定されています。このロジックは単純に言えば「宛先MAC
+    アドレスの下1バイトを有効なポート数で除算し、その剰余を元にどのポートか
+    ら出力するかを決定する」といったものです。
+
+    Mininetによって作成されたホストのMACアドレスはランダムに決定されますが、
+    場合によっては振り分けロジック適用の結果すべてのフローで同一の物理イン
+    ターフェースが選択される可能性もあります。
+
+    期待する結果が得られなかった場合は、本章の最初からやり直してみてください。
+
+まず、ホストh2からホストh1に対しpingを実行します。
+
+Node: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.1
+    PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+    64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
+    64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
+    64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.075 ms
+    64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.065 ms
+    ...
+
+.. NOTE::
+
+    ホストh1からホストh2に対しpingを実行した場合、ICMP echo requestの前に
+    ARP requestが送信されます。ARP requestの宛先MACアドレスは
+    ff:ff:ff:ff:ff:ff固定であるため、振り分けロジックを適用すると使用する
+    物理インターフェースが固定されてしまいます。そういった事態を避けるため、
+    ここではホストh2からホストh1に対しpingを実行しています。以降の例も同様
+    です。
+
+pingを送信し続けたまま、スイッチs1のフローエントリを確認します。
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=65.889s, table=0, n_packets=3, n_bytes=372, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=65.886s, table=0, n_packets=3, n_bytes=372, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=88.532s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
+     cookie=0x0, duration=9.314s, table=0, n_packets=9, n_bytes=826, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=9.316s, table=0, n_packets=10, n_bytes=924, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
+
+先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。
+4番めのフローエントリは「3番ポート(s1-eth3、つまりh2)からh1のbond0宛のパ
+ケットを受信したら2番ポート(s1-eth2)から出力する」、5番めのフローエントリは
+「2番ポート(s1-eth2)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出
+力する」というフローエントリです。h2との通信にはs1-eth2が使用されていること
+がわかります。
+
+続いて、ホストh3からホストh1に対しpingを実行します。
+
+Node: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.1
+    PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+    64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
+    64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
+    64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.057 ms
+    64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.073 ms
+    ...
+
+pingを送信し続けたまま、スイッチs1のフローエントリを確認します。
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=116.812s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=116.809s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=139.455s, table=0, n_packets=10, n_bytes=696, priority=0 actions=CONTROLLER:65535
+     cookie=0x0, duration=60.237s, table=0, n_packets=62, n_bytes=5908, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=60.239s, table=0, n_packets=63, n_bytes=6006, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
+     cookie=0x0, duration=6.113s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:1
+     cookie=0x0, duration=6.115s, table=0, n_packets=7, n_bytes=630, priority=1,in_port=1,dl_dst=e6:d4:c3:27:53:14 actions=output:4
+
+先ほど確認した時点から、6番めと7番めのフローエントリが追加されています。
+6番めのフローエントリは「4番ポート(s1-eth4、つまりh3)からh1のbond0宛のパ
+ケットを受信したら1番ポート(s1-eth1)から出力する」、7番めのフローエントリは
+「1番ポート(s1-eth1)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出
+力する」というフローエントリです。h3との通信にはs1-eth1が使用されていること
+がわかります。
+
+同様にホストh4からホストh1に対しpingを実行します。
+
+Node: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.1
+    PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+    64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=86.3 ms
+    64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.397 ms
+    64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.136 ms
+    64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.035 ms
+    ...
+
+pingを送信し続けたまま、スイッチs1のフローエントリを確認します。
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=165.183s, table=0, n_packets=6, n_bytes=744, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=165.18s, table=0, n_packets=6, n_bytes=744, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=187.826s, table=0, n_packets=14, n_bytes=920, priority=0 actions=CONTROLLER:65535
+     cookie=0x0, duration=108.608s, table=0, n_packets=113, n_bytes=10794, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=108.61s, table=0, n_packets=114, n_bytes=10892, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
+     cookie=0x0, duration=54.484s, table=0, n_packets=57, n_bytes=5418, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:1
+     cookie=0x0, duration=54.486s, table=0, n_packets=58, n_bytes=5516, priority=1,in_port=1,dl_dst=e6:d4:c3:27:53:14 actions=output:4
+     cookie=0x0, duration=5.77s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=5.774s, table=0, n_packets=7, n_bytes=630, priority=1,in_port=2,dl_dst=1a:32:d2:75:33:07 actions=output:5
+
+追加されたフローエントリは、「5番ポート(s1-eth5、h4)からh1のbond0宛のパケッ
+トを受信したら2番ポート(s1-eth2)から出力する」「2番ポート(s1-eth2)からh4宛
+のパケットを受信したら5番ポート(s1-eth5)から出力する」です。
+
+.. tabularcolumns:: |r|r|
+
+============ ============
+宛先ホスト   使用ポート
+============ ============
+h2           1
+h3           2
+h4           1
+============ ============
+
+    .. only:: latex
+
+       .. image:: images/link_aggregation/fig4.eps
+          :scale: 80 %
+
+    .. only:: not latex
+
+       .. image:: images/link_aggregation/fig4.png
+          :scale: 80 %
+
+以上のように、フローが分散することが確認できました。
+
+
+耐障害性の向上
+~~~~~~~~~~~~~~
+
+次に、リンク・アグリゲーションによる耐障害性の向上を確認します。現在の状況は、
+h2とh4がh1と通信する際にはs1-eth2を、h3がh1と通信する際にはs1-eth1を使用し
+ています。
+
+ここで、s1-eth1の対向インターフェースであるh1-eth0をリンク・アグリゲーション
+のグループから離脱させます。
+
+Node: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip link set h1-eth0 nomaster
+
+h1-eth0が停止したことにより、ホストh3からホストh1へのpingが疎通不可能になり
+ます。そのまま無通信監視時間の上限である90秒が経過すると、コントローラの動作
+ログに次のようなメッセージが出力されます。
+
+Node: c0:
+
+.. rst-class:: console
+
+::
+
+    ...
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+    [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+    [LACP][INFO] SW=0000000000000001 PORT=1 LACP exchange timeout has occurred.
+    slave state changed port: 1 enabled: False
+    ...
+
+「LACP exchange timeout has occurred.」は無通信監視時間の上限に達し、LACP
+データユニットをPacket-Inするフローエントリが削除されたことを表します。
+``EventSlaveStateChanged`` イベントを受信したスイッチングハブは、学習した
+MACアドレスをすべて忘却し、転送用のフローエントリをすべて削除します。
+
+すべての学習結果を忘れた状態でも、ホストh2～h4ではまだpingが実行されているた
+め、通常のスイッチングハブの動作によって再度MACアドレスを学習し、転送用のフ
+ローエントリを登録します。このとき、停止しているh1-eth0ではパケットの送受信
+が行われないため、ホストh2～h4とホストh1との間の通信はすべてh1-eth1が使用
+されます。
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=333.163s, table=0, n_packets=12, n_bytes=1488, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
+     cookie=0x0, duration=355.809s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
+     cookie=0x0, duration=2.635s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=2.632s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
+     cookie=0x0, duration=2.513s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=2.51s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=e6:d4:c3:27:53:14 actions=output:4
+     cookie=0x0, duration=1.8s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
+     cookie=0x0, duration=2.804s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=1a:32:d2:75:33:07 actions=output:5
+
+フローエントリが再登録されたことにより、ホストh3で停止していたpingが再開され
+ます。
+
+Node: h3:
+
+.. rst-class:: console
+
+::
+
+    ...
+    64 bytes from 10.0.0.1: icmp_req=76 ttl=64 time=0.300 ms
+    64 bytes from 10.0.0.1: icmp_req=77 ttl=64 time=0.276 ms
+    64 bytes from 10.0.0.1: icmp_req=78 ttl=64 time=0.097 ms
+    64 bytes from 10.0.0.1: icmp_req=79 ttl=64 time=0.056 ms
+    64 bytes from 10.0.0.1: icmp_req=171 ttl=64 time=43.9 ms
+    64 bytes from 10.0.0.1: icmp_req=172 ttl=64 time=5.53 ms
+    64 bytes from 10.0.0.1: icmp_req=173 ttl=64 time=0.593 ms
+    64 bytes from 10.0.0.1: icmp_req=174 ttl=64 time=0.218 ms
+    ...
+
+以上のように、一部の物理インターフェースに故障が発生した場合でも、他の物理
+インターフェースを用いて自動的に復旧できることが確認できました。
 
 
 まとめ
