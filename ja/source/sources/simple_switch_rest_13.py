@@ -9,7 +9,6 @@ from ryu.controller.handler import set_ev_cls
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from ryu.lib import dpid as dpid_lib
 
-LOG = logging.getLogger('simple_switch_rest_13')
 simple_switch_instance_name = 'simple_switch_api_app'
 url = '/v1/simpleswitch/mactable/{dpid}'
 
@@ -28,6 +27,7 @@ class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
         super(SimpleSwitchRest13, self).switch_features_handler(ev)
         datapath = ev.msg.datapath
         self.switches[datapath.id] = datapath
+        self.mac_to_port.setdefault(datapath.id, {})
 
     def set_mac_to_port(self, dpid, entry):
         mac_table = self.mac_to_port.setdefault(dpid, {})
@@ -66,6 +66,10 @@ class SimpleSwitchController(ControllerBase):
 
         simple_switch = self.simpl_switch_spp
         dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+
+        if dpid not in simple_switch.mac_to_port:
+            return Response(status=404)
+
         mac_table = simple_switch.mac_to_port.get(dpid, {})
         body = json.dumps(mac_table)
         return Response(content_type='application/json', body=body)
@@ -77,12 +81,14 @@ class SimpleSwitchController(ControllerBase):
         dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         new_entry = eval(req.body)
 
+        if dpid not in simple_switch.mac_to_port:
+            return Response(status=404)
+
         try:
             mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
             body = json.dumps(mac_table)
             return Response(content_type='application/json', body=body)
         except Exception as e:
-            LOG.error(e.message);
-            return Response("internal server error ", status=500)
+            return Response(status=500)
 
 
