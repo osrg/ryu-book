@@ -92,11 +92,14 @@ registerメソッド実行の際、コントローラのコンストラクタで
         super(SimpleSwitchRest13, self).switch_features_handler(ev)
         datapath = ev.msg.datapath
         self.switches[datapath.id] = datapath
+        self.mac_to_port.setdefault(datapath.id, {})
     ...
 
 親クラスのswitch_features_handlerをオーバライドしています。
 このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、
-イベント内に格納されたdatapathオブジェクトをインスタンス変数switchesに保持します。
+イベントオブジェクトevに格納されたdatapathオブジェクトを取得し、
+インスタンス変数switchesに保持しています。
+また、このタイミングで、MACアドレステーブルに初期値(空のディクショナリ)をセットしています。
 
 
 .. rst-class:: sourcecode
@@ -182,6 +185,10 @@ SimpleSwitchControllerクラスの実装
 
         simple_switch = self.simpl_switch_spp
         dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
+
+        if dpid not in simple_switch.mac_to_port:
+            return Response(status=404)
+
         mac_table = simple_switch.mac_to_port.get(dpid, {})
         body = json.dumps(mac_table)
         return Response(content_type='application/json', body=body)
@@ -201,7 +208,7 @@ HTTPリクエストがデコレータの第2引数で指定したURLにマッチ
 2. 第2引数
 
     URLを指定します。
-    ここでは、URLがhttp://<サーバIP>:8080/v1/simpleswitch/mactable/<データパスID>
+    ここでは、URLがhttp://<サーバIP>:8080/simpleswitch/mactable/<データパスID>
     となるようにします。
 
 3. 第3引数
@@ -212,14 +219,15 @@ HTTPリクエストがデコレータの第2引数で指定したURLにマッチ
 4. 第4引数
 
     指定箇所の形式を指定します。
-    ここでは、{dpid}の部分が、dpid.pyのDPID_PATTERNで規定されたパターンに合致することを
-    条件としています。
+    ここでは、URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、
+    ryu/lib/dpid.pyのDPID_PATTERNで規定されたパターン(16桁の16進数値)に合致することを条件としています。
 
-第2引数で指定したURLでREST APIが呼ばれ、その際のHTTPメソッドがGETの場合に、
+第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、
 このlist_mac_tableメソッドが呼ばれます。
-このメソッドでは、指定されたデータパスIDに該当するMACアドレステーブルを取得し、
-JSON形式に変換後、クライアントに返却しています。
+このメソッドでは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、
+JSON形式に変換後クライアントに返却しています。
 
+なお、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。
 
 .. rst-class:: sourcecode
 
@@ -232,20 +240,24 @@ JSON形式に変換後、クライアントに返却しています。
         dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
         new_entry = eval(req.body)
 
+        if dpid not in simple_switch.mac_to_port:
+            return Response(status=404)
+
         try:
             mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
             body = json.dumps(mac_table)
             return Response(content_type='application/json', body=body)
         except Exception as e:
-            LOG.error(e.message);
-            return Response("internal server error ", status=500)
+            return Response(status=500)
     ...
 
 次は、MACアドレステーブルを登録するREST APIです。
-URLはMACアドレステーブル取得用APIと同じですが、HTTPメソッドがPUTの場合に
+URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合に
 このput_mac_tableメソッドが呼ばれます。
 このメソッドでは、内部でスイッチングハブインスタンスのset_mac_to_portメソッドを呼び出しています。
 なお、put_mac_tableメソッド内で例外が発生した場合、レスポンスコード500のレスポンスを返却します。
+また、list_mac_tableメソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定すると
+レスポンスコード404を返します。
 
 REST API搭載スイッチングハブの実行
 --------------------------
@@ -285,6 +297,9 @@ REST API搭載スイッチングハブの実行
     switch features ev version: 0x4 msg_type 0x6 xid 0x78dd7a72 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
+起動時のメッセージの中に、「(31135) wsgi starting up on http://0.0.0.0:8080/」という行がありますが、
+これは、Webサーバがポート番号8080で起動したことを表しています。
+
 次にmininetのシェル上で、h1からh2へpingを発行します。
 
 .. rst-class:: console
@@ -320,7 +335,7 @@ REST APIの呼び出しには、curlコマンドを使用します。
 
 ::
 
-    ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/v1/simpleswitch/mactable/0000000000000001
+    ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。
@@ -351,9 +366,9 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
 
 ::
 
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/v1/simpleswitch/mactable/0000000000000001
+    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:01": 1}
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/v1/simpleswitch/mactable/0000000000000001
+    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 これらのコマンド実行の際に、h1,h2に対応したフローエントリがスイッチに登録されます。
@@ -380,7 +395,7 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
     ...
     move onto main mode
     (28293) accepted ('127.0.0.1', 44453)
-    127.0.0.1 - - [19/Nov/2013 19:59:45] "PUT /v1/simpleswitch/mactable/0000000000000001 HTTP/1.1" 200 124 0.002734
+    127.0.0.1 - - [19/Nov/2013 19:59:45] "PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1" 200 124 0.002734
     EVENT ofp_event->SimpleSwitchRest13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
 
@@ -391,5 +406,5 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
 ------
 
 本章では、MACアドレステーブルの参照/更新機能の実装追加を題材として、
-REST APIの追加方法について説明しました。その他の応用として、スイッチにフローエントリを追加できる
+REST APIの追加方法について説明しました。その他の応用として、スイッチに任意のフローエントリを追加できる
 ようなREST APIを作成し、ブラウザから操作できるようにするのもよいのではないでしょうか。
