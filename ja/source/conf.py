@@ -201,7 +201,54 @@ latex_elements = {
  breakatwhitespace=false,
  breakindent=0pt,
  breakautoindent=false
- }}{}"""
+ }}{}
+\makeatletter
+
+\definecolor{notecolor}{rgb}{1,1,.6}
+\definecolor{notefrcolor}{rgb}{.6,.6,.3}
+\definecolor{hintcolor}{rgb}{.8,1,.8}
+\definecolor{hintfrcolor}{rgb}{.5,.6,.5}
+\definecolor{importantcolor}{rgb}{1,.8,.8}
+\definecolor{importantfrcolor}{rgb}{.6,.4,.4}
+\definecolor{tipcolor}{rgb}{.8,1,.8}
+\definecolor{tipfrcolor}{rgb}{.5,.6,.5}
+\definecolor{warncolor}{rgb}{1,1,0}
+\definecolor{warnfrcolor}{rgb}{.5,.5,0}
+\definecolor{dangercolor}{rgb}{.8,.2,.2}
+\definecolor{dangerfrcolor}{rgb}{.4,.1,.1}
+
+\newcommand{\py@ryubox}[2]{
+  \small
+  \color[rgb]{.3,.3,.3}
+  \setlength\fboxsep{5pt}
+  %\setlength\fboxrule{2pt}
+  %\def\fbox{\CustomFBox{}{}\z@\fboxrule\z@\fboxrule\fcolorbox}
+  \def\FrameCommand{\fcolorbox{#2}{#1}}
+  \MakeFramed {\FrameRestore}
+}
+\newcommand{\py@endryubox}{
+  \endMakeFramed
+}
+\renewcommand{\py@noticestart@note}{\py@ryubox{notecolor}{notefrcolor}}
+\renewcommand{\py@noticeend@note}{\py@endryubox}
+\renewcommand{\py@noticestart@hint}{\py@ryubox{hintcolor}{hintfrcolor}}
+\renewcommand{\py@noticeend@hint}{\py@endryubox}
+\renewcommand{\py@noticestart@important}{\py@ryubox{importantcolor}{importantfrcolor}}
+\renewcommand{\py@noticeend@important}{\py@endryubox}
+\renewcommand{\py@noticestart@tip}{\py@ryubox{tipcolor}{tipfrcolor}}
+\renewcommand{\py@noticeend@tip}{\py@endryubox}
+\renewcommand{\py@noticestart@warning}{\py@ryubox{warncolor}{warnfrcolor}}
+\renewcommand{\py@noticeend@warning}{\py@endryubox}
+\renewcommand{\py@noticestart@caution}{\py@ryubox{warncolor}{warnfrcolor}}
+\renewcommand{\py@noticeend@caution}{\py@endryubox}
+\renewcommand{\py@noticestart@attention}{\py@ryubox{warncolor}{warnfrcolor}}
+\renewcommand{\py@noticeend@attention}{\py@endryubox}
+\renewcommand{\py@noticestart@danger}{\py@ryubox{dangercolor}{dangerfrcolor}}
+\renewcommand{\py@noticeend@danger}{\py@endryubox}
+\renewcommand{\py@noticestart@error}{\py@ryubox{dangercolor}{dangerfrcolor}}
+\renewcommand{\py@noticeend@error}{\py@endryubox}
+\makeatother
+"""
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
