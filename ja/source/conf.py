@@ -174,6 +174,25 @@ latex_elements = {
 'papersize': 'a4paper',
 'pointsize': '10pt',
 'preamble': r"""
+\makeatletter
+
+% ---- Header/Footer
+\fancypagestyle{normal}{
+ \def\chaptermark##1{\markboth{\@chapapp\thechapter\@chappos ##1}{}}
+ \fancyhf{}
+ \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+ \fancyhead[LE]{{\py@HeaderFamily\nouppercase{\leftmark}}}
+ \fancyhead[RO]{{\py@HeaderFamily\nouppercase{\rightmark}}}
+ \renewcommand{\headrulewidth}{0.4pt}
+ \renewcommand{\footrulewidth}{0.4pt}
+}
+\fancypagestyle{plainhead}{
+ \fancyhf{}
+ \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+ \renewcommand{\headrulewidth}{0pt}
+ \renewcommand{\footrulewidth}{0.4pt}
+}
+% ---- Code block
 \usepackage{listings,jlisting}
 \lstset{
  language={Python},
@@ -189,7 +208,7 @@ latex_elements = {
  breakatwhitespace=false,
  breakindent=0pt,
  breakautoindent=false
- }
+}
 \lstnewenvironment{sourcecode}{}{}
 \lstnewenvironment{console}{\lstset{
  language={},
@@ -201,9 +220,8 @@ latex_elements = {
  breakatwhitespace=false,
  breakindent=0pt,
  breakautoindent=false
- }}{}
-\makeatletter
-
+}}{}
+% ---- Admonition
 \definecolor{notecolor}{rgb}{1,1,.6}
 \definecolor{notefrcolor}{rgb}{.6,.6,.3}
 \definecolor{hintcolor}{rgb}{.8,1,.8}
@@ -216,18 +234,15 @@ latex_elements = {
 \definecolor{warnfrcolor}{rgb}{.5,.5,0}
 \definecolor{dangercolor}{rgb}{.8,.2,.2}
 \definecolor{dangerfrcolor}{rgb}{.4,.1,.1}
-
 \newcommand{\py@ryubox}[2]{
-  \small
-  \color[rgb]{.3,.3,.3}
-  \setlength\fboxsep{5pt}
-  %\setlength\fboxrule{2pt}
-  %\def\fbox{\CustomFBox{}{}\z@\fboxrule\z@\fboxrule\fcolorbox}
-  \def\FrameCommand{\fcolorbox{#2}{#1}}
-  \MakeFramed {\FrameRestore}
+ \small
+ \color[rgb]{.3,.3,.3}
+ \setlength\fboxsep{5pt}
+ \def\FrameCommand{\fcolorbox{#2}{#1}}
+ \MakeFramed {\FrameRestore}
 }
 \newcommand{\py@endryubox}{
-  \endMakeFramed
+ \endMakeFramed
 }
 \renewcommand{\py@noticestart@note}{\py@ryubox{notecolor}{notefrcolor}}
 \renewcommand{\py@noticeend@note}{\py@endryubox}
@@ -247,6 +262,7 @@ latex_elements = {
 \renewcommand{\py@noticeend@danger}{\py@endryubox}
 \renewcommand{\py@noticestart@error}{\py@ryubox{dangercolor}{dangerfrcolor}}
 \renewcommand{\py@noticeend@error}{\py@endryubox}
+
 \makeatother
 """
 }
