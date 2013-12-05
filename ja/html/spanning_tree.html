@@ -53,10 +53,6 @@
   <div class="section" id="ch-spanning-tree">
 <span id="id1"></span><h1>スパニングツリーの実装<a class="headerlink" href="#ch-spanning-tree" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>本章では、Ryuを用いたスパニングツリーの実装方法を解説していきます。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">現時点のRyuにはOpenFlow 1.0にのみ対応したSTPアプリケーションが実装されているため、本章ではOpenFlow 1.0を前提とした内容を記載しています。</p>
-</div>
 <div class="section" id="id2">
 <h2>スパニングツリー<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの冗長性確保の手段としても用いられます。</p>
@@ -149,38 +145,38 @@
 </tbody>
 </table>
 <p>コンフィグで無効なポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
-<ul>
-<li><dl class="first docutils">
-<dt>DISABLE :</dt>
-<dd><p class="first last">無効ポート。全ての受信パケットを無視します。</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>LISTEN :</dt>
-<dd><p class="first last">BPDU送受信 を行います。</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>LEARN :</dt>
-<dd><p class="first last">BPDU送受信/MAC学習 を行います。</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>FORWARD :</dt>
-<dd><p class="first last">BPDU送受信/MAC学習/フレーム転送 を行います。</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>BLOCK :</dt>
-<dd><p class="first last">BPDU受信のみ を行います。</p>
-</dd>
-</dl>
-</li>
-</ul>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">状態</th>
+<th class="head">動作</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DISABLE</td>
+<td>無効ポート。全ての受信パケットを無視します。</td>
+</tr>
+<tr class="row-odd"><td>BLOCK</td>
+<td>BPDU受信のみ を行います。</td>
+</tr>
+<tr class="row-even"><td>LISTEN</td>
+<td>BPDU送受信 を行います。</td>
+</tr>
+<tr class="row-odd"><td>LEARN</td>
+<td>BPDU送受信/MAC学習 を行います。</td>
+</tr>
+<tr class="row-even"><td>FORWARD</td>
+<td>BPDU送受信/MAC学習/フレーム転送 を行います。</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">Ryuに実装されているスパニングツリーのライブラリでは、簡略化のためLEARN状態でのMAC学習を行っていません。</p>
+</div>
 </div></blockquote>
 </li>
 </ol>
@@ -189,8 +185,7 @@
 </div>
 <div class="section" id="openflow">
 <h2>OpenFlowによるスパニングツリー<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>コントローラはブリッジ間のBPDUパケットの交換を実現するため、各OpenFlowスイッチから受信したSwitch Featuresメッセージの情報を元にBPDUパケットを構築し、Packet-OutメッセージをOpenFlowスイッチに発行します。また、各OpenFlowスイッチが受信したBPDUパケットの設定値を元にコントローラがルートブリッジやポートの役割を決定するため、あらかじめBPDUパケットをPacket-Inするフローエントリを各OpenFlowスイッチに登録しておきます。</p>
-<p>OpenFlow 1.0には次のようなポートの動作を決定するコンフィグが用意されているため、各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行することで、ポートのフレーム転送有無などの動作を制御することができます。</p>
+<p>OpenFlow 1.3には次のようなポートの動作を設定するコンフィグが用意されているため、各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行することで、ポートのフレーム転送有無などの動作を制御することができます。</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -206,27 +201,51 @@
 <tr class="row-even"><td>OFPPC_PORT_DOWN</td>
 <td>保守者により無効設定された状態です</td>
 </tr>
-<tr class="row-odd"><td>OFPPC_NO_STP</td>
-<td>802.1D STPに関連する機能を無効にします</td>
+<tr class="row-odd"><td>OFPPC_NO_RECV</td>
+<td>当該ポートで受信した全てのパケットを廃棄します</td>
 </tr>
-<tr class="row-even"><td>OFPPC_NO_RECV</td>
-<td>802.1D STPパケットを除く全てのパケットを廃棄します</td>
+<tr class="row-even"><td>OFPPC_NO_FWD</td>
+<td>当該ポートからパケット転送を行いません</td>
 </tr>
-<tr class="row-odd"><td>OFPPC_NO_RECV_STP</td>
-<td>802.1D STPパケットを廃棄します</td>
-</tr>
-<tr class="row-even"><td>OFPPC_NO_FLOOD</td>
-<td>フラッディング対象外のポートとします</td>
-</tr>
-<tr class="row-odd"><td>OFPPC_NO_FWD</td>
-<td>パケット転送を行いません</td>
-</tr>
-<tr class="row-even"><td>OFPPC_NO_PACKET_IN</td>
-<td>Packet-inメッセージをコントローラに送信しません</td>
+<tr class="row-odd"><td>OFPPC_NO_PACKET_IN</td>
+<td>table-missの場合にPacket-Inメッセージを送信しません</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
+<p>また、ポート状態ごとのBPDUパケット受信とBPDU以外のパケット受信を制御するため、BPDUパケットをPacket-InさせるフローエントリとBPDU以外のパケットをdropさせるフローエントリをそれぞれFlow ModメッセージによりOpenFlowスイッチに登録します。</p>
+<p>コントローラは下記のようにPort Modificationメッセージによるポートコンフィグの設定と、Flow Modメッセージによるフローエントリ設定を各OpenFlowスイッチに対して行うことで、ポート状態に応じたBPDUパケットの送受信・BPDU以外のパケットの送受信の制御を行います。</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">状態</th>
+<th class="head">設定</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DISABLE</td>
+<td>ポートコンフィグ(NO_RECV/ NO_FWD)、フローエントリ(設定無し)</td>
+</tr>
+<tr class="row-odd"><td>BLOCK</td>
+<td>ポートコンフィグ(NO_FWD)、フローエントリ(BPDU Packet-In/ BPDU以外drop)</td>
+</tr>
+<tr class="row-even"><td>LISTEN</td>
+<td>ポートコンフィグ(0=設定無し)、フローエントリ(BPDU Packet-In/ BPDU以外drop)</td>
+</tr>
+<tr class="row-odd"><td>LEARN</td>
+<td>ポートコンフィグ(0=設定無し)、フローエントリ(BPDU Packet-In/ BPDU以外drop)</td>
+</tr>
+<tr class="row-even"><td>FORWARD</td>
+<td>ポートコンフィグ(0=設定無し)、フローエントリ(BPDU Packet-In)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>これらの設定に加え、コントローラはOpenFlowスイッチから受信したSwitch Featuresメッセージの情報からBPDUパケットを構築し、Packet-OutメッセージをOpenFlowスイッチに発行することでOpenFlowスイッチ間のBPDUパケットの交換を実現します。</p>
 <p>次に、実際にRyuを使って実装されたスパニングツリーのソースコードを見ていきます。</p>
 </div>
 <div class="section" id="ryu">
