@@ -300,24 +300,24 @@ BPDUパケットの生成(Port._generate_config_bpdu())およびBPDUパケット
                      topology_change_func, bridge_id, bridge_times, ofport):
             super(Port, self).__init__()
 
-            ～中略～
+            # ...
 
             # BPDU handling threads
             self.send_bpdu_thread = PortThread(self._transmit_bpdu)
 
-        ～中略～
+        # ...
 
         def _transmit_bpdu(self):
             while True:
                 # Send config BPDU packet if port role is DESIGNATED_PORT.
                 if self.role == DESIGNATED_PORT:
                 
-                    ～中略～
+                    # ...
                 
                     bpdu_data = self._generate_config_bpdu(flags)
                     self.ofctl.send_packet_out(self.ofport.port_no, bpdu_data)
                     
-                    ～中略～
+                    # ...
 
                 hub.sleep(self.port_times.hello_time)
 
@@ -410,7 +410,7 @@ BPDUパケットの比較(Stp.compare_bpdu_info())を行い、STP再計算の要
                                              self.designated_times,
                                              msg_priority, msg_times)
 
-            ～中略～
+            # ...
 
             return rcv_info, rcv_tc
 
@@ -461,8 +461,15 @@ BPDUパケットの比較(Stp.compare_bpdu_info())を行い、STP再計算の要
 
 リンク断はStpクラスのPortStatusイベントハンドラによって検出します。
 
-BPDU未受信の検出はPortクラスのBPDUパケット受信待ちスレッド
-(Port.wait_bpdu_thread)で行っています。
+BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド
+(Port.wait_bpdu_thread)で検出します。タイマーの更新とタイムアウトの検出
+にはhubモジュール(ryu.lib.hub)のhub.Eventとhub.Timeoutを用います。
+
+hub.Eventはhub.Event.wait()でwait状態に入りhub.Event.set()が実行されるまで
+待ち続けます。hub.Timeoutはtry節の処理が指定されたタイムアウト時間内に
+終了しない場合、hub.Timeout例外を発行します。hub.Eventがwait状態に入り
+hub.Timeoutで指定されたタイムアウト時間内にhub.Event.set()が実行されない
+場合に、BPDUパケットの受信待ちタイムアウトと判定しSTP再計算処理を呼び出します。
 
 
 .. rst-class:: sourcecode
@@ -475,11 +482,11 @@ BPDU未受信の検出はPortクラスのBPDUパケット受信待ちスレッ�
                      topology_change_func, bridge_id, bridge_times, ofport):
             super(Port, self).__init__()
 
-            ～中略～
+            # ...
 
             self.wait_bpdu_thread = PortThread(self._wait_bpdu_timer)
 
-        ～中略～
+        # ...
 
         def _wait_bpdu_timer(self):
             time_exceed = False
@@ -510,10 +517,14 @@ BPDU未受信の検出はPortクラスのBPDUパケット受信待ちスレッ�
                 hub.spawn(self.wait_bpdu_timeout)
 
 
-BPDUパケット比較(Stp.compare_bpdu_info())によりSUPERIORまたはREPEATEDと
-判定された場合はルートブリッジからのBPDUパケットが受信出来ていることを
-意味するため、BPDU受信待ちタイマーの更新(Port._update_wait_bpdu_timer())
-を行います。
+受信したBPDUパケットの比較処理(Stp.compare_bpdu_info())により
+SUPERIORまたはREPEATEDと判定された場合は、ルートブリッジからのBPDUパケット
+が受信出来ていることを意味するため、BPDU受信待ちタイマーの更新
+(Port._update_wait_bpdu_timer())を行います。hub.Eventである
+Port.wait_timer_eventのset()処理によりPort.wait_timer_eventはwait状態から
+解放され、BPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)は
+except hub.Timeout節の処理に入ることなくタイマーをキャンセルし、
+改めてタイマーをセットし直すことで次のBPDUパケットの受信待ちを開始します。
 
 
 .. rst-class:: sourcecode
@@ -523,19 +534,19 @@ BPDUパケット比較(Stp.compare_bpdu_info())によりSUPERIORまたはREPEATE
     class Port(object):
 
         def rcv_config_bpdu(self, bpdu_pkt):
-            ～中略～
+            # ...
 
             rcv_info = Stp.compare_bpdu_info(self.designated_priority,
                                              self.designated_times,
                                              msg_priority, msg_times)
-            ～中略～
+            # ...
 
             if ((rcv_info is SUPERIOR or rcv_info is REPEATED)
                     and (self.role is ROOT_PORT
                          or self.role is NON_DESIGNATED_PORT)):
                 self._update_wait_bpdu_timer()
 
-            ～中略～
+            # ...
 
         def _update_wait_bpdu_timer(self):
             if self.wait_timer_event is not None:
@@ -543,24 +554,170 @@ BPDUパケット比較(Stp.compare_bpdu_info())によりSUPERIORまたはREPEATE
                 self.wait_timer_event = None
 
 
-
-
 STP計算
 """""""
 
-・ルートポート取得（ルートブリッジ選択）
+STP計算(ルートブリッジ選択・各ポートの役割選択)はBridgeクラスで実行します。
 
-・他ポート役割決定
+STP計算を行う場合にはネットワークトポロジ変更が発生しておりループに陥る
+可能性があるため、一旦全てのポートをBLOCK状態に設定(port.down)し、かつ
+トポロジ変更イベント(EventTopologyChange)を上位APLに対して通知することで
+学習済みのMACアドレスの初期化を促します。
+
+その後、Bridge._spanning_tree_algorithm()でルートブリッジと各ポートの
+役割を選択した上で、各ポートをLISTEN状態で起動(port.up)しポートの状態遷移
+を開始します。
+
+
+.. rst-class:: sourcecode
+
+::
+
+    class Bridge(object):
+
+        def recalculate_spanning_tree(self, init=True):
+            """ Re-calculation of spanning tree. """
+            # All port down.
+            for port in self.ports.values():
+                if port.state is not PORT_STATE_DISABLE:
+                    port.down(PORT_STATE_BLOCK, msg_init=init)
+
+            # Send topology change event.
+            if init:
+                self.send_event(EventTopologyChange(self.dp))
+
+            # Update tree roles.
+            port_roles = {}
+            self.root_priority = Priority(self.bridge_id, 0, None, None)
+            self.root_times = self.bridge_times
+
+            if init:
+                self.logger.info('Root bridge.', extra=self.dpid_str)
+                for port_no in self.ports.keys():
+                    port_roles[port_no] = DESIGNATED_PORT
+            else:
+                (port_roles,
+                 self.root_priority,
+                 self.root_times) = self._spanning_tree_algorithm()
+
+            # All port up.
+            for port_no, role in port_roles.items():
+                if self.ports[port_no].state is not PORT_STATE_DISABLE:
+                    self.ports[port_no].up(role, self.root_priority,
+                                           self.root_times)
+
+
+
+＃TODO: ルートブリッジ選択・ポート役割選択の説明
+
+
+
+.. rst-class:: sourcecode
+
+::
+
+    class Bridge(object):
+
+        def _spanning_tree_algorithm(self):
+            """ Update tree roles.
+                 - Root bridge:
+                    all port is DESIGNATED_PORT.
+                 - Non root bridge:
+                    select one ROOT_PORT and some DESIGNATED_PORT,
+                    and the other port is set to NON_DESIGNATED_PORT."""
+            port_roles = {}
+
+            root_port = self._select_root_port()
+
+            if root_port is None:
+                # My bridge is a root bridge.
+                self.logger.info('Root bridge.', extra=self.dpid_str)
+                root_priority = self.root_priority
+                root_times = self.root_times
+
+                for port_no in self.ports.keys():
+                    if self.ports[port_no].state is not PORT_STATE_DISABLE:
+                        port_roles[port_no] = DESIGNATED_PORT
+            else:
+                # Other bridge is a root bridge.
+                self.logger.info('Non root bridge.', extra=self.dpid_str)
+                root_priority = root_port.designated_priority
+                root_times = root_port.designated_times
+
+                port_roles[root_port.ofport.port_no] = ROOT_PORT
+
+                d_ports = self._select_designated_port(root_port)
+                for port_no in d_ports:
+                    port_roles[port_no] = DESIGNATED_PORT
+
+                for port in self.ports.values():
+                    if port.state is not PORT_STATE_DISABLE:
+                        port_roles.setdefault(port.ofport.port_no,
+                                              NON_DESIGNATED_PORT)
+
+            return port_roles, root_priority, root_times
+
+
 
 
 ポート状態遷移
 """"""""""""""
+
+ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(Port.state_machine)
+で実行しています。次の状態に遷移するまでのタイマーをPort._get_timer()で
+取得し、タイマー満了後にPort._get_next_state()で次の状態を取得し、状態遷移を
+行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に
+遷移させるケースなど、Port._change_status()が実行された場合にも状態遷移が
+行われます。これらの処理は「#TODO: '故障検出'へのリンク」と同様に
+hubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。
+
+
+.. rst-class:: sourcecode
+
+::
+
+    class Port(object):
+
+        def _state_machine(self):
+            """ Port state machine.
+                 Change next status when timer is exceeded
+                 or _change_status() method is called."""
+
+            # ...
+
+            while True:
+                self.logger.info('[port=%d] %s / %s', self.ofport.port_no,
+                                 role_str[self.role], state_str[self.state],
+                                 extra=self.dpid_str)
+
+                self.state_event = hub.Event()
+                timer = self._get_timer()
+                if timer:
+                    timeout = hub.Timeout(timer)
+                    try:
+                        self.state_event.wait()
+                    except hub.Timeout as t:
+                        if t is not timeout:
+                            err_msg = 'Internal error. Not my timeout.'
+                            raise RyuException(msg=err_msg)
+                        new_state = self._get_next_state()
+                        self._change_status(new_state, thread_switch=False)
+                    finally:
+                        timeout.cancel()
+                else:
+                    self.state_event.wait()
+
+                self.state_event = None
 
 
 
 
 アプリケーションの実装
 ^^^^^^^^^^^^^^^^^^^^^^
+
+前章で説明したSTPライブラリを用いてスパニングツリー機能を実装した
+OpenFlow 1.3対応のスイッチングハブのソースコードを以下に示します。
+
 
 ソース名： ``simple_switch_stp_13.py``
 
