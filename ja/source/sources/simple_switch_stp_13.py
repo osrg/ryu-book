@@ -1,4 +1,4 @@
-# Copyright (C) 2011 Nippon Telegraph and Telephone Corporation.
+# Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,13 +36,10 @@ class SimpleSwitch13(app_manager.RyuApp):
         # Sample of stplib config.
         #  please refer to stplib.Stp.set_config() for details.
         config = {dpid_lib.str_to_dpid('0000000000000001'):
-                     {'bridge': {'priority': 0x8000,
-                                 'max_age': 10},
-                      'ports': {1: {'priority': 0x80},
-                                2: {'priority': 0x90}}},
+                     {'bridge': {'priority': 0x8000}},
                   dpid_lib.str_to_dpid('0000000000000002'):
                      {'bridge': {'priority': 0x9000}},
-                  dpid_lib.str_to_dpid('0000000000000002'):
+                  dpid_lib.str_to_dpid('0000000000000003'):
                      {'bridge': {'priority': 0xa000}}}
         self.stp.set_config(config)
 
