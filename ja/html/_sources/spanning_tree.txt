@@ -9,9 +9,6 @@
 スパニングツリー
 ----------------
 
-概要
-^^^^
-
 スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストーム
 の発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、
 ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの
@@ -22,7 +19,7 @@
 
 
 
-STP(spanning tree protocol)はネットワークを論理的なツリーとして扱い、
+STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツリーとして扱い、
 各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、
 ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。
 
@@ -44,14 +41,13 @@ STP(spanning tree protocol)はネットワークを論理的なツリーとし�
 
 
 STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換
-することにより、論理ツリーの頂点であるルートブリッジを決定し、さらに
-各ブリッジのポートのフレーム転送可否を決定します。
+しブリッジや各ポートの情報を比較することで、論理ツリーの頂点である
+ルートブリッジを決定し、さらに各ブリッジのポートのフレーム転送可否を決定します。
 
 具体的には、次のような手順により実現されます。
 
 1. ルートブリッジの選出
 
-    各ブリッジは自身の持つブリッジIDをBPDUパケットに設定してフラッディングします。
     ブリッジ間のBPDUパケットの交換により、最小のブリッジIDを持つブリッジが
     ルートブリッジとして選出され、以降はルートブリッジのみがオリジナルの
     BPDUパケットを送信し、他のブリッジはルートブリッジから受信したBPDUパケット
@@ -59,9 +55,18 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
     .. NOTE::
 
-        ブリッジIDは次のように計算されます。
+        ブリッジIDは、各ブリッジに設定されたブリッジ優先度
+        (デフォルト0x8000：RyuのSTPライブラリではコンフィグ設定が可能)と
+        特定ポートのMACアドレスの組で算出されます。
 
-        　#TODO: ブリッジIDの計算方法
+            ブリッジID
+
+            ============== ===========
+            上位2byte      下位6byte
+            ============== ===========
+            ブリッジ優先度 MACアドレス
+            ============== ===========
+
 
 
 2. ポートの役割の決定
@@ -101,14 +106,13 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
     .. NOTE::
 
-        ルートブリッジまでのコストは、BPDUパケットに設定された
-        root path cost値などを元に算出されます。
-
+        ルートブリッジに至るまでのコストは次のように算出されます。
+        
 
 
 3. ポートの状態遷移
 
-    ブリッジの起動後、各ポートはLISTEN状態になります。その後、以下に示す
+    ポート役割の決定後、各ポートはLISTEN状態になります。その後、以下に示す
     状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態または
     BLOCK状態に遷移します。
 
@@ -147,18 +151,9 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 フレーム転送を抑制するポートが決定され、ネットワーク内のループが解消されます。
 
 また、リンクダウンやBPDUパケットのmax age(デフォルト20秒)間の未受信
-による故障検出、あるいはポートの追加等によりトポロジ変更を検出した場合は、
-各ブリッジで上記の 1. 2. 3. を実行しツリーの再構築が行われます(STPの再計算)。
-
-
-各種設定値
-^^^^^^^^^^
-
-================== ===================================================
-項目               説明
-================== ===================================================
-＃TODO:
-================== ===================================================
+による故障検出、あるいはポートの追加等によりネットワークトポロジの変更を
+検出した場合は、各ブリッジで上記の 1. 2. 3. を実行しツリーの再構築が
+行われます(STPの再計算)。
 
 
 
@@ -169,14 +164,14 @@ OpenFlow 1.3には次のようなポートの動作を設定するコンフィ�
 各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行
 することで、ポートのフレーム転送有無などの動作を制御することができます。
 
-================== ===================================================
+================== =========================================================
 値                 説明
-================== ===================================================
+================== =========================================================
 OFPPC_PORT_DOWN    保守者により無効設定された状態です
 OFPPC_NO_RECV      当該ポートで受信した全てのパケットを廃棄します
 OFPPC_NO_FWD       当該ポートからパケット転送を行いません
-OFPPC_NO_PACKET_IN table-missの場合にPacket-Inメッセージを送信しません
-================== ===================================================
+OFPPC_NO_PACKET_IN table-missとなった場合にPacket-Inメッセージを送信しません
+================== =========================================================
 
 
 また、ポート状態ごとのBPDUパケット受信とBPDU以外のパケット受信を制御するため、
@@ -205,10 +200,10 @@ FORWARD ポートコンフィグ(設定無し)、フローエントリ(BPDU Pack
     LEARN状態でのMACアドレス学習(BPDU以外のパケット受信)を行っていません。
 
 
-これらの設定に加え、コントローラはOpenFlowスイッチとの接続時に受信した
-Switch Featuresメッセージの情報や各OpenFlowスイッチが受信したBPDUパケットに
-設定されたルートブリッジの情報を元に送信用のBPDUパケットを構築しPacket-Out
-メッセージを発行することで、OpenFlowスイッチ間のBPDUパケットの交換を実現します。
+これらの設定に加え、コントローラはOpenFlowスイッチとの接続時に収集した
+ポート情報や各OpenFlowスイッチが受信したBPDUパケットに設定されたルートブリッジ
+の情報を元に送信用のBPDUパケットを構築しPacket-Outメッセージを発行することで、
+OpenFlowスイッチ間のBPDUパケットの交換を実現します。
 
 
 次に、実際にRyuを用いて実装されたスパニングツリーのソースコードを見ていきます。
@@ -228,10 +223,12 @@ stplib.pyはBPDUパケットの交換や各ポートの役割・状態の管理�
 スパニングツリー機能を提供するライブラリです。
 simple_switch_stp.pyはスパニングツリーライブラリを適用することで
 スイッチングハブのアプリケーションにスパニングツリー機能を追加した
-アプリケーションです。
+アプリケーションプログラムです。
 
-ただし、simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、
-ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。
+.. ATTENTION::
+
+    simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、
+    ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。
 
 
 
@@ -239,7 +236,7 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 ^^^^^^^^^^^^^^^^
 
 ライブラリ概要
-""""""""""""""""
+""""""""""""""
 
 .. only:: latex
 
@@ -258,25 +255,45 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
     +------------------------------------------+
 
 
-* STPライブラリ(Stpクラスオブジェクト)はRyuフレームワークから通知される
-  ofp_event.EventOFPStateChangeイベントを元にOpenFlowスイッチの
-  コントローラへの接続または切断を検出し、Bridgeクラスオブジェクトを生成し
-  Stp.bridge_listメンバデータで管理します。
+STPライブラリ(Stpクラスオブジェクト)がOpenFlowスイッチのコントローラへの接続を
+検出すると、Bridgeクラスオブジェクト・Portクラスオブジェクトが生成されます。
+各クラスオブジェクトが生成・起動された後は、Stpクラスオブジェクトからの
+OpenFlowメッセージ受信通知、BridgeクラスオブジェクトのSTP計算
+(ルートブリッジ選択・各ポートの役割選択)、Portクラスオブジェクトの
+ポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。
 
-* Bridgeクラスオブジェクトはofp_event.EventOFPStateChangeイベントで通知された
-  ポート情報を元にPortクラスオブジェクトを生成し、Bridge.portsメンバデータ
-  で管理します。
 
-* PortクラスオブジェクトはBPDUパケット送信スレッド(Port.send_bpdu_thread)、
-  BPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)、状態遷移制御スレッド
-  (Port.state_machine)を生成し、Bridgeクラスオブジェクトからの指示で
-  スレッド処理を開始します。
 
-OpenFlowスイッチがコントローラに接続し、各クラスオブジェクトが生成・起動
-された後は、StpクラスオブジェクトからのOpenFlowメッセージ受信通知、
-BridgeクラスオブジェクトのSTP計算(ルートブリッジ選択・各ポートの役割選択)、
-PortクラスオブジェクトのBPDUパケット送受信処理・ポート状態遷移が連動し、
-スパニングツリー機能を実現します。
+コンフィグ設定項目
+""""""""""""""""""
+
+STPライブラリはStp.set_config()メソッドによりブリッジ・ポートの
+コンフィグ設定IFを提供します。設定可能な項目は以下の通りです。
+
+
+* bridge
+
+    ========== =================================================== ============
+    項目       説明                                                デフォルト値
+    ========== =================================================== ============
+    priority   ブリッジ優先度                                      0x8000
+    sys_ext_id VLAN-IDを設定 (*現状のSTPライブラリはVLAN未対応)    0
+    max_age    BPDUパケットの受信待ちタイマー値                    20[sec]
+    hello_time BPDUパケットの送信間隔                              2 [sec]
+    fwd_delay  各ポートがLISTEN状態およびLEARN状態に留まる時間     15[sec]
+    ========== =================================================== ============
+
+
+* port
+
+    ========= ==================== ============
+    項目      説明                 デフォルト値
+    ========= ==================== ============
+    priority  ポート優先度         0x80
+    path_cost リンクのコスト値     #TODO:
+    enable    ポートの有効無効設定 True
+    ========= ==================== ============
+
 
 
 BPDUパケット送信
@@ -285,7 +302,7 @@ BPDUパケット送信
 BPDUパケット送信はPortクラスのBPDUパケット送信スレッド(Port.send_bpdu_thread)
 で行っています。ポート状態がLISTENとなった際にスレッド処理が開始され、
 ポート役割がDESIGNATED_PORTの場合にのみ、ルートブリッジから通知された
-HELLO_TIME(Port.port_times.hello_time：デフォルト2秒)間隔で
+hello time(Port.port_times.hello_time：デフォルト2秒)間隔で
 BPDUパケットの生成(Port._generate_config_bpdu())およびBPDUパケット送信
 (Port.ofctl.send_packet_out())を行います。
 
@@ -322,10 +339,9 @@ BPDUパケットの生成(Port._generate_config_bpdu())およびBPDUパケット
                 hub.sleep(self.port_times.hello_time)
 
 
-送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に受信した
-Switch Featuresメッセージに含まれるポート情報(Port.ofport)やルートブリッジから
-受信したBPDUに設定されたルートブリッジ情報(Port.port_priority)などを元に
-構築されます。
+送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に収集した
+ポート情報(Port.ofport)や受信したBPDUパケットに設定された
+ルートブリッジ情報(Port.port_priority、Port.port_times)などを元に構築されます。
 
 
 .. rst-class:: sourcecode
@@ -374,10 +390,10 @@ BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラ�
 参照してください。
 
 BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信した
-BPDUパケットの比較(Stp.compare_bpdu_info())を行い、STP再計算の要否判定を
-行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を受信した場合、
-「新たなルートブリッジが追加された」などのネットワークトポロジ変更が
-発生したことを意味するため、STP再計算の契機となります。
+BPDUパケットのブリッジIDなどの比較(Stp.compare_bpdu_info())を行い、
+STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を
+受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が
+発生したことを意味するため、Bridgeクラスオブジェクトに通知されSTP再計算の契機となります。
 
 
 .. rst-class:: sourcecode
@@ -415,61 +431,28 @@ BPDUパケットの比較(Stp.compare_bpdu_info())を行い、STP再計算の要
             return rcv_info, rcv_tc
 
 
-    class Stp(app_manager.RyuApp):
-
-        @staticmethod
-        def compare_bpdu_info(my_priority, my_times, rcv_priority, rcv_times):
-            """ Check received BPDU is superior to currently held BPDU
-                 by the following comparison.
-                 - root bridge ID value
-                 - root path cost
-                 - designated bridge ID value
-                 - designated port ID value
-                 - times """
-            if my_priority is None:
-                result = SUPERIOR
-            else:
-                result = Stp._cmp_value(rcv_priority.root_id.value,
-                                        my_priority.root_id.value)
-                if not result:
-                    result = Stp.compare_root_path(
-                        rcv_priority.root_path_cost,
-                        my_priority.root_path_cost,
-                        rcv_priority.designated_bridge_id.value,
-                        my_priority.designated_bridge_id.value,
-                        rcv_priority.designated_port_id.value,
-                        my_priority.designated_port_id.value)
-                    if not result:
-                        result1 = Stp._cmp_value(
-                            rcv_priority.designated_bridge_id.value,
-                            my_priority.designated_bridge_id.mac_addr)
-                        result2 = Stp._cmp_value(
-                            rcv_priority.designated_port_id.value,
-                            my_priority.designated_port_id.port_no)
-                        if not result1 and not result2:
-                            result = SUPERIOR
-                        else:
-                            result = Stp._cmp_obj(rcv_times, my_times)
-            return result
-
 
 故障検出
 """"""""
 
-リンク断などの直接故障や一定時間ルートブリッジからのBPDUパケットを
+リンク断などの直接故障や、一定時間ルートブリッジからのBPDUパケットを
 受信できない間接故障を検出した場合も、STP再計算の契機となります。
 
-リンク断はStpクラスのPortStatusイベントハンドラによって検出します。
+リンク断はStpクラスのPortStatusイベントハンドラによって検出し、
+Bridgeクラスオブジェクトへ通知されます。
 
 BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド
-(Port.wait_bpdu_thread)で検出します。タイマーの更新とタイムアウトの検出
-にはhubモジュール(ryu.lib.hub)のhub.Eventとhub.Timeoutを用います。
+(Port.wait_bpdu_thread)で検出します。max age(デフォルト20秒)間、ルートブリッジ
+からのBPDUパケットを受信できない場合に間接故障と判断し、
+Bridgeクラスオブジェクトへ通知されます。
 
-hub.Eventはhub.Event.wait()でwait状態に入りhub.Event.set()が実行されるまで
-待ち続けます。hub.Timeoutはtry節の処理が指定されたタイムアウト時間内に
-終了しない場合、hub.Timeout例外を発行します。hub.Eventがwait状態に入り
-hub.Timeoutで指定されたタイムアウト時間内にhub.Event.set()が実行されない
-場合に、BPDUパケットの受信待ちタイムアウトと判定しSTP再計算処理を呼び出します。
+タイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)の
+hub.Eventとhub.Timeoutを用います。hub.Eventはhub.Event.wait()でwait状態に
+入りhub.Event.set()が実行されるまでスレッドが中断されます。hub.Timeoutは
+指定されたタイムアウト時間内にtry節の処理が終了しない場合、hub.Timeout例外
+を発行します。hub.Eventがwait状態に入りhub.Timeoutで指定されたタイムアウト
+時間内にhub.Event.set()が実行されない場合に、BPDUパケットの受信待ち
+タイムアウトと判断しBridgeクラスのSTP再計算処理を呼び出します。
 
 
 .. rst-class:: sourcecode
@@ -481,9 +464,9 @@ hub.Timeoutで指定されたタイムアウト時間内にhub.Event.set()が実
         def __init__(self, dp, logger, config, send_ev_func, timeout_func,
                      topology_change_func, bridge_id, bridge_times, ofport):
             super(Port, self).__init__()
-
             # ...
-
+            self.wait_bpdu_timeout = timeout_func
+            # ...
             self.wait_bpdu_thread = PortThread(self._wait_bpdu_timer)
 
         # ...
@@ -523,7 +506,7 @@ SUPERIORまたはREPEATEDと判定された場合は、ルートブリッジか�
 (Port._update_wait_bpdu_timer())を行います。hub.Eventである
 Port.wait_timer_eventのset()処理によりPort.wait_timer_eventはwait状態から
 解放され、BPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)は
-except hub.Timeout節の処理に入ることなくタイマーをキャンセルし、
+except hub.Timeout節のタイムアウト処理に入ることなくタイマーをキャンセルし、
 改めてタイマーをセットし直すことで次のBPDUパケットの受信待ちを開始します。
 
 
@@ -559,14 +542,13 @@ STP計算
 
 STP計算(ルートブリッジ選択・各ポートの役割選択)はBridgeクラスで実行します。
 
-STP計算を行う場合にはネットワークトポロジ変更が発生しておりループに陥る
-可能性があるため、一旦全てのポートをBLOCK状態に設定(port.down)し、かつ
-トポロジ変更イベント(EventTopologyChange)を上位APLに対して通知することで
-学習済みのMACアドレスの初期化を促します。
+STP計算が実行されるケースではネットワークトポロジの変更が発生しており
+パケットがループする可能性があるため、一旦全てのポートをBLOCK状態に設定
+(port.down)し、かつトポロジ変更イベント(EventTopologyChange)を上位APLに
+対して通知することで学習済みのMACアドレス情報の初期化を促します。
 
-その後、Bridge._spanning_tree_algorithm()でルートブリッジと各ポートの
-役割を選択した上で、各ポートをLISTEN状態で起動(port.up)しポートの状態遷移
-を開始します。
+その後、Bridge._spanning_tree_algorithm()でルートブリッジとポートの役割を
+選択した上で、各ポートをLISTEN状態で起動(port.up)しポートの状態遷移を開始します。
 
 
 .. rst-class:: sourcecode
@@ -607,8 +589,17 @@ STP計算を行う場合にはネットワークトポロジ変更が発生し�
                                            self.root_times)
 
 
+ルートブリッジの選出のため、ブリッジIDなどの自身のブリッジ情報と
+各ポートが受信したBPDUパケットに設定された他ブリッジ情報を比較します
+(Bridge._select_root_port)。
 
-＃TODO: ルートブリッジ選択・ポート役割選択の説明
+この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが
+受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると
+判断し指定ポートの選出(Bridge._select_designated_port)と非指定ポートの選出
+(ルートポート/指定ポート以外のポートが該当)を行います。
+
+一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は
+自身をルートブリッジと判断し各ポートは全て指定ポートとなります。
 
 
 
@@ -665,10 +656,10 @@ STP計算を行う場合にはネットワークトポロジ変更が発生し�
 
 ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(Port.state_machine)
 で実行しています。次の状態に遷移するまでのタイマーをPort._get_timer()で
-取得し、タイマー満了後にPort._get_next_state()で次の状態を取得し、状態遷移を
+取得し、タイマー満了後にPort._get_next_state()で次状態を取得し、状態遷移を
 行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に
 遷移させるケースなど、Port._change_status()が実行された場合にも状態遷移が
-行われます。これらの処理は「#TODO: '故障検出'へのリンク」と同様に
+行われます。これらの処理は「 `故障検出`_ 」と同様に
 hubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。
 
 
@@ -709,6 +700,24 @@ hubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。
 
                 self.state_event = None
 
+        def _get_timer(self):
+            timer = {PORT_STATE_DISABLE: None,
+                     PORT_STATE_BLOCK: None,
+                     PORT_STATE_LISTEN: self.port_times.forward_delay,
+                     PORT_STATE_LEARN: self.port_times.forward_delay,
+                     PORT_STATE_FORWARD: None}
+            return timer[self.state]
+
+        def _get_next_state(self):
+            next_state = {PORT_STATE_DISABLE: None,
+                          PORT_STATE_BLOCK: None,
+                          PORT_STATE_LISTEN: PORT_STATE_LEARN,
+                          PORT_STATE_LEARN: (PORT_STATE_FORWARD
+                                             if (self.role is ROOT_PORT or
+                                                 self.role is DESIGNATED_PORT)
+                                             else PORT_STATE_BLOCK),
+                          PORT_STATE_FORWARD: None}
+            return next_state[self.state]
 
 
 
@@ -728,6 +737,152 @@ OpenFlow 1.3対応のスイッチングハブのソースコードを以下に�
 
 これより、「 :ref:`ch_switching_hub` 」のスイッチングハブとの差異を
 順に説明していきます。
+
+
+「_CONTEXTS」の設定
+"""""""""""""""""""
+
+「 :ref:`ch_link_aggregation` 」と同様にSTPライブラリを利用するため
+CONTEXT登録します。
+
+
+.. rst-class:: sourcecode
+
+::
+
+    from ryu.lib import stplib
+
+    # ...
+
+    class SimpleSwitch13(app_manager.RyuApp):
+        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
+        _CONTEXTS = {'stplib': stplib.Stp}
+
+        # ...
+
+
+コンフィグ設定
+""""""""""""""
+
+STPライブラリのset_config()メソッドを用いてコンフィグ設定を行います。
+ここでは以下の値を設定します。
+
+===================== =============== ======
+OpenFlowスイッチ      項目            設定値
+===================== =============== ======
+dpid=0000000000000001 bridge.priority 0x8000
+dpid=0000000000000002 bridge.priority 0x9000
+dpid=0000000000000003 bridge.priority 0xa000
+===================== =============== ======
+
+この設定によりdpid=0000000000000001のOpenFlowスイッチのブリッジIDが
+常に最小の値となり、ルートブリッジに選択されることになります。
+
+
+.. rst-class:: sourcecode
+
+::
+
+    class SimpleSwitch13(app_manager.RyuApp):
+
+        # ...
+
+        def __init__(self, *args, **kwargs):
+            super(SimpleSwitch13, self).__init__(*args, **kwargs)
+            self.mac_to_port = {}
+            self.stp = kwargs['stplib']
+
+            # Sample of stplib config.
+            #  please refer to stplib.Stp.set_config() for details.
+            config = {dpid_lib.str_to_dpid('0000000000000001'):
+                         {'bridge': {'priority': 0x8000}},
+                      dpid_lib.str_to_dpid('0000000000000002'):
+                         {'bridge': {'priority': 0x9000}},
+                      dpid_lib.str_to_dpid('0000000000000003'):
+                         {'bridge': {'priority': 0xa000}}}
+            self.stp.set_config(config)
+
+
+STPイベント処理
+"""""""""""""""
+
+「 :ref:`ch_link_aggregation` 」と同様にSTPライブラリから通知される
+イベントを受信するイベントハンドラを用意します。
+
+
+
+* STPライブラリで定義されたEventPacketInイベントを利用することで、BPDUパケットを
+  除いたパケットを受信することが出来るため、「 :ref:`ch_switching_hub` 」と同様の
+  ハンドリンクを行います。
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        class SimpleSwitch13(app_manager.RyuApp):
+
+            @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
+            def _packet_in_handler(self, ev):
+
+                # ...
+
+
+* ネットワークトポロジの変更通知イベントを受け取り、学習したMACアドレスおよび
+  登録済みのフローエントリを初期化しています。
+
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        class SimpleSwitch13(app_manager.RyuApp):
+
+            def delete_flow(self, datapath):
+                ofproto = datapath.ofproto
+                parser = datapath.ofproto_parser
+
+                for dst in self.mac_to_port[datapath.id].keys():
+                    match = parser.OFPMatch(eth_dst=dst)
+                    mod = parser.OFPFlowMod(
+                        datapath, command=ofproto.OFPFC_DELETE,
+                        out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY,
+                        priority=1, match=match)
+                    datapath.send_msg(mod)
+
+            # ...
+
+            @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
+            def _topology_change_handler(self, ev):
+                dp = ev.dp
+                dpid_str = dpid_lib.dpid_to_str(dp.id)
+                msg = 'Receive topology change event. Flush MAC table.'
+                self.logger.debug("[dpid=%s] %s", dpid_str, msg)
+
+                if dp.id in self.mac_to_port:
+                    self.delete_flow(dp)
+                    del self.mac_to_port[dp.id]
+
+
+* ポート状態の変更通知イベントを受け取り、ポート状態のデバッグログ出力を
+  行っています。
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        class SimpleSwitch13(app_manager.RyuApp):
+
+            @set_ev_cls(stplib.EventPortStateChange, MAIN_DISPATCHER)
+            def _port_state_change_handler(self, ev):
+                dpid_str = dpid_lib.dpid_to_str(ev.dp.id)
+                of_state = {stplib.PORT_STATE_DISABLE: 'DISABLE',
+                            stplib.PORT_STATE_BLOCK: 'BLOCK',
+                            stplib.PORT_STATE_LISTEN: 'LISTEN',
+                            stplib.PORT_STATE_LEARN: 'LEARN',
+                            stplib.PORT_STATE_FORWARD: 'FORWARD'}
+                self.logger.debug("[dpid=%s][port=%d] state=%s",
+                                  dpid_str, ev.port_no, of_state[ev.port_state])
+
 
 
 Ryuアプリケーションの実行
