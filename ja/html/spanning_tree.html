@@ -64,13 +64,9 @@
 <col width="50%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><p class="first">#TODO: image1.png</p>
-<blockquote class="last">
-<div>ループを持つネットワーク</div></blockquote>
+<tr class="row-odd"><td><img alt="_images/fig1.png" class="first last" src="_images/fig1.png" />
 </td>
-<td><p class="first">#TODO: image2.png</p>
-<blockquote class="last">
-<div>ループを回避したネットワーク</div></blockquote>
+<td><img alt="_images/fig2.png" class="first last" src="_images/fig2.png" />
 </td>
 </tr>
 </tbody>
@@ -124,23 +120,14 @@
 </li>
 <li><dl class="first docutils">
 <dt>非指定ポート(Non designated port)：</dt>
-<dd><p class="first last">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
+<dd><p class="first">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
+<blockquote class="last">
+<div><a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" src="_images/fig3.png" style="width: 333.6px; height: 301.8px;" /></a>
+</div></blockquote>
 </dd>
 </dl>
 </li>
 </ul>
-<table border="1" class="docutils">
-<colgroup>
-<col width="100%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><p class="first">#TODO: image3.png</p>
-<blockquote class="last">
-<div>各ポートの役割</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p class="last">ルートブリッジに至るまでのコストは次のように算出されます。#TODO:</p>
@@ -149,20 +136,10 @@
 </li>
 <li><p class="first">ポートの状態遷移</p>
 <blockquote>
-<div><p>ポート役割の決定後、各ポートはLISTEN状態になります。その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態またはBLOCK状態に遷移します。</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="100%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><p class="first">#TODO: image4.png</p>
-<blockquote class="last">
-<div>ポート状態遷移</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<p>コンフィグで無効ポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
+<div><p>ポート役割の決定後(STP計算の完了時)、各ポートはLISTEN状態になります。その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態またはBLOCK状態に遷移します。コンフィグで無効ポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig4.png"><img alt="_images/fig4.png" src="_images/fig4.png" style="width: 287.7px; height: 385.7px;" /></a>
+</div></blockquote>
 <table border="1" class="docutils">
 <colgroup>
 <col width="14%" />
@@ -359,7 +336,11 @@
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
 <p>ループ構造を持つ特殊なトポロジで動作させるため、「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーションの実装</em></a>」と同様にトポロジ構築スクリプトによりmininet環境を構築します。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">spanning_tree.py</span></tt></p>
-<p class="sourcecode">VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。netコマンドの実行結果は以下の通りです。</p>
+<p class="sourcecode">VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" style="width: 635.2px; height: 420.0px;" /></a>
+</div></blockquote>
+<p>netコマンドの実行結果は以下の通りです。</p>
 <div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
@@ -400,7 +381,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 </div>
 <div class="section" id="openflowstp">
 <h4>OpenFlowスイッチ起動時のSTP計算<a class="headerlink" href="#openflowstp" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
+<p>各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。</p>
 <div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000001: Join as stp bridge.
 [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
 [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
@@ -488,6 +469,10 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD</pre>
 </div>
+<p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" src="_images/fig7.png" style="width: 640.8px; height: 444.8px;" /></a>
+</div></blockquote>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
 <p>Node: s1:</p>
@@ -553,7 +538,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <p>Node: s2:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ifconfig s2-eth2 down</pre>
 </div>
-<p>リンクダウンを検出しSTP再計算が行われ、これまでBLOCK状態だったdpid=0000000000000003のport2がFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
+<p>リンクダウンが検出され、STP再計算が実行されます。</p>
 <div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
 [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
 [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
@@ -598,6 +583,10 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD</pre>
 </div>
+<p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" src="_images/fig8.png" style="width: 640.8px; height: 444.8px;" /></a>
+</div></blockquote>
 </div>
 <div class="section" id="id5">
 <h4>故障回復時のSTP再計算<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -605,7 +594,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <p>Node: s2:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ifconfig s2-eth2 up</pre>
 </div>
-<p>リンク復旧を検出しSTP再計算が行われOpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
+<p>リンク復旧が検出され、STP再計算が実行されます。</p>
 <div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
 [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
 [STP][INFO] dpid=0000000000000002: [port=2] Link up.
@@ -655,6 +644,10 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
 [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD</pre>
 </div>
+<p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" style="width: 640.8px; height: 444.8px;" /></a>
+</div></blockquote>
 </div>
 </div>
 </div>
@@ -739,18 +732,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h3>ライブラリの実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<table border="1" class="docutils">
-<colgroup>
-<col width="100%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><p class="first">#TODO: image5.png</p>
-<blockquote class="last">
-<div>ライブラリ概要</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" style="width: 794.2px; height: 209.0px;" /></a>
 <p>STPライブラリ(Stpクラスオブジェクト)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスオブジェクト・Portクラスオブジェクトが生成されます。各クラスオブジェクトが生成・起動された後は、StpクラスオブジェクトからのOpenFlowメッセージ受信通知、BridgeクラスオブジェクトのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスオブジェクトのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">

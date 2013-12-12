@@ -26,17 +26,13 @@ STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツ
 .. only:: latex
 
    +------------------------------------------+------------------------------------------+
-   | #TODO: image1.eps                        |  #TODO: image2.eps                       |
-   |                                          |                                          |
-   |  ループを持つネットワーク                |   ループを回避したネットワーク           |
+   | .. image:: images/spanning_tree/fig1.eps | .. image:: images/spanning_tree/fig2.eps |
    +------------------------------------------+------------------------------------------+
 
 .. only:: not latex
 
    +------------------------------------------+------------------------------------------+
-   | #TODO: image1.png                        |  #TODO: image2.png                       |
-   |                                          |                                          |
-   |  ループを持つネットワーク                |   ループを回避したネットワーク           |
+   | .. image:: images/spanning_tree/fig1.png | .. image:: images/spanning_tree/fig2.png |
    +------------------------------------------+------------------------------------------+
 
 
@@ -87,21 +83,16 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
         フレーム転送を抑制するポートです。
 
 
-    .. only:: latex
+            .. only:: latex
 
-        +------------------------------------------+
-        | #TODO: image3.eps                        |
-        |                                          |
-        |  各ポートの役割                          |
-        +------------------------------------------+
+               .. image:: images/spanning_tree/fig3.eps
+                  :scale: 60 %
 
-    .. only:: not latex
+            .. only:: not latex
 
-        +------------------------------------------+
-        | #TODO: image3.png                        |
-        |                                          |
-        |  各ポートの役割                          |
-        +------------------------------------------+
+               .. image:: images/spanning_tree/fig3.png
+                  :scale: 60 %
+
 
 
     .. NOTE::
@@ -112,29 +103,23 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 3. ポートの状態遷移
 
-    ポート役割の決定後、各ポートはLISTEN状態になります。その後、以下に示す
-    状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態または
-    BLOCK状態に遷移します。
+    ポート役割の決定後(STP計算の完了時)、各ポートはLISTEN状態になります。
+    その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従って
+    FORWARD状態またはBLOCK状態に遷移します。コンフィグで無効ポートと設定
+    されたポートはDISABLE状態となり、以降、状態遷移は行われません。
 
-    .. only:: latex
 
-        +------------------------------------------+
-        | #TODO: image4.eps                        |
-        |                                          |
-        |  ポート状態遷移                          |
-        +------------------------------------------+
+        .. only:: latex
 
-    .. only:: not latex
+           .. image:: images/spanning_tree/fig4.eps
+              :scale: 70 %
 
-        +------------------------------------------+
-        | #TODO: image4.png                        |
-        |                                          |
-        |  ポート状態遷移                          |
-        +------------------------------------------+
 
-    
-    コンフィグで無効ポートと設定されたポートはDISABLE状態となり、
-    以降、状態遷移は行われません。
+        .. only:: not latex
+
+           .. image:: images/spanning_tree/fig4.png
+              :scale: 70 %
+
 
     ======= ===========================================
     状態    動作
@@ -199,7 +184,24 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 
 VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが
-存在するトポロジが作成されます。netコマンドの実行結果は以下の通りです。
+存在するトポロジが作成されます。
+
+
+
+        .. only:: latex
+
+           .. image:: images/spanning_tree/fig6.eps
+              :scale: 80 %
+
+
+        .. only:: not latex
+
+           .. image:: images/spanning_tree/fig6.png
+              :scale: 80 %
+
+
+
+netコマンドの実行結果は以下の通りです。
 
 
 .. rst-class:: console
@@ -282,7 +284,6 @@ OpenFlowスイッチ起動時のSTP計算
 
 各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が
 始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。
-この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。
 
 
 .. rst-class:: console
@@ -375,6 +376,24 @@ OpenFlowスイッチ起動時のSTP計算
     [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
     [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
     [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+
+
+この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。
+
+
+
+        .. only:: latex
+
+                   .. image:: images/spanning_tree/fig7.eps
+                      :scale: 80 %
+
+
+        .. only:: not latex
+
+                   .. image:: images/spanning_tree/fig7.png
+                      :scale: 80 %
+
+
 
 
 パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。
@@ -508,9 +527,7 @@ Node: s2:
 
 
 
-リンクダウンを検出しSTP再計算が行われ、これまでBLOCK状態だった
-dpid=0000000000000003のport2がFORWARD状態となり、再びフレーム転送可能な状態
-となったことが確認できます。
+リンクダウンが検出され、STP再計算が実行されます。
 
 
 .. rst-class:: console
@@ -562,6 +579,22 @@ dpid=0000000000000003のport2がFORWARD状態となり、再びフレーム転�
     [STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD
 
 
+これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、
+再びフレーム転送可能な状態となったことが確認できます。
+
+
+        .. only:: latex
+
+           .. image:: images/spanning_tree/fig8.eps
+              :scale: 80 %
+
+
+        .. only:: not latex
+
+           .. image:: images/spanning_tree/fig8.png
+              :scale: 80 %
+
+
 
 故障回復時のSTP再計算
 """""""""""""""""""""
@@ -580,8 +613,7 @@ Node: s2:
 
 
 
-リンク復旧を検出しSTP再計算が行われOpenFlowスイッチの初回起動時と同様の
-ツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。
+リンク復旧が検出され、STP再計算が実行されます。
 
 
 .. rst-class:: console
@@ -637,6 +669,21 @@ Node: s2:
     [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
     [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
 
+
+OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能
+な状態となったことが確認できます。
+
+
+        .. only:: latex
+
+           .. image:: images/spanning_tree/fig9.eps
+              :scale: 80 %
+
+
+        .. only:: not latex
+
+           .. image:: images/spanning_tree/fig9.png
+              :scale: 80 %
 
 
 
@@ -727,19 +774,15 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 
 .. only:: latex
 
-    +------------------------------------------+
-    | #TODO: image5.eps                        |
-    |                                          |
-    |  ライブラリ概要                          |
-    +------------------------------------------+
+   .. image:: images/spanning_tree/fig5.eps
+      :scale: 110 %
+
 
 .. only:: not latex
 
-    +------------------------------------------+
-    | #TODO: image5.png                        |
-    |                                          |
-    |  ライブラリ概要                          |
-    +------------------------------------------+
+   .. image:: images/spanning_tree/fig5.png
+      :scale: 110 %
+
 
 
 STPライブラリ(Stpクラスオブジェクト)がOpenFlowスイッチのコントローラへの接続を
