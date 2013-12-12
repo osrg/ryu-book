@@ -57,7 +57,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
         ブリッジIDは、各ブリッジに設定されたブリッジ優先度
         (デフォルト0x8000：RyuのSTPライブラリではコンフィグ設定が可能)と
-        特定ポートのMACアドレスの組で算出されます。
+        特定ポートのMACアドレスの組み合わせで算出されます。
 
             ブリッジID
 
@@ -107,7 +107,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
     .. NOTE::
 
         ルートブリッジに至るまでのコストは次のように算出されます。
-        
+        #TODO:
 
 
 3. ポートの状態遷移
@@ -157,8 +157,494 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 
 
+Ryuアプリケーションの実行
+-------------------------
+
+Ryuのスパニングツリーアプリケーションを実行してみます。
+
+Ryuのソースツリーに用意されているsimple_switch_stp.pyはOpenFlow 1.0専用
+のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応した
+simple_switch_stp_13.pyを作成することとします。このプログラムは、
+「 :ref:`ch_switching_hub` 」のスイッチングハブにスパニングツリー機能を
+追加したアプリケーションです。
+
+
+ソース名： ``simple_switch_stp_13.py``
+
+.. rst-class:: sourcecode
+
+.. literalinclude:: sources/simple_switch_stp_13.py
+
+
+
+
+
+実験環境の構築
+^^^^^^^^^^^^^^
+
+スパニングツリーアプリケーションの動作確認を行う実験環境を構築します。
+
+VMイメージ利用のための環境設定やログイン方法等は「 :ref:`ch_switching_hub` 」
+を参照してください。
+
+ループ構造を持つ特殊なトポロジで動作させるため、「 :ref:`ch_link_aggregation` 」
+と同様にトポロジ構築スクリプトによりmininet環境を構築します。
+
+
+ソース名： ``spanning_tree.py``
+
+.. rst-class:: sourcecode
+
+.. literalinclude:: sources/spanning_tree.py
+
+
+VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが
+存在するトポロジが作成されます。netコマンドの実行結果は以下の通りです。
+
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo ./spanning_tree.py 
+    Unable to contact the remote controller at 127.0.0.1:6633
+    mininet> net
+    c0
+    s1 lo:  s1-eth1:h1-eth0 s1-eth2:s2-eth2 s1-eth3:s3-eth3
+    s2 lo:  s2-eth1:h2-eth0 s2-eth2:s1-eth2 s2-eth3:s3-eth2
+    s3 lo:  s3-eth1:h3-eth0 s3-eth2:s2-eth3 s3-eth3:s1-eth3
+    h1 h1-eth0:s1-eth1
+    h2 h2-eth0:s2-eth1
+    h3 h3-eth0:s3-eth1
+
+
+OpenFlowバージョンの設定
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+使用するOpenFlowのバージョンを1.3に設定します。
+このコマンド入力は、スイッチs1、s2、s3のxterm上で行ってください。
+
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+
+Node: s2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+
+
+Node: s3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+
+
+
+
+スイッチングハブの実行
+^^^^^^^^^^^^^^^^^^^^^^
+
+準備が整ったので、Ryuアプリケーションを実行します。ウインドウタイトルが
+「Node: c0 (root)」となっている xterm から次のコマンドを実行します。
+
+
+Node: c0:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py 
+    loading app simple_switch_stp_13.py
+    loading app ryu.controller.ofp_handler
+    loading app ryu.controller.ofp_handler
+    instantiating app None of Stp
+    creating context stplib
+    instantiating app simple_switch_stp_13.py of SimpleSwitch13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+
+
+OpenFlowスイッチ起動時のSTP計算
+"""""""""""""""""""""""""""""""
+
+各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が
+始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。
+この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。
+
+
+.. rst-class:: console
+
+::
+
+    [STP][INFO] dpid=0000000000000001: Join as stp bridge.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: Join as stp bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: Root bridge.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: Non root bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: Join as stp bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: Non root bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: Root bridge.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: Non root bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: Non root bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: Root bridge.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+
+
+パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。
+
+pingコマンドを実行する前に、各スイッチでパケットがループしていないことを
+確認できるようにtcpdumpコマンドを実行しておきます。
+
+
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s1-eth2 arp
+
+
+Node: s2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s2-eth2 arp
+
+
+Node: s3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s3-eth2 arp
+
+
+トポロジ構築スクリプトを実行したコンソールで、次のコマンドを実行して
+ホスト1からホスト2へpingを発行します。
+
+
+.. rst-class:: console
+
+::
+
+    mininet> h1 ping h2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.4 ms
+    64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.657 ms
+    64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.074 ms
+    64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.076 ms
+    64 bytes from 10.0.0.2: icmp_req=5 ttl=64 time=0.054 ms
+    64 bytes from 10.0.0.2: icmp_req=6 ttl=64 time=0.053 ms
+    64 bytes from 10.0.0.2: icmp_req=7 ttl=64 time=0.041 ms
+    64 bytes from 10.0.0.2: icmp_req=8 ttl=64 time=0.049 ms
+    64 bytes from 10.0.0.2: icmp_req=9 ttl=64 time=0.074 ms
+    64 bytes from 10.0.0.2: icmp_req=10 ttl=64 time=0.073 ms
+    64 bytes from 10.0.0.2: icmp_req=11 ttl=64 time=0.068 ms
+    ^C
+    --- 10.0.0.2 ping statistics ---
+    11 packets transmitted, 11 received, 0% packet loss, time 9998ms
+    rtt min/avg/max/mdev = 0.041/7.784/84.407/24.230 ms
+
+
+各スイッチで実行したtcpdumpの出力結果から、ARPがループしていないことが
+確認できます。
+
+
+Node: s1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s1-eth2 arp
+    tcpdump: WARNING: s1-eth2: no IPv4 address assigned
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on s1-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+    11:30:24.692797 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+    11:30:24.749153 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
+    11:30:29.797665 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
+    11:30:29.798250 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+
+
+
+
+Node: s2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s2-eth2 arp
+    tcpdump: WARNING: s2-eth2: no IPv4 address assigned
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on s2-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+    11:30:24.692824 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+    11:30:24.749116 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
+    11:30:29.797659 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
+    11:30:29.798254 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+
+
+Node: s3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# tcpdump -i s3-eth2 arp
+    tcpdump: WARNING: s3-eth2: no IPv4 address assigned
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+    11:30:24.698477 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+
+
+
+故障検出時のSTP再計算
+"""""""""""""""""""""
+
+次に、リンクダウンが起こった際のSTP再計算の動作を確認します。
+各OpenFlowスイッチ起動後のSTP計算が完了した状態で次のコマンドを実行し、
+ポートをダウンさせます。
+
+
+Node: s2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ifconfig s2-eth2 down
+
+
+
+リンクダウンを検出しSTP再計算が行われ、これまでBLOCK状態だった
+dpid=0000000000000003のport2がFORWARD状態となり、再びフレーム転送可能な状態
+となったことが確認できます。
+
+
+.. rst-class:: console
+
+::
+
+    [STP][INFO] dpid=0000000000000002: [port=2] Link down.
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: Root bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] Link down.
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / DISABLE
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=2] Wait BPDU timer is exceeded.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: Root bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: Non root bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: Non root bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD
+
+
+
+故障回復時のSTP再計算
+"""""""""""""""""""""
+
+続けて、リンクダウンが回復した際のSTP再計算の動作を確認します。
+リンクダウン中の状態で次のコマンドを実行し、ポートを起動させます。
+
+
+Node: s2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ifconfig s2-eth2 up
+
+
+
+リンク復旧を検出しSTP再計算が行われOpenFlowスイッチの初回起動時と同様の
+ツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。
+
+
+.. rst-class:: console
+
+::
+
+    [STP][INFO] dpid=0000000000000002: [port=2] Link down.
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
+    [STP][INFO] dpid=0000000000000002: [port=2] Link up.
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] Link up.
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000001: Root bridge.
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000002: Non root bridge.
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] Receive superior BPDU.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+    [STP][INFO] dpid=0000000000000003: Non root bridge.
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LISTEN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LEARN
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+    [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / FORWARD
+    [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+    [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
+    [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+
+
+
+
 OpenFlowによるスパニングツリー
 ------------------------------
+
+Ryuのスパニングツリーアプリケーションにおいて、OpenFlowを用いてどのように
+スパニングツリーの機能を実現しているかを見ていきます。
 
 OpenFlow 1.3には次のようなポートの動作を設定するコンフィグが用意されているため、
 各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行
@@ -206,12 +692,11 @@ FORWARD ポートコンフィグ(設定無し)、フローエントリ(BPDU Pack
 OpenFlowスイッチ間のBPDUパケットの交換を実現します。
 
 
-次に、実際にRyuを用いて実装されたスパニングツリーのソースコードを見ていきます。
-
 
 Ryuによるスパニングツリーの実装
 -------------------------------
 
+続いて、Ryuを用いて実装されたスパニングツリーのソースコードを見ていきます。
 スパニングツリーのソースコードは、Ryuのソースツリーにあります。
 
     ryu/lib/stplib.py
@@ -227,8 +712,10 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 
 .. ATTENTION::
 
-    simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、
-    ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。
+    前述の通り、simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーション
+    であるため、本章では「 `Ryuアプリケーションの実行`_ 」に示した
+    OpenFlow 1.3に対応したsimple_switch_stp_13.pyを元にアプリケーションの
+    詳細を説明します。
 
 
 
@@ -286,13 +773,13 @@ STPライブラリはStp.set_config()メソッドによりブリッジ・ポー�
 
 * port
 
-    ========= ==================== ============
+    ========= ==================== ============================
     項目      説明                 デフォルト値
-    ========= ==================== ============
+    ========= ==================== ============================
     priority  ポート優先度         0x80
-    path_cost リンクのコスト値     #TODO:
+    path_cost リンクのコスト値     リンクスピードを元に自動設定
     enable    ポートの有効無効設定 True
-    ========= ==================== ============
+    ========= ==================== ============================
 
 
 
@@ -596,7 +1083,7 @@ STP計算が実行されるケースではネットワークトポロジの変�
 この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが
 受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると
 判断し指定ポートの選出(Bridge._select_designated_port)と非指定ポートの選出
-(ルートポート/指定ポート以外のポートが該当)を行います。
+(ルートポート/指定ポート以外のポートを非指定ポートとして選出)を行います。
 
 一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は
 自身をルートブリッジと判断し各ポートは全て指定ポートとなります。
@@ -724,19 +1211,9 @@ hubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。
 アプリケーションの実装
 ^^^^^^^^^^^^^^^^^^^^^^
 
-前章で説明したSTPライブラリを用いてスパニングツリー機能を実装した
-OpenFlow 1.3対応のスイッチングハブのソースコードを以下に示します。
-
-
-ソース名： ``simple_switch_stp_13.py``
-
-.. rst-class:: sourcecode
-
-.. literalinclude:: sources/simple_switch_stp_13.py
-
-
-これより、「 :ref:`ch_switching_hub` 」のスイッチングハブとの差異を
-順に説明していきます。
+「 `Ryuアプリケーションの実行`_ 」に示したOpenFlow 1.3対応のスパニングツリー
+アプリケーション(simple_switch_stp_13.py)と、「 :ref:`ch_switching_hub` 」
+のスイッチングハブとの差異を順に説明していきます。
 
 
 「_CONTEXTS」の設定
@@ -885,17 +1362,9 @@ STPイベント処理
 
 
 
-Ryuアプリケーションの実行
--------------------------
-
-    #TODO: 以下の内容を書いていく。
-
-    * 環境構築(スパニングツリー環境)
-
-      * mnコマンドを使用する場合、カスタムトポロジが必要となる
-
-    * 起動方法
-    * 動作確認方法の説明
+以上のように、スパニングツリー機能を提供するライブラリと、ライブラリを
+利用するアプリケーションによって、スパニングツリー機能を持つスイッチングハブの
+アプリケーションを実現しています。
 
 
 
@@ -905,7 +1374,5 @@ Ryuアプリケーションの実行
 本章では、スパニングツリーライブラリの利用を題材として、以下の項目に
 ついて説明しました。
 
-#TODO:
-
-* 
-* 
+* hub.Eventを用いたイベント待ち合わせ処理の実現方法
+* hub.Timeoutを用いたタイマー制御処理の実現方法
