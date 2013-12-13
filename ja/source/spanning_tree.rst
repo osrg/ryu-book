@@ -51,17 +51,19 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
     .. NOTE::
 
-        ブリッジIDは、各ブリッジに設定されたブリッジ優先度
-        (デフォルト0x8000：RyuのSTPライブラリではコンフィグ設定が可能)と
-        特定ポートのMACアドレスの組み合わせで算出されます。
+        ブリッジIDは、各ブリッジに設定されたブリッジpriority
+        と特定ポートのMACアドレスの組み合わせで算出されます。
 
             ブリッジID
 
-            ============== ===========
-            上位2byte      下位6byte
-            ============== ===========
-            ブリッジ優先度 MACアドレス
-            ============== ===========
+            ================ ===========
+            上位2byte        下位6byte
+            ================ ===========
+            ブリッジpriority MACアドレス
+            ================ ===========
+
+        ブリッジpriorityは、RyuのSTPライブラリではコンフィグ設定により
+        変更が可能です。
 
 
 
@@ -97,8 +99,31 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
     .. NOTE::
 
-        ルートブリッジに至るまでのコストは次のように算出されます。
-        #TODO:
+        ルートブリッジに至るまでのコストは、各ポートが受信したBPDUパケットの
+        設定値から次のように比較されます。
+
+        優先1：root path cost値による比較。
+
+            各ブリッジはBPDUパケットを転送する際に、出力ポートに設定された
+            path cost値をBPDUパケットのroot path cost値に加算します。
+            これによりroot path cost値はルートブリッジに到達するまでに
+            経由する各リンクのpath cost値の合計の値となります。
+
+        優先2：root path cost値が同じ場合、対向ブリッジのブリッジIDにより比較。
+
+        優先3：対向ブリッジのブリッジIDが同じ場合(各ポートが同一ブリッジに
+        接続しているケース)、対向ポートのポートIDにより比較
+
+            ポートID
+
+            ============== ==========
+            上位2byte      下位2byte
+            ============== ==========
+            ポートpriority ポート番号
+            ============== ==========
+
+        ポートのpath cost値やポートpriorityは、RyuのSTPライブラリでは
+        コンフィグ設定により変更が可能です。
 
 
 3. ポートの状態遷移
@@ -190,13 +215,13 @@ VM環境でこのプログラムを実行することにより、スイッチs1�
 
         .. only:: latex
 
-           .. image:: images/spanning_tree/fig6.eps
+           .. image:: images/spanning_tree/fig5.eps
               :scale: 80 %
 
 
         .. only:: not latex
 
-           .. image:: images/spanning_tree/fig6.png
+           .. image:: images/spanning_tree/fig5.png
               :scale: 80 %
 
 
@@ -384,13 +409,13 @@ OpenFlowスイッチ起動時のSTP計算
 
         .. only:: latex
 
-                   .. image:: images/spanning_tree/fig7.eps
+                   .. image:: images/spanning_tree/fig6.eps
                       :scale: 80 %
 
 
         .. only:: not latex
 
-                   .. image:: images/spanning_tree/fig7.png
+                   .. image:: images/spanning_tree/fig6.png
                       :scale: 80 %
 
 
@@ -585,13 +610,13 @@ Node: s2:
 
         .. only:: latex
 
-           .. image:: images/spanning_tree/fig8.eps
+           .. image:: images/spanning_tree/fig7.eps
               :scale: 80 %
 
 
         .. only:: not latex
 
-           .. image:: images/spanning_tree/fig8.png
+           .. image:: images/spanning_tree/fig7.png
               :scale: 80 %
 
 
@@ -676,13 +701,13 @@ OpenFlowスイッチの初回起動時と同様のツリー構成となり、再
 
         .. only:: latex
 
-           .. image:: images/spanning_tree/fig9.eps
+           .. image:: images/spanning_tree/fig8.eps
               :scale: 80 %
 
 
         .. only:: not latex
 
-           .. image:: images/spanning_tree/fig9.png
+           .. image:: images/spanning_tree/fig8.png
               :scale: 80 %
 
 
@@ -774,13 +799,13 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 
 .. only:: latex
 
-   .. image:: images/spanning_tree/fig5.eps
+   .. image:: images/spanning_tree/fig9.eps
       :scale: 110 %
 
 
 .. only:: not latex
 
-   .. image:: images/spanning_tree/fig5.png
+   .. image:: images/spanning_tree/fig9.png
       :scale: 110 %
 
 
