@@ -52,7 +52,7 @@
             
   <div class="section" id="ch-link-aggregation">
 <span id="id1"></span><h1>リンク・アグリゲーションの実装<a class="headerlink" href="#ch-link-aggregation" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブに簡単なリンク・アグリゲーション機能を追加します。</p>
+<p>本章では、Ryuを用いたリンク・アグリゲーション機能の実装方法を解説していきます。</p>
 <div class="section" id="id2">
 <h2>リンク・アグリゲーション<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>リンク・アグリゲーションは、IEEE802.1AX-2008で規定されている、複数の物理的な回線を束ねてひとつの論理的なリンクとして扱う技術です。リンク・アグリゲーション機能により、特定のネットワーク機器間の通信速度を向上させることができ、また同時に、冗長性を確保することで耐障害性を向上させることができます。</p>
@@ -71,281 +71,12 @@
 </table>
 <p>リンク・アグリゲーション機能を使用するには、それぞれのネットワーク機器において、どのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。</p>
 <p>リンク・アグリゲーション機能を開始する方法には、それぞれのネットワーク機器に対し直接指示を行うスタティックな方法と、LACP(Link Aggregation Control Protocol)というプロトコルを使用することによって動的に開始させるダイナミックな方法があります。</p>
-<p>ダイナミックな方法を採用した場合、各ネットワーク機器は対向インターフェース同士でLACPデータユニットを定期的に交換することにより、疎通不可能になっていないことをお互いに確認し続けます。この方法には、ネットワーク機器間にメディアコンバータなどの中継装置が存在した場合にも、中継装置の向こう側のリンクダウンを検知することができるというメリットがあります。本章では、LACPを用いたダイナミックなリンク・アグリゲーション機能を実装していきます。</p>
+<p>ダイナミックな方法を採用した場合、各ネットワーク機器は対向インターフェース同士でLACPデータユニットを定期的に交換することにより、疎通不可能になっていないことをお互いに確認し続けます。LACPデータユニットの交換が途絶えた場合、故障が発生したものとみなされ、当該ネットワーク機器は使用不可能となり、パケットの送受信は残りのインターフェースによってのみ行われるようになります。この方法には、ネットワーク機器間にメディアコンバータなどの中継装置が存在した場合にも、中継装置の向こう側のリンクダウンを検知することができるというメリットがあります。本章では、LACPを用いたダイナミックなリンク・アグリゲーション機能を取り扱います。</p>
 </div>
-<div class="section" id="id3">
-<h2>実装するリンク・アグリゲーション機能の整理<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>LACPを用いたリンク・アグリゲーションの仕組みは、簡単に言うと以下のようなものです。</p>
-<ul class="simple">
-<li>物理インターフェースのMACアドレスとは別に、束ねられた論理インターフェースのMACアドレスを用意します(物理インターフェースのMACアドレスのうちのどれかひとつである場合もあります)。</li>
-<li>LACPデータユニットには論理インターフェースを表すMACアドレスが記載されており、LACPデータユニット以外のフレーム転送には、この論理インターフェースのMACアドレスを使用します。</li>
-<li>LACPデータユニットの交換には個々の物理インターフェースのMACアドレスを使用します。</li>
-<li>LACPデータユニットを交換する物理インターフェースは、その役割によってACTIVEとPASSIVEに分類されます。ACTIVEは一定時間ごとにLACPデータユニットを送信し、疎通を能動的に確認します。PASSIVEはACTIVEから送信されたLACPデータユニットを受信した際に応答を返すことにより、疎通を受動的に確認します。</li>
-<li>LACPデータユニットの交換に成功した場合、リンク・アグリゲーションを開始します。リンク・アグリゲーション実行中、論理インターフェース間を通過するパケットは、特定の振り分けロジックに従い、いずれかの物理インターフェースから送信されます(振り分けロジックに関しては仕様で定められていません)。</li>
-<li>リンク・アグリゲーション開始後も、LACPデータユニットを定期的に交換します。一定時間交換が途絶えたら、そのリンクには問題が発生したものとみなし、パケット転送での使用を中止します。交換が再開されたら、そのリンクは復旧したものとみなし、パケット転送での使用を再開します。</li>
-</ul>
-<p>OpenFlowスイッチとOpenFlowコントローラで、リンク・アグリゲーション機能を以下のように実現することにします。実装を簡素化するためにいくつか制限を設けてあります。</p>
-<ul class="simple">
-<li>LACPデータユニットを交換するインターフェースはPASSIVEのみ実装するものとします。これにより、定期送信のためのタイマー処理が不要となります。</li>
-<li>OpenFlowスイッチは、LACPデータユニットを受信した際、応答用のLACPデータユニットを送信します。この動作はOpenFlowスイッチ単体では実現できないので、OpenFlowスイッチにはLACPデータユニット受信時にPacket-Inを送信するフローエントリを登録し、応答用のLACPデータユニットの作成はOpenFlowコントローラで行い、Packet-Outで送信します。</li>
-<li>LACPデータユニットをPacket-Inさせるフローエントリにはidle_timeoutを設定し、一定時間LACPデータユニットを受信しなかった場合にFlowRemovedメッセージがOpenFlowコントローラに飛ぶようにします。</li>
-<li>OpenFlowコントローラは、FlowRemovedメッセージを受信した際、どの物理インターフェースでLACPデータユニットの交換が停止したかを識別し、その物理インターフェースが所属している論理インターフェースに関連するすべてのフローエントリを削除します。また、LACPデータユニットの交換が再開された際にも、当該論理インターフェースに関連するすべてのフローエントリを削除します。これは、選択可能な物理インターフェースの個数が増減したことに伴う再振り分けを想定した処理です。</li>
-<li>振り分けロジックは実装しません。対向インターフェースが振り分けた経路をそのまま使用するものとします。</li>
-<li>LACP以外のパケットは通常のスイッチングハブ機能で処理します。</li>
-</ul>
-</div>
-<div class="section" id="lacp">
-<h2>LACPライブラリの実装<a class="headerlink" href="#lacp" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>前章で整理した機能の大部分を実装したLACPライブラリが、Ryuのソースツリーにあります。</p>
-<blockquote>
-<div>ryu/lib/lacplib.py</div></blockquote>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
-</div>
-<p>以降の節で、各機能が具体的にどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
-<div class="section" id="id4">
-<h3>論理インターフェースの作成<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>前述のとおり、リンク・アグリゲーション機能を使用するには、どのネットワーク機器においてどのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。RyuのLACPライブラリでは、以下のメソッドでこの設定を行います。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
-    <span class="c"># ...</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span>
-    <span class="n">ifs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
-        <span class="n">ifs</span><span class="p">[</span><span class="n">port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-    <span class="n">bond</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">bond</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifs</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>引数の内容は以下のとおりです。</p>
-<p>dpid</p>
-<blockquote>
-<div>OpenFlowスイッチのデータパスIDを指定します。</div></blockquote>
-<p>ports</p>
-<blockquote>
-<div>グループ化したいポート番号のリストを指定します。</div></blockquote>
-<p>このメソッドを呼び出すことにより、LACPライブラリは指定されたデータパスIDのOpenFlowスイッチの指定されたポートをひとつのインターフェースとして扱うようになります。複数のグループを作成したい場合、その都度add()メソッドを呼び出します。なお、論理インターフェースに割り当てられるMACアドレスは、OpenFlowスイッチの持つLOCALポートと同じものが自動的に使用されます。</p>
-<div class="admonition tip">
-<p class="first admonition-title">ちなみに</p>
-<p class="last">OpenFlowスイッチの中には、スイッチ自身の機能としてリンク・アグリゲーション機能を提供しているものもあります（Open vSwitchなど）。ここではそうしたスイッチ独自の機能は使用せず、OpenFlowコントローラによる制御によってリンク・アグリゲーション機能を実現します。</p>
-</div>
-</div>
-<div class="section" id="packet-in">
-<h3>Packet-In処理<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブは、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば専用の動作を行い、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理分岐を行い、スイッチングハブにLACPデータユニットを処理させないようにします。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
-<span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
-    <span class="n">req_pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span> <span class="ow">in</span> <span class="n">req_pkt</span><span class="p">:</span>
-        <span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">)</span>
-        <span class="p">(</span><span class="n">req_eth</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_do_lacp</span><span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="n">req_eth</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>イベントハンドラ自体は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様です。受信したメッセージにLACPデータユニットが含まれているかどうかで処理を分岐させています。</p>
-<p>LACPデータユニットが含まれていた場合はLACPライブラリのLACPデータユニット受信処理を行います。LACPデータユニットが含まれていなかった場合、send_event_to_observers()というメソッドを呼んでいます。これはryu.base.app_manager.RyuAppクラスで定義されている、イベントを送信するためのメソッドです。</p>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」ではRyuで定義されたOpenFlowメッセージ受信イベントについて触れましたが、ユーザが独自にイベントを定義することもできます。上記ソースで送信している<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というイベントは、LACPライブラリ内で作成したユーザ定義イベントです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
-</pre></div>
-</div>
-<p>ユーザ定義イベントは、ryu.controller.event.EventBaseクラスを継承して作成します。イベントクラスに内包するデータに制限はありません。<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>クラスでは、Packet-Inメッセージで受信したryu.ofproto.OFPPacketInインスタンスをそのまま使用しています。</p>
-<p>ユーザ定義イベントの受信方法については後述します。</p>
-</div>
-<div class="section" id="id5">
-<h3>ポートの有効/無効状態変更に伴う処理<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>LACPライブラリのLACPデータユニット受信処理は、以下の処理からなっています。</p>
-<ol class="arabic simple">
-<li>LACPデータユニットを受信したポートが利用不能状態であれば利用可能状態に変更し、状態が変更したことをイベントで通知します。</li>
-<li>無通信タイムアウトの待機時間が変更された場合、LACPデータユニット受信時にPacket-Inを送信するフローエントリを登録します。</li>
-<li>受信したLACPデータユニットに対する応答を作成し、送信します。</li>
-</ol>
-<p>2.の処理については後述の「<a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a>」で、3.の処理については後述の「<a class="reference internal" href="#id6">LACPデータユニットの送受信処理</a>」で、それぞれ説明します。ここでは1.の処理について説明します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
-
-    <span class="c"># when LACP arrived at disabled port, update the status of</span>
-    <span class="c"># the slave i/f to enabled, and send a event.</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the slave i/f has just been up.&quot;</span><span class="p">,</span>
-            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
-            <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>_get_slave_enabled()メソッドは、指定したスイッチの指定したポートが有効か否かを取得します。_set_slave_enabled()メソッドは、指定したスイッチの指定したポートの有効/無効状態を設定します。</p>
-<p>上記のソースでは、無効状態のポートでLACPデータユニットを受信した場合、ポートの状態が変更されたということを示す<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>というユーザ定義イベントを送信しています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;a event class that notifies the changes of the statuses of the</span>
-<span class="sd">    slave i/fs.&quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
-</pre></div>
-</div>
-<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントは、ポートが有効化したときの他に、ポートが無効化したときにも送信されます。無効化したときの処理は「<a class="reference internal" href="#flowremoved">FlowRemovedメッセージの受信処理</a>」で実装されています。</p>
-<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>クラスには以下の情報が含まれます。</p>
-<ul class="simple">
-<li>ポートの有効/無効状態変更が発生したOpenFlowスイッチ</li>
-<li>有効/無効状態変更が発生したポート番号</li>
-<li>変更後の状態</li>
-</ul>
-</div>
-<div class="section" id="lacppacket-in">
-<h3>LACPデータユニットをPacket-Inさせるフローエントリの登録<a class="headerlink" href="#lacppacket-in" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>LACPデータユニットの交換間隔には、FAST（1秒ごと）とSLOW（30秒ごと）の2種類があります。リンク・アグリゲーションの仕様によれば、交換間隔の3倍の時間無通信状態が続いた場合、そのインターフェースはリンク・アグリゲーションのグループから除外され、パケットの転送には使用されなくなります。</p>
-<p>LACPライブラリでは、LACPデータユニット受信時にPacket-Inさせるフローエントリに対し、交換間隔の3倍の時間（SHORT_TIMEOUT_TIMEは3秒、LONG_TIMEOUT_TIMEは90秒）をidle_timeoutとして設定することにより、無通信の監視を行っています。</p>
-<p>交換間隔が変更された場合、idle_timeoutの時間も再設定する必要があるため、LACPライブラリでは以下のような実装をしています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
-
-    <span class="c"># set the idle_timeout time using the actor state of the</span>
-    <span class="c"># received packet.</span>
-    <span class="k">if</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LACP_STATE_SHORT_TIMEOUT</span> <span class="o">==</span> \
-       <span class="n">req_lacp</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">:</span>
-        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">SHORT_TIMEOUT_TIME</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LONG_TIMEOUT_TIME</span>
-
-    <span class="c"># when the timeout time has changed, update the timeout time of</span>
-    <span class="c"># the slave i/f and re-enter a flow entry for the packet from</span>
-    <span class="c"># the slave i/f with idle_timeout.</span>
-    <span class="k">if</span> <span class="n">idle_timeout</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the timeout time has changed.&quot;</span><span class="p">,</span>
-            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">)</span>
-        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_flow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">func</span>
-        <span class="n">func</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
-
-    <span class="c"># ...</span>
-</pre></div>
-</div>
-<p>_get_slave_timeout()メソッドは、指定したスイッチの指定したポートにおける現在のidle_timeout値を取得します。_set_slave_timeout()メソッドは、指定したスイッチの指定したポートにおけるidle_timeout値を登録します。初期状態およびリンク・アグリゲーション・グループから除外された場合にはidle_timeout値は0に設定されているため、新たにLACPデータユニットを受信した場合、交換間隔がどちらであってもフローエントリを登録します。</p>
-<p>使用するOpenFlowのバージョンにより<tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt>クラスのコンストラクタの引数が異なるため、バージョンに応じたフローエントリ登録メソッドを取得しています。以下はOpenFlow 1.2以降で使用するフローエントリ登録メソッドです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;enter a flow entry for the packet from the slave i/f</span>
-<span class="sd">    with idle_timeout. for OpenFlow ver1.2 and ver1.3.&quot;&quot;&quot;</span>
-    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span>
-        <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_src</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">eth_type</span><span class="o">=</span><span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span><span class="p">)</span>
-    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span>
-        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_MAX</span><span class="p">)]</span>
-    <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span>
-        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span> <span class="n">actions</span><span class="p">)]</span>
-    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
-        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
-        <span class="n">idle_timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span>
-        <span class="n">flags</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFF_SEND_FLOW_REM</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span>
-        <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>上記ソースで、「対向インターフェースからLACPデータユニットを受信した場合はPacket-Inする」というフローエントリを、無通信監視時間つき最高優先度で設定しています。</p>
-</div>
-<div class="section" id="id6">
-<h3>LACPデータユニットの送受信処理<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>LACPデータユニット受信時、「<a class="reference internal" href="#id5">ポートの有効/無効状態変更に伴う処理</a>」や「<a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a>」を行った後、応答用のLACPデータユニットを作成し、送信します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
-
-    <span class="c"># create a response packet.</span>
-    <span class="n">res_pkt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_response</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">)</span>
-
-    <span class="c"># packet-out the response packet.</span>
-    <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span>
-    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
-        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
-        <span class="n">data</span><span class="o">=</span><span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)</span>
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>上記ソースで呼び出されている_create_response()メソッドは応答用パケット作成処理です。その中で呼び出されている_create_lacp()メソッドで応答用のLACPデータユニットを作成しています。作成した応答用パケットは、LACPデータユニットを受信したポートからPacket-Outさせます。</p>
-<p>LACPデータユニットには送信側（Actor）の情報と受信側（Partner）の情報を設定します。受信したLACPデータユニットの送信側情報には対向インターフェースの情報が記載されているので、OpenFlowスイッチから応答を返すときにはそれを受信側情報として設定します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;create a LACP packet.&quot;&quot;&quot;</span>
-    <span class="n">actor_system</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span><span class="p">]</span><span class="o">.</span><span class="n">hw_addr</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">(</span>
-        <span class="c"># ...</span>
-        <span class="n">partner_system_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system_priority</span><span class="p">,</span>
-        <span class="n">partner_system</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system</span><span class="p">,</span>
-        <span class="n">partner_key</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_key</span><span class="p">,</span>
-        <span class="n">partner_port_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port_priority</span><span class="p">,</span>
-        <span class="n">partner_port</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port</span><span class="p">,</span>
-        <span class="n">partner_state_activity</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_activity</span><span class="p">,</span>
-        <span class="n">partner_state_timeout</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">,</span>
-        <span class="n">partner_state_aggregation</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_aggregation</span><span class="p">,</span>
-        <span class="n">partner_state_synchronization</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_synchronization</span><span class="p">,</span>
-        <span class="n">partner_state_collecting</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_collecting</span><span class="p">,</span>
-        <span class="n">partner_state_distributing</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_distributing</span><span class="p">,</span>
-        <span class="n">partner_state_defaulted</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_defaulted</span><span class="p">,</span>
-        <span class="n">partner_state_expired</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_expired</span><span class="p">,</span>
-        <span class="n">collector_max_delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP sent.&quot;</span><span class="p">,</span>
-                     <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">res</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="flowremoved">
-<h3>FlowRemovedメッセージの受信処理<a class="headerlink" href="#flowremoved" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>指定された時間の間LACPデータユニットの交換が行われなかった場合、OpenFlowスイッチはFlowRemovedメッセージをOpenFlowコントローラに送信します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">flow_removed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;FlowRemoved event handler. when the removed flow entry was</span>
-<span class="sd">    for LACP, set the status of the slave i/f to disabled, and</span>
-<span class="sd">    send a event.&quot;&quot;&quot;</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span>
-    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
-    <span class="n">match</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span>
-    <span class="k">if</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">:</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">in_port</span>
-        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">dl_type</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
-        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_type&#39;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span> <span class="o">!=</span> <span class="n">dl_type</span><span class="p">:</span>
-        <span class="k">return</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP exchange timeout has occurred.&quot;</span><span class="p">,</span>
-        <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
-        <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>FlowRemovedメッセージを受信すると、OpenFlowコントローラは_set_slave_enabled()メソッドを使用してポートの無効状態を設定し、_set_slave_timeout()メソッドを使用してidle_timeout値を0に設定し、send_event_to_observers()メソッドを使用して<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを送信します。</p>
-</div>
-</div>
-<div class="section" id="id7">
-<h2>リンク・アグリゲーション機能搭載スイッチングハブの実装<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>前章で説明したLACPライブラリを使用してリンク・アグリゲーション機能を実装したスイッチングハブのソースコードが、Ryuのソースツリーにあります。</p>
-<blockquote>
-<div>ryu/app/simple_switch_lacp.py</div></blockquote>
-<p>ただし、上記のソースはOpenFlow 1.0用であるため、新たにOpenFlow 1.3に対応した実装を作成することにします。</p>
+<div class="section" id="ryu">
+<h2>Ryuアプリケーションの実行<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>Ryuのリンク・アグリゲーション・アプリケーションを実行してみます。</p>
+<p>Ryuのソースツリーに用意されているsimple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにリンク・アグリゲーション機能を追加したアプリケーションです。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.</span>
 <span class="c">#</span>
@@ -483,120 +214,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
 </pre></div>
 </div>
-<p>これより、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
-<div class="section" id="contexts">
-<h3>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_CONTEXTS」ディクショナリに他のRyuアプリケーションを設定することにより、他のアプリケーションを別スレッドで起動させることができます。ここではryu.lib.lacplibモジュールのLacpLibクラスを「lacplib」という名前で「_CONTEXTS」に設定しています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
-
-<span class="c"># ...</span>
-
-<span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
-
-    <span class="c"># ...</span>
-</pre></div>
-</div>
-<p>「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsからインスタンスを取得することができます。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
-<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
-<span class="c"># ...</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="id8">
-<h3>ライブラリの初期設定<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>「_CONTEXTS」に設定したLACPライブラリの初期設定を行います。初期設定にはLACPライブラリの提供するadd()メソッドを実行します。ここでは以下の値を設定します。</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="16%" />
-<col width="44%" />
-<col width="40%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">パラメータ</th>
-<th class="head">値</th>
-<th class="head">説明</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>dpid</td>
-<td>str_to_dpid(&#8216;0000000000000001&#8217;)</td>
-<td>データパスID</td>
-</tr>
-<tr class="row-odd"><td>ports</td>
-<td>[1, 2]</td>
-<td>グループ化するポートのリスト</td>
-</tr>
-</tbody>
-</table>
-<p>この設定により、データパスID「0000000000000001」のOpenFlowスイッチのポート1とポート2がひとつのリンク・アグリゲーション・グループとして動作します。</p>
-<div class="sourcecode highlight-python"><pre># ...
-    self._lacp = kwargs['lacplib']
-    self._lacp.add(
-        dpid=str_to_dpid('0000000000000001'), ports=[1, 2])
-# ...</pre>
-</div>
-</div>
-<div class="section" id="id9">
-<h3>ユーザ定義イベントの受信方法<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>前章で説明したとおり、LACPライブラリはLACPデータユニットの含まれないPacket-Inメッセージを<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というユーザ定義イベントとして送信します。ユーザ定義イベントのイベントハンドラも、Ryuが提供するイベントハンドラと同じように<tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt>デコレータで装飾します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
-    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
-
-    <span class="c"># ...</span>
-</pre></div>
-</div>
-<p>また、LACPライブラリはポートの有効/無効状態が変更されると<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを送信しますので、こちらもイベントハンドラを作成しておきます。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-    <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
-    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
-    <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
-    <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
-                     <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
-            <span class="n">match</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">del_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
-</pre></div>
-</div>
-<p>「<a class="reference internal" href="#id3">実装するリンク・アグリゲーション機能の整理</a>」で整理したとおり、ポートの有効/無効状態が変更され、パケットの転送に使用可能な物理インターフェースの個数が増減すると、論理インターフェースを通過するパケットが実際に使用する物理インターフェースが変更になる可能性があります。パケットの経路が変更される場合、すでに登録されているフローエントリを削除し、新たにフローエントリを登録する必要があります。この例では処理を簡略化するため、「ポートの有効/無効状態が変更された場合、当該OpenFlowスイッチの全学習結果を削除する」という実装となっています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
-    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
-                            <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
-                            <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
-    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>フローエントリの削除は<tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt>クラスのインスタンスで行います。</p>
-</div>
-</div>
-<div class="section" id="id10">
-<h2>リンク・アグリゲーション機能搭載スイッチングハブの実行<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>実際に、リンク・アグリゲーション機能搭載スイッチングハブを実行してみます。最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のようにトポロジが特殊なため、mnコマンドで作成することができません。</p>
+<div class="section" id="id3">
+<h3>実験環境の構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>リンク・アグリゲーション・アプリケーションの動作確認を行う実験環境を構築します。</p>
+<p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
+<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のようにトポロジが特殊なため、mnコマンドで作成することができません。</p>
 <blockquote>
 <div><a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" src="_images/fig3.png" style="width: 739.2px; height: 571.2px;" /></a>
 </div></blockquote>
-<p>以降の節で、環境構築からリンク・アグリゲーション機能搭載スイッチングハブの実行までの手順を説明します。</p>
-<div class="section" id="id11">
-<h3>トポロジ構築スクリプトの実行<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>mnコマンドで構築できるトポロジでは、特定ノード間にはひとつのリンクしか作成できません。ここではMininetの低位クラスを直接使用するスクリプトを作成し、トポロジを作成することにします。</p>
+<p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、トポロジを作成することにします。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 
@@ -614,9 +240,9 @@
     <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
 
     <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
-    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
-    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
-    <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h4&#39;</span><span class="p">)</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:22&#39;</span><span class="p">)</span>
+    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:23&#39;</span><span class="p">)</span>
+    <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h4&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:24&#39;</span><span class="p">)</span>
 
     <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
     <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
@@ -644,7 +270,7 @@
 <div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
-c1
+c0
 s1 lo:  s1-eth1:h1-eth0 s1-eth2:h1-eth1 s1-eth3:h2-eth0 s1-eth4:h3-eth0 s1-eth5:h4-eth0
 h1 h1-eth0:s1-eth1 h1-eth1:s1-eth2
 h2 h2-eth0:s1-eth3
@@ -670,11 +296,13 @@ options bonding mode=4</pre>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ip link add bond0 type bond
 root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08</pre>
 </div>
-<p>作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インターフェースを参加させます。このとき、物理インターフェースをダウンさせておく必要があります。</p>
+<p>作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インターフェースを参加させます。このとき、物理インターフェースをダウンさせておく必要があります。また、ランダムに決定された物理インターフェースのMACアドレスをわかりやすい値に書き換えておきます。</p>
 <p>Node: h1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ip link set h1-eth0 down
+root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
 root@ryu-vm:~# ip link set h1-eth0 master bond0
 root@ryu-vm:~# ip link set h1-eth1 down
+root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
 root@ryu-vm:~# ip link set h1-eth1 master bond0</pre>
 </div>
 <p>論理インターフェースにIPアドレスを割り当てます。mnコマンドでホストを作成した場合にならって、10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレスが割り当てられているので、これを削除します。</p>
@@ -748,7 +376,7 @@ MII Status: up
 Speed: 10000 Mbps
 Duplex: full
 Link Failure Count: 0
-Permanent HW addr: 96:8f:84:7a:d4:3b
+Permanent HW addr: 00:00:00:00:00:11
 Aggregator ID: 1
 Slave queue ID: 0
 
@@ -757,7 +385,7 @@ MII Status: up
 Speed: 10000 Mbps
 Duplex: full
 Link Failure Count: 0
-Permanent HW addr: fa:55:a9:15:a6:c2
+Permanent HW addr: 00:00:00:00:00:12
 Aggregator ID: 2
 Slave queue ID: 0</pre>
 </div>
@@ -771,12 +399,12 @@ Slave queue ID: 0</pre>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13</pre>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>スイッチングハブの実行<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id4">
+<h3>スイッチングハブの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>準備が整ったので、Ryuアプリケーションを実行します。</p>
 <div class="admonition attention">
 <p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
+<p class="last">本Ryuアプリケーションはライブラリとしてlacplib.pyを使用しますが、Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
 </div>
 <p>ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンドを実行します。</p>
 <p>Node: c0:</p>
@@ -817,23 +445,17 @@ slave state changed port: 2 enabled: True
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=19.243s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=19.24s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=41.886s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535</pre>
+ cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535</pre>
 </div>
-<p>1番めのフローエントリは「h1のh1-eth0からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」、2番めのフローエントリは「h1のh1-eth1からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」という内容です。なお、3番めのフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」でも登録しているTable-missフローエントリです。</p>
+<p>1番めのフローエントリは「h1のh1-eth1からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」、2番めのフローエントリは「h1のh1-eth0からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」という内容です。なお、3番めのフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」でも登録しているTable-missフローエントリです。</p>
 </div>
-<div class="section" id="id13">
-<h3>リンク・アグリゲーション機能の確認<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<div class="section" id="id14">
-<h4>通信速度の向上<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id5">
+<h3>リンク・アグリゲーション機能の確認<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id6">
+<h4>通信速度の向上<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>まずはリンク・アグリゲーションによる通信速度の向上を確認します。ただし、実際に通信性能の確認を行おうとすると大量のデータを間断なく送受信し続ける必要があり、試験が煩雑になってしまいますので、ここでは「スイッチングハブの機能により論理インターフェースを経由するフローエントリを複数登録し、その際特定の物理回線にのみフローが集中しないこと」をもって動作の確認を行います。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p>ホストh1のボンディングドライバにより、振り分けロジックには宛先のMACアドレスを使用するよう設定されています。このロジックは単純に言えば「宛先MACアドレスの下1バイトを有効なポート数で除算し、その剰余を元にどのポートから出力するかを決定する」といったものです。</p>
-<p>Mininetによって作成されたホストのMACアドレスはランダムに決定されますが、場合によっては振り分けロジック適用の結果すべてのフローで同一の物理インターフェースが選択される可能性もあります。</p>
-<p class="last">期待する結果が得られなかった場合は、本章の最初からやり直してみてください。</p>
-</div>
 <p>まず、ホストh2からホストh1に対しpingを実行します。</p>
 <p>Node: h2:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -846,19 +468,21 @@ PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 </div>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
+<p>後述するとおり、Ryuのリンク・アグリゲーション・アプリケーションは振り分けロジックを実装していません。振り分けは対向装置の処理に依存します。</p>
+<p>ホストh1のボンディングドライバは、振り分けロジックとして宛先のMACアドレスを使用するよう設定されています。このロジックは単純に言えば「宛先MACアドレスの下1バイトを有効なポート数で除算し、その剰余を元にどのポートから出力するかを決定する」といったものです。</p>
 <p class="last">ホストh1からホストh2に対しpingを実行した場合、ICMP echo requestの前にARP requestが送信されます。ARP requestの宛先MACアドレスはff:ff:ff:ff:ff:ff固定であるため、振り分けロジックを適用すると使用する物理インターフェースが固定されてしまいます。そういった事態を避けるため、ここではホストh2からホストh1に対しpingを実行しています。以降の例も同様です。</p>
 </div>
 <p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=65.889s, table=0, n_packets=3, n_bytes=372, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=65.886s, table=0, n_packets=3, n_bytes=372, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=88.532s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=9.314s, table=0, n_packets=9, n_bytes=826, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=9.316s, table=0, n_packets=10, n_bytes=924, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3</pre>
+ cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=33.046s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。4番めのフローエントリは「3番ポート(s1-eth3、つまりh2)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する」、5番めのフローエントリは「2番ポート(s1-eth2)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出力する」というフローエントリです。h2との通信にはs1-eth2が使用されていることがわかります。</p>
+<p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。4番めのフローエントリは「3番ポート(s1-eth3、つまりh2の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する」、5番めのフローエントリは「1番ポート(s1-eth2)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出力する」というフローエントリです。h2との通信にはs1-eth1が使用されていることがわかります。</p>
 <p>続いて、ホストh3からホストh1に対しpingを実行します。</p>
 <p>Node: h3:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -873,17 +497,17 @@ PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=116.812s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=116.809s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=139.455s, table=0, n_packets=10, n_bytes=696, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=60.237s, table=0, n_packets=62, n_bytes=5908, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=60.239s, table=0, n_packets=63, n_bytes=6006, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
- cookie=0x0, duration=6.113s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=6.115s, table=0, n_packets=7, n_bytes=630, priority=1,in_port=1,dl_dst=e6:d4:c3:27:53:14 actions=output:4</pre>
+ cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=110.761s, table=0, n_packets=10, n_bytes=696, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=80.974s, table=0, n_packets=82, n_bytes=7924, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
+ cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>先ほど確認した時点から、6番めと7番めのフローエントリが追加されています。6番めのフローエントリは「4番ポート(s1-eth4、つまりh3)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する」、7番めのフローエントリは「1番ポート(s1-eth1)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出力する」というフローエントリです。h3との通信にはs1-eth1が使用されていることがわかります。</p>
+<p>先ほど確認した時点から、5番めと6番めのフローエントリが追加されています。6番めのフローエントリは「4番ポート(s1-eth4、つまりh3の対向インターフェース)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する」、5番めのフローエントリは「2番ポート(s1-eth2)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出力する」というフローエントリです。h3との通信にはs1-eth2が使用されていることがわかります。</p>
 <p>同様にホストh4からホストh1に対しpingを実行します。</p>
-<p>Node: h3:</p>
+<p>Node: h4:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=86.3 ms
@@ -896,17 +520,17 @@ PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=165.183s, table=0, n_packets=6, n_bytes=744, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=96:8f:84:7a:d4:3b,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=165.18s, table=0, n_packets=6, n_bytes=744, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=187.826s, table=0, n_packets=14, n_bytes=920, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=108.608s, table=0, n_packets=113, n_bytes=10794, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=108.61s, table=0, n_packets=114, n_bytes=10892, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
- cookie=0x0, duration=54.484s, table=0, n_packets=57, n_bytes=5418, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=54.486s, table=0, n_packets=58, n_bytes=5516, priority=1,in_port=1,dl_dst=e6:d4:c3:27:53:14 actions=output:4
- cookie=0x0, duration=5.77s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=5.774s, table=0, n_packets=7, n_bytes=630, priority=1,in_port=2,dl_dst=1a:32:d2:75:33:07 actions=output:5</pre>
+ cookie=0x0, duration=199.287s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=199.283s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=210.283s, table=0, n_packets=14, n_bytes=920, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5
+ cookie=0x0, duration=180.496s, table=0, n_packets=185, n_bytes=17850, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=102.199s, table=0, n_packets=105, n_bytes=10122, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
+ cookie=0x0, duration=102.197s, table=0, n_packets=104, n_bytes=10024, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=180.499s, table=0, n_packets=186, n_bytes=17948, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>追加されたフローエントリは、「5番ポート(s1-eth5、h4)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する」「2番ポート(s1-eth2)からh4宛のパケットを受信したら5番ポート(s1-eth5)から出力する」です。</p>
+<p>追加されたフローエントリは、「5番ポート(s1-eth5、h4の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する」「1番ポート(s1-eth1)からh4宛のパケットを受信したら5番ポート(s1-eth5)から出力する」です。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="50%" />
@@ -934,8 +558,8 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div></blockquote>
 <p>以上のように、フローが分散することが確認できました。</p>
 </div>
-<div class="section" id="id15">
-<h4>耐障害性の向上<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id7">
+<h4>耐障害性の向上<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>次に、リンク・アグリゲーションによる耐障害性の向上を確認します。現在の状況は、h2とh4がh1と通信する際にはs1-eth2を、h3がh1と通信する際にはs1-eth1を使用しています。</p>
 <p>ここで、s1-eth1の対向インターフェースであるh1-eth0をリンク・アグリゲーションのグループから離脱させます。</p>
 <p>Node: h1:</p>
@@ -961,34 +585,538 @@ slave state changed port: 1 enabled: False
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=333.163s, table=0, n_packets=12, n_bytes=1488, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=fa:55:a9:15:a6:c2,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=355.809s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=2.635s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=2.632s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=26:1e:49:e6:f9:53 actions=output:3
- cookie=0x0, duration=2.513s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=2.51s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=e6:d4:c3:27:53:14 actions=output:4
- cookie=0x0, duration=1.8s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=2.804s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=2,dl_dst=1a:32:d2:75:33:07 actions=output:5</pre>
+ cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=5.738s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=6.279s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:5
+ cookie=0x0, duration=6.281s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=5.506s, table=0, n_packets=5, n_bytes=434, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=5.736s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:21 actions=output:3
+ cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4</pre>
 </div>
 <p>フローエントリが再登録されたことにより、ホストh3で停止していたpingが再開されます。</p>
 <p>Node: h3:</p>
 <div class="console highlight-python"><pre>...
-64 bytes from 10.0.0.1: icmp_req=76 ttl=64 time=0.300 ms
-64 bytes from 10.0.0.1: icmp_req=77 ttl=64 time=0.276 ms
-64 bytes from 10.0.0.1: icmp_req=78 ttl=64 time=0.097 ms
-64 bytes from 10.0.0.1: icmp_req=79 ttl=64 time=0.056 ms
-64 bytes from 10.0.0.1: icmp_req=171 ttl=64 time=43.9 ms
-64 bytes from 10.0.0.1: icmp_req=172 ttl=64 time=5.53 ms
-64 bytes from 10.0.0.1: icmp_req=173 ttl=64 time=0.593 ms
-64 bytes from 10.0.0.1: icmp_req=174 ttl=64 time=0.218 ms
+64 bytes from 10.0.0.1: icmp_req=144 ttl=64 time=0.193 ms
+64 bytes from 10.0.0.1: icmp_req=145 ttl=64 time=0.081 ms
+64 bytes from 10.0.0.1: icmp_req=146 ttl=64 time=0.095 ms
+64 bytes from 10.0.0.1: icmp_req=237 ttl=64 time=44.1 ms
+64 bytes from 10.0.0.1: icmp_req=238 ttl=64 time=2.52 ms
+64 bytes from 10.0.0.1: icmp_req=239 ttl=64 time=0.371 ms
+64 bytes from 10.0.0.1: icmp_req=240 ttl=64 time=0.103 ms
+64 bytes from 10.0.0.1: icmp_req=241 ttl=64 time=0.067 ms
 ...</pre>
 </div>
 <p>以上のように、一部の物理インターフェースに故障が発生した場合でも、他の物理インターフェースを用いて自動的に復旧できることが確認できました。</p>
 </div>
 </div>
 </div>
-<div class="section" id="id16">
-<h2>まとめ<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id8">
+<h2>Ryuによるリンク・アグリゲーション機能の実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>Ryuのリンク・アグリゲーション・アプリケーションにおいて、OpenFlowを用いてどのようにリンク・アグリゲーション機能を実現しているかを見ていきます。</p>
+<p>冒頭でも述べたとおり、LACPを用いたリンク・アグリゲーションでは「LACPデータユニットの交換が正常に行われている間は当該物理インターフェースは有効」「LACPデータユニットの交換が途絶えたら当該物理インターフェースは無効」という振る舞いをします。物理インターフェースが無効ということは、そのインターフェースを使用するフローエントリが存在しないということでもあります。従って、</p>
+<ul class="simple">
+<li>LACPデータユニットを受信したら応答を作成して送信する</li>
+<li>LACPデータユニットが一定時間受信できなかったら当該物理インターフェースを使用するフローエントリを削除し、以降そのインターフェースを使用するフローエントリを登録しない</li>
+<li>無効とされた物理インターフェースでLACPデータユニットを受信した場合、当該インターフェースを再度有効化する</li>
+<li>LACPデータユニット以外のパケットは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブ機能で学習・転送する</li>
+</ul>
+<p>という処理を実装すれば、リンク・アグリゲーションの基本的な動作が可能となります。LACPに関わる部分とそうでない部分が明確に分かれているので、LACPに関わる部分をLACPライブラリとして切り出し、そうでない部分は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブを拡張するかたちで実装します。</p>
+<p>LACPデータユニット受信時の応答作成・送信はフローエントリだけでは実現不可能であるため、Packet-Inメッセージを使用してOpenFlowコントローラ側で処理を行います。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>LACPデータユニットを交換する物理インターフェースは、その役割によってACTIVEとPASSIVEに分類されます。ACTIVEは一定時間ごとにLACPデータユニットを送信し、疎通を能動的に確認します。PASSIVEはACTIVEから送信されたLACPデータユニットを受信した際に応答を返すことにより、疎通を受動的に確認します。</p>
+<p>Ryuのリンク・アグリゲーション・アプリケーションは、PASSIVEモードのみ実装しています。</p>
+<p class="last">ACTIVEの実装には定期送信のためのタイマー処理が必要となります。リンク・アグリゲーションとは本来無関係な処理が増えてしまうのを避けるため、ACTIVEモードを非対応としています。</p>
+</div>
+<p>一定時間LACPデータユニットを受信しなかった場合に当該物理インターフェースを無効にする、という処理は、LACPデータユニットをPacket-Inさせるフローエントリにidle_timeoutを設定し、時間切れの際にFlowRemovedメッセージを送信させることにより、OpenFlowコントローラで当該インターフェースが無効になった際の対処を行うことができます。</p>
+<p>無効となったインターフェースでLACPデータユニットの交換が再開された場合の処理は、LACPデータユニット受信時のPacket-Inメッセージ処理中で当該インターフェースの有効/無効状態を判別・変更することで実現します。</p>
+<p>物理インターフェースが無効となったとき、OpenFlowコントローラの処理としては「当該インターフェースを使用するフローエントリを削除する」だけでよさそうに思えますが、それでは不充分です。</p>
+<p>たとえば3つの物理インターフェースをグループ化して使用している論理インターフェースがあり、振り分けロジックが「有効なインターフェース数によるMACアドレスの剰余」となっている場合を仮定します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="34%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">インターフェース1</th>
+<th class="head">インターフェース2</th>
+<th class="head">インターフェース3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MACアドレスの剰余:0</td>
+<td>MACアドレスの剰余:1</td>
+<td>MACアドレスの剰余:2</td>
+</tr>
+</tbody>
+</table>
+<p>そして、各物理インターフェースを使用するフローエントリが以下のように3つずつ登録されていたとします。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="34%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">インターフェース1</th>
+<th class="head">インターフェース2</th>
+<th class="head">インターフェース3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>宛先:00:00:00:00:00:00</td>
+<td>宛先:00:00:00:00:00:01</td>
+<td>宛先:00:00:00:00:00:02</td>
+</tr>
+<tr class="row-odd"><td>宛先:00:00:00:00:00:03</td>
+<td>宛先:00:00:00:00:00:04</td>
+<td>宛先:00:00:00:00:00:05</td>
+</tr>
+<tr class="row-even"><td>宛先:00:00:00:00:00:06</td>
+<td>宛先:00:00:00:00:00:07</td>
+<td>宛先:00:00:00:00:00:08</td>
+</tr>
+</tbody>
+</table>
+<p>ここでインターフェース1が無効になった場合、「有効なインターフェース数によるMACアドレスの剰余」という振り分けロジックに従うと、次のように振り分けられなければなりません。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="34%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">インターフェース1</th>
+<th class="head">インターフェース2</th>
+<th class="head">インターフェース3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>無効</td>
+<td>MACアドレスの剰余:0</td>
+<td>MACアドレスの剰余:1</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="34%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">インターフェース1</th>
+<th class="head">インターフェース2</th>
+<th class="head">インターフェース3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td></td>
+<td>宛先:00:00:00:00:00:00</td>
+<td>宛先:00:00:00:00:00:01</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>宛先:00:00:00:00:00:02</td>
+<td>宛先:00:00:00:00:00:03</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>宛先:00:00:00:00:00:04</td>
+<td>宛先:00:00:00:00:00:05</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>宛先:00:00:00:00:00:06</td>
+<td>宛先:00:00:00:00:00:07</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>宛先:00:00:00:00:00:08</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>インターフェース1を使用していたフローエントリだけではなく、インターフェース2やインターフェース3のフローエントリも書き換える必要があることがわかります。これは物理インターフェースが無効になったときだけでなく、有効になったときも同様です。</p>
+<p>従って、ある物理インターフェースの有効/無効状態が変更された場合の処理は、当該物理インターフェースが所属する論理インターフェースに含まれるすべての物理インターフェースを使用するフローエントリを削除する、ということになります。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">振り分けロジックについては仕様で定められておらず、各機器の実装に委ねられています。Ryuのリンク・アグリゲーション・アプリケーションでは独自の振り分け処理を行わず、対向装置によって振り分けられた経路を使用するものとします。</p>
+</div>
+<p>LACPデータユニット以外のフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブ機能で登録しているため、それらのフローエントリを削除するのもスイッチングハブで行うべきです。</p>
+<p>以上のことを整理すると、リンク・アグリゲーション機能として実装すべき項目は</p>
+<p><strong>LACPライブラリ</strong></p>
+<ul class="simple">
+<li>LACPデータユニットを受信したら応答を作成して送信する</li>
+<li>FlowRemovedメッセージ受信時、当該物理インターフェースを無効とみなし、所属する論理インターフェースのフローエントリをスイッチングハブに削除させる</li>
+<li>無効状態の物理インターフェースでLACPデータユニットを受信した場合、当該物理インターフェースを有効とみなし、所属する論理インターフェースのフローエントリをスイッチングハブに削除させる</li>
+</ul>
+<p><strong>スイッチングハブ</strong></p>
+<ul class="simple">
+<li>LACPデータユニット以外を受信したら従来どおり学習・転送する</li>
+<li>LACPライブラリの指示により、登録済みのフローエントリを削除する</li>
+</ul>
+<p>となります。</p>
+<p>LACPライブラリおよびスイッチングハブのソースコードは、Ryuのソースツリーにあります。</p>
+<blockquote>
+<div><p>ryu/lib/lacliblib.py</p>
+<p>ryu/app/simple_switch_lacp.py</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">前述のとおり、simple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを元にアプリケーションの詳細を説明します。</p>
+</div>
+<div class="admonition attention">
+<p class="first admonition-title">注意</p>
+<p class="last">Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
+</div>
+<div class="section" id="lacp">
+<h3>LACPライブラリの実装<a class="headerlink" href="#lacp" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>以降の節で、前述の機能がLACPライブラリにおいて具体的にどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
+<div class="section" id="id9">
+<h4>論理インターフェースの作成<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>前述のとおり、リンク・アグリゲーション機能を使用するには、どのネットワーク機器においてどのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。LACPライブラリでは、以下のメソッドでこの設定を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span>
+    <span class="n">ifs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+        <span class="n">ifs</span><span class="p">[</span><span class="n">port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">bond</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">bond</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>引数の内容は以下のとおりです。</p>
+<p>dpid</p>
+<blockquote>
+<div>OpenFlowスイッチのデータパスIDを指定します。</div></blockquote>
+<p>ports</p>
+<blockquote>
+<div>グループ化したいポート番号のリストを指定します。</div></blockquote>
+<p>このメソッドを呼び出すことにより、LACPライブラリは指定されたデータパスIDのOpenFlowスイッチの指定されたポートをひとつのインターフェースとして扱うようになります。複数のグループを作成したい場合、その都度add()メソッドを呼び出します。なお、論理インターフェースに割り当てられるMACアドレスは、OpenFlowスイッチの持つLOCALポートと同じものが自動的に使用されます。</p>
+<div class="admonition tip">
+<p class="first admonition-title">ちなみに</p>
+<p class="last">OpenFlowスイッチの中には、スイッチ自身の機能としてリンク・アグリゲーション機能を提供しているものもあります（Open vSwitchなど）。ここではそうしたスイッチ独自の機能は使用せず、OpenFlowコントローラによる制御によってリンク・アグリゲーション機能を実現します。</p>
+</div>
+</div>
+<div class="section" id="packet-in">
+<h4>Packet-In処理<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブは、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば専用の動作を行い、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理分岐を行い、スイッチングハブにLACPデータユニットを処理させないようにします。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
+<span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
+    <span class="n">req_pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span> <span class="ow">in</span> <span class="n">req_pkt</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_eth</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_lacp</span><span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="n">req_eth</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>イベントハンドラ自体は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様です。受信したメッセージにLACPデータユニットが含まれているかどうかで処理を分岐させています。</p>
+<p>LACPデータユニットが含まれていた場合はLACPライブラリのLACPデータユニット受信処理を行います。LACPデータユニットが含まれていなかった場合、send_event_to_observers()というメソッドを呼んでいます。これはryu.base.app_manager.RyuAppクラスで定義されている、イベントを送信するためのメソッドです。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」ではRyuで定義されたOpenFlowメッセージ受信イベントについて触れましたが、ユーザが独自にイベントを定義することもできます。上記ソースで送信している<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というイベントは、LACPライブラリ内で作成したユーザ定義イベントです。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
+</pre></div>
+</div>
+<p>ユーザ定義イベントは、ryu.controller.event.EventBaseクラスを継承して作成します。イベントクラスに内包するデータに制限はありません。<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>クラスでは、Packet-Inメッセージで受信したryu.ofproto.OFPPacketInインスタンスをそのまま使用しています。</p>
+<p>ユーザ定義イベントの受信方法については後述します。</p>
+</div>
+<div class="section" id="id10">
+<h4>ポートの有効/無効状態変更に伴う処理<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>LACPライブラリのLACPデータユニット受信処理は、以下の処理からなっています。</p>
+<ol class="arabic simple">
+<li>LACPデータユニットを受信したポートが利用不能状態であれば利用可能状態に変更し、状態が変更したことをイベントで通知します。</li>
+<li>無通信タイムアウトの待機時間が変更された場合、LACPデータユニット受信時にPacket-Inを送信するフローエントリを登録します。</li>
+<li>受信したLACPデータユニットに対する応答を作成し、送信します。</li>
+</ol>
+<p>2.の処理については後述の「<a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a>」で、3.の処理については後述の「<a class="reference internal" href="#id11">LACPデータユニットの送受信処理</a>」で、それぞれ説明します。ここでは1.の処理について説明します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># when LACP arrived at disabled port, update the status of</span>
+    <span class="c"># the slave i/f to enabled, and send a event.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the slave i/f has just been up.&quot;</span><span class="p">,</span>
+            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
+            <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>_get_slave_enabled()メソッドは、指定したスイッチの指定したポートが有効か否かを取得します。_set_slave_enabled()メソッドは、指定したスイッチの指定したポートの有効/無効状態を設定します。</p>
+<p>上記のソースでは、無効状態のポートでLACPデータユニットを受信した場合、ポートの状態が変更されたということを示す<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>というユーザ定義イベントを送信しています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a event class that notifies the changes of the statuses of the</span>
+<span class="sd">    slave i/fs.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントは、ポートが有効化したときの他に、ポートが無効化したときにも送信されます。無効化したときの処理は「<a class="reference internal" href="#flowremoved">FlowRemovedメッセージの受信処理</a>」で実装されています。</p>
+<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>クラスには以下の情報が含まれます。</p>
+<ul class="simple">
+<li>ポートの有効/無効状態変更が発生したOpenFlowスイッチ</li>
+<li>有効/無効状態変更が発生したポート番号</li>
+<li>変更後の状態</li>
+</ul>
+</div>
+<div class="section" id="lacppacket-in">
+<h4>LACPデータユニットをPacket-Inさせるフローエントリの登録<a class="headerlink" href="#lacppacket-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>LACPデータユニットの交換間隔には、FAST（1秒ごと）とSLOW（30秒ごと）の2種類があります。リンク・アグリゲーションの仕様によれば、交換間隔の3倍の時間無通信状態が続いた場合、そのインターフェースはリンク・アグリゲーションのグループから除外され、パケットの転送には使用されなくなります。</p>
+<p>LACPライブラリでは、LACPデータユニット受信時にPacket-Inさせるフローエントリに対し、交換間隔の3倍の時間（SHORT_TIMEOUT_TIMEは3秒、LONG_TIMEOUT_TIMEは90秒）をidle_timeoutとして設定することにより、無通信の監視を行っています。</p>
+<p>交換間隔が変更された場合、idle_timeoutの時間も再設定する必要があるため、LACPライブラリでは以下のような実装をしています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># set the idle_timeout time using the actor state of the</span>
+    <span class="c"># received packet.</span>
+    <span class="k">if</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LACP_STATE_SHORT_TIMEOUT</span> <span class="o">==</span> \
+       <span class="n">req_lacp</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">:</span>
+        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">SHORT_TIMEOUT_TIME</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LONG_TIMEOUT_TIME</span>
+
+    <span class="c"># when the timeout time has changed, update the timeout time of</span>
+    <span class="c"># the slave i/f and re-enter a flow entry for the packet from</span>
+    <span class="c"># the slave i/f with idle_timeout.</span>
+    <span class="k">if</span> <span class="n">idle_timeout</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the timeout time has changed.&quot;</span><span class="p">,</span>
+            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_flow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">func</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>_get_slave_timeout()メソッドは、指定したスイッチの指定したポートにおける現在のidle_timeout値を取得します。_set_slave_timeout()メソッドは、指定したスイッチの指定したポートにおけるidle_timeout値を登録します。初期状態およびリンク・アグリゲーション・グループから除外された場合にはidle_timeout値は0に設定されているため、新たにLACPデータユニットを受信した場合、交換間隔がどちらであってもフローエントリを登録します。</p>
+<p>使用するOpenFlowのバージョンにより<tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt>クラスのコンストラクタの引数が異なるため、バージョンに応じたフローエントリ登録メソッドを取得しています。以下はOpenFlow 1.2以降で使用するフローエントリ登録メソッドです。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enter a flow entry for the packet from the slave i/f</span>
+<span class="sd">    with idle_timeout. for OpenFlow ver1.2 and ver1.3.&quot;&quot;&quot;</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span>
+        <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_src</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">eth_type</span><span class="o">=</span><span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span><span class="p">)</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span>
+        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_MAX</span><span class="p">)]</span>
+    <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span>
+        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span> <span class="n">actions</span><span class="p">)]</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+        <span class="n">idle_timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span>
+        <span class="n">flags</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFF_SEND_FLOW_REM</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>上記ソースで、「対向インターフェースからLACPデータユニットを受信した場合はPacket-Inする」というフローエントリを、無通信監視時間つき最高優先度で設定しています。</p>
+</div>
+<div class="section" id="id11">
+<h4>LACPデータユニットの送受信処理<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>LACPデータユニット受信時、「<a class="reference internal" href="#id10">ポートの有効/無効状態変更に伴う処理</a>」や「<a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a>」を行った後、応答用のLACPデータユニットを作成し、送信します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># create a response packet.</span>
+    <span class="n">res_pkt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_response</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">)</span>
+
+    <span class="c"># packet-out the response packet.</span>
+    <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>上記ソースで呼び出されている_create_response()メソッドは応答用パケット作成処理です。その中で呼び出されている_create_lacp()メソッドで応答用のLACPデータユニットを作成しています。作成した応答用パケットは、LACPデータユニットを受信したポートからPacket-Outさせます。</p>
+<p>LACPデータユニットには送信側（Actor）の情報と受信側（Partner）の情報を設定します。受信したLACPデータユニットの送信側情報には対向インターフェースの情報が記載されているので、OpenFlowスイッチから応答を返すときにはそれを受信側情報として設定します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;create a LACP packet.&quot;&quot;&quot;</span>
+    <span class="n">actor_system</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span><span class="p">]</span><span class="o">.</span><span class="n">hw_addr</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">(</span>
+        <span class="c"># ...</span>
+        <span class="n">partner_system_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system_priority</span><span class="p">,</span>
+        <span class="n">partner_system</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system</span><span class="p">,</span>
+        <span class="n">partner_key</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_key</span><span class="p">,</span>
+        <span class="n">partner_port_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port_priority</span><span class="p">,</span>
+        <span class="n">partner_port</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port</span><span class="p">,</span>
+        <span class="n">partner_state_activity</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_activity</span><span class="p">,</span>
+        <span class="n">partner_state_timeout</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">,</span>
+        <span class="n">partner_state_aggregation</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_aggregation</span><span class="p">,</span>
+        <span class="n">partner_state_synchronization</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_synchronization</span><span class="p">,</span>
+        <span class="n">partner_state_collecting</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_collecting</span><span class="p">,</span>
+        <span class="n">partner_state_distributing</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_distributing</span><span class="p">,</span>
+        <span class="n">partner_state_defaulted</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_defaulted</span><span class="p">,</span>
+        <span class="n">partner_state_expired</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_expired</span><span class="p">,</span>
+        <span class="n">collector_max_delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP sent.&quot;</span><span class="p">,</span>
+                     <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">res</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="flowremoved">
+<h4>FlowRemovedメッセージの受信処理<a class="headerlink" href="#flowremoved" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>指定された時間の間LACPデータユニットの交換が行われなかった場合、OpenFlowスイッチはFlowRemovedメッセージをOpenFlowコントローラに送信します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">flow_removed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FlowRemoved event handler. when the removed flow entry was</span>
+<span class="sd">    for LACP, set the status of the slave i/f to disabled, and</span>
+<span class="sd">    send a event.&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span>
+    <span class="k">if</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">:</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">in_port</span>
+        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">dl_type</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_type&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span> <span class="o">!=</span> <span class="n">dl_type</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP exchange timeout has occurred.&quot;</span><span class="p">,</span>
+        <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
+        <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>FlowRemovedメッセージを受信すると、OpenFlowコントローラは_set_slave_enabled()メソッドを使用してポートの無効状態を設定し、_set_slave_timeout()メソッドを使用してidle_timeout値を0に設定し、send_event_to_observers()メソッドを使用して<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを送信します。</p>
+</div>
+</div>
+<div class="section" id="id12">
+<h3>アプリケーションの実装<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3対応のリンク・アグリゲーション・アプリケーション (simple_switch_lacp_13.py) と、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
+<div class="section" id="contexts">
+<h4>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_CONTEXTS」ディクショナリに他のRyuアプリケーションを設定することにより、他のアプリケーションを別スレッドで起動させることができます。ここではLACPライブラリのLacpLibクラスを「lacplib」という名前で「_CONTEXTS」に設定しています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
+
+<span class="c"># ...</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsからインスタンスを取得することができます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
+<span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id13">
+<h4>ライブラリの初期設定<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>「_CONTEXTS」に設定したLACPライブラリの初期設定を行います。初期設定にはLACPライブラリの提供するadd()メソッドを実行します。ここでは以下の値を設定します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="44%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">パラメータ</th>
+<th class="head">値</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dpid</td>
+<td>str_to_dpid(&#8216;0000000000000001&#8217;)</td>
+<td>データパスID</td>
+</tr>
+<tr class="row-odd"><td>ports</td>
+<td>[1, 2]</td>
+<td>グループ化するポートのリスト</td>
+</tr>
+</tbody>
+</table>
+<p>この設定により、データパスID「0000000000000001」のOpenFlowスイッチのポート1とポート2がひとつのリンク・アグリゲーション・グループとして動作します。</p>
+<div class="sourcecode highlight-python"><pre># ...
+    self._lacp = kwargs['lacplib']
+    self._lacp.add(
+        dpid=str_to_dpid('0000000000000001'), ports=[1, 2])
+# ...</pre>
+</div>
+</div>
+<div class="section" id="id14">
+<h4>ユーザ定義イベントの受信方法<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p><a class="reference internal" href="#lacp">LACPライブラリの実装</a>で説明したとおり、LACPライブラリはLACPデータユニットの含まれないPacket-Inメッセージを<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というユーザ定義イベントとして送信します。ユーザ定義イベントのイベントハンドラも、Ryuが提供するイベントハンドラと同じように<tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt>デコレータで装飾します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>また、LACPライブラリはポートの有効/無効状態が変更されると<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを送信しますので、こちらもイベントハンドラを作成しておきます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">del_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+</pre></div>
+</div>
+<p>本節の冒頭で整理したとおり、ポートの有効/無効状態が変更され、パケットの転送に使用可能な物理インターフェースの個数が増減すると、論理インターフェースを通過するパケットが実際に使用する物理インターフェースが変更になる可能性があります。パケットの経路が変更される場合、すでに登録されているフローエントリを削除し、新たにフローエントリを登録する必要があります。この例では処理を簡略化するため、「ポートの有効/無効状態が変更された場合、当該OpenFlowスイッチの全学習結果を削除する」という実装となっています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
+                            <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+                            <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>フローエントリの削除は<tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt>クラスのインスタンスで行います。</p>
+<p>以上のように、リンク・アグリゲーション機能を提供するライブラリと、ライブラリを利用するアプリケーションによって、リンク・アグリゲーション機能を持つスイッチングハブのアプリケーションを実現しています。</p>
+</div>
+</div>
+</div>
+<div class="section" id="id15">
+<h2>まとめ<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章では、リンク・アグリゲーションライブラリの利用を題材として、以下の項目について説明しました。</p>
 <ul class="simple">
 <li>「_CONTEXTS」を用いたライブラリの使用方法</li>
@@ -1007,35 +1135,37 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   <ul>
 <li><a class="reference internal" href="#">リンク・アグリゲーションの実装</a><ul>
 <li><a class="reference internal" href="#id2">リンク・アグリゲーション</a></li>
-<li><a class="reference internal" href="#id3">実装するリンク・アグリゲーション機能の整理</a></li>
+<li><a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a><ul>
+<li><a class="reference internal" href="#id3">実験環境の構築</a></li>
+<li><a class="reference internal" href="#h1">ホストh1でのリンク・アグリゲーションの設定</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlowバージョンの設定</a></li>
+<li><a class="reference internal" href="#id4">スイッチングハブの実行</a></li>
+<li><a class="reference internal" href="#id5">リンク・アグリゲーション機能の確認</a><ul>
+<li><a class="reference internal" href="#id6">通信速度の向上</a></li>
+<li><a class="reference internal" href="#id7">耐障害性の向上</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id8">Ryuによるリンク・アグリゲーション機能の実装</a><ul>
 <li><a class="reference internal" href="#lacp">LACPライブラリの実装</a><ul>
-<li><a class="reference internal" href="#id4">論理インターフェースの作成</a></li>
+<li><a class="reference internal" href="#id9">論理インターフェースの作成</a></li>
 <li><a class="reference internal" href="#packet-in">Packet-In処理</a></li>
-<li><a class="reference internal" href="#id5">ポートの有効/無効状態変更に伴う処理</a></li>
+<li><a class="reference internal" href="#id10">ポートの有効/無効状態変更に伴う処理</a></li>
 <li><a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a></li>
-<li><a class="reference internal" href="#id6">LACPデータユニットの送受信処理</a></li>
+<li><a class="reference internal" href="#id11">LACPデータユニットの送受信処理</a></li>
 <li><a class="reference internal" href="#flowremoved">FlowRemovedメッセージの受信処理</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id7">リンク・アグリゲーション機能搭載スイッチングハブの実装</a><ul>
+<li><a class="reference internal" href="#id12">アプリケーションの実装</a><ul>
 <li><a class="reference internal" href="#contexts">「_CONTEXTS」の設定</a></li>
-<li><a class="reference internal" href="#id8">ライブラリの初期設定</a></li>
-<li><a class="reference internal" href="#id9">ユーザ定義イベントの受信方法</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id10">リンク・アグリゲーション機能搭載スイッチングハブの実行</a><ul>
-<li><a class="reference internal" href="#id11">トポロジ構築スクリプトの実行</a></li>
-<li><a class="reference internal" href="#h1">ホストh1でのリンク・アグリゲーションの設定</a></li>
-<li><a class="reference internal" href="#openflow">OpenFlowバージョンの設定</a></li>
-<li><a class="reference internal" href="#id12">スイッチングハブの実行</a></li>
-<li><a class="reference internal" href="#id13">リンク・アグリゲーション機能の確認</a><ul>
-<li><a class="reference internal" href="#id14">通信速度の向上</a></li>
-<li><a class="reference internal" href="#id15">耐障害性の向上</a></li>
+<li><a class="reference internal" href="#id13">ライブラリの初期設定</a></li>
+<li><a class="reference internal" href="#id14">ユーザ定義イベントの受信方法</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id16">まとめ</a></li>
+<li><a class="reference internal" href="#id15">まとめ</a></li>
 </ul>
 </li>
 </ul>
