@@ -361,7 +361,56 @@
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
 <p>ループ構造を持つ特殊なトポロジで動作させるため、「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーションの実装</em></a>」と同様にトポロジ構築スクリプトによりmininet環境を構築します。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">spanning_tree.py</span></tt></p>
-<p class="sourcecode">VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
+<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
+<span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">RemoteController</span>
+<span class="kn">from</span> <span class="nn">mininet.term</span> <span class="kn">import</span> <span class="n">makeTerm</span>
+
+<span class="k">if</span> <span class="s">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">)</span>
+
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">)</span>
+
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s2&#39;</span><span class="p">)</span>
+    <span class="n">s3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s3&#39;</span><span class="p">)</span>
+
+    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
+    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
+
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">h3</span><span class="p">)</span>
+
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+    
+
+    <span class="n">net</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">c0</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">s1</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+    <span class="n">s2</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+    <span class="n">s3</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">c0</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s3</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h2</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h3</span><span class="p">))</span>
+
+    <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
 <blockquote>
 <div><a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" style="width: 733.6px; height: 486.4px;" /></a>
 </div></blockquote>
