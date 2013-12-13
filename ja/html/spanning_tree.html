@@ -79,13 +79,13 @@
 <div><p>ブリッジ間のBPDUパケットの交換により、最小のブリッジIDを持つブリッジがルートブリッジとして選出され、以降はルートブリッジのみがオリジナルのBPDUパケットを送信し、他のブリッジはルートブリッジから受信したBPDUパケットを転送します。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p>ブリッジIDは、各ブリッジに設定されたブリッジ優先度(デフォルト0x8000：RyuのSTPライブラリではコンフィグ設定が可能)と特定ポートのMACアドレスの組み合わせで算出されます。</p>
-<blockquote class="last">
+<p>ブリッジIDは、各ブリッジに設定されたブリッジpriorityと特定ポートのMACアドレスの組み合わせで算出されます。</p>
+<blockquote>
 <div><p>ブリッジID</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="56%" />
-<col width="44%" />
+<col width="59%" />
+<col width="41%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">上位2byte</th>
@@ -93,12 +93,13 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>ブリッジ優先度</td>
+<tr class="row-even"><td>ブリッジpriority</td>
 <td>MACアドレス</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
+<p class="last">ブリッジpriorityは、RyuのSTPライブラリではコンフィグ設定により変更が可能です。</p>
 </div>
 </div></blockquote>
 </li>
@@ -128,7 +129,33 @@
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p class="last">ルートブリッジに至るまでのコストは次のように算出されます。#TODO:</p>
+<p>ルートブリッジに至るまでのコストは、各ポートが受信したBPDUパケットの設定値から次のように比較されます。</p>
+<p>優先1：root path cost値による比較。</p>
+<blockquote>
+<div><p>各ブリッジはBPDUパケットを転送する際に、出力ポートに設定されたpath cost値をBPDUパケットのroot path cost値に加算します。これによりroot path cost値はルートブリッジに到達するまでに経由する各リンクのpath cost値の合計の値となります。</p>
+</div></blockquote>
+<p>優先2：root path cost値が同じ場合、対向ブリッジのブリッジIDにより比較。</p>
+<p>優先3：対向ブリッジのブリッジIDが同じ場合(各ポートが同一ブリッジに接続しているケース)、対向ポートのポートIDにより比較</p>
+<blockquote>
+<div><p>ポートID</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="58%" />
+<col width="42%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">上位2byte</th>
+<th class="head">下位2byte</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ポートpriority</td>
+<td>ポート番号</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p class="last">ポートのpath cost値やポートpriorityは、RyuのSTPライブラリではコンフィグ設定により変更が可能です。</p>
 </div>
 </div></blockquote>
 </li>
@@ -336,7 +363,7 @@
 <p>ソース名：<tt class="docutils literal"><span class="pre">spanning_tree.py</span></tt></p>
 <p class="sourcecode">VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" style="width: 733.6px; height: 486.4px;" /></a>
 </div></blockquote>
 <p>netコマンドの実行結果は以下の通りです。</p>
 <div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
@@ -469,7 +496,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 </div>
 <p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" src="_images/fig7.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" src="_images/fig6.png" style="width: 733.6px; height: 486.4px;" /></a>
 </div></blockquote>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
@@ -583,7 +610,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" src="_images/fig8.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" src="_images/fig7.png" style="width: 733.6px; height: 486.4px;" /></a>
 </div></blockquote>
 </div>
 <div class="section" id="id5">
@@ -644,7 +671,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" src="_images/fig8.png" style="width: 733.6px; height: 486.4px;" /></a>
 </div></blockquote>
 </div>
 </div>
@@ -730,7 +757,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h3>ライブラリの実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" src="_images/fig5.png" style="width: 1416.8px; height: 448.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" style="width: 1416.8px; height: 448.8px;" /></a>
 <p>STPライブラリ(Stpクラスオブジェクト)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスオブジェクト・Portクラスオブジェクトが生成されます。各クラスオブジェクトが生成・起動された後は、StpクラスオブジェクトからのOpenFlowメッセージ受信通知、BridgeクラスオブジェクトのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスオブジェクトのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">
