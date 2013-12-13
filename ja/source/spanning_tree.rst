@@ -83,15 +83,15 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
         フレーム転送を抑制するポートです。
 
 
-            .. only:: latex
+        .. only:: latex
 
-               .. image:: images/spanning_tree/fig3.eps
-                  :scale: 60 %
+           .. image:: images/spanning_tree/fig3.eps
+              :scale: 80 %
 
-            .. only:: not latex
+        .. only:: not latex
 
-               .. image:: images/spanning_tree/fig3.png
-                  :scale: 60 %
+           .. image:: images/spanning_tree/fig3.png
+              :scale: 80 %
 
 
 
@@ -109,16 +109,16 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
     されたポートはDISABLE状態となり、以降、状態遷移は行われません。
 
 
-        .. only:: latex
+            .. only:: latex
 
-           .. image:: images/spanning_tree/fig4.eps
-              :scale: 70 %
+               .. image:: images/spanning_tree/fig4.eps
+                  :scale: 50 %
 
 
-        .. only:: not latex
+            .. only:: not latex
 
-           .. image:: images/spanning_tree/fig4.png
-              :scale: 70 %
+               .. image:: images/spanning_tree/fig4.png
+                  :scale: 50 %
 
 
     ======= ===========================================
@@ -1285,7 +1285,7 @@ CONTEXT登録します。
 """"""""""""""
 
 STPライブラリのset_config()メソッドを用いてコンフィグ設定を行います。
-ここでは以下の値を設定します。
+ここではサンプルとして、以下の値を設定します。
 
 ===================== =============== ======
 OpenFlowスイッチ      項目            設定値
