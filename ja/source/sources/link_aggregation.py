@@ -14,9 +14,9 @@ if '__main__' == __name__:
     s1 = net.addSwitch('s1')
 
     h1 = net.addHost('h1')
-    h2 = net.addHost('h2')
-    h3 = net.addHost('h3')
-    h4 = net.addHost('h4')
+    h2 = net.addHost('h2', mac='00:00:00:00:00:22')
+    h3 = net.addHost('h3', mac='00:00:00:00:00:23')
+    h4 = net.addHost('h4', mac='00:00:00:00:00:24')
 
     Link(s1, h1)
     Link(s1, h1)
