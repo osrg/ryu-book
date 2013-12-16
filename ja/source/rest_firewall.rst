@@ -3,16 +3,1121 @@
 rest_firewall.pyの使用例
 ========================
 
-本章では、「 :ref:`ch_rest_api` 」を使用して作成され、Ryuのソースツリーに登
+本章では、「 :ref:`ch_rest_api` 」を拡張して実装され、Ryuのソースツリーに登
 録されているryu/app/rest_firewall.pyの使用方法について説明します。
 
 
-RESTインターフェース
---------------------
+シングルテナントでの動作例
+--------------------------
 
-RyuはOpenflowスイッチをfirewallとして機能・操作するためのRESTインター
-フェースを持っています。rest_firewallを操作するためのコマンドを以下に示しま
-す。
+まず、「 :ref:`ch_switching_hub` 」で作成した環境を使用して、VLANによるテ
+ナント分けのされていない以下のようなトポロジを作成し、スイッチs1に対してルー
+ルの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig1.eps
+     :scale: 60%
+     :align: center
+
+.. only:: not latex
+
+  .. image:: images/rest_firewall/fig1.png
+     :scale: 60%
+     :align: center
+
+
+環境構築
+^^^^^^^^
+
+まずはMininet上に環境を構築します。入力するコマンドは
+「 :ref:`ch_switching_hub` 」と同様です。
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+    *** Creating network
+    *** Adding controller
+    Unable to contact the remote controller at 127.0.0.1:6633
+    *** Adding hosts:
+    h1 h2 h3
+    *** Adding switches:
+    s1
+    *** Adding links:
+    (h1, s1) (h2, s1) (h3, s1)
+    *** Configuring hosts
+    h1 h2 h3
+    *** Running terms on localhost:10.0
+    *** Starting controller
+    *** Starting 1 switches
+    s1
+
+    *** Starting CLI:
+    mininet>
+
+また、コントローラ用のxtermをもうひとつ起動しておきます。
+
+.. rst-class:: console
+
+::
+
+    mininet> xterm c0
+    mininet>
+
+続いて、使用するOpenFlowのバージョンを1.3に設定します。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+.. ATTENTION::
+
+    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
+    ん。Ryu3.4以降をご利用ください。
+
+最後に、コントローラのxterm上でrest_firewallを起動させます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# cd ryu
+    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
+    loading app ryu/app/rest_firewall.py
+    loading app ryu.controller.ofp_handler
+    instantiating app None of DPSet
+    creating context dpset
+    creating context wsgi
+    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    (1433) wsgi starting up on http://0.0.0.0:8080/
+
+Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] switch_id=0000000000000001: Join as firewall
+
+
+初期状態の確認
+^^^^^^^^^^^^^^
+
+firewallの状態を確認します。初期状態は無効(disable)になっています。
+
+.. NOTE::
+
+    以降の説明で使用するREST APIの詳細は、章末の「 `REST API一覧`_ 」を参照
+    してください。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+      [
+        {
+          "status": "disable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+.. NOTE::
+
+    RESTコマンドの実行結果は見やすいように整形しています。
+
+この時点でのフローエントリは以下のようになっています。最高優先度で全パケット
+の破棄が登録されていることがわかります。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=32.538s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=32.575s, table=0, n_packets=0, n_bytes=0, priority=65535 actions=drop
+     cookie=0x0, duration=32.538s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
+
+この状態でh1からh2へのpingの疎通を確認してみます。全パケットを破棄するフロー
+エントリが登録されているため、pingは届きません。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    From 10.0.0.1 icmp_seq=1 Destination Host Unreachable
+    From 10.0.0.1 icmp_seq=2 Destination Host Unreachable
+    From 10.0.0.1 icmp_seq=3 Destination Host Unreachable
+    From 10.0.0.1 icmp_seq=4 Destination Host Unreachable
+    ...
+
+
+初期状態の変更
+^^^^^^^^^^^^^^
+
+firewallを有効(enable)にします。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": {
+            "result": "success",
+            "details": "firewall running."
+          }
+        }
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+      [
+        {
+          "status": "enable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+firewallを有効にしたことにより、最高優先度で登録されていた破棄の指示が削除さ
+れます。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=110.148s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=110.148s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
+
+この状態で再度h1からh2へのpingの疎通を確認してみます。全パケットを破棄する
+フローエントリはなくなりましたが、h1からh2へのpingパケットを転送するための
+フローエントリが登録されていないため、やはりpingは届きません。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    ^C
+    --- 10.0.0.2 ping statistics ---
+    20 packets transmitted, 0 received, 100% packet loss, time 19003ms
+
+firewallが無効であった場合と異なり、ルールにマッチしなかったパケットは最低優
+先度で登録されているPacketInのフローエントリによって通知されます。この通知に
+よって、破棄されたパケットがログに出力されます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:02',ethertype=2048,src='00:00:00:00:00:01'), ipv4(csum=9895,dst='10.0.0.2',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.1',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=55644,data=echo(data='K\x8e\xaeR\x00\x00\x00\x00=\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=6952,seq=1),type=8)
+    ...
+
+
+ログ出力機能の設定変更
+^^^^^^^^^^^^^^^^^^^^^^
+
+firewallのログ出力を無効にします。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/disable/0000000000000001
+      [
+        [
+          "command_result", {
+            "result": "success",
+            "details": "Log collection stopped."
+          }
+        ]
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
+      [
+        {
+          "log status": "disable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+この状態で先ほどと同様にpingを送信し、遮断されることを確認します。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    ^C
+    --- 10.0.0.2 ping statistics ---
+    20 packets transmitted, 0 received, 100% packet loss, time 19003ms
+
+ログ出力を無効にしたため、パケットを遮断した旨のログが出力されないことがわか
+ります。
+
+あとの動作確認のため、ログ出力を有効に戻しておきます。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/enable/0000000000000001
+      [
+        [
+          "command_result", {
+            "result": "success",
+            "details": "Log collection started."
+          }
+        ]
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
+      [
+        {
+          "log status": "enable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+
+ルール追加
+^^^^^^^^^^
+
+h1とh2の間でpingによる疎通が可能になるようルールを追加します。双方向にルール
+を設定をする必要がありますので、ルールをふたつ追加します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.1/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=1"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.1/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=2"
+            }
+          ]
+        }
+      ]
+
+追加したルールがフローエントリとしてスイッチに登録されます。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x0, duration=823.705s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=542.472s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+     cookie=0x1, duration=145.05s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x2, duration=118.265s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+
+また、h2とh3の間では、pingを含むすべてのIPv4パケットの疎通が可能になるよう
+ルールを追加します。先ほどと同様双方向にルールを設定します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=3"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=4"
+            }
+          ]
+        }
+      ]
+
+追加したルールがフローエントリとしてスイッチに登録されます。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x3, duration=12.724s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
+     cookie=0x4, duration=3.668s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x0, duration=1040.802s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=759.569s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+     cookie=0x1, duration=362.147s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x2, duration=335.362s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+
+先ほど追加したh2とh3の間のルールに、ping(ICMP)のパケットを遮断するルールを
+追加します。先ほどと同様双方向にルールを設定します。また、先ほど追加したルー
+ルよりも優先度を高く設定します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d  '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=5"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d  '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=6"
+            }
+          ]
+        }
+      ]
+
+追加したルールがフローエントリとしてスイッチに登録されます。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x3, duration=242.155s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
+     cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x0, duration=1270.233s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=989s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+     cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=drop
+     cookie=0x1, duration=591.578s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=drop
+     cookie=0x2, duration=564.793s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+
+
+ルール確認
+^^^^^^^^^^
+
+設定されているルールを確認します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "access_control_list": [
+            {
+              "rules": [
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_dst": "10.0.0.3",
+                  "nw_src": "10.0.0.2",
+                  "rule_id": 3,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_dst": "10.0.0.2",
+                  "nw_src": "10.0.0.3",
+                  "rule_id": 4,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 10,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.3",
+                  "nw_src": "10.0.0.2",
+                  "rule_id": 5,
+                  "actions": "DENY"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.2",
+                  "nw_src": "10.0.0.1",
+                  "rule_id": 1,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 10,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.2",
+                  "nw_src": "10.0.0.3",
+                  "rule_id": 6,
+                  "actions": "DENY"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.1",
+                  "nw_src": "10.0.0.2",
+                  "rule_id": 2,
+                  "actions": "ALLOW"
+                }
+              ]
+            }
+          ],
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+設定したルールを図示すると以下のようになります。
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig2.eps
+     :scale: 60%
+     :align: center
+
+.. only:: not latex
+
+  .. image:: images/rest_firewall/fig2.png
+     :scale: 60%
+     :align: center
+
+実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通
+できることがわかります。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.419 ms
+    64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.047 ms
+    64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.060 ms
+    64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.033 ms
+    ...
+
+h1からh2へのping以外のパケットはfirewallによって遮断されます。例えばh1から
+h2にwgetを実行すると、パケットが遮断された旨ログが出力されます。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# wget http://10.0.0.2
+    --2013-12-16 15:00:38--  http://10.0.0.2/
+    Connecting to 10.0.0.2:80... ^C
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:02',ethertype=2048,src='00:00:00:00:00:01'), ipv4(csum=4812,dst='10.0.0.2',flags=2,header_length=5,identification=5102,offset=0,option=None,proto=6,src='10.0.0.1',tos=0,total_length=60,ttl=64,version=4), tcp(ack=0,bits=2,csum=45753,dst_port=80,offset=10,option='\x02\x04\x05\xb4\x04\x02\x08\n\x00H:\x99\x00\x00\x00\x00\x01\x03\x03\t',seq=1021913463,src_port=42664,urgent=0,window_size=14600)
+    ...
+
+h2とh3の間はping以外のパケットの疎通が可能となっています。例えばh2からh3に
+sshを実行すると、パケットが遮断された旨のログは出力されません(h3でsshdが動
+作していないため、sshでの接続には失敗します)。
+
+host: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ssh 10.0.0.3
+    ssh: connect to host 10.0.0.3 port 22: Connection refused
+
+h2からh3にpingを実行すると、パケットがfirewallによって遮断されます。ただし
+この遮断はPacketInのフローエントリによって通知されないため、ログは出力され
+ません。
+
+host: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.3
+    PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+    ^C
+    --- 10.0.0.3 ping statistics ---
+    8 packets transmitted, 0 received, 100% packet loss, time 7055ms
+
+
+ルール削除
+^^^^^^^^^^
+
+"rule_id:5"および"rule_id:6"のルールを削除します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "5"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule deleted. : ruleID=5"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "6"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule deleted. : ruleID=6"
+            }
+          ]
+        }
+      ]
+
+再度ルールを確認します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "access_control_list": [
+            {
+              "rules": [
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_dst": "10.0.0.3",
+                  "nw_src": "10.0.0.2",
+                  "rule_id": 3,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_dst": "10.0.0.2",
+                  "nw_src": "10.0.0.3",
+                  "rule_id": 4,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.2",
+                  "nw_src": "10.0.0.1",
+                  "rule_id": 1,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.1",
+                  "nw_src": "10.0.0.2",
+                  "rule_id": 2,
+                  "actions": "ALLOW"
+                }
+              ]
+            }
+          ],
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+現在のルールを図示すると以下のようになります。
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig3.eps
+     :scale: 60%
+     :align: center
+
+.. only:: not latex
+
+  .. image:: images/rest_firewall/fig3.png
+     :scale: 60%
+     :align: center
+
+フローを確認すると、"rule_id:5"と"rule_id:6"に該当するフローエントリが削除
+されていることがわかります。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x3, duration=300.883s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
+     cookie=0x4, duration=292.668s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x0, duration=431.556s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=431.556s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
+     cookie=0x1, duration=345.616s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+     cookie=0x2, duration=336.091s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+
+実際に確認します。h2とh3の間のping(ICMP)を遮断するルールが削除されたため、
+pingが疎通できるようになったことがわかります。
+
+host: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.3
+    PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+    64 bytes from 10.0.0.3: icmp_req=1 ttl=64 time=0.841 ms
+    64 bytes from 10.0.0.3: icmp_req=2 ttl=64 time=0.036 ms
+    64 bytes from 10.0.0.3: icmp_req=3 ttl=64 time=0.026 ms
+    64 bytes from 10.0.0.3: icmp_req=4 ttl=64 time=0.033 ms
+    ...
+
+
+マルチテナントでの動作例
+------------------------
+
+続いて、VLANによるテナント分けが行われている以下のようなトポロジを作成し、
+スイッチs1に対してルールの追加・削除を行い、各ホスト間の疎通可否を確認する例
+を紹介します。
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig4.eps
+     :scale: 60%
+     :align: center
+
+.. only:: not latex
+
+  .. image:: images/rest_firewall/fig4.png
+     :scale: 60%
+     :align: center
+
+
+環境構築
+^^^^^^^^
+
+シングルテナントでの例と同様、Mininet上に環境を構築し、コントローラ用のxterm
+をもうひとつ起動しておきます。使用するホストがひとつ増えていることにご注意くだ
+さい。
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+    *** Creating network
+    *** Adding controller
+    Unable to contact the remote controller at 127.0.0.1:6633
+    *** Adding hosts:
+    h1 h2 h3 h4
+    *** Adding switches:
+    s1
+    *** Adding links:
+    (h1, s1) (h2, s1) (h3, s1) (h4, s1)
+    *** Configuring hosts
+    h1 h2 h3 h4
+    *** Running terms on localhost:10.0
+    *** Starting controller
+    *** Starting 1 switches
+    s1
+
+    *** Starting CLI:
+    mininet> xterm c0
+    mininet>
+
+続いて、各ホストのインターフェースにVLAN IDを設定します。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+    root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+    root@ryu-vm:~# ip addr add 10.0.0.1/8 dev h1-eth0.2
+    root@ryu-vm:~# ip link set dev h1-eth0.2 up
+
+host: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
+    root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+    root@ryu-vm:~# ip addr add 10.0.0.2/8 dev h2-eth0.2
+    root@ryu-vm:~# ip link set dev h2-eth0.2 up
+
+host: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
+    root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+    root@ryu-vm:~# ip addr add 10.0.0.3/8 dev h3-eth0.110
+    root@ryu-vm:~# ip link set dev h3-eth0.110 up
+
+host: h4:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h4-eth0
+    root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+    root@ryu-vm:~# ip addr add 10.0.0.4/8 dev h4-eth0.110
+    root@ryu-vm:~# ip link set dev h4-eth0.110 up
+
+さらに、使用するOpenFlowのバージョンを1.3に設定します。
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+.. ATTENTION::
+
+    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
+    ん。Ryu3.4以降をご利用ください。
+
+最後に、コントローラのxterm上でrest_firewallを起動させます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# cd ryu
+    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
+    loading app ryu/app/rest_firewall.py
+    loading app ryu.controller.ofp_handler
+    instantiating app None of DPSet
+    creating context dpset
+    creating context wsgi
+    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    (13419) wsgi starting up on http://0.0.0.0:8080/
+
+Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] switch_id=0000000000000001: Join as firewall
+
+
+初期状態の変更
+^^^^^^^^^^^^^^
+
+firewallを有効(enable)にします。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": {
+            "result": "success",
+            "details": "firewall running."
+          }
+        }
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+      [
+        {
+          "status": "enable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+
+ルール追加
+^^^^^^^^^^
+
+vlan_id=2に10.0.0.0/8で送受信されるping(ICMPパケット)を許可するルールを追
+加します。双方向にルールを設定をする必要がありますので、ルールをふたつ追加し
+ます。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "vlan_id": 2,
+              "details": "Rule added. : rule_id=1"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "vlan_id": 2,
+              "details": "Rule added. : rule_id=2"
+            }
+          ]
+        }
+      ]
+
+
+ルール確認
+^^^^^^^^^^
+
+設定されているルールを確認します。
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+      [
+        {
+          "access_control_list": [
+            {
+              "rules": [
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "dl_vlan": 2,
+                  "nw_src": "10.0.0.0/8",
+                  "rule_id": 1,
+                  "actions": "ALLOW"
+                },
+                {
+                  "priority": 1,
+                  "dl_type": "IPv4",
+                  "nw_proto": "ICMP",
+                  "nw_dst": "10.0.0.0/8",
+                  "dl_vlan": 2,
+                  "rule_id": 2,
+                  "actions": "ALLOW"
+                }
+              ],
+              "vlan_id": 2
+            }
+          ],
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    OFPST_FLOW reply (OF1.3) (xid=0x2):
+     cookie=0x200000001, duration=190.226s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_src=10.0.0.0/8 actions=NORMAL
+     cookie=0x0, duration=329.515s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
+     cookie=0x0, duration=329.515s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
+     cookie=0x200000002, duration=174.986s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_dst=10.0.0.0/8 actions=NORMAL
+
+実際に確認してみます。vlan_id=2であるh1から、同じくvlan_id=2であるh2に対し、
+pingを実行すると、追加したルールのとおり疎通できることがわかります。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.2
+    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+    64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.893 ms
+    64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.098 ms
+    64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.122 ms
+    64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.047 ms
+    ...
+
+vlan_id=2であるh1からvlan_id=110であるh3へは、VLAN IDが異なるためpingパ
+ケットは到達しません。
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.3
+    PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+    From 10.0.0.1 icmp_seq=1 Destination Host Unreachable
+    From 10.0.0.1 icmp_seq=2 Destination Host Unreachable
+    From 10.0.0.1 icmp_seq=3 Destination Host Unreachable
+    ^C
+    --- 10.0.0.3 ping statistics ---
+    6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 5032ms
+
+vlan_id=110同士であるh3とh4の間は、ルールが登録されていないため、pingパケッ
+トは遮断されます。
+
+host: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping 10.0.0.4
+    PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
+    ^C
+    --- 10.0.0.4 ping statistics ---
+    6 packets transmitted, 0 received, 100% packet loss, time 4999ms
+
+firewallでパケットが遮断されるとログが出力されます。
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:04',ethertype=33024,src='00:00:00:00:00:03'), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=9891,dst='10.0.0.4',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.3',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=58104,data=echo(data='\xb8\xa9\xaeR\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=7760,seq=4),type=8)
+    ...
+
+
+REST API一覧
+------------
+
+本章で紹介したrest_firewallのREST API一覧です。
 
 
 全スイッチの有効無効状態の取得
@@ -125,1037 +1230,3 @@ RyuはOpenflowスイッチをfirewallとして機能・操作するためのREST
                --**switch**: [ "all" \| *スイッチID* ]
 **備考**       各スイッチの初期状態は"enable"になっています。
 =============  ===============================================
-
-
-シングルテナントでの動作例
---------------------------
-
-ここでは下記のような環境で"switch_id:000000000000001"に対してルールを追加・
-削除し、各ホスト間の疎通可否を確認する例を紹介します。
-
-.. only:: latex
-
-  .. image:: images/rest_firewall/fig1.eps
-     :scale: 60%
-     :align: center
-
-.. only:: not latex
-
-  .. image:: images/rest_firewall/fig1.png
-     :scale: 60%
-     :align: center
-
-
-環境構築
-^^^^^^^^
-
-まずはmininet上に環境を構築します。
-
-.. rst-class:: console
-
-::
-
-    ryu@ryu-vm:~$ sudo mn --controller remote -x
-    *** Creating network
-    *** Adding controller
-    Unable to contact the remote controller at 127.0.0.1:6633
-    *** Adding hosts:
-    h1 h2
-    *** Adding switches:
-    s1
-    *** Adding links:
-    (h1, s1) (h2, s1)
-    *** Configuring hosts
-    h1 h2
-    *** Running terms on localhost:10.0
-    *** Starting controller
-    *** Starting 1 switches
-    s1
-
-    *** Starting CLI:
-    mininet>
-
-また、コントローラ用のxtermをもうひとつ起動しておきます。
-
-.. rst-class:: console
-
-::
-
-    mininet> xterm c0
-    mininet>
-
-続いて、各ホストのIPアドレスを変更し、デフォルトゲートウェイを設定します。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1-eth0
-    root@ryu-vm:~# ip route add default via 172.16.10.10
-
-host: h2:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-    root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h2-eth0
-    root@ryu-vm:~# ip route add default via 192.168.30.10
-
-さらに、使用するOpenFlowのバージョンを1.3に設定します。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.4以降をご利用ください。
-
-最後に、コントローラのxterm上でrest_firewallを起動させます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
-    loading app ryu/app/rest_firewall.py
-    loading app ryu.controller.ofp_handler
-    instantiating app None of DPSet
-    creating context dpset
-    creating context wsgi
-    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
-    instantiating app ryu.controller.ofp_handler of OFPHandler
-    (1433) wsgi starting up on http://0.0.0.0:8080/
-
-Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    [FW][INFO] switch_id=0000000000000001: Join as firewall
-
-
-初期状態の確認
-^^^^^^^^^^^^^^
-
-firewallの状態を確認します。初期状態は無効(disable)になっています。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-      [
-        {
-          "status": "disable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-.. NOTE::
-
-    RESTコマンドの実行結果は見やすいように整形しています。
-
-この時点でのフローエントリは以下のようになっています。最高優先度で破棄が指定
-されていることがわかります。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=3.159s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=3.196s, table=0, n_packets=0, n_bytes=0, priority=65535 actions=drop
-     cookie=0x0, duration=3.159s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-
-初期状態の変更
-^^^^^^^^^^^^^^
-
-firewallを有効(enable)にします。無効のままだと、ルール追加をしてもすべての
-パケットが遮断されます。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": {
-            "result": "success",
-            "details": "firewall running."
-          }
-        }
-      ]
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-      [
-        {
-          "status": "enable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-firewallを有効にしたことにより、最高優先度で登録されていた破棄の指示が削除さ
-れます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=162.958s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=162.958s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-
-ルール追加
-^^^^^^^^^^
-
-一例として、IPアドレス 10.0.0.4へのフローを通すルールを追加します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.4/32"}' http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "details": "Rule added. : rule_id=1"
-            }
-          ]
-        }
-      ]
-
-追加したルールがフローエントリとしてスイッチに登録されます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x1, duration=5.398s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_dst=10.0.0.4 actions=NORMAL
-     cookie=0x0, duration=517.45s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=517.45s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-また、MACアドレス 00:00:00:00:00:01からMACアドレス 00:00:00:00:00:02への
-フローを通すルールを追加します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X POST -d '{"dl_src": "00:00:00:00:00:01", "dl_dst": "00:00:00:00:00:02"}' http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "details": "Rule added. : rule_id=2"
-            }
-          ]
-        }
-      ]
-
-追加したルールがフローエントリとしてスイッチに登録されます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=2.906s, table=0, n_packets=0, n_bytes=0, priority=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=NORMAL
-     cookie=0x1, duration=103.524s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_dst=10.0.0.4 actions=NORMAL
-     cookie=0x0, duration=615.576s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=615.576s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-さらに、172.16.10.0/24のping(ICMPパケット)を許可するルールを追加します。双
-方向にルールを設定をする必要がありますので、ルールをふたつ追加します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "172.16.10.0/24", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "details": "Rule added. : rule_id=3"
-            }
-          ]
-        }
-      ]
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "172.16.10.0/24", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "details": "Rule added. : rule_id=4"
-            }
-          ]
-        }
-      ]
-
-追加したルールがフローエントリとしてスイッチに登録されます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=167.232s, table=0, n_packets=0, n_bytes=0, priority=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=NORMAL
-     cookie=0x4, duration=5.529s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x1, duration=267.85s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_dst=10.0.0.4 actions=NORMAL
-     cookie=0x0, duration=779.902s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x3, duration=54.709s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=172.16.10.0/24 actions=NORMAL
-     cookie=0x0, duration=779.902s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-
-ルール確認
-^^^^^^^^^^
-
-設定されているルールを確認します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "access_control_list": [
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "rule_id": 1,
-                  "actions": "ALLOW",
-                  "nw_dst": "10.0.0.4"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_src": "172.16.10.0/24",
-                  "rule_id": 3,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_dst": "00:00:00:00:00:02",
-                  "rule_id": 2,
-                  "actions": "ALLOW",
-                  "dl_src": "00:00:00:00:00:01"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "172.16.10.0/24",
-                  "rule_id": 4,
-                  "actions": "ALLOW"
-                }
-              ]
-            }
-          ],
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-実際にpingで確認します。設定したルールにより、pingが疎通できることがわかり
-ます。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.10
-    PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-    64 bytes from 192.168.30.10: icmp_req=1 ttl=64 time=0.865 ms
-    64 bytes from 192.168.30.10: icmp_req=2 ttl=64 time=0.111 ms
-    64 bytes from 192.168.30.10: icmp_req=3 ttl=64 time=0.082 ms
-    64 bytes from 192.168.30.10: icmp_req=4 ttl=64 time=0.043 ms
-    ...
-
-
-ルール削除
-^^^^^^^^^^
-
-"rule_id:3"のルールを削除します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "3"}' http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "details": "Rule deleted. : ruleID=3"
-            }
-          ]
-        }
-      ]
-
-再度ルールを確認します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "access_control_list": [
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "rule_id": 1,
-                  "actions": "ALLOW",
-                  "nw_dst": "10.0.0.4"
-                },
-                {
-                  "priority": 1,
-                  "dl_dst": "00:00:00:00:00:02",
-                  "rule_id": 2,
-                  "actions": "ALLOW",
-                  "dl_src": "00:00:00:00:00:01"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "172.16.10.0/24",
-                  "rule_id": 4,
-                  "actions": "ALLOW"
-                }
-              ]
-            }
-          ],
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-フローを確認すると、"rule_id:3"に該当するフローエントリが削除されていること
-がわかります。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=170.801s, table=0, n_packets=0, n_bytes=0, priority=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=NORMAL
-     cookie=0x4, duration=92.269s, table=0, n_packets=4, n_bytes=392, priority=1,icmp,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x1, duration=213.21s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_dst=10.0.0.4 actions=NORMAL
-     cookie=0x0, duration=304.626s, table=0, n_packets=4, n_bytes=168, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=304.626s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-
-実際にpingで確認します。172.16.10.0/24を送信元とするICMPパケットを許可する
-ルールが削除されたため、pingが疎通できないことがわかります。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.10
-    PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-    ^C
-    --- 192.168.30.10 ping statistics ---
-    4 packets transmitted, 0 received, 100% packet loss, time 3000ms
-
-firewallでパケットが遮断されるとログが出力されます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='7e:1a:c0:2f:2b:27',ethertype=2048,src='f2:da:3c:af:56:84'), ipv4(csum=42460,dst='192.168.30.10',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='172.16.10.10',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=25541,data=echo(data='\x85j\xa5R\x00\x00\x00\x00\x9c\xb1\x00\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=3540,seq=37),type=8)
-    ...
-
-
-ログ出力機能の設定変更
-^^^^^^^^^^^^^^^^^^^^^^
-
-firewallのログ出力を無効にします。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/disable/0000000000000001
-      [
-        [
-          "command_result", {
-            "result": "success",
-            "details": "Log collection stopped."
-          }
-        ]
-      ]
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
-      [
-        {
-          "log status": "disable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-この状態で先ほどと同様にpingを送信し、遮断されることを確認します。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.10
-    PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-    ^C
-    --- 192.168.30.10 ping statistics ---
-    4 packets transmitted, 0 received, 100% packet loss, time 3000ms
-
-ログ出力を無効にしたため、パケットを遮断した旨のログが出力されないことがわか
-ります。
-
-
-マルチテナントでの動作例
-------------------------
-
-続いて、下記のような環境で"switch_id=000000000000001"に対してルールを追加・
-削除し、各ホスト間の疎通可否を確認する例を紹介します。
-
-.. only:: latex
-
-  .. image:: images/rest_firewall/fig2.eps
-     :scale: 60%
-     :align: center
-
-.. only:: not latex
-
-  .. image:: images/rest_firewall/fig2.png
-     :scale: 60%
-     :align: center
-
-
-環境構築
-^^^^^^^^
-
-シングルテナントでの例と同様、mininet上に環境を構築し、コントローラ用のxterm
-をもうひとつ起動しておきます。
-
-.. rst-class:: console
-
-::
-
-    ryu@ryu-vm:~$ sudo mn --topo single,4 --controller remote -x
-    *** Creating network
-    *** Adding controller
-    Unable to contact the remote controller at 127.0.0.1:6633
-    *** Adding hosts:
-    h1 h2 h3 h4
-    *** Adding switches:
-    s1
-    *** Adding links:
-    (h1, s1) (h2, s1) (h3, s1) (h4, s1)
-    *** Configuring hosts
-    h1 h2 h3 h4
-    *** Running terms on localhost:10.0
-    *** Starting controller
-    *** Starting 1 switches
-    s1
-
-    *** Starting CLI:
-    mininet> xterm c0
-    mininet>
-
-続いて、各ホストのインターフェースにVLAN IDを設定した上でIPアドレスを変更し、
-デフォルトゲートウェイを設定します。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-    root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1-eth0.2
-    root@ryu-vm:~# ip link set dev h1-eth0.2 up
-    root@ryu-vm:~# ip route add default via 172.16.10.10
-
-host: h2:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-    root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 172.16.10.11/24 dev h2-eth0.110
-    root@ryu-vm:~# ip link set dev h2-eth0.110 up
-    root@ryu-vm:~# ip route add default via 172.16.10.11
-
-host: h3:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
-    root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h3-eth0.2
-    root@ryu-vm:~# ip link set dev h3-eth0.2 up
-    root@ryu-vm:~# ip route add default via 192.168.30.10
-
-host: h4:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h4-eth0
-    root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 192.168.30.11/24 dev h4-eth0.110
-    root@ryu-vm:~# ip link set dev h4-eth0.110 up
-    root@ryu-vm:~# ip route add default via 192.168.30.11
-
-さらに、使用するOpenFlowのバージョンを1.3に設定します。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.4以降をご利用ください。
-
-最後に、コントローラのxterm上でrest_firewallを起動させます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
-    loading app ryu/app/rest_firewall.py
-    loading app ryu.controller.ofp_handler
-    instantiating app None of DPSet
-    creating context dpset
-    creating context wsgi
-    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
-    instantiating app ryu.controller.ofp_handler of OFPHandler
-    (13419) wsgi starting up on http://0.0.0.0:8080/
-
-Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    [FW][INFO] switch_id=0000000000000001: Join as firewall
-
-
-初期状態の変更
-^^^^^^^^^^^^^^
-
-firewallを有効(enable)にします。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": {
-            "result": "success",
-            "details": "firewall running."
-          }
-        }
-      ]
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-      [
-        {
-          "status": "enable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-
-ルール追加(vlan_id=2)
-^^^^^^^^^^^^^^^^^^^^^
-
-vlan_id=2に172.16.10.0/24のping(ICMPパケット)を許可するルールを追加します。
-双方向にルールを設定をする必要がありますので、ルールをふたつ追加します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "172.16.10.0/24", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "vlan_id": 2,
-              "details": "Rule added. : rule_id=1"
-            }
-          ]
-        }
-      ]
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "172.16.10.0/24", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "vlan_id": 2,
-              "details": "Rule added. : rule_id=2"
-            }
-          ]
-        }
-      ]
-
-
-ルール確認(vlan_id=2)
-^^^^^^^^^^^^^^^^^^^^^
-
-設定されているルールを確認します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
-      [
-        {
-          "access_control_list": [
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "dl_vlan": 2,
-                  "nw_src": "172.16.10.0/24",
-                  "rule_id": 1,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "172.16.10.0/24",
-                  "dl_vlan": 2,
-                  "rule_id": 2,
-                  "actions": "ALLOW"
-                }
-              ],
-              "vlan_id": 2
-            }
-          ],
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000001, duration=290.515s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_src=172.16.10.0/24 actions=NORMAL
-     cookie=0x0, duration=359.367s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=359.406s, table=0, n_packets=0, n_bytes=0, priority=65535 actions=drop
-     cookie=0x0, duration=359.367s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:0
-     cookie=0x200000002, duration=248.801s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_dst=172.16.10.0/24 actions=NORMAL
-
-実際にpingで確認します。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.10
-    PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-    64 bytes from 192.168.30.10: icmp_req=1 ttl=64 time=1.22 ms
-    64 bytes from 192.168.30.10: icmp_req=2 ttl=64 time=0.029 ms
-    64 bytes from 192.168.30.10: icmp_req=3 ttl=64 time=0.049 ms
-    64 bytes from 192.168.30.10: icmp_req=4 ttl=64 time=0.052 ms
-    ...
-
-ルール追加をしていないので、vlan_id=110のホストではpingが遮断されます。
-
-host: h2:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.11
-    PING 192.168.30.11 (192.168.30.11) 56(84) bytes of data.
-    ^C
-    --- 192.168.30.11 ping statistics ---
-    5 packets transmitted, 0 received, 100% packet loss, time 3999ms
-
-firewallでパケットが遮断されるとログが出力されます。
-
-controller: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='82:08:38:50:9a:ae',ethertype=33024,src='42:8c:34:85:fa:39'), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=31934,dst='192.168.30.11',flags=2,header_length=5,identification=10524,offset=0,option=None,proto=1,src='172.16.10.11',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=49103,data=echo(data='\xd2\x97\xa6R\x00\x00\x00\x00\xbe|\x05\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=15601,seq=5),type=8)
-    ...
-
-
-ルール追加(vlan_id=110)
-^^^^^^^^^^^^^^^^^^^^^^^
-
-vlan_id=110に172.16.10.11のwebサーバへの通信を許可するルールを追加します。
-双方向にルールを設定をする必要がありますので、ルールをふたつ追加します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "172.16.10.11", "nw_proto": "TCP", "tp_src": "80"}' http://localhost:8080/firewall/rules/0000000000000001/110
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "vlan_id": 110,
-              "details": "Rule added. : rule_id=1"
-            }
-          ]
-        }
-      ]
-
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "172.16.10.11", "nw_proto": "TCP", "tp_dst": "80"}' http://localhost:8080/firewall/rules/0000000000000001/110
-      [
-        {
-          "switch_id": "0000000000000001",
-          "command_result": [
-            {
-              "result": "success",
-              "vlan_id": 110,
-              "details": "Rule added. : rule_id=2"
-            }
-          ]
-        }
-      ]
-
-設定されているルールを確認します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
-      [
-        {
-          "access_control_list": [
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "dl_vlan": 2,
-                  "nw_src": "172.16.10.0/24",
-                  "rule_id": 1,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "172.16.10.0/24",
-                  "dl_vlan": 2,
-                  "rule_id": 2,
-                  "actions": "ALLOW"
-                }
-              ],
-              "vlan_id": 2
-            },
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "TCP",
-                  "tp_dst": 80,
-                  "dl_vlan": 110,
-                  "nw_src": "172.16.10.11",
-                  "rule_id": 2,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "TCP",
-                  "nw_dst": "172.16.10.11",
-                  "tp_src": 80,
-                  "dl_vlan": 110,
-                  "rule_id": 1,
-                  "actions": "ALLOW"
-                }
-              ],
-              "vlan_id": 110
-            }
-          ],
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000001, duration=723.041s, table=0, n_packets=6, n_bytes=592, priority=1,icmp,dl_vlan=2,nw_src=172.16.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=75.669s, table=0, n_packets=0, n_bytes=0, priority=1,tcp,dl_vlan=110,nw_dst=172.16.10.11,tp_src=80 actions=NORMAL
-     cookie=0x0, duration=744.927s, table=0, n_packets=6, n_bytes=276, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=744.927s, table=0, n_packets=17, n_bytes=1494, priority=0 actions=CONTROLLER:0
-     cookie=0x6e00000002, duration=41.536s, table=0, n_packets=0, n_bytes=0, priority=1,tcp,dl_vlan=110,nw_src=172.16.10.11,tp_dst=80 actions=NORMAL
-     cookie=0x200000002, duration=704.397s, table=0, n_packets=6, n_bytes=592, priority=1,icmp,dl_vlan=2,nw_dst=172.16.10.0/24 actions=NORMAL
-
-実際にwgetで確認します。webサーバが起動していないので接続が拒否されますが、
-要求自体は正常に疎通できていることがわかります。
-
-host: h2:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# wget 192.168.30.11
-    --2013-12-10 13:31:01--  http://192.168.30.11/
-    192.168.30.11:80 に接続しています... 失敗しました: 接続を拒否されました.
-
-ICMPに関するルール追加をしていないので、先ほどと同様vlan_id=110のホストでは
-pingが遮断されます。
-
-host: h2:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 192.168.30.11
-    PING 192.168.30.11 (192.168.30.11) 56(84) bytes of data.
-    ^C
-    --- 192.168.30.11 ping statistics ---
-    7 packets transmitted, 0 received, 100% packet loss, time 6046ms
-
