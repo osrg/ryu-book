@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenFlowスイッチテストツール &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="prev" title="rest_firewall.pyの使用例" href="rest_firewall.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="rest_firewall.pyの使用例"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="openflow">
+<span id="ch-switch-test-tool"></span><h1>OpenFlowスイッチテストツール<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、RyuのOpenFlowスイッチテストツールの使用方法を解説します。</p>
+<div class="section" id="id1">
+<h2>テストツールの概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>本ツールは、&#8221;テストパターンファイル&#8221;に従って試験対象のOpenFlowスイッチに対してフローエントリ登録・パケット印加を行い、OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果を確認することにより、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証するテストツールです。</p>
+<p>OpenFlowバージョン1.3の以下のメッセージの試験に対応しています。</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">試験対象メッセージ</th>
+<th class="head">対応パラメータ</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>FlowModメッセージ</td>
+<td><p class="first">match (IN_PHY_PORTを除く)</p>
+<p class="last">actions (SET_QUEUE、GROUPを除く)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<ul>
+<li><p class="first">試験実行イメージ</p>
+<blockquote>
+<div><p>テストツールを実行した際の動作イメージを示します。ツール実行のための環境設定については後述(<a class="reference internal" href="#id5">環境</a>を参照)します。</p>
+<img alt="_images/fig13.png" src="_images/fig13.png" />
+</div></blockquote>
+</li>
+<li><p class="first">試験結果の出力イメージ</p>
+<blockquote>
+<div><p>指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果(OK/ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="console highlight-python"><pre>--- Test start ---
+
+match: 29_ICMPV6_TYPE
+    ethernet/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:2'               OK
+    ethernet/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:CONTROLLER'      OK
+    ethernet/ipv6/icmpv6(type=135)--&gt;'icmpv6_type=128,actions=output:2'               OK
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:2'          ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:CONTROLLER' ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+match: 30_ICMPV6_CODE
+    ethernet/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:2'                   OK
+    ethernet/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:CONTROLLER'          OK
+    ethernet/ipv6/icmpv6(code=1)--&gt;'icmpv6_code=0,actions=output:2'                   OK
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:2'              ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:CONTROLLER'     ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+
+---  Test end  ---</pre>
+</div>
+<div class="section" id="id2">
+<h3>エラーメッセージ一覧<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="60%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">エラーメッセージ</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
+<td>初期化タイムアウトエラー</td>
+</tr>
+<tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
+<td>初期化時にOpenFlowエラーメッセージ受信</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>使用方法<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>テストツールの使用方法を解説します。</p>
+<p>テストツールはRyuのソースツリー上で公開されています。</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="49%" />
+<col width="51%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">ソースコード</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ryu/tests/switch/tester.py</td>
+<td>テストツール</td>
+</tr>
+<tr class="row-odd"><td>ryu/tests/switch/of13</td>
+<td>テストパターンファイルのサンプル</td>
+</tr>
+<tr class="row-even"><td>ryu/tests/switch/run_mininet.py</td>
+<td>試験環境構築スクリプト</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="section" id="id4">
+<h3>テストパターンファイル<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストパターンファイルの拡張子は「.json」としてください。</p>
+<p>テストパターンファイルは以下の形式で記述します。</p>
+<div class="sourcecode highlight-python"><pre>[
+    "xxxxxxxxxx",                    # 試験項目名
+    {
+        "description": "xxxxxxxxxx", # 試験項目の説明
+        "prerequisite": [
+            {
+                "OFPFlowMod": {...}  # 登録するフローエントリ
+            },                       # (RyuのOFPFlowMod形式で記述)
+            {
+                "OFPFlowMod": {...}
+            }
+        ],
+        "tests": [
+            {
+                "ingress": [         # 印加するパケット
+                    "ethernet()",
+                    "ipv4()",
+                    "tcp()"
+                ],
+
+                # 実施する試験種別に応じて(a)(b)(c)のいずれかを記載
+                #  (a) パケット転送(actions=output:X)の確認試験
+                "egress": [          # 期待する転送パケット
+                    "ethernet()",
+                    "ipv4()",
+                    "tcp()"
+                ]
+                #  (b) パケットイン(actions=CONTROLLER)の確認試験
+                "PACKET_IN": [       # 期待するPacket-Inデータ
+                    "ethernet()",
+                    "ipv4()",
+                    "tcp()"
+                ]
+                #  (c) table-missの確認試験
+                "table-miss": [      # table-missの確認対象のフローテーブルID
+                    0
+                ]
+            },
+            {...},
+            {...}
+        ]
+    },                               # 試験1
+    {...},                           # 試験2
+    {...}                            # 試験3
+]</pre>
+</div>
+<p>テストパターンファイルのサンプルを示します。</p>
+<p>OpenFlowスイッチがmatch条件としてeth_dstパラメータに対応しているかを確認する試験サンプルです。match条件にeth_dstを指定するフローエントリを登録し、match条件に合致するeth_dstが設定されたパケットを印加することでパケットがフローエントリにmatchし転送されることを期待する試験を記述しています。</p>
+<p>ファイル名：<tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
+    <span class="s">&quot;match: 03_ETH_DST&quot;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;)/ipv4/tcp--&gt;&#39;eth_dst=22:22:22:22:22:22,actions=output:2&#39;&quot;</span><span class="p">,</span>
+        <span class="s">&quot;prerequisite&quot;</span><span class="p">:[</span>
+            <span class="p">{</span>
+                <span class="s">&quot;OFPFlowMod&quot;</span><span class="p">:{</span>
+                    <span class="s">&quot;table_id&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="s">&quot;match&quot;</span><span class="p">:{</span>
+                        <span class="s">&quot;OFPMatch&quot;</span><span class="p">:{</span>
+                            <span class="s">&quot;oxm_fields&quot;</span><span class="p">:[</span>
+                                <span class="p">{</span>
+                                    <span class="s">&quot;OXMTlv&quot;</span><span class="p">:{</span>
+                                        <span class="s">&quot;field&quot;</span><span class="p">:</span><span class="s">&quot;eth_dst&quot;</span><span class="p">,</span>
+                                        <span class="s">&quot;value&quot;</span><span class="p">:</span><span class="s">&quot;22:22:22:22:22:22&quot;</span>
+                                    <span class="p">}</span>
+                                <span class="p">}</span>
+                            <span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span>
+                    <span class="s">&quot;instructions&quot;</span><span class="p">:[</span>
+                        <span class="p">{</span>
+                            <span class="s">&quot;OFPInstructionActions&quot;</span><span class="p">:{</span>
+                                <span class="s">&quot;actions&quot;</span><span class="p">:[</span>
+                                    <span class="p">{</span>
+                                        <span class="s">&quot;OFPActionOutput&quot;</span><span class="p">:{</span>
+                                            <span class="s">&quot;port&quot;</span><span class="p">:</span><span class="mi">2</span>
+                                        <span class="p">}</span>
+                                    <span class="p">}</span>
+                                <span class="p">],</span>
+                                <span class="s">&quot;type&quot;</span><span class="p">:</span><span class="mi">4</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s">&quot;tests&quot;</span><span class="p">:[</span>
+            <span class="p">{</span>
+                <span class="s">&quot;ingress&quot;</span><span class="p">:[</span>
+                    <span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;, src=&#39;11:11:11:11:11:11&#39;, ethertype=2048)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.20.20&#39;, ttl=64)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e&#39;&quot;</span>
+                <span class="p">],</span>
+                <span class="s">&quot;egress&quot;</span><span class="p">:[</span>
+                    <span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;, src=&#39;11:11:11:11:11:11&#39;, ethertype=2048)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.20.20&#39;, ttl=64)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                    <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e&#39;&quot;</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>環境<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストツール</p>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>テストツール使用例<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenFlowスイッチテストツール</a><ul>
+<li><a class="reference internal" href="#id1">テストツールの概要</a><ul>
+<li><a class="reference internal" href="#id2">エラーメッセージ一覧</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">使用方法</a><ul>
+<li><a class="reference internal" href="#id4">テストパターンファイル</a></li>
+<li><a class="reference internal" href="#id5">環境</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">テストツール使用例</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="rest_firewall.html"
+                        title="前の章へ">rest_firewall.pyの使用例</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/switch_test_tool.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="rest_firewall.pyの使用例"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+    </div>
+  </body>
+</html>
