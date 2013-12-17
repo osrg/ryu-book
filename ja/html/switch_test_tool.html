@@ -119,8 +119,8 @@ match: 30_ICMPV6_CODE
 <p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="60%" />
-<col width="40%" />
+<col width="43%" />
+<col width="57%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">エラーメッセージ</th>
@@ -129,13 +129,67 @@ match: 30_ICMPV6_CODE
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
-<td>初期化タイムアウトエラー</td>
+<td>前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)</td>
 </tr>
 <tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
-<td>初期化時にOpenFlowエラーメッセージ受信</td>
+<td>前回試験のフローエントリ削除に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>...</td>
-<td>...</td>
+<tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
+<td>フローエントリ登録に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
+<td>フローエントリ登録に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-even"><td>Added incorrect flows: [flows]</td>
+<td>フローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: flow stats request timeout.</td>
+<td>フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows: [err_msg]</td>
+<td>フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
+<td>試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from target: [err_msg]</td>
+<td>試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from tester: request timeout.</td>
+<td>補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from tester: [err_msg]</td>
+<td>補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Received incorrect [packet]</td>
+<td>期待した出力パケットの受信エラー(異なるパケットを受信)</td>
+</tr>
+<tr class="row-even"><td>Receiving timeout: [detail]</td>
+<td>期待した出力パケットの受信に失敗(タイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
+<td>table-missの事前確認に失敗(TableStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
+<td>table-missの事前確認に失敗(TableStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Faild to send packet: barrier request timeout.</td>
+<td>パケット印加に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Faild to send packet: [err_msg]</td>
+<td>パケット印加に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
+<td>table-miss確認エラー(matched_countがカウントアップしている)</td>
+</tr>
+<tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
+<td>table-miss確認エラー(lookup_countがカウントアップしていない)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
+<td>table-missの確認に失敗(TableStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
+<td>table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)</td>
 </tr>
 </tbody>
 </table>
@@ -308,7 +362,8 @@ dpid=0000000000000001 : Join target SW.
 action: 00_OUTPUT
     ethernet/ipv4/tcp--&gt;'actions=output:2'      OK
     ethernet/ipv6/tcp--&gt;'actions=output:2'      OK
-    ethernet/arp--&gt;'actions=output:2'           OK</pre>
+    ethernet/arp--&gt;'actions=output:2'           OK
+...</pre>
 </div>
 </div>
 </div>
