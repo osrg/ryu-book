@@ -99,13 +99,31 @@ OpenFlowスイッチテストツールの使用方法を解説します。
 
 本ツールで出力されるエラーメッセージの一覧を示します。
 
-========================================================== ======================================
+========================================================== ==============================================================================
 エラーメッセージ                                           説明
-========================================================== ======================================
-Failed to initialize flow tables: barrier request timeout. 初期化タイムアウトエラー
-Failed to initialize flow tables: [err_msg]                初期化時にOpenFlowエラーメッセージ受信
-...                                                        ...
-========================================================== ======================================
+========================================================== ==============================================================================
+Failed to initialize flow tables: barrier request timeout. 前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
+Failed to initialize flow tables: [err_msg]                前回試験のフローエントリ削除に失敗(Barrier Requestに対するErrorメッセージ受信)
+Failed to add flows: barrier request timeout.              フローエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add flows: [err_msg]                             フローエントリ登録に失敗(Barrier Requestに対するErrorメッセージ受信)
+Added incorrect flows: [flows]                             フローエントリ登録確認エラー(想定外のフローエントリが登録された)
+Failed to add flows: flow stats request timeout.           フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to add flows: [err_msg]                             フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from target: request timeout. 試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from target: [err_msg]        試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from tester: request timeout. 補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from tester: [err_msg]        補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Received incorrect [packet]                                期待した出力パケットの受信エラー(異なるパケットを受信)
+Receiving timeout: [detail]                                期待した出力パケットの受信に失敗(タイムアウト)
+Failed to request table stats: request timeout.            table-missの事前確認に失敗(TableStats Requestのタイムアウト)
+Failed to request table stats: [err_msg]                   table-missの事前確認に失敗(TableStats Requestに対するErrorメッセージ受信)
+Faild to send packet: barrier request timeout.             パケット印加に失敗(Barrier Requestのタイムアウト)
+Faild to send packet: [err_msg]                            パケット印加に失敗(Barrier Requestに対するErrorメッセージ受信)
+Table-miss error: increment in matched_count.              table-miss確認エラー(matched_countがカウントアップしている)
+Table-miss error: no change in lookup_count.               table-miss確認エラー(lookup_countがカウントアップしていない)
+Failed to request table stats: request timeout.            table-missの確認に失敗(TableStats Requestのタイムアウト)
+Failed to request table stats: [err_msg]                   table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
+========================================================== ==============================================================================
 
 
 
@@ -304,7 +322,7 @@ Failed to initialize flow tables: [err_msg]                初期化時にOpenFl
         ethernet/ipv4/tcp-->'actions=output:2'      OK
         ethernet/ipv6/tcp-->'actions=output:2'      OK
         ethernet/arp-->'actions=output:2'           OK
-
+    ...
 
 
 
