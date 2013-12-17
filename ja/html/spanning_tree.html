@@ -840,7 +840,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <td>0x8000</td>
 </tr>
 <tr class="row-odd"><td>sys_ext_id</td>
-<td>VLAN-IDを設定 (<a href="#id11"><span class="problematic" id="id12">*</span></a>現状のSTPライブラリはVLAN未対応)</td>
+<td>VLAN-IDを設定 (*現状のSTPライブラリはVLAN未対応)</td>
 <td>0</td>
 </tr>
 <tr class="row-even"><td>max_age</td>
@@ -958,8 +958,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id13">
-<h4>BPDUパケット受信<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id11">
+<h4>BPDUパケット受信<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラによって検出され、Bridgeクラスオブジェクトを経由してPortクラスオブジェクトに通知されます。イベントハンドラの実装は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
 <p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(Stp.compare_bpdu_info())を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、Bridgeクラスオブジェクトに通知されSTP再計算の契機となります。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -994,8 +994,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id14">
-<h4>故障検出<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id12">
+<h4>故障検出<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>リンク断などの直接故障や、一定時間ルートブリッジからのBPDUパケットを受信できない間接故障を検出した場合も、STP再計算の契機となります。</p>
 <p>リンク断はStpクラスのPortStatusイベントハンドラによって検出し、Bridgeクラスオブジェクトへ通知されます。</p>
 <p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)で検出します。max age(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスオブジェクトへ通知されます。</p>
@@ -1066,8 +1066,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id15">
-<h4>STP計算<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id13">
+<h4>STP計算<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>STP計算(ルートブリッジ選択・各ポートの役割選択)はBridgeクラスで実行します。</p>
 <p>STP計算が実行されるケースではネットワークトポロジの変更が発生しておりパケットがループする可能性があるため、一旦全てのポートをBLOCK状態に設定(port.down)し、かつトポロジ変更イベント(EventTopologyChange)を上位APLに対して通知することで学習済みのMACアドレス情報の初期化を促します。</p>
 <p>その後、Bridge._spanning_tree_algorithm()でルートブリッジとポートの役割を選択した上で、各ポートをLISTEN状態で起動(port.up)しポートの状態遷移を開始します。</p>
@@ -1151,9 +1151,9 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id16">
-<h4>ポート状態遷移<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(Port.state_machine)で実行しています。次の状態に遷移するまでのタイマーをPort._get_timer()で取得し、タイマー満了後にPort._get_next_state()で次状態を取得し、状態遷移を行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に遷移させるケースなど、Port._change_status()が実行された場合にも状態遷移が行われます。これらの処理は「<a class="reference internal" href="#id14">故障検出</a>」と同様にhubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。</p>
+<div class="section" id="id14">
+<h4>ポート状態遷移<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(Port.state_machine)で実行しています。次の状態に遷移するまでのタイマーをPort._get_timer()で取得し、タイマー満了後にPort._get_next_state()で次状態を取得し、状態遷移を行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に遷移させるケースなど、Port._change_status()が実行された場合にも状態遷移が行われます。これらの処理は「<a class="reference internal" href="#id12">故障検出</a>」と同様にhubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1209,8 +1209,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 </div>
 </div>
-<div class="section" id="id17">
-<h3>アプリケーションの実装<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id15">
+<h3>アプリケーションの実装<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3対応のスパニングツリーアプリケーション(simple_switch_stp_13.py)と、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
 <div class="section" id="contexts">
 <h4>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -1227,8 +1227,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id18">
-<h4>コンフィグ設定<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id16">
+<h4>コンフィグ設定<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>STPライブラリのset_config()メソッドを用いてコンフィグ設定を行います。ここではサンプルとして、以下の値を設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -1279,8 +1279,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div>
-<div class="section" id="id19">
-<h4>STPイベント処理<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id17">
+<h4>STPイベント処理<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーションの実装</em></a>」と同様にSTPライブラリから通知されるイベントを受信するイベントハンドラを用意します。</p>
 <ul>
 <li><p class="first">STPライブラリで定義されたEventPacketInイベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様のハンドリンクを行います。</p>
@@ -1349,8 +1349,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 </div>
 </div>
-<div class="section" id="id20">
-<h2>まとめ<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id18">
+<h2>まとめ<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章では、スパニングツリーライブラリの利用を題材として、以下の項目について説明しました。</p>
 <ul class="simple">
 <li>hub.Eventを用いたイベント待ち合わせ処理の実現方法</li>
@@ -1386,21 +1386,21 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <li><a class="reference internal" href="#id9">ライブラリ概要</a></li>
 <li><a class="reference internal" href="#id10">コンフィグ設定項目</a></li>
 <li><a class="reference internal" href="#bpdu">BPDUパケット送信</a></li>
-<li><a class="reference internal" href="#id13">BPDUパケット受信</a></li>
-<li><a class="reference internal" href="#id14">故障検出</a></li>
-<li><a class="reference internal" href="#id15">STP計算</a></li>
-<li><a class="reference internal" href="#id16">ポート状態遷移</a></li>
+<li><a class="reference internal" href="#id11">BPDUパケット受信</a></li>
+<li><a class="reference internal" href="#id12">故障検出</a></li>
+<li><a class="reference internal" href="#id13">STP計算</a></li>
+<li><a class="reference internal" href="#id14">ポート状態遷移</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id17">アプリケーションの実装</a><ul>
+<li><a class="reference internal" href="#id15">アプリケーションの実装</a><ul>
 <li><a class="reference internal" href="#contexts">「_CONTEXTS」の設定</a></li>
-<li><a class="reference internal" href="#id18">コンフィグ設定</a></li>
-<li><a class="reference internal" href="#id19">STPイベント処理</a></li>
+<li><a class="reference internal" href="#id16">コンフィグ設定</a></li>
+<li><a class="reference internal" href="#id17">STPイベント処理</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id20">まとめ</a></li>
+<li><a class="reference internal" href="#id18">まとめ</a></li>
 </ul>
 </li>
 </ul>

@@ -51,8 +51,13 @@
 <p>本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、RyuのOpenFlowスイッチテストツールの使用方法を解説します。</p>
 <div class="section" id="id1">
 <h2>テストツールの概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本ツールは、&#8221;テストパターンファイル&#8221;に従って試験対象のOpenFlowスイッチに対してフローエントリ登録・パケット印加を行い、OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果を確認することにより、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証するテストツールです。</p>
-<p>OpenFlowバージョン1.3の以下のメッセージの試験に対応しています。</p>
+<p>本ツールは、</p>
+<ol class="arabic simple">
+<li>テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリ登録、パケット印加を実施</li>
+<li>OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果とテストパターンファイルに記述された&#8221;期待する処理結果&#8221;の比較</li>
+</ol>
+<p>を行うことにより、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証するテストツールです。</p>
+<p>ツールは、OpenFlowバージョン1.3の以下のOpenFlowメッセージの試験に対応しています。</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -73,19 +78,19 @@
 </tbody>
 </table>
 </div></blockquote>
-<ul>
-<li><p class="first">試験実行イメージ</p>
+<p>また印加パケットとして、Ryuのパケットライブラリで定義されたプロトコルを用いることが出来ます。</p>
+<div class="section" id="id2">
+<h3>動作概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id3">
+<h4>試験実行イメージ<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>テストツールを実行した際の動作イメージを示します。テストパターンファイルには、「登録するフローエントリ」「印加パケット」「期待する処理結果」が記述されます。また、ツール実行のための環境設定については後述(<a class="reference internal" href="#id8">ツール実行環境</a>を参照)します。</p>
 <blockquote>
-<div><p>テストツールを実行した際の動作イメージを示します。ツール実行のための環境設定については後述(<a class="reference internal" href="#id5">環境</a>を参照)します。</p>
-<img alt="_images/fig13.png" src="_images/fig13.png" />
+<div><img alt="_images/fig13.png" src="_images/fig13.png" />
 </div></blockquote>
-</li>
-<li><p class="first">試験結果の出力イメージ</p>
-<blockquote>
-<div><p>指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果(OK/ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。</p>
-</div></blockquote>
-</li>
-</ul>
+</div>
+<div class="section" id="id4">
+<h4>試験結果の出力イメージ<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果(OK/ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。</p>
 <div class="console highlight-python"><pre>--- Test start ---
 
 match: 29_ICMPV6_TYPE
@@ -107,11 +112,12 @@ match: 30_ICMPV6_CODE
 
 ---  Test end  ---</pre>
 </div>
-<div class="section" id="id2">
-<h3>エラーメッセージ一覧<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>エラーメッセージ一覧<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
-<blockquote>
-<div><table border="1" class="docutils">
+<table border="1" class="docutils">
 <colgroup>
 <col width="60%" />
 <col width="40%" />
@@ -133,12 +139,90 @@ match: 30_ICMPV6_CODE
 </tr>
 </tbody>
 </table>
-</div></blockquote>
 </div>
 </div>
-<div class="section" id="id3">
-<h2>使用方法<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id6">
+<h2>使用方法<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>テストツールの使用方法を解説します。</p>
+<div class="section" id="id7">
+<h3>テストパターンファイル<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>試験したいテストパターンに応じたテストパターンファイルを作成する必要があります。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowModメッセージのmatch/actionsに指定できる各パラメータがそれぞれ正常に動作するかを確認するテストパターンファイルが用意されています。</p>
+<blockquote class="last">
+<div>ryu/tests/switch/of13</div></blockquote>
+</div>
+<p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
+<div class="sourcecode highlight-python"><pre>[
+    "xxxxxxxxxx",                    # 試験項目名
+    {
+        "description": "xxxxxxxxxx", # 試験内容の説明
+        "prerequisite": [
+            {
+                "OFPFlowMod": {...}  # 登録するフローエントリ
+            },                       # (RyuのOFPFlowModをjson形式で記述)
+            {...},
+            {...}
+        ],
+        "tests": [
+            {
+                "ingress": [         # 印加するパケット
+                    "ethernet(...)", # (Ryuパケットライブラリのコンストラクタの形式で記述)
+                    "ipv4(...)",
+                    "tcp(...)"
+                ],
+
+                # 期待する処理結果
+                # 処理結果の種別に応じて(a)(b)(c)のいずれかを記述
+                #  (a) パケット転送(actions=output:X)の確認試験
+                "egress": [          # 期待する転送パケット
+                    "ethernet(...)",
+                    "ipv4(...)",
+                    "tcp(...)"
+                ]
+                #  (b) パケットイン(actions=CONTROLLER)の確認試験
+                "PACKET_IN": [       # 期待するPacket-Inデータ
+                    "ethernet(...)",
+                    "ipv4(...)",
+                    "tcp(...)"
+                ]
+                #  (c) table-missの確認試験
+                "table-miss": [      # table-missとなることを期待するフローテーブルID
+                    0
+                ]
+            },
+            {...},
+            {...}
+        ]
+    },                               # 試験1
+    {...},                           # 試験2
+    {...}                            # 試験3
+]</pre>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>ツール実行環境<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストツール実行のための環境を構築する必要があります。</p>
+<blockquote>
+<div><a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" src="_images/fig23.png" style="width: 591.2px; height: 303.2px;" /></a>
+</div></blockquote>
+<p>補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。</p>
+<ul class="simple">
+<li>actions=CONTROLLERのフローエントリ登録</li>
+<li>actions=CONTROLLERのフローエントリによるPacket-Inメッセージ送信</li>
+<li>Packet-Outメッセージ受信によるパケット送信</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>この環境をmininet上で実現する環境構築スクリプトが、Ryuのソースツリーに用意されています。</p>
+<blockquote>
+<div>ryu/tests/switch/run_mininet.py</div></blockquote>
+<p class="last">スクリプトの使用例を「<a class="reference internal" href="#id10">テストツール使用例</a>」に記載しています。</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>テストツールの実行方法<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストツールはRyuのソースツリー上で公開されています。</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -164,56 +248,75 @@ match: 30_ICMPV6_CODE
 </tbody>
 </table>
 </div></blockquote>
-<div class="section" id="id4">
-<h3>テストパターンファイル<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>テストパターンファイルの拡張子は「.json」としてください。</p>
-<p>テストパターンファイルは以下の形式で記述します。</p>
-<div class="sourcecode highlight-python"><pre>[
-    "xxxxxxxxxx",                    # 試験項目名
-    {
-        "description": "xxxxxxxxxx", # 試験項目の説明
-        "prerequisite": [
-            {
-                "OFPFlowMod": {...}  # 登録するフローエントリ
-            },                       # (RyuのOFPFlowMod形式で記述)
-            {
-                "OFPFlowMod": {...}
-            }
-        ],
-        "tests": [
-            {
-                "ingress": [         # 印加するパケット
-                    "ethernet()",
-                    "ipv4()",
-                    "tcp()"
-                ],
-
-                # 実施する試験種別に応じて(a)(b)(c)のいずれかを記載
-                #  (a) パケット転送(actions=output:X)の確認試験
-                "egress": [          # 期待する転送パケット
-                    "ethernet()",
-                    "ipv4()",
-                    "tcp()"
-                ]
-                #  (b) パケットイン(actions=CONTROLLER)の確認試験
-                "PACKET_IN": [       # 期待するPacket-Inデータ
-                    "ethernet()",
-                    "ipv4()",
-                    "tcp()"
-                ]
-                #  (c) table-missの確認試験
-                "table-miss": [      # table-missの確認対象のフローテーブルID
-                    0
-                ]
-            },
-            {...},
-            {...}
-        ]
-    },                               # 試験1
-    {...},                           # 試験2
-    {...}                            # 試験3
-]</pre>
+<p>テストツールは次のコマンドで実行します。</p>
+<div class="console highlight-python"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID] [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py</pre>
 </div>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="49%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">オプション</th>
+<th class="head">説明</th>
+<th class="head">デフォルト値</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>&#8211;test-switch-target</td>
+<td>試験対象スイッチのデータパスID</td>
+<td>0000000000000001</td>
+</tr>
+<tr class="row-odd"><td>&#8211;test-switch-tester</td>
+<td>補助スイッチのデータパスID</td>
+<td>0000000000000002</td>
+</tr>
+<tr class="row-even"><td>&#8211;test-switch-dir</td>
+<td>テストパターンファイルのディレクトリパス</td>
+<td>ryu/tests/switch/of13</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチがコントローラに接続されるまで待機します。</p>
+<div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
+loading app ryu/tests/switch/tester.py
+loading app ryu.controller.ofp_handler
+instantiating app ryu.controller.ofp_handler of OFPHandler
+instantiating app ryu/tests/switch/tester.py of OfTester
+target_dpid=0000000000000001
+tester_dpid=0000000000000002
+Test files directory = ryu/tests/switch/of13
+--- Test start ---
+waiting for switches connection...</pre>
+</div>
+<p>試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
+<div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
+loading app ryu/tests/switch/tester.py
+loading app ryu.controller.ofp_handler
+instantiating app ryu.controller.ofp_handler of OFPHandler
+instantiating app ryu/tests/switch/tester.py of OfTester
+target_dpid=0000000000000001
+tester_dpid=0000000000000002
+Test files directory = ryu/tests/switch/of13
+--- Test start ---
+waiting for switches connection...
+dpid=0000000000000002 : Join tester SW.
+dpid=0000000000000001 : Join target SW.
+action: 00_OUTPUT
+    ethernet/ipv4/tcp--&gt;'actions=output:2'      OK
+    ethernet/ipv6/tcp--&gt;'actions=output:2'      OK
+    ethernet/arp--&gt;'actions=output:2'           OK</pre>
+</div>
+</div>
+</div>
+<div class="section" id="id10">
+<h2>テストツール使用例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>XXXを例に、オリジナルのテストパターンファイルを作成しテストツールを実行する手順を示します。</p>
+<div class="section" id="id11">
+<h3>テストパターンファイルの作成<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストパターンファイルのサンプルを示します。</p>
 <p>OpenFlowスイッチがmatch条件としてeth_dstパラメータに対応しているかを確認する試験サンプルです。match条件にeth_dstを指定するフローエントリを登録し、match条件に合致するeth_dstが設定されたパケットを印加することでパケットがフローエントリにmatchし転送されることを期待する試験を記述しています。</p>
 <p>ファイル名：<tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
@@ -275,13 +378,12 @@ match: 30_ICMPV6_CODE
 </pre></div>
 </div>
 </div>
-<div class="section" id="id5">
-<h3>環境<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>テストツール</p>
+<div class="section" id="id12">
+<h3>環境構築<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
 </div>
+<div class="section" id="id13">
+<h3>テストツール実行<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
 </div>
-<div class="section" id="id6">
-<h2>テストツール使用例<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
 </div>
 </div>
 
@@ -295,15 +397,26 @@ match: 30_ICMPV6_CODE
   <ul>
 <li><a class="reference internal" href="#">OpenFlowスイッチテストツール</a><ul>
 <li><a class="reference internal" href="#id1">テストツールの概要</a><ul>
-<li><a class="reference internal" href="#id2">エラーメッセージ一覧</a></li>
+<li><a class="reference internal" href="#id2">動作概要</a><ul>
+<li><a class="reference internal" href="#id3">試験実行イメージ</a></li>
+<li><a class="reference internal" href="#id4">試験結果の出力イメージ</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">使用方法</a><ul>
-<li><a class="reference internal" href="#id4">テストパターンファイル</a></li>
-<li><a class="reference internal" href="#id5">環境</a></li>
+<li><a class="reference internal" href="#id5">エラーメッセージ一覧</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">テストツール使用例</a></li>
+<li><a class="reference internal" href="#id6">使用方法</a><ul>
+<li><a class="reference internal" href="#id7">テストパターンファイル</a></li>
+<li><a class="reference internal" href="#id8">ツール実行環境</a></li>
+<li><a class="reference internal" href="#id9">テストツールの実行方法</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">テストツール使用例</a><ul>
+<li><a class="reference internal" href="#id11">テストパターンファイルの作成</a></li>
+<li><a class="reference internal" href="#id12">環境構築</a></li>
+<li><a class="reference internal" href="#id13">テストツール実行</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
