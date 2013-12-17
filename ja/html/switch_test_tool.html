@@ -51,18 +51,12 @@
 <p>本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、RyuのOpenFlowスイッチテストツールの使用方法を解説します。</p>
 <div class="section" id="id1">
 <h2>テストツールの概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本ツールは、</p>
-<ol class="arabic simple">
-<li>テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリ登録、パケット印加を実施</li>
-<li>OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果とテストパターンファイルに記述された&#8221;期待する処理結果&#8221;の比較</li>
-</ol>
-<p>を行うことにより、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証するテストツールです。</p>
-<p>ツールは、OpenFlowバージョン1.3の以下のOpenFlowメッセージの試験に対応しています。</p>
-<blockquote>
-<div><table border="1" class="docutils">
+<p>本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリ登録、パケット印加を実施し、OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果とテストパターンファイルに記述された&#8221;期待する処理結果&#8221;の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。</p>
+<p>ツールは、OpenFlowバージョン1.3のFlowModメッセージの試験に対応しています。</p>
+<table border="1" class="docutils">
 <colgroup>
-<col width="36%" />
-<col width="64%" />
+<col width="48%" />
+<col width="52%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">試験対象メッセージ</th>
@@ -70,14 +64,13 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>FlowModメッセージ</td>
+<tr class="row-even"><td>OpenFlow1.3 FlowModメッセージ</td>
 <td><p class="first">match (IN_PHY_PORTを除く)</p>
 <p class="last">actions (SET_QUEUE、GROUPを除く)</p>
 </td>
 </tr>
 </tbody>
 </table>
-</div></blockquote>
 <p>また印加パケットとして、Ryuのパケットライブラリで定義されたプロトコルを用いることが出来ます。</p>
 <div class="section" id="id2">
 <h3>動作概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -201,12 +194,6 @@ match: 30_ICMPV6_CODE
 <div class="section" id="id7">
 <h3>テストパターンファイル<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>試験したいテストパターンに応じたテストパターンファイルを作成する必要があります。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p>Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowModメッセージのmatch/actionsに指定できる各パラメータがそれぞれ正常に動作するかを確認するテストパターンファイルが用意されています。</p>
-<blockquote class="last">
-<div>ryu/tests/switch/of13</div></blockquote>
-</div>
 <p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
 <div class="sourcecode highlight-python"><pre>[
     "xxxxxxxxxx",                    # 試験項目名
@@ -254,6 +241,12 @@ match: 30_ICMPV6_CODE
     {...}                            # 試験3
 ]</pre>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowModメッセージのmatch/actionsに指定できる各パラメータがそれぞれ正常に動作するかを確認するテストパターンファイルが用意されています。</p>
+<blockquote class="last">
+<div>ryu/tests/switch/of13</div></blockquote>
+</div>
 </div>
 <div class="section" id="id8">
 <h3>ツール実行環境<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -269,7 +262,7 @@ match: 30_ICMPV6_CODE
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p>この環境をmininet上で実現する環境構築スクリプトが、Ryuのソースツリーに用意されています。</p>
+<p>Open vSwitchを試験対象スイッチとしたツール実行環境をmininet上で実現する環境構築スクリプトが、Ryuのソースツリーに用意されています。</p>
 <blockquote>
 <div>ryu/tests/switch/run_mininet.py</div></blockquote>
 <p class="last">スクリプトの使用例を「<a class="reference internal" href="#id10">テストツール使用例</a>」に記載しています。</p>
@@ -303,7 +296,8 @@ match: 30_ICMPV6_CODE
 </table>
 </div></blockquote>
 <p>テストツールは次のコマンドで実行します。</p>
-<div class="console highlight-python"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID] [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py</pre>
+<div class="console highlight-python"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+ [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py</pre>
 </div>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -334,8 +328,22 @@ match: 30_ICMPV6_CODE
 </tbody>
 </table>
 </div></blockquote>
+<p>テストツールの起動後、試験対象スイッチと補助スイッチがコントローラに接続されると、指定したテストパターンファイルを元に試験が開始されます。</p>
+</div>
+</div>
+<div class="section" id="id10">
+<h2>テストツール使用例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>サンプルテストパターンやオリジナルのテストパターンファイルを用いたテストツールの実行手順を紹介します。</p>
+<div class="section" id="id11">
+<h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch/actionの一通りの動作確認を行う手順を示します。</p>
+<p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築します。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
+<p>VM環境にログインし、テストツールを実行します。</p>
+<div class="console highlight-python"><pre>ryu-vm$ ryu-manager --test-switch-dir ryu/tests/switch/of13 ryu/tests/switch/tester.py</pre>
+</div>
+<p>*&#8211;test-switch-dirはデフォルトでryu/tests/switch/of13となっているため省略可能。</p>
 <p>ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチがコントローラに接続されるまで待機します。</p>
-<div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
+<div class="console highlight-python"><pre>ryu-vm$ ryu-manager ryu/tests/switch/tester.py
 loading app ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu.controller.ofp_handler of OFPHandler
@@ -346,6 +354,8 @@ Test files directory = ryu/tests/switch/of13
 --- Test start ---
 waiting for switches connection...</pre>
 </div>
+<p>試験環境構築スクリプトを実行し、試験対象スイッチと補助スイッチを起動します。</p>
+<p>#TODO: run_mininet.pyの実行</p>
 <p>試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
 <div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
 loading app ryu/tests/switch/tester.py
@@ -366,17 +376,13 @@ action: 00_OUTPUT
 ...</pre>
 </div>
 </div>
-</div>
-<div class="section" id="id10">
-<h2>テストツール使用例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>XXXを例に、オリジナルのテストパターンファイルを作成しテストツールを実行する手順を示します。</p>
-<div class="section" id="id11">
-<h3>テストパターンファイルの作成<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>テストパターンファイルのサンプルを示します。</p>
+<div class="section" id="id12">
+<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>次にXXXを例にした、独自のテストパターンを元にテストツールを実行する手順を示します。</p>
 <p>OpenFlowスイッチがmatch条件としてeth_dstパラメータに対応しているかを確認する試験サンプルです。match条件にeth_dstを指定するフローエントリを登録し、match条件に合致するeth_dstが設定されたパケットを印加することでパケットがフローエントリにmatchし転送されることを期待する試験を記述しています。</p>
 <p>ファイル名：<tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
-    <span class="s">&quot;match: 03_ETH_DST&quot;</span><span class="p">,</span>
+    <span class="s">&quot;sample: XXX&quot;</span><span class="p">,</span>
     <span class="p">{</span>
         <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;)/ipv4/tcp--&gt;&#39;eth_dst=22:22:22:22:22:22,actions=output:2&#39;&quot;</span><span class="p">,</span>
         <span class="s">&quot;prerequisite&quot;</span><span class="p">:[</span>
@@ -433,9 +439,6 @@ action: 00_OUTPUT
 </pre></div>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>環境構築<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
-</div>
 <div class="section" id="id13">
 <h3>テストツール実行<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
 </div>
@@ -467,8 +470,8 @@ action: 00_OUTPUT
 </ul>
 </li>
 <li><a class="reference internal" href="#id10">テストツール使用例</a><ul>
-<li><a class="reference internal" href="#id11">テストパターンファイルの作成</a></li>
-<li><a class="reference internal" href="#id12">環境構築</a></li>
+<li><a class="reference internal" href="#id11">サンプルテストパターンの実行手順</a></li>
+<li><a class="reference internal" href="#id12">オリジナルテストパターンの実行手順</a></li>
 <li><a class="reference internal" href="#id13">テストツール実行</a></li>
 </ul>
 </li>
