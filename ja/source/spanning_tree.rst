@@ -85,6 +85,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
         フレーム転送を抑制するポートです。
 
 
+
         .. only:: latex
 
            .. image:: images/spanning_tree/fig3.eps
@@ -132,6 +133,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
     その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従って
     FORWARD状態またはBLOCK状態に遷移します。コンフィグで無効ポートと設定
     されたポートはDISABLE状態となり、以降、状態遷移は行われません。
+
 
 
             .. only:: latex
@@ -835,7 +837,7 @@ STPライブラリはStp.set_config()メソッドによりブリッジ・ポー�
     項目       説明                                                デフォルト値
     ========== =================================================== ============
     priority   ブリッジ優先度                                      0x8000
-    sys_ext_id VLAN-IDを設定 (*現状のSTPライブラリはVLAN未対応)    0
+    sys_ext_id VLAN-IDを設定 (\*現状のSTPライブラリはVLAN未対応)   0
     max_age    BPDUパケットの受信待ちタイマー値                    20[sec]
     hello_time BPDUパケットの送信間隔                              2 [sec]
     fwd_delay  各ポートがLISTEN状態およびLEARN状態に留まる時間     15[sec]
