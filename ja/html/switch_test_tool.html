@@ -125,13 +125,13 @@ match: 30_ICMPV6_CODE
 <td>前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)</td>
 </tr>
 <tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
-<td>前回試験のフローエントリ削除に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
+<td>前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)</td>
 </tr>
 <tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
 <td>フローエントリ登録に失敗(Barrier Requestのタイムアウト)</td>
 </tr>
 <tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
-<td>フローエントリ登録に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
+<td>フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)</td>
 </tr>
 <tr class="row-even"><td>Added incorrect flows: [flows]</td>
 <td>フローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
@@ -170,13 +170,13 @@ match: 30_ICMPV6_CODE
 <td>パケット印加に失敗(Barrier Requestのタイムアウト)</td>
 </tr>
 <tr class="row-even"><td>Faild to send packet: [err_msg]</td>
-<td>パケット印加に失敗(Barrier Requestに対するErrorメッセージ受信)</td>
+<td>パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)</td>
 </tr>
 <tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
-<td>table-miss確認エラー(matched_countがカウントアップしている)</td>
+<td>table-miss確認エラー(フローにmatchしている)</td>
 </tr>
 <tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
-<td>table-miss確認エラー(lookup_countがカウントアップしていない)</td>
+<td>table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)</td>
 </tr>
 <tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
 <td>table-missの確認に失敗(TableStats Requestのタイムアウト)</td>
@@ -337,34 +337,58 @@ match: 30_ICMPV6_CODE
 <div class="section" id="id11">
 <h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch/actionの一通りの動作確認を行う手順を示します。</p>
-<p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築します。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
-<p>VM環境にログインし、テストツールを実行します。</p>
-<div class="console highlight-python"><pre>ryu-vm$ ryu-manager --test-switch-dir ryu/tests/switch/of13 ryu/tests/switch/tester.py</pre>
+<p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
+<ol class="arabic">
+<li><p class="first">VM環境にログインし、試験環境構築スクリプトを実行します。</p>
+<blockquote>
+<div><div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py</pre>
 </div>
-<p>*&#8211;test-switch-dirはデフォルトでryu/tests/switch/of13となっているため省略可能。</p>
+</div></blockquote>
+<p>netコマンドの実行結果は次の通りです。</p>
+<blockquote>
+<div><div class="console highlight-python"><pre>mininet&gt; net
+c0
+s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
+s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2</pre>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">テストツール実行のため、コントローラのxtermを開きます。</p>
+<blockquote>
+<div><div class="console highlight-python"><pre>mininet&gt; xterm c0</pre>
+</div>
+</div></blockquote>
+<p>「Node: c0 (root)」のxtermから、テストツールを実行します。この際、テストパターンファイルのディレクトリとして、サンプルテストパターンのディレクトリ(ryu/tests/switch/of13)を指定します。</p>
+<blockquote>
+<div><p>Node: c0:</p>
+<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py</pre>
+</div>
+</div></blockquote>
 <p>ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチがコントローラに接続されるまで待機します。</p>
-<div class="console highlight-python"><pre>ryu-vm$ ryu-manager ryu/tests/switch/tester.py
-loading app ryu/tests/switch/tester.py
+<blockquote>
+<div><div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
-instantiating app ryu.controller.ofp_handler of OFPHandler
-instantiating app ryu/tests/switch/tester.py of OfTester
+instantiating app ryu/ryu/tests/switch/tester.py of OfTester
 target_dpid=0000000000000001
 tester_dpid=0000000000000002
-Test files directory = ryu/tests/switch/of13
+Test files directory = ryu/ryu/tests/switch/of13/
+instantiating app ryu.controller.ofp_handler of OFPHandler
 --- Test start ---
 waiting for switches connection...</pre>
 </div>
-<p>試験環境構築スクリプトを実行し、試験対象スイッチと補助スイッチを起動します。</p>
-<p>#TODO: run_mininet.pyの実行</p>
-<p>試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
-<div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
-loading app ryu/tests/switch/tester.py
+</div></blockquote>
+</li>
+<li><p class="first">試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
+<blockquote>
+<div><div class="console highlight-python"><pre>$ ryu-manager ryu/tests/switch/tester.py
+loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
-instantiating app ryu.controller.ofp_handler of OFPHandler
-instantiating app ryu/tests/switch/tester.py of OfTester
+instantiating app ryu/ryu/tests/switch/tester.py of OfTester
 target_dpid=0000000000000001
 tester_dpid=0000000000000002
-Test files directory = ryu/tests/switch/of13
+Test files directory = ryu/ryu/tests/switch/of13/
+instantiating app ryu.controller.ofp_handler of OFPHandler
 --- Test start ---
 waiting for switches connection...
 dpid=0000000000000002 : Join tester SW.
@@ -375,16 +399,182 @@ action: 00_OUTPUT
     ethernet/arp--&gt;'actions=output:2'           OK
 ...</pre>
 </div>
-</div>
+</div></blockquote>
+<p>ryu/tests/switch/of13配下の全てのサンプルテストパターンファイルの試験が完了すると、テストツールは終了します。</p>
+</li>
+</ol>
 <div class="section" id="id12">
-<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>次にXXXを例にした、独自のテストパターンを元にテストツールを実行する手順を示します。</p>
-<p>OpenFlowスイッチがmatch条件としてeth_dstパラメータに対応しているかを確認する試験サンプルです。match条件にeth_dstを指定するフローエントリを登録し、match条件に合致するeth_dstが設定されたパケットを印加することでパケットがフローエントリにmatchし転送されることを期待する試験を記述しています。</p>
+<h4>&lt;参考&gt;<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<blockquote>
+<div><p>サンプルテストパターンファイル一覧</p>
+<div class="console highlight-python"><pre>ryu/tests/switch/of13/action:
+00_OUTPUT.json
+11_COPY_TTL_OUT.json
+12_COPY_TTL_IN.json
+15_SET_MPLS_TTL.json
+16_DEC_MPLS_TTL.json
+17_PUSH_VLAN.json
+17_PUSH_VLAN_multiple.json
+18_POP_VLAN.json
+19_PUSH_MPLS.json
+19_PUSH_MPLS_multiple.json
+20_POP_MPLS.json
+23_SET_NW_TTL_IPv4.json
+23_SET_NW_TTL_IPv6.json
+24_DEC_NW_TTL_IPv4.json
+24_DEC_NW_TTL_IPv6.json
+25_SET_FIELD
+26_PUSH_PBB.json
+26_PUSH_PBB_multiple.json
+27_POP_PBB.json
+
+ryu/tests/switch/of13/action/25_SET_FIELD:
+03_ETH_DST.json
+04_ETH_SRC.json
+05_ETH_TYPE.json
+06_VLAN_VID.json
+07_VLAN_PCP.json
+08_IP_DSCP_IPv4.json
+08_IP_DSCP_IPv6.json
+09_IP_ECN_IPv4.json
+09_IP_ECN_IPv6.json
+10_IP_PROTO_IPv4.json
+10_IP_PROTO_IPv6.json
+11_IPV4_SRC.json
+12_IPV4_DST.json
+13_TCP_SRC_IPv4.json
+13_TCP_SRC_IPv6.json
+14_TCP_DST_IPv4.json
+14_TCP_DST_IPv6.json
+15_UDP_SRC_IPv4.json
+15_UDP_SRC_IPv6.json
+16_UDP_DST_IPv4.json
+16_UDP_DST_IPv6.json
+17_SCTP_SRC_IPv4.json
+17_SCTP_SRC_IPv6.json
+18_SCTP_DST_IPv4.json
+18_SCTP_DST_IPv6.json
+19_ICMPV4_TYPE.json
+20_ICMPV4_CODE.json
+21_ARP_OP.json
+22_ARP_SPA.json
+23_ARP_TPA.json
+24_ARP_SHA.json
+25_ARP_THA.json
+26_IPV6_SRC.json
+27_IPV6_DST.json
+28_IPV6_FLABEL.json
+29_ICMPV6_TYPE.json
+30_ICMPV6_CODE.json
+31_IPV6_ND_TARGET.json
+32_IPV6_ND_SLL.json
+33_IPV6_ND_TLL.json
+34_MPLS_LABEL.json
+35_MPLS_TC.json
+36_MPLS_BOS.json
+37_PBB_ISID.json
+38_TUNNEL_ID.json
+
+ryu/tests/switch/of13/match:
+00_IN_PORT.json
+02_METADATA.json
+02_METADATA_Mask.json
+03_ETH_DST.json
+03_ETH_DST_Mask.json
+04_ETH_SRC.json
+04_ETH_SRC_Mask.json
+05_ETH_TYPE.json
+06_VLAN_VID.json
+06_VLAN_VID_Mask.json
+07_VLAN_PCP.json
+08_IP_DSCP_IPv4.json
+08_IP_DSCP_IPv6.json
+09_IP_ECN_IPv4.json
+09_IP_ECN_IPv6.json
+10_IP_PROTO_IPv4.json
+10_IP_PROTO_IPv6.json
+11_IPV4_SRC.json
+11_IPV4_SRC_Mask.json
+12_IPV4_DST.json
+12_IPV4_DST_Mask.json
+13_TCP_SRC_IPv4.json
+13_TCP_SRC_IPv6.json
+14_TCP_DST_IPv4.json
+14_TCP_DST_IPv6.json
+15_UDP_SRC_IPv4.json
+15_UDP_SRC_IPv6.json
+16_UDP_DST_IPv4.json
+16_UDP_DST_IPv6.json
+17_SCTP_SRC_IPv4.json
+17_SCTP_SRC_IPv6.json
+18_SCTP_DST_IPv4.json
+18_SCTP_DST_IPv6.json
+19_ICMPV4_TYPE.json
+20_ICMPV4_CODE.json
+21_ARP_OP.json
+22_ARP_SPA.json
+22_ARP_SPA_Mask.json
+23_ARP_TPA.json
+23_ARP_TPA_Mask.json
+24_ARP_SHA.json
+24_ARP_SHA_Mask.json
+25_ARP_THA.json
+25_ARP_THA_Mask.json
+26_IPV6_SRC.json
+26_IPV6_SRC_Mask.json
+27_IPV6_DST.json
+27_IPV6_DST_Mask.json
+28_IPV6_FLABEL.json
+29_ICMPV6_TYPE.json
+30_ICMPV6_CODE.json
+31_IPV6_ND_TARGET.json
+32_IPV6_ND_SLL.json
+33_IPV6_ND_TLL.json
+34_MPLS_LABEL.json
+35_MPLS_TC.json
+36_MPLS_BOS.json
+37_PBB_ISID.json
+37_PBB_ISID_Mask.json
+38_TUNNEL_ID.json
+38_TUNNEL_ID_Mask.json
+39_IPV6_EXTHDR.json
+39_IPV6_EXTHDR_Mask.json</pre>
+</div>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="id13">
+<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>次に、オリジナルのテストパターンを作成してテストツールを実行する手順を示します。</p>
+<p>例として、OpenFlowスイッチでルータ機能を実現するために必要なmatch/actionsを処理する機能を備えているかを確認するテストパターンを作成します。</p>
+<ol class="arabic">
+<li><p class="first">テストパターンファイルを作成します。</p>
+<blockquote>
+<div><p>ルータがルーティングテーブルに従ってパケットを転送する機能を模擬するため以下のフローエントリが正しく動作するかを試験します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">match</th>
+<th class="head">actions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ipv4_dstを指定</td>
+<td><p class="first">eth_srcを書き換え(set_field)</p>
+<p>ttl減算</p>
+<p class="last">パケット転送(output)</p>
+</td>
+</tr>
+</tbody>
+</table>
 <p>ファイル名：<tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
-    <span class="s">&quot;sample: XXX&quot;</span><span class="p">,</span>
+    <span class="s">&quot;sample: Router test&quot;</span><span class="p">,</span>
     <span class="p">{</span>
-        <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;)/ipv4/tcp--&gt;&#39;eth_dst=22:22:22:22:22:22,actions=output:2&#39;&quot;</span><span class="p">,</span>
+        <span class="s">&quot;description&quot;</span><span class="p">:</span><span class="s">&quot;ethernet/ipv4(dst_ip=&#39;192.168.10.10&#39;)/tcp--&gt;&#39;ipv4_dst=192.168.10.0/24,actions=dec_ttl/output:2&#39;&quot;</span><span class="p">,</span>
         <span class="s">&quot;prerequisite&quot;</span><span class="p">:[</span>
             <span class="p">{</span>
                 <span class="s">&quot;OFPFlowMod&quot;</span><span class="p">:{</span>
@@ -438,9 +628,12 @@ action: 00_OUTPUT
 <span class="p">]</span>
 </pre></div>
 </div>
+</div></blockquote>
+</li>
+</ol>
 </div>
-<div class="section" id="id13">
-<h3>テストツール実行<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id14">
+<h3>テストツール実行<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h3>
 </div>
 </div>
 </div>
@@ -470,9 +663,12 @@ action: 00_OUTPUT
 </ul>
 </li>
 <li><a class="reference internal" href="#id10">テストツール使用例</a><ul>
-<li><a class="reference internal" href="#id11">サンプルテストパターンの実行手順</a></li>
-<li><a class="reference internal" href="#id12">オリジナルテストパターンの実行手順</a></li>
-<li><a class="reference internal" href="#id13">テストツール実行</a></li>
+<li><a class="reference internal" href="#id11">サンプルテストパターンの実行手順</a><ul>
+<li><a class="reference internal" href="#id12">&lt;参考&gt;</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">オリジナルテストパターンの実行手順</a></li>
+<li><a class="reference internal" href="#id14">テストツール実行</a></li>
 </ul>
 </li>
 </ul>
