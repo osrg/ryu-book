@@ -19,4 +19,5 @@ RyuによるOpenFlowプログラミング
    openflow_protocol.rst
    arch.rst
    rest_firewall.rst
+   rest_router.rst
    switch_test_tool.rst
