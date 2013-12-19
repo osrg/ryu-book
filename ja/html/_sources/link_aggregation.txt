@@ -81,11 +81,13 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
        .. image:: images/link_aggregation/fig3.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/link_aggregation/fig3.png
           :scale: 80 %
+          :align: center
 
 ここではMininetの低位クラスを直接使用するスクリプトを作成し、トポロジを作成
 することにします。
@@ -575,11 +577,13 @@ h4           1
 
        .. image:: images/link_aggregation/fig4.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/link_aggregation/fig4.png
           :scale: 80 %
+          :align: center
 
 以上のように、フローが分散することが確認できました。
 
