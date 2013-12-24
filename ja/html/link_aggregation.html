@@ -75,7 +75,7 @@
 </div>
 <div class="section" id="ryu">
 <h2>Ryuアプリケーションの実行<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>Ryuのリンク・アグリゲーション・アプリケーションを実行してみます。</p>
+<p>ソースの説明は後回しにして、まずはRyuのリンク・アグリゲーション・アプリケーションを実行してみます。</p>
 <p>Ryuのソースツリーに用意されているsimple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにリンク・アグリゲーション機能を追加したアプリケーションです。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.</span>
@@ -218,11 +218,11 @@
 <h3>実験環境の構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>リンク・アグリゲーション・アプリケーションの動作確認を行う実験環境を構築します。</p>
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
-<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のようにトポロジが特殊なため、mnコマンドで作成することができません。</p>
+<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロジであるため、mnコマンドで作成することができません。</p>
 <blockquote>
 <div><a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 645.6px; height: 566.4px;" /></a>
 </div></blockquote>
-<p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、トポロジを作成することにします。</p>
+<p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、実験環境を構築することにします。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 
@@ -266,7 +266,7 @@
     <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>このプログラムを実行することにより、ホストh1とスイッチs1の間に2本のリンクが存在するトポロジが作成されます。netコマンドを実行することでトポロジを確認することができます。</p>
+<p>このスクリプトを実行することにより、ホストh1とスイッチs1の間に2本のリンクが存在するトポロジが作成されます。netコマンドを実行することでトポロジを確認することができます。</p>
 <div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
@@ -278,10 +278,11 @@ h3 h3-eth0:s1-eth4
 h4 h4-eth0:s1-eth5
 mininet&gt;</pre>
 </div>
+<p>また、このスクリプトを実行することにより、コントローラc0、ホストh1～h4、およびスイッチs1のxtermが起動します。</p>
 </div>
 <div class="section" id="h1">
 <h3>ホストh1でのリンク・アグリゲーションの設定<a class="headerlink" href="#h1" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>前節のコマンドを実行すると、コントローラc0、ホストh1～h4、およびスイッチs1のxtermが起動します。ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってください。</p>
+<p>ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってください。</p>
 <p>まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。Linuxではリンク・アグリゲーション機能はボンディングドライバが担当しています。事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成しておきます。</p>
 <p>ファイル名:<tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
 <div class="sourcecode highlight-python"><pre>alias bond0 bonding
@@ -389,7 +390,7 @@ Permanent HW addr: 00:00:00:00:00:12
 Aggregator ID: 2
 Slave queue ID: 0</pre>
 </div>
-<p>LACPデータユニットの交換間隔や振り分けロジックの設定が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
+<p>LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定(Transmit Hash Polish: layer2 (0))が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
 <p>以上でホストh1のリンク・アグリゲーションの設定は終了です。</p>
 </div>
 <div class="section" id="openflow">
@@ -401,7 +402,7 @@ Slave queue ID: 0</pre>
 </div>
 <div class="section" id="id4">
 <h3>スイッチングハブの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>準備が整ったので、Ryuアプリケーションを実行します。</p>
+<p>準備が整ったので、冒頭で作成したRyuアプリケーションを実行します。</p>
 <div class="admonition attention">
 <p class="first admonition-title">注意</p>
 <p class="last">本Ryuアプリケーションはライブラリとしてlacplib.pyを使用しますが、Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
@@ -431,7 +432,7 @@ slave state changed port: 1 enabled: True
 slave state changed port: 2 enabled: True
 ...</pre>
 </div>
-<p>「LACP received.」はLACPデータユニットを受信したことを、「the slave i/f has just been up.」は無効状態だったポートが有効状態に変更したことを、「the timeout time has changed.」はLACPデータユニットの無通信監視時間が変更されたこと（今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの90秒）を、「LACP sent.」は応答用のLACPデータユニットを送信したことを、それぞれ表します。「slave state changed」の行は、LACPライブラリからの<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを受信したスイッチングハブが出力しています。</p>
+<p>「LACP received.」はLACPデータユニットを受信したことを、「the slave i/f has just been up.」は無効状態だったポートが有効状態に変更したことを、「the timeout time has changed.」はLACPデータユニットの無通信監視時間が変更されたこと（今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの90秒）を、「LACP sent.」は応答用のLACPデータユニットを送信したことを、それぞれ表します。「slave state changed」の行は、LACPライブラリからの<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを受信したスイッチングハブが出力しています(イベントの詳細については後述します)。</p>
 <p>その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送信します。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><pre>...
@@ -449,7 +450,13 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535</pre>
 </div>
-<p>1番めのフローエントリは「h1のh1-eth1からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」、2番めのフローエントリは「h1のh1-eth0からLACPデータユニットが送られてきたらPacket-Inメッセージを送信する」という内容です。なお、3番めのフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」でも登録しているTable-missフローエントリです。</p>
+<p>スイッチには</p>
+<ul class="simple">
+<li>h1のh1-eth1(入力ポートがs1-eth2でMACアドレスが00:00:00:00:00:12)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
+<li>h1のh1-eth0(入力ポートがs1-eth1でMACアドレスが00:00:00:00:00:11)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」でも登録しているTable-missフローエントリ</li>
+</ul>
+<p>の3つのフローエントリが登録されていることがわかります。</p>
 </div>
 <div class="section" id="id5">
 <h3>リンク・アグリゲーション機能の確認<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -466,12 +473,6 @@ PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.065 ms
 ...</pre>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p>後述するとおり、Ryuのリンク・アグリゲーション・アプリケーションは振り分けロジックを実装していません。振り分けは対向装置の処理に依存します。</p>
-<p>ホストh1のボンディングドライバは、振り分けロジックとして宛先のMACアドレスを使用するよう設定されています。このロジックは単純に言えば「宛先MACアドレスの下1バイトを有効なポート数で除算し、その剰余を元にどのポートから出力するかを決定する」といったものです。</p>
-<p class="last">ホストh1からホストh2に対しpingを実行した場合、ICMP echo requestの前にARP requestが送信されます。ARP requestの宛先MACアドレスはff:ff:ff:ff:ff:ff固定であるため、振り分けロジックを適用すると使用する物理インターフェースが固定されてしまいます。そういった事態を避けるため、ここではホストh2からホストh1に対しpingを実行しています。以降の例も同様です。</p>
-</div>
 <p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
@@ -482,7 +483,16 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
  cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。4番めのフローエントリは「3番ポート(s1-eth3、つまりh2の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する」、5番めのフローエントリは「1番ポート(s1-eth2)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出力する」というフローエントリです。h2との通信にはs1-eth1が使用されていることがわかります。</p>
+<p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。</p>
+<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
+</div>
+<p>それぞれ、</p>
+<ul class="simple">
+<li>3番ポート(s1-eth3、つまりh2の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する</li>
+<li>1番ポート(s1-eth1)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出力する</li>
+</ul>
+<p>というフローエントリです。h2との通信にはs1-eth1が使用されていることがわかります。</p>
 <p>続いて、ホストh3からホストh1に対しpingを実行します。</p>
 <p>Node: h3:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -505,7 +515,16 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
  cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>先ほど確認した時点から、5番めと6番めのフローエントリが追加されています。6番めのフローエントリは「4番ポート(s1-eth4、つまりh3の対向インターフェース)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する」、5番めのフローエントリは「2番ポート(s1-eth2)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出力する」というフローエントリです。h3との通信にはs1-eth2が使用されていることがわかります。</p>
+<p>先ほど確認した時点から、5番めと6番めのフローエントリが追加されています。</p>
+<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4</pre>
+</div>
+<p>それぞれ、</p>
+<ul class="simple">
+<li>4番ポート(s1-eth4、つまりh3の対向インターフェース)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する</li>
+<li>2番ポート(s1-eth2)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出力する</li>
+</ul>
+<p>というフローエントリです。h3との通信にはs1-eth2が使用されていることがわかります。</p>
 <p>同様にホストh4からホストh1に対しpingを実行します。</p>
 <p>Node: h4:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -530,7 +549,16 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=102.197s, table=0, n_packets=104, n_bytes=10024, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
  cookie=0x0, duration=180.499s, table=0, n_packets=186, n_bytes=17948, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
 </div>
-<p>追加されたフローエントリは、「5番ポート(s1-eth5、h4の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する」「1番ポート(s1-eth1)からh4宛のパケットを受信したら5番ポート(s1-eth5)から出力する」です。</p>
+<p>追加されたフローエントリは以下のふたつです。</p>
+<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
+cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5</pre>
+</div>
+<p>それぞれ、</p>
+<ul class="simple">
+<li>5番ポート(s1-eth5、つまりh4の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する</li>
+<li>1番ポート(s1-eth1)からh4宛のパケットを受信したら5番ポート(s1-eth5)から出力する</li>
+</ul>
+<p>というフローエントリです。h4との通信にはs1-eth1が使用されていることがわかります。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="50%" />
