@@ -8,7 +8,13 @@ Ryuアーキテクチャ
 
 Ryuアプリケーションのプログラミングモデルを説明します。
 
-.. image:: images/arch/fig1.eps
+.. only:: latex
+
+    .. image:: images/arch/fig1.eps
+
+.. only:: not latex
+
+    .. image:: images/arch/fig1.png
 
 アプリケーション
 ^^^^^^^^^^^^^^^^
