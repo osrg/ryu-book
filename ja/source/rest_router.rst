@@ -1,10 +1,10 @@
 .. _ch_rest_router:
 
-rest_router.pyの使用例
-======================
+ルータの使用例
+==============
 
 本章では、「 :ref:`ch_rest_api` 」を拡張して実装され、Ryuのソースツリーに登
-録されているryu/app/rest_router.pyの使用方法について説明します。
+録されているルータ(ryu/app/rest_router.py)の使用方法について説明します。
 
 
 シングルテナントでの動作例
@@ -20,7 +20,13 @@ rest_router.pyの使用例
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig1.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig1.png
      :scale: 80%
@@ -435,7 +441,13 @@ switch: s3 (root):
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig2.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig2.png
      :scale: 80%
@@ -477,7 +489,13 @@ host: h3:
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig3.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig3.png
      :scale: 80%
@@ -679,7 +697,13 @@ TTLを減らし、ルータs3に向けて送信する」というものです。
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig4.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig4.png
      :scale: 80%
@@ -1037,7 +1061,13 @@ host: h2:
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig5.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig5.png
      :scale: 80%
@@ -1582,7 +1612,13 @@ switch: s3 (root):
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig6.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig6.png
      :scale: 80%
@@ -1648,7 +1684,13 @@ host: h2s3:
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig7.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig7.png
      :scale: 80%
@@ -2119,7 +2161,13 @@ host: h2s1:
      :scale: 80%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_router/fig8.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_router/fig8.png
      :scale: 80%
