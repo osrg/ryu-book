@@ -21,7 +21,14 @@
    | .. image:: images/link_aggregation/fig1.eps | .. image:: images/link_aggregation/fig2.eps |
    +---------------------------------------------+---------------------------------------------+
 
-.. only:: not latex
+.. only:: epub
+
+   +---------------------------------------------+---------------------------------------------+
+   | .. image:: images/link_aggregation/fig1.png | .. image:: images/link_aggregation/fig2.png |
+   |    :scale: 17%                              |    :scale: 17%                              |
+   +---------------------------------------------+---------------------------------------------+
+
+.. only:: not latex and not epub
 
    +---------------------------------------------+---------------------------------------------+
    | .. image:: images/link_aggregation/fig1.png | .. image:: images/link_aggregation/fig2.png |
@@ -83,7 +90,13 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
           :scale: 80 %
           :align: center
 
-    .. only:: not latex
+    .. only:: epub
+
+       .. image:: images/link_aggregation/fig3.png
+          :scale: 35 %
+          :align: center
+
+    .. only:: not latex and not epub
 
        .. image:: images/link_aggregation/fig3.png
           :scale: 80 %
@@ -579,7 +592,13 @@ h4           1
           :scale: 80 %
           :align: center
 
-    .. only:: not latex
+    .. only:: epub
+
+       .. image:: images/link_aggregation/fig4.png
+          :scale: 35 %
+          :align: center
+
+    .. only:: not latex and not epub
 
        .. image:: images/link_aggregation/fig4.png
           :scale: 80 %
