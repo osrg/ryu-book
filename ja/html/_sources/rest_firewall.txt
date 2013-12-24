@@ -1,10 +1,11 @@
 .. _ch_rest_firewall:
 
-rest_firewall.pyの使用例
+ファイアウォールの使用例
 ========================
 
 本章では、「 :ref:`ch_rest_api` 」を拡張して実装され、Ryuのソースツリーに登
-録されているryu/app/rest_firewall.pyの使用方法について説明します。
+録されているファイアウォール(ryu/app/rest_firewall.py)の使用方法について説
+明します。
 
 
 シングルテナントでの動作例
@@ -20,7 +21,13 @@ rest_firewall.pyの使用例
      :scale: 60%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_firewall/fig1.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig1.png
      :scale: 60%
@@ -563,7 +570,13 @@ Node: c0 (root):
      :scale: 60%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_firewall/fig2.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig2.png
      :scale: 60%
@@ -738,7 +751,13 @@ Node: c0 (root):
      :scale: 60%
      :align: center
 
-.. only:: not latex
+.. only:: epub
+
+  .. image:: images/rest_firewall/fig3.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig3.png
      :scale: 60%
@@ -793,7 +812,13 @@ host: h2:
      :scale: 60%
      :align: center
 
-.. only:: not latex
+.. only:: lepub
+
+  .. image:: images/rest_firewall/fig4.png
+     :scale: 40%
+     :align: center
+
+.. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig4.png
      :scale: 60%
