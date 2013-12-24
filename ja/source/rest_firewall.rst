@@ -96,16 +96,15 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
-    loading app ryu/app/rest_firewall.py
+    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
     creating context dpset
     creating context wsgi
-    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
+    instantiating app ryu.app.rest_firewall of RestFirewallAPI
     instantiating app ryu.controller.ofp_handler of OFPHandler
-    (1433) wsgi starting up on http://0.0.0.0:8080/
+    (2210) wsgi starting up on http://0.0.0.0:8080/
 
 Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。
 
@@ -926,14 +925,13 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_firewall.py
-    loading app ryu/app/rest_firewall.py
+    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
     creating context dpset
     creating context wsgi
-    instantiating app ryu/app/rest_firewall.py of RestFirewallAPI
+    instantiating app ryu.app.rest_firewall of RestFirewallAPI
     instantiating app ryu.controller.ofp_handler of OFPHandler
     (13419) wsgi starting up on http://0.0.0.0:8080/
 
