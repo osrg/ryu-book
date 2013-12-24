@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OF-Configライブラリ &mdash; Ryu book 0.1 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
+    <link rel="prev" title="OpenFlowスイッチテストツール" href="switch_test_tool.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlowスイッチテストツール"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="of-config">
+<h1>OF-Configライブラリ<a class="headerlink" href="#of-config" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、Ryuに付属しているOF-Configのクライアントライブラリについて紹介します。</p>
+<p>OF-ConfigはOpenFlowスイッチの管理のためのプロトコルです。NETCONFのスキーマとして定義されており、論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">Open vSwitchはOF-Configをサポートしていませんが、同じ目的のためにOVSDBというサービスを提供しています。(OF-Configは比較的新しい規格で、Open vSwitchがOVSDBを実装したときにはまだ存在しませんでした。)</p>
+</div>
+<div class="section" id="id1">
+<h2>ライブラリ構成<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch">
+<h3>ryu.lib.of_config.capable_switch.OFCapableSwitchクラス<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>NETCONFセッションを扱うためのクラスです。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="kn">import</span> <span class="n">OFCapableSwitch</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ryu-lib-of-config-classes">
+<h3>ryu.lib.of_config.classesモジュール<a class="headerlink" href="#ryu-lib-of-config-classes" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>設定内容をpythonオブジェクトとして扱うためのクラス群を提供するモジュールです。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">クラス名は基本的にOF-Config 1.1.1のyang specification上のgroupingキーワードで使われている名前と同じです。例. OFPortType</p>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="kn">as</span> <span class="nn">ofc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>使用例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id3">
+<h3>スイッチへの接続<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>SSHトランスポートを使用してスイッチに接続します。unknown_host_cbには、不明なSSHホスト鍵の処理を行なうコールバック関数を指定しますが、ここでは無条件に接続を継続するようにしています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get">
+<h3>GET<a class="headerlink" href="#get" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>NETCONF GETを使用して状態を取得する例です。全てのポートの/resources/port/resource-idと/resources/port/current-rateを表示します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-config">
+<h3>GET-CONFIG<a class="headerlink" href="#get-config" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>NETCONF EDIT-CONFIGを使用して設定を取得する例です。全てのポートの/resources/port/resource-idと/resources/port/configuration/admin-stateを表示します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="edit-config">
+<h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>NETCONF EDIT-CONFIGを使用して設定を変更する例です。基本的に、GET-CONFIGで取得した設定を編集してEDIT-CONFIGで送り返す、という手順になります。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">プロトコル上はEDIT-CONFIGで設定の部分的な編集を行なうこともできますが、このような使い方が無難です。</p>
+</div>
+<p>全てのポートの/resources/port/configuration/admin-stateをdownに設定します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OF-Configライブラリ</a><ul>
+<li><a class="reference internal" href="#id1">ライブラリ構成</a><ul>
+<li><a class="reference internal" href="#ryu-lib-of-config-capable-switch-ofcapableswitch">ryu.lib.of_config.capable_switch.OFCapableSwitchクラス</a></li>
+<li><a class="reference internal" href="#ryu-lib-of-config-classes">ryu.lib.of_config.classesモジュール</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id2">使用例</a><ul>
+<li><a class="reference internal" href="#id3">スイッチへの接続</a></li>
+<li><a class="reference internal" href="#get">GET</a></li>
+<li><a class="reference internal" href="#get-config">GET-CONFIG</a></li>
+<li><a class="reference internal" href="#edit-config">EDIT-CONFIG</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="前の章へ">OpenFlowスイッチテストツール</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/of_config.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlowスイッチテストツール"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Ryuプロジェクト.
+      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+    </div>
+  </body>
+</html>
