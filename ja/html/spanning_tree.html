@@ -58,19 +58,8 @@
 <p>スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの冗長性確保の手段としても用いられます。</p>
 <p>スパニングツリーにはSTP、RSTP、PVST+、MSTPなど様々な種別がありますが、本章では最も基本的なSTPの実装を見ていきます。</p>
 <p>STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツリーとして扱い、各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="50%" />
-<col width="50%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><img alt="_images/fig13.png" class="first last" src="_images/fig13.png" />
-</td>
-<td><img alt="_images/fig23.png" class="first last" src="_images/fig23.png" />
-</td>
-</tr>
-</tbody>
-</table>
+<a class="reference internal image-reference" href="_images/fig13.png"><img alt="_images/fig13.png" src="_images/fig13.png" style="width: 641.9px; height: 423.5px;" /></a>
+<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" src="_images/fig23.png" style="width: 641.9px; height: 422.8px;" /></a>
 <p>STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換しブリッジや各ポートの情報を比較することで、論理ツリーの頂点であるルートブリッジを決定し、さらに各ブリッジのポートのフレーム転送可否を決定します。</p>
 <p>具体的には、次のような手順により実現されます。</p>
 <ol class="arabic">
@@ -121,12 +110,12 @@
 </li>
 <li><dl class="first docutils">
 <dt>非指定ポート(Non designated port)：</dt>
-<dd><p class="first">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
-<a class="last reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" src="_images/fig33.png" style="width: 733.6px; height: 512.0px;" /></a>
+<dd><p class="first last">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
 </dd>
 </dl>
 </li>
 </ul>
+<a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" src="_images/fig33.png" style="width: 596.05px; height: 416.0px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p>ルートブリッジに至るまでのコストは、各ポートが受信したBPDUパケットの設定値から次のように比較されます。</p>
@@ -163,7 +152,7 @@
 <blockquote>
 <div><p>ポート役割の決定後(STP計算の完了時)、各ポートはLISTEN状態になります。その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態またはBLOCK状態に遷移します。コンフィグで無効ポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig43.png"><img alt="_images/fig43.png" src="_images/fig43.png" style="width: 291.0px; height: 456.5px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig43.png"><img alt="_images/fig43.png" src="_images/fig43.png" style="width: 407.4px; height: 639.1px;" /></a>
 </div></blockquote>
 <table border="1" class="docutils">
 <colgroup>
@@ -412,7 +401,7 @@
 </div>
 <p>VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" src="_images/fig51.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" src="_images/fig51.png" style="width: 641.9px; height: 425.6px;" /></a>
 </div></blockquote>
 <p>netコマンドの実行結果は以下の通りです。</p>
 <div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
@@ -545,7 +534,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 </div>
 <p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig61.png"><img alt="_images/fig61.png" src="_images/fig61.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig61.png"><img alt="_images/fig61.png" src="_images/fig61.png" style="width: 641.9px; height: 425.6px;" /></a>
 </div></blockquote>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
@@ -659,7 +648,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" src="_images/fig71.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" src="_images/fig71.png" style="width: 641.9px; height: 425.6px;" /></a>
 </div></blockquote>
 </div>
 <div class="section" id="id5">
@@ -720,7 +709,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
-<div><a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" src="_images/fig81.png" style="width: 733.6px; height: 486.4px;" /></a>
+<div><a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" src="_images/fig81.png" style="width: 641.9px; height: 425.6px;" /></a>
 </div></blockquote>
 </div>
 </div>

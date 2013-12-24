@@ -31,9 +31,12 @@ STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツ
 
 .. only:: not latex
 
-   +------------------------------------------+------------------------------------------+
-   | .. image:: images/spanning_tree/fig1.png | .. image:: images/spanning_tree/fig2.png |
-   +------------------------------------------+------------------------------------------+
+    .. image:: images/spanning_tree/fig1.png
+        :scale: 70 %
+
+
+    .. image:: images/spanning_tree/fig2.png
+        :scale: 70 %
 
 
 STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換
@@ -57,7 +60,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
             ブリッジID
 
             ================ ===========
-            上位2byte        下位6byte
+            上位2byte        下位6byte  
             ================ ===========
             ブリッジpriority MACアドレス
             ================ ===========
@@ -86,15 +89,15 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 
 
-        .. only:: latex
+    .. only:: latex
 
-           .. image:: images/spanning_tree/fig3.eps
-              :scale: 80 %
+        .. image:: images/spanning_tree/fig3.eps
+            :scale: 75 %
 
-        .. only:: not latex
+    .. only:: not latex
 
-           .. image:: images/spanning_tree/fig3.png
-              :scale: 80 %
+        .. image:: images/spanning_tree/fig3.png
+            :scale: 65 %
 
 
 
@@ -145,7 +148,8 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
             .. only:: not latex
 
                .. image:: images/spanning_tree/fig4.png
-                  :scale: 50 %
+                  :scale: 70 %
+
 
 
     ======= ===========================================
@@ -216,16 +220,16 @@ VM環境でこのプログラムを実行することにより、スイッチs1�
 
 
 
-        .. only:: latex
+    .. only:: latex
 
-           .. image:: images/spanning_tree/fig5.eps
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig5.eps
+          :scale: 80 %
 
 
-        .. only:: not latex
+    .. only:: not latex
 
-           .. image:: images/spanning_tree/fig5.png
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig5.png
+          :scale: 70 %
 
 
 
@@ -410,17 +414,16 @@ OpenFlowスイッチ起動時のSTP計算
 
 
 
-        .. only:: latex
+    .. only:: latex
 
-                   .. image:: images/spanning_tree/fig6.eps
-                      :scale: 80 %
+       .. image:: images/spanning_tree/fig6.eps
+          :scale: 80 %
 
 
-        .. only:: not latex
+    .. only:: not latex
 
-                   .. image:: images/spanning_tree/fig6.png
-                      :scale: 80 %
-
+       .. image:: images/spanning_tree/fig6.png
+          :scale: 70 %
 
 
 
@@ -611,16 +614,16 @@ Node: s2:
 再びフレーム転送可能な状態となったことが確認できます。
 
 
-        .. only:: latex
+    .. only:: latex
 
-           .. image:: images/spanning_tree/fig7.eps
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig7.eps
+          :scale: 80 %
 
 
-        .. only:: not latex
+    .. only:: not latex
 
-           .. image:: images/spanning_tree/fig7.png
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig7.png
+          :scale: 70 %
 
 
 
@@ -702,16 +705,16 @@ OpenFlowスイッチの初回起動時と同様のツリー構成となり、再
 な状態となったことが確認できます。
 
 
-        .. only:: latex
+    .. only:: latex
 
-           .. image:: images/spanning_tree/fig8.eps
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig8.eps
+          :scale: 80 %
 
 
-        .. only:: not latex
+    .. only:: not latex
 
-           .. image:: images/spanning_tree/fig8.png
-              :scale: 80 %
+       .. image:: images/spanning_tree/fig8.png
+          :scale: 70 %
 
 
 
