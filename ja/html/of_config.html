@@ -49,13 +49,20 @@
   <div class="section" id="of-config">
 <h1>OF-Configライブラリ<a class="headerlink" href="#of-config" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>本章では、Ryuに付属しているOF-Configのクライアントライブラリについて紹介します。</p>
-<p>OF-ConfigはOpenFlowスイッチの管理のためのプロトコルです。NETCONFのスキーマとして定義されており、論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。</p>
+<div class="section" id="id1">
+<h2>OF-Configプロトコル<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>OF-ConfigはOpenFlowスイッチ(OF-Configサーバー)の管理のためのプロトコルです。OpenFlowと同じONFが策定したもので、以下のサイトから仕様が入手できます。</p>
+<p><a class="reference external" href="https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config">https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config</a></p>
+<p>本ライブラリはOF-Config 1.1.1に準拠しています。</p>
+<p>OF-ConfigはNETCONF(RFC 6241)のスキーマとして定義されており、論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p class="last">Open vSwitchはOF-Configをサポートしていませんが、同じ目的のためにOVSDBというサービスを提供しています。(OF-Configは比較的新しい規格で、Open vSwitchがOVSDBを実装したときにはまだ存在しませんでした。)</p>
+<p>現在Open vSwitchはOF-Configをサポートしていませんが、同じ目的のためにOVSDBというサービスを提供しています。OF-Configは比較的新しい規格で、Open vSwitchがOVSDBを実装したときにはまだ存在していませんでした。</p>
+<p class="last">OVSDBプロトコルはRFC 7047として仕様が公開されていますが、事実上Open vSwitch専用のプロトコルとなっています。OF-Configはまだ登場から日が浅いですが、将来的に多くのOpenFlowスイッチで実装されることが期待されます。</p>
 </div>
-<div class="section" id="id1">
-<h2>ライブラリ構成<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+</div>
+<div class="section" id="id2">
+<h2>ライブラリ構成<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch">
 <h3>ryu.lib.of_config.capable_switch.OFCapableSwitchクラス<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>NETCONFセッションを扱うためのクラスです。</p>
@@ -75,10 +82,10 @@
 </div>
 </div>
 </div>
-<div class="section" id="id2">
-<h2>使用例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <div class="section" id="id3">
-<h3>スイッチへの接続<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<h2>使用例<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id4">
+<h3>スイッチへの接続<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>SSHトランスポートを使用してスイッチに接続します。unknown_host_cbには、不明なSSHホスト鍵の処理を行なうコールバック関数を指定しますが、ここでは無条件に接続を継続するようにしています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
     <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
@@ -100,7 +107,12 @@
 </div>
 <div class="section" id="get-config">
 <h3>GET-CONFIG<a class="headerlink" href="#get-config" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>NETCONF EDIT-CONFIGを使用して設定を取得する例です。全てのポートの/resources/port/resource-idと/resources/port/configuration/admin-stateを表示します。</p>
+<p>NETCONF GET-CONFIGを使用して設定を取得する例です。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">runningというのはNETCONFのデータストアで、現在動作している設定です。実装によりますが、他にもstartup(デバイスの起動時に読み込まれる設定)やcandidate(候補設定)などのデータストアが利用できます。</p>
+</div>
+<p>全てのポートの/resources/port/resource-idと/resources/port/configuration/admin-stateを表示します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
     <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
@@ -134,13 +146,14 @@
   <h3><a href="index.html">目次</a></h3>
   <ul>
 <li><a class="reference internal" href="#">OF-Configライブラリ</a><ul>
-<li><a class="reference internal" href="#id1">ライブラリ構成</a><ul>
+<li><a class="reference internal" href="#id1">OF-Configプロトコル</a></li>
+<li><a class="reference internal" href="#id2">ライブラリ構成</a><ul>
 <li><a class="reference internal" href="#ryu-lib-of-config-capable-switch-ofcapableswitch">ryu.lib.of_config.capable_switch.OFCapableSwitchクラス</a></li>
 <li><a class="reference internal" href="#ryu-lib-of-config-classes">ryu.lib.of_config.classesモジュール</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id2">使用例</a><ul>
-<li><a class="reference internal" href="#id3">スイッチへの接続</a></li>
+<li><a class="reference internal" href="#id3">使用例</a><ul>
+<li><a class="reference internal" href="#id4">スイッチへの接続</a></li>
 <li><a class="reference internal" href="#get">GET</a></li>
 <li><a class="reference internal" href="#get-config">GET-CONFIG</a></li>
 <li><a class="reference internal" href="#edit-config">EDIT-CONFIG</a></li>
