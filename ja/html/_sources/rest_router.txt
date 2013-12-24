@@ -153,16 +153,15 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_router.py
-    loading app ryu/app/rest_router.py
+    root@ryu-vm:~# ryu-manager ryu.app.rest_router
+    loading app ryu.app.rest_router
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
     creating context dpset
     creating context wsgi
-    instantiating app ryu/app/rest_router.py of RestRouterAPI
+    instantiating app ryu.app.rest_router of RestRouterAPI
     instantiating app ryu.controller.ofp_handler of OFPHandler
-    (2447) wsgi starting up on http://0.0.0.0:8080/
+    (2212) wsgi starting up on http://0.0.0.0:8080/
 
 Ryuとルータの間の接続に成功すると、次のメッセージが表示されます。
 
@@ -1238,14 +1237,13 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# cd ryu
-    root@ryu-vm:~/ryu# ryu-manager ryu/app/rest_router.py
-    loading app ryu/app/rest_router.py
+    root@ryu-vm:~# ryu-manager ryu.app.rest_router
+    loading app ryu.app.rest_router
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
     creating context dpset
     creating context wsgi
-    instantiating app ryu/app/rest_router.py of RestRouterAPI
+    instantiating app ryu.app.rest_router of RestRouterAPI
     instantiating app ryu.controller.ofp_handler of OFPHandler
     (2447) wsgi starting up on http://0.0.0.0:8080/
 

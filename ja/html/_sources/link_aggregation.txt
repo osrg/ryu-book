@@ -596,7 +596,6 @@ Node: s1:
 
 ::
 
-
      cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
      cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5
 
