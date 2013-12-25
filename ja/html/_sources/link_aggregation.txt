@@ -143,7 +143,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 でのコマンド入力は、すべてホストh1のxterm上で行ってください。
 
 まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。
-Linuxではリンク・アグリゲーション機能はボンディングドライバが担当しています。
+Linuxではリンク・アグリゲーション機能をボンディングドライバが担当しています。
 事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成してお
 きます。
 
@@ -313,7 +313,7 @@ Node: h1:
     Slave queue ID: 0
 
 LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定
-(Transmit Hash Polish: layer2 (0))が確認できます。また、物理インター
+(Transmit Hash Policy: layer2 (0))が確認できます。また、物理インター
 フェースh1-eth0とh1-eth1のMACアドレスが確認できます。
 
 以上でホストh1のリンク・アグリゲーションの設定は終了です。
@@ -386,14 +386,29 @@ Node: c0:
     slave state changed port: 2 enabled: True
     ...
 
-「LACP received.」はLACPデータユニットを受信したことを、
-「the slave i/f has just been up.」は無効状態だったポートが有効状態に変更
-したことを、「the timeout time has changed.」はLACPデータユニットの無通信
-監視時間が変更されたこと（今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの
-90秒）を、「LACP sent.」は応答用のLACPデータユニットを送信したことを、それ
-ぞれ表します。「slave state changed」の行は、LACPライブラリからの
-``EventSlaveStateChanged`` イベントを受信したスイッチングハブが出力してい
-ます(イベントの詳細については後述します)。
+各ログは以下のことを表しています。
+
+* LACP received.
+
+    LACPデータユニットを受信しました。
+
+* the slave i/f has just been up.
+
+    無効状態だったポートが有効状態に変更されました。
+
+* the timeout time has changed.
+
+    LACPデータユニットの無通信監視時間が変更されました(今回の場合、初期状態
+    の0秒からLONG_TIMEOUT_TIMEの90秒に変更されています)。
+
+* LACP sent.
+
+    応答用のLACPデータユニットを送信しました。
+
+* slave state changed ...
+
+    LACPライブラリからの ``EventSlaveStateChanged`` イベントをスアプリ
+    ケーションが受信しました(イベントの詳細については後述します)。
 
 その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送
 信します。

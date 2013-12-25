@@ -283,7 +283,7 @@ mininet&gt;</pre>
 <div class="section" id="h1">
 <h3>ホストh1でのリンク・アグリゲーションの設定<a class="headerlink" href="#h1" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってください。</p>
-<p>まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。Linuxではリンク・アグリゲーション機能はボンディングドライバが担当しています。事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成しておきます。</p>
+<p>まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。Linuxではリンク・アグリゲーション機能をボンディングドライバが担当しています。事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成しておきます。</p>
 <p>ファイル名:<tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
 <div class="sourcecode highlight-python"><pre>alias bond0 bonding
 options bonding mode=4</pre>
@@ -390,7 +390,7 @@ Permanent HW addr: 00:00:00:00:00:12
 Aggregator ID: 2
 Slave queue ID: 0</pre>
 </div>
-<p>LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定(Transmit Hash Polish: layer2 (0))が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
+<p>LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定(Transmit Hash Policy: layer2 (0))が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
 <p>以上でホストh1のリンク・アグリゲーションの設定は終了です。</p>
 </div>
 <div class="section" id="openflow">
@@ -432,7 +432,34 @@ slave state changed port: 1 enabled: True
 slave state changed port: 2 enabled: True
 ...</pre>
 </div>
-<p>「LACP received.」はLACPデータユニットを受信したことを、「the slave i/f has just been up.」は無効状態だったポートが有効状態に変更したことを、「the timeout time has changed.」はLACPデータユニットの無通信監視時間が変更されたこと（今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの90秒）を、「LACP sent.」は応答用のLACPデータユニットを送信したことを、それぞれ表します。「slave state changed」の行は、LACPライブラリからの<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを受信したスイッチングハブが出力しています(イベントの詳細については後述します)。</p>
+<p>各ログは以下のことを表しています。</p>
+<ul>
+<li><p class="first">LACP received.</p>
+<blockquote>
+<div><p>LACPデータユニットを受信しました。</p>
+</div></blockquote>
+</li>
+<li><p class="first">the slave i/f has just been up.</p>
+<blockquote>
+<div><p>無効状態だったポートが有効状態に変更されました。</p>
+</div></blockquote>
+</li>
+<li><p class="first">the timeout time has changed.</p>
+<blockquote>
+<div><p>LACPデータユニットの無通信監視時間が変更されました(今回の場合、初期状態の0秒からLONG_TIMEOUT_TIMEの90秒に変更されています)。</p>
+</div></blockquote>
+</li>
+<li><p class="first">LACP sent.</p>
+<blockquote>
+<div><p>応答用のLACPデータユニットを送信しました。</p>
+</div></blockquote>
+</li>
+<li><p class="first">slave state changed ...</p>
+<blockquote>
+<div><p>LACPライブラリからの<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントをスアプリケーションが受信しました(イベントの詳細については後述します)。</p>
+</div></blockquote>
+</li>
+</ul>
 <p>その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送信します。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><pre>...
