@@ -154,19 +154,21 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
                   :scale: 70 %
 
 
+    各ポートは状態に応じてフレーム転送有無などの動作を決定します。
 
-    ======= ===========================================
+    ======= =============================================
     状態    動作
-    ======= ===========================================
+    ======= =============================================
     DISABLE 無効ポート。全ての受信パケットを無視します。
     BLOCK   BPDU受信のみ を行います。
     LISTEN  BPDU送受信 を行います。
-    LEARN   BPDU送受信/MAC学習 を行います。
-    FORWARD BPDU送受信/MAC学習/フレーム転送 を行います。
-    ======= ===========================================
+    LEARN   BPDU送受信／MAC学習 を行います。
+    FORWARD BPDU送受信／MAC学習／フレーム転送 を行います。
+    ======= =============================================
 
 
-これらの動作が各ブリッジで実行されることにより、フレーム転送を行うポートと
+
+これらの処理が各ブリッジで実行されることにより、フレーム転送を行うポートと
 フレーム転送を抑制するポートが決定され、ネットワーク内のループが解消されます。
 
 また、リンクダウンやBPDUパケットのmax age(デフォルト20秒)間の未受信
@@ -755,10 +757,10 @@ MACアドレス学習(BPDU以外のパケット受信)、フレーム転送(BPDU
 ======= ================ ============================
 状態    ポートコンフィグ フローエントリ
 ======= ================ ============================
-DISABLE NO_RECV/ NO_FWD  設定無し
-BLOCK   NO_FWD           BPDU Packet-In/ BPDU以外drop
-LISTEN  設定無し         BPDU Packet-In/ BPDU以外drop
-LEARN   設定無し         BPDU Packet-In/ BPDU以外drop
+DISABLE NO_RECV／NO_FWD  設定無し
+BLOCK   NO_FWD           BPDU Packet-In／BPDU以外drop
+LISTEN  設定無し         BPDU Packet-In／BPDU以外drop
+LEARN   設定無し         BPDU Packet-In／BPDU以外drop
 FORWARD 設定無し         BPDU Packet-In
 ======= ================ ============================
 
@@ -811,13 +813,15 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 .. only:: latex
 
    .. image:: images/spanning_tree/fig9.eps
-      :scale: 110 %
+      :scale: 80 %
+      :align: center
 
 
 .. only:: not latex
 
    .. image:: images/spanning_tree/fig9.png
-      :scale: 110 %
+      :scale: 80 %
+      :align: center
 
 
 

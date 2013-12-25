@@ -151,10 +151,11 @@
 <blockquote>
 <div><a class="reference internal image-reference" href="_images/fig43.png"><img alt="_images/fig43.png" src="_images/fig43.png" style="width: 407.4px; height: 639.1px;" /></a>
 </div></blockquote>
+<p>各ポートは状態に応じてフレーム転送有無などの動作を決定します。</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="86%" />
+<col width="13%" />
+<col width="87%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">状態</th>
@@ -172,17 +173,17 @@
 <td>BPDU送受信 を行います。</td>
 </tr>
 <tr class="row-odd"><td>LEARN</td>
-<td>BPDU送受信/MAC学習 を行います。</td>
+<td>BPDU送受信／MAC学習 を行います。</td>
 </tr>
 <tr class="row-even"><td>FORWARD</td>
-<td>BPDU送受信/MAC学習/フレーム転送 を行います。</td>
+<td>BPDU送受信／MAC学習／フレーム転送 を行います。</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </li>
 </ol>
-<p>これらの動作が各ブリッジで実行されることにより、フレーム転送を行うポートとフレーム転送を抑制するポートが決定され、ネットワーク内のループが解消されます。</p>
+<p>これらの処理が各ブリッジで実行されることにより、フレーム転送を行うポートとフレーム転送を抑制するポートが決定され、ネットワーク内のループが解消されます。</p>
 <p>また、リンクダウンやBPDUパケットのmax age(デフォルト20秒)間の未受信による故障検出、あるいはポートの追加等によりネットワークトポロジの変更を検出した場合は、各ブリッジで上記の 1. 2. 3. を実行しツリーの再構築が行われます(STPの再計算)。</p>
 </div>
 <div class="section" id="ryu">
@@ -756,20 +757,20 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>DISABLE</td>
-<td>NO_RECV/ NO_FWD</td>
+<td>NO_RECV／NO_FWD</td>
 <td>設定無し</td>
 </tr>
 <tr class="row-odd"><td>BLOCK</td>
 <td>NO_FWD</td>
-<td>BPDU Packet-In/ BPDU以外drop</td>
+<td>BPDU Packet-In／BPDU以外drop</td>
 </tr>
 <tr class="row-even"><td>LISTEN</td>
 <td>設定無し</td>
-<td>BPDU Packet-In/ BPDU以外drop</td>
+<td>BPDU Packet-In／BPDU以外drop</td>
 </tr>
 <tr class="row-odd"><td>LEARN</td>
 <td>設定無し</td>
-<td>BPDU Packet-In/ BPDU以外drop</td>
+<td>BPDU Packet-In／BPDU以外drop</td>
 </tr>
 <tr class="row-even"><td>FORWARD</td>
 <td>設定無し</td>
@@ -799,7 +800,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h3>ライブラリの実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" style="width: 1416.8px; height: 445.5px;" /></a>
+<a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" class="align-center" src="_images/fig9.png" style="width: 704.8px; height: 577.6px;" /></a>
 <p>STPライブラリ(Stpクラスインスタンス)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスインスタンス・Portクラスインスタンスが生成されます。各クラスインスタンスが生成・起動された後は、StpクラスインスタンスからのOpenFlowメッセージ受信通知、BridgeクラスインスタンスのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスインスタンスのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">
