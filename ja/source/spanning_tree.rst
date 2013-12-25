@@ -870,11 +870,11 @@ BPDUパケット送信
 """"""""""""""""
 
 BPDUパケット送信はPortクラスのBPDUパケット送信スレッド
-( ``Port.send_bpdu_thread`` )で行っています。ポート状態がLISTENとなった際に
-スレッド処理が開始され、ポート役割がDESIGNATED_PORTの場合にのみ、
-ルートブリッジから通知されたhello time( ``Port.port_times.hello_time`` ：
-デフォルト2秒)間隔でBPDUパケットの生成( ``Port._generate_config_bpdu()`` )
-およびBPDUパケット送信( ``Port.ofctl.send_packet_out()`` )を行います。
+( ``Port.send_bpdu_thread`` )で行っています。ポートの役割が指定ポート
+( ``DESIGNATED_PORT`` )の場合、ルートブリッジから通知されたhello time
+( ``Port.port_times.hello_time`` ：デフォルト2秒)間隔でBPDUパケット生成
+( ``Port._generate_config_bpdu()`` )およびBPDUパケット送信
+( ``Port.ofctl.send_packet_out()`` )を行います。
 
 
 .. rst-class:: sourcecode
@@ -963,8 +963,7 @@ BPDUパケットを受信したポートは、以前に受信したBPDUパケッ
 BPDUパケットのブリッジIDなどの比較( ``Stp.compare_bpdu_info()`` )を行い、
 STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU( ``SUPERIOR`` )
 を受信した場合、「新たなルートブリッジが追加された」などのネットワーク
-トポロジ変更が発生したことを意味するため、Bridgeクラスインスタンスに
-通知されSTP再計算の契機となります。
+トポロジ変更が発生したことを意味するため、STP再計算の契機となります。
 
 
 .. rst-class:: sourcecode
@@ -1013,13 +1012,13 @@ STP再計算の要否判定を行います。以前に受信したBPDUより優�
 インスタンスへ通知されます。
 
 BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド
-( ``Port.wait_bpdu_thread`` )で検出します。``max age`` (デフォルト20秒)間、
+( ``Port.wait_bpdu_thread`` )で検出します。max age(デフォルト20秒)間、
 ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、
 Bridgeクラスインスタンスへ通知されます。
 
 BPDU受信待ちタイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)
-の ``hub.Event`` と ``hub.Timeout`` を用います。　``hub.Event`` は
-``hub.Event.wait()`` でwait状態に入り ``hub.Event.set()``が実行されるまで
+の ``hub.Event`` と ``hub.Timeout`` を用います。 ``hub.Event`` は
+``hub.Event.wait()`` でwait状態に入り ``hub.Event.set()`` が実行されるまで
 スレッドが中断されます。 ``hub.Timeout`` は指定されたタイムアウト時間内に
 ``try`` 節の処理が終了しない場合、 ``hub.Timeout`` 例外を発行します。
 ``hub.Event`` がwait状態に入り ``hub.Timeout`` で指定されたタイムアウト時間内に
@@ -1170,7 +1169,7 @@ STP計算が実行されるケースではネットワークトポロジの変�
 この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが
 受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると
 判断し指定ポートの選出( ``Bridge._select_designated_port`` )と非指定ポート
-の選出(ルートポート/指定ポート以外のポートを非指定ポートとして選出)を行います。
+の選出(ルートポート／指定ポート以外のポートを非指定ポートとして選出)を行います。
 
 一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は
 自身をルートブリッジと判断し各ポートは全て指定ポートとなります。
@@ -1307,7 +1306,7 @@ hubモジュールの ``hub.Event`` と ``hub.Timeout`` を用いて実現して
 """""""""""""""""""
 
 「 :ref:`ch_link_aggregation` 」と同様にSTPライブラリを利用するため
-CONTEXT登録します。
+CONTEXTを登録します。
 
 
 .. rst-class:: sourcecode
@@ -1375,7 +1374,7 @@ STPイベント処理
 
 
 
-* STPライブラリで定義された ``stplib.EventPacketIn``　イベントを利用することで、
+* STPライブラリで定義された ``stplib.EventPacketIn`` イベントを利用することで、
   BPDUパケットを除いたパケットを受信することが出来るため、
   「 :ref:`ch_switching_hub` 」と同様のパケットハンドリンクを行います。
 
@@ -1427,7 +1426,7 @@ STPイベント処理
                     del self.mac_to_port[dp.id]
 
 
-* ポート状態の変更通知イベント( ''stplib.EventPortStateChange'' )を受け取り、
+* ポート状態の変更通知イベント( ``stplib.EventPortStateChange`` )を受け取り、
   ポート状態のデバッグログ出力を行っています。
 
     .. rst-class:: sourcecode
