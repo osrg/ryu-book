@@ -804,15 +804,15 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <div class="section" id="id10">
 <h4>コンフィグ設定項目<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>STPライブラリはStp.set_config()メソッドによりブリッジ・ポートのコンフィグ設定IFを提供します。設定可能な項目は以下の通りです。</p>
+<p>STPライブラリは<tt class="docutils literal"><span class="pre">Stp.set_config()</span></tt>メソッドによりブリッジ・ポートのコンフィグ設定IFを提供します。設定可能な項目は以下の通りです。</p>
 <ul>
 <li><p class="first">bridge</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="70%" />
-<col width="16%" />
+<col width="20%" />
+<col width="65%" />
+<col width="15%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">項目</th>
@@ -821,23 +821,23 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>priority</td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">priority</span></tt></td>
 <td>ブリッジ優先度</td>
 <td>0x8000</td>
 </tr>
-<tr class="row-odd"><td>sys_ext_id</td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">sys_ext_id</span></tt></td>
 <td>VLAN-IDを設定 (*現状のSTPライブラリはVLAN未対応)</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td>max_age</td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">max_age</span></tt></td>
 <td>BPDUパケットの受信待ちタイマー値</td>
 <td>20[sec]</td>
 </tr>
-<tr class="row-odd"><td>hello_time</td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">hello_time</span></tt></td>
 <td>BPDUパケットの送信間隔</td>
 <td>2 [sec]</td>
 </tr>
-<tr class="row-even"><td>fwd_delay</td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">fwd_delay</span></tt></td>
 <td>各ポートがLISTEN状態およびLEARN状態に留まる時間</td>
 <td>15[sec]</td>
 </tr>
@@ -849,9 +849,9 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="16%" />
-<col width="35%" />
-<col width="49%" />
+<col width="24%" />
+<col width="32%" />
+<col width="44%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">項目</th>
@@ -860,15 +860,15 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>priority</td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">priority</span></tt></td>
 <td>ポート優先度</td>
 <td>0x80</td>
 </tr>
-<tr class="row-odd"><td>path_cost</td>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">path_cost</span></tt></td>
 <td>リンクのコスト値</td>
 <td>リンクスピードを元に自動設定</td>
 </tr>
-<tr class="row-even"><td>enable</td>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">enable</span></tt></td>
 <td>ポートの有効無効設定</td>
 <td>True</td>
 </tr>
@@ -880,7 +880,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <div class="section" id="bpdu">
 <h4>BPDUパケット送信<a class="headerlink" href="#bpdu" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>BPDUパケット送信はPortクラスのBPDUパケット送信スレッド(Port.send_bpdu_thread)で行っています。ポート状態がLISTENとなった際にスレッド処理が開始され、ポート役割がDESIGNATED_PORTの場合にのみ、ルートブリッジから通知されたhello time(Port.port_times.hello_time：デフォルト2秒)間隔でBPDUパケットの生成(Port._generate_config_bpdu())およびBPDUパケット送信(Port.ofctl.send_packet_out())を行います。</p>
+<p>BPDUパケット送信はPortクラスのBPDUパケット送信スレッド(<tt class="docutils literal"><span class="pre">Port.send_bpdu_thread</span></tt>)で行っています。ポート状態がLISTENとなった際にスレッド処理が開始され、ポート役割がDESIGNATED_PORTの場合にのみ、ルートブリッジから通知されたhello time(<tt class="docutils literal"><span class="pre">Port.port_times.hello_time</span></tt>：デフォルト2秒)間隔でBPDUパケットの生成(<tt class="docutils literal"><span class="pre">Port._generate_config_bpdu()</span></tt>)およびBPDUパケット送信(<tt class="docutils literal"><span class="pre">Port.ofctl.send_packet_out()</span></tt>)を行います。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
@@ -909,7 +909,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
             <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">hello_time</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に収集したポート情報(Port.ofport)や受信したBPDUパケットに設定されたルートブリッジ情報(Port.port_priority、Port.port_times)などを元に構築されます。</p>
+<p>送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に収集したポート情報(<tt class="docutils literal"><span class="pre">Port.ofport</span></tt>)や受信したBPDUパケットに設定されたルートブリッジ情報(<tt class="docutils literal"><span class="pre">Port.port_priority、Port.port_times</span></tt>)などを元に構築されます。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_generate_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
@@ -947,7 +947,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id11">
 <h4>BPDUパケット受信<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラによって検出され、Bridgeクラスインスタンスを経由してPortクラスインスタンスに通知されます。イベントハンドラの実装は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
-<p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(Stp.compare_bpdu_info())を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、Bridgeクラスインスタンスに通知されSTP再計算の契機となります。</p>
+<p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(<tt class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></tt>)を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(<tt class="docutils literal"><span class="pre">SUPERIOR</span></tt>)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、Bridgeクラスインスタンスに通知されSTP再計算の契機となります。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
@@ -984,8 +984,9 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h4>故障検出<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>リンク断などの直接故障や、一定時間ルートブリッジからのBPDUパケットを受信できない間接故障を検出した場合も、STP再計算の契機となります。</p>
 <p>リンク断はStpクラスのPortStatusイベントハンドラによって検出し、Bridgeクラスインスタンスへ通知されます。</p>
-<p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)で検出します。max age(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスインスタンスへ通知されます。</p>
-<p>タイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)のhub.Eventとhub.Timeoutを用います。hub.Eventはhub.Event.wait()でwait状態に入りhub.Event.set()が実行されるまでスレッドが中断されます。hub.Timeoutは指定されたタイムアウト時間内にtry節の処理が終了しない場合、hub.Timeout例外を発行します。hub.Eventがwait状態に入りhub.Timeoutで指定されたタイムアウト時間内にhub.Event.set()が実行されない場合に、BPDUパケットの受信待ちタイムアウトと判断しBridgeクラスのSTP再計算処理を呼び出します。</p>
+<p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(<tt class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></tt>)で検出します。<tt class="docutils literal"><span class="pre">max</span> <span class="pre">age</span></tt>(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスインスタンスへ通知されます。</p>
+<p>BPDU受信待ちタイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)の<tt class="docutils literal"><span class="pre">hub.Event</span></tt>と<tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>を用います。<tt class="docutils literal"><span class="pre">hub.Event</span></tt>は<tt class="docutils literal"><span class="pre">hub.Event.wait()</span></tt>でwait状態に入り<tt class="docutils literal"><span class="pre">hub.Event.set()``が実行されるまで</span>
+<span class="pre">スレッドが中断されます。</span> <span class="pre">``hub.Timeout</span></tt>は指定されたタイムアウト時間内に<tt class="docutils literal"><span class="pre">try</span></tt>節の処理が終了しない場合、<tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>例外を発行します。<tt class="docutils literal"><span class="pre">hub.Event</span></tt>がwait状態に入り<tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>で指定されたタイムアウト時間内に<tt class="docutils literal"><span class="pre">hub.Event.set()</span></tt>が実行されない場合に、BPDUパケットの受信待ちタイムアウトと判断しBridgeクラスのSTP再計算処理を呼び出します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
@@ -1027,7 +1028,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
             <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_timeout</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>受信したBPDUパケットの比較処理(Stp.compare_bpdu_info())によりSUPERIORまたはREPEATEDと判定された場合は、ルートブリッジからのBPDUパケットが受信出来ていることを意味するため、BPDU受信待ちタイマーの更新(Port._update_wait_bpdu_timer())を行います。hub.EventであるPort.wait_timer_eventのset()処理によりPort.wait_timer_eventはwait状態から解放され、BPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)はexcept hub.Timeout節のタイムアウト処理に入ることなくタイマーをキャンセルし、改めてタイマーをセットし直すことで次のBPDUパケットの受信待ちを開始します。</p>
+<p>受信したBPDUパケットの比較処理(<tt class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></tt>)により<tt class="docutils literal"><span class="pre">SUPERIOR</span></tt>または<tt class="docutils literal"><span class="pre">REPEATED</span></tt>と判定された場合は、ルートブリッジからのBPDUパケットが受信出来ていることを意味するため、BPDU受信待ちタイマーの更新(<tt class="docutils literal"><span class="pre">Port._update_wait_bpdu_timer()</span></tt>)を行います。<tt class="docutils literal"><span class="pre">hub.Event</span></tt>である<tt class="docutils literal"><span class="pre">Port.wait_timer_event</span></tt>の<tt class="docutils literal"><span class="pre">set()</span></tt>処理により<tt class="docutils literal"><span class="pre">Port.wait_timer_event</span></tt>はwait状態から解放され、BPDUパケット受信待ちスレッド(<tt class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></tt>)は<tt class="docutils literal"><span class="pre">except</span> <span class="pre">hub.Timeout</span></tt>節のタイムアウト処理に入ることなくタイマーをキャンセルし、改めてタイマーをセットし直すことで次のBPDUパケットの受信待ちを開始します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
@@ -1055,8 +1056,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id13">
 <h4>STP計算<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>STP計算(ルートブリッジ選択・各ポートの役割選択)はBridgeクラスで実行します。</p>
-<p>STP計算が実行されるケースではネットワークトポロジの変更が発生しておりパケットがループする可能性があるため、一旦全てのポートをBLOCK状態に設定(port.down)し、かつトポロジ変更イベント(EventTopologyChange)を上位APLに対して通知することで学習済みのMACアドレス情報の初期化を促します。</p>
-<p>その後、Bridge._spanning_tree_algorithm()でルートブリッジとポートの役割を選択した上で、各ポートをLISTEN状態で起動(port.up)しポートの状態遷移を開始します。</p>
+<p>STP計算が実行されるケースではネットワークトポロジの変更が発生しておりパケットがループする可能性があるため、一旦全てのポートをBLOCK状態に設定(<tt class="docutils literal"><span class="pre">port.down</span></tt>)し、かつトポロジ変更イベント(<tt class="docutils literal"><span class="pre">EventTopologyChange</span></tt>)を上位APLに対して通知することで学習済みのMACアドレス情報の初期化を促します。</p>
+<p>その後、<tt class="docutils literal"><span class="pre">Bridge._spanning_tree_algorithm()</span></tt>でルートブリッジとポートの役割を選択した上で、各ポートをLISTEN状態で起動(<tt class="docutils literal"><span class="pre">port.up</span></tt>)しポートの状態遷移を開始します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">recalculate_spanning_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -1091,8 +1092,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
                                        <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>ルートブリッジの選出のため、ブリッジIDなどの自身のブリッジ情報と各ポートが受信したBPDUパケットに設定された他ブリッジ情報を比較します(Bridge._select_root_port)。</p>
-<p>この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると判断し指定ポートの選出(Bridge._select_designated_port)と非指定ポートの選出(ルートポート/指定ポート以外のポートを非指定ポートとして選出)を行います。</p>
+<p>ルートブリッジの選出のため、ブリッジIDなどの自身のブリッジ情報と各ポートが受信したBPDUパケットに設定された他ブリッジ情報を比較します(<tt class="docutils literal"><span class="pre">Bridge._select_root_port</span></tt>)。</p>
+<p>この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると判断し指定ポートの選出(<tt class="docutils literal"><span class="pre">Bridge._select_designated_port</span></tt>)と非指定ポートの選出(ルートポート/指定ポート以外のポートを非指定ポートとして選出)を行います。</p>
 <p>一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は自身をルートブリッジと判断し各ポートは全て指定ポートとなります。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
@@ -1139,7 +1140,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <div class="section" id="id14">
 <h4>ポート状態遷移<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(Port.state_machine)で実行しています。次の状態に遷移するまでのタイマーをPort._get_timer()で取得し、タイマー満了後にPort._get_next_state()で次状態を取得し、状態遷移を行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に遷移させるケースなど、Port._change_status()が実行された場合にも状態遷移が行われます。これらの処理は「<a class="reference internal" href="#id12">故障検出</a>」と同様にhubモジュールのhub.Eventとhub.Timeoutを用いて実現しています。</p>
+<p>ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(<tt class="docutils literal"><span class="pre">Port.state_machine</span></tt>)で実行しています。次の状態に遷移するまでのタイマーを<tt class="docutils literal"><span class="pre">Port._get_timer()</span></tt>で取得し、タイマー満了後に<tt class="docutils literal"><span class="pre">Port._get_next_state()</span></tt>で次状態を取得し、状態遷移を行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に遷移させるケースなど、<tt class="docutils literal"><span class="pre">Port._change_status()</span></tt>が実行された場合にも状態遷移が行われます。これらの処理は「<a class="reference internal" href="#id12">故障検出</a>」と同様にhubモジュールの<tt class="docutils literal"><span class="pre">hub.Event</span></tt>と<tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>を用いて実現しています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1215,7 +1216,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <div class="section" id="id16">
 <h4>コンフィグ設定<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>STPライブラリのset_config()メソッドを用いてコンフィグ設定を行います。ここではサンプルとして、以下の値を設定します。</p>
+<p>STPライブラリの<tt class="docutils literal"><span class="pre">set_config()</span></tt>メソッドを用いてコンフィグ設定を行います。ここではサンプルとして、以下の値を設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="50%" />
@@ -1269,7 +1270,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h4>STPイベント処理<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーションの実装</em></a>」と同様にSTPライブラリから通知されるイベントを受信するイベントハンドラを用意します。</p>
 <ul>
-<li><p class="first">STPライブラリで定義されたEventPacketInイベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様のハンドリンクを行います。</p>
+<li><p class="first">STPライブラリで定義された<a href="#id18"><span class="problematic" id="id19">``</span></a>stplib.EventPacketIn``　イベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様のパケットハンドリンクを行います。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><pre>class SimpleSwitch13(app_manager.RyuApp):
 
@@ -1280,7 +1281,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">ネットワークトポロジの変更通知イベントを受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。</p>
+<li><p class="first">ネットワークトポロジの変更通知イベント(<tt class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></tt>)を受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
@@ -1312,7 +1313,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">ポート状態の変更通知イベントを受け取り、ポート状態のデバッグログ出力を行っています。</p>
+<li><p class="first">ポート状態の変更通知イベント( &#8216;&#8217;stplib.EventPortStateChange&#8217;&#8217; )を受け取り、ポート状態のデバッグログ出力を行っています。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
@@ -1335,8 +1336,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 </div>
 </div>
-<div class="section" id="id18">
-<h2>まとめ<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id20">
+<h2>まとめ<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章では、スパニングツリーライブラリの利用を題材として、以下の項目について説明しました。</p>
 <ul class="simple">
 <li>hub.Eventを用いたイベント待ち合わせ処理の実現方法</li>
@@ -1386,7 +1387,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id18">まとめ</a></li>
+<li><a class="reference internal" href="#id20">まとめ</a></li>
 </ul>
 </li>
 </ul>
