@@ -375,11 +375,32 @@ switch: s1 (root):
 ルータs1には「172.16.20.1/24」と「172.16.30.30/24」というアドレスを設定し
 ました。
 
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
+     cookie=0x2, duration=2959.014s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
+
 1番めと2番めに登録されている優先度1037のフローエントリは、「ルータ宛のパケッ
 トが到達したらPacket-Inメッセージを送信する」というものです。
 
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
+     cookie=0x2, duration=2959.013s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
+
 3番めと4番めに登録されている優先度36のフローエントリは、「同じサブネット内宛
 のパケットが到達したら通常のL2スイッチと同じように振る舞う」というものです。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x1, duration=2968.378s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
+     cookie=0x2, duration=2959.016s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 
 一番下とその上の優先度2のフローエントリは、「 :ref:`ch_switching_hub` 」の
 スイッチングハブと同等の機能です。
@@ -589,9 +610,17 @@ switch: s1 (root):
      cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
      cookie=0x2, duration=300.559s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 
-5番めに優先度1のフローエントリが追加されています。その内容は「送信元MACを
-ルータs1、宛先MACをルータs2に書き換え、TTLを減らし、デフォルトルートに向け
-て送信する」であり、一般的なルータの動作と同様のものです。
+5番めに優先度1のフローエントリが追加されています。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x10000, duration=63.768s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58->eth_src,set_field:f2:97:d6:37:76:4f->eth_dst,output:2
+
+その内容は「TTLを減らし、送信元MACをルータs1、宛先MACをルータs2に書き換え、
+デフォルトルートに向けて送信する」であり、一般的なルータの動作と同様のもので
+す。
 
 s2とs3にも、s1と同様のフローエントリが追加されます。
 
@@ -684,9 +713,17 @@ switch: s2 (root):
      cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14->eth_src,set_field:62:4f:3c:69:70:ef->eth_dst,output:3
      cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 
-下から2番めのフローエントリが追加されています。その内容は「宛先IPアドレスが
-192.168.30.0/24であれば、送信元MACをルータs2、宛先MACをルータs3に書き換え、
-TTLを減らし、ルータs3に向けて送信する」というものです。
+下から2番めのフローエントリが追加されています。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14->eth_src,set_field:62:4f:3c:69:70:ef->eth_dst,output:3
+
+その内容は「宛先IPアドレスが192.168.30.0/24であれば、TTLを減らし、送信元
+MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」とい
+うものです。
 
 この時点でのトポロジは、次のようなものになります。
 
@@ -1536,14 +1573,48 @@ switch: s1 (root):
 ルータs1には「172.16.10.1/24」と「10.10.10.1/24」というアドレスを設定し
 ました。
 
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
+     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
+     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
+     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
+
 下から3～6番めの優先度1037のフローエントリは、「ルータ宛のパケットが到達した
 らPacket-Inメッセージを送信する」というものです。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
+     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
+     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
+     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
 
 先頭4件の優先度1036のフローエントリは、「同じサブネット内宛のパケットが到達
 したら通常のL2スイッチと同じように振る舞う」というものです。
 
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x200000001, duration=149.878s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
+     cookie=0x200000002, duration=138.464s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
+     cookie=0x6e00000001, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
+     cookie=0x6e00000002, duration=127.796s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
+
 7～10番めに登録されている優先度1002のフローエントリは、
 「 :ref:`ch_switching_hub` 」のスイッチングハブと同等の機能です。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x200000000, duration=149.879s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
+     cookie=0x6e00000000, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
 
 末尾2件の優先度1001のフローエントリは「上記条件に合致しないVLANタグつきのパ
 ケットは破棄する」というものです。
@@ -1947,9 +2018,17 @@ switch: s2 (root):
      cookie=0x200010000, duration=1406.761s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
      cookie=0x6e00010000, duration=1404.607s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
 
-9番めに優先度1026のフローエントリが追加されています。その内容は「宛先IPアド
-レスが172.16.20.0/24であれば、送信元MACをルータs2、宛先MACをルータs3に書き
-換え、TTLを減らし、ルータs3に向けて送信する」というものです。
+9番めに優先度1026のフローエントリが追加されています。
+
+.. rst-class:: sourcecode
+
+::
+
+     cookie=0x200020000, duration=59.814s, table=0, n_packets=0, n_bytes=0, priority=1026,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=dec_ttl,set_field:9e:1a:e9:0d:51:a0->eth_src,set_field:f2:a5:5c:7f:8d:01->eth_dst,output:4
+
+その内容は「宛先IPアドレスが172.16.20.0/24であれば、TTLを減らし、送信元
+MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」とい
+うものです。
 
 
 設定内容の確認
@@ -2170,6 +2249,8 @@ host: h2s1:
   .. image:: images/rest_router/fig8.png
      :scale: 80%
      :align: center
+
+本章では、具体例を挙げながらルータの使用方法を説明しました。
 
 
 REST API一覧
