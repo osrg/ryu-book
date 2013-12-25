@@ -11,9 +11,9 @@ OpenFlowスイッチテストツールの使用方法を解説します。
 ------------------
 
 本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに
-対してフローエントリ登録、パケット印加を実施し、OpenFlowスイッチのパケット
+対してフローエントリ登録／パケット印加を実施し、OpenFlowスイッチのパケット
 編集や転送(または破棄)の処理結果とテストパターンファイルに記述された
-"期待する処理結果"の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様
+「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様
 への対応状況を検証するテストツールです。
 
 ツールは、OpenFlowバージョン1.3のFlowModメッセージの試験に対応しています。
@@ -46,11 +46,13 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 
     .. only:: latex
 
-       .. image:: images/switch_test_tool/fig1.eps
+        .. image:: images/switch_test_tool/fig1.eps
+            :align: center
 
     .. only:: not latex
 
-       .. image:: images/switch_test_tool/fig1.png
+        .. image:: images/switch_test_tool/fig1.png
+            :align: center
 
 
 
@@ -58,7 +60,7 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 """"""""""""""""""""""
 
 指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果
-(OK/ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。
+(OK／ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。
 
 
 .. rst-class:: console
@@ -191,7 +193,7 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 .. NOTE::
 
     Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowMod
-    メッセージのmatch/actionsに指定できる各パラメータがそれぞれ正常に動作
+    メッセージのmatch／actionsに指定できる各パラメータがそれぞれ正常に動作
     するかを確認するテストパターンファイルが用意されています。
 
         ryu/tests/switch/of13
@@ -205,13 +207,15 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 
     .. only:: latex
 
-       .. image:: images/switch_test_tool/fig2.eps
-          :scale: 80 %
+        .. image:: images/switch_test_tool/fig2.eps
+            :scale: 80 %
+            :align: center
 
     .. only:: not latex
 
-       .. image:: images/switch_test_tool/fig2.png
-          :scale: 80 %
+        .. image:: images/switch_test_tool/fig2.png
+            :scale: 80 %
+            :align: center
 
 
 補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。
@@ -293,7 +297,7 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、
-FlowModメッセージのmatch/actionsの一通りの動作確認を行う手順を示します。
+FlowModメッセージのmatch／actionsの一通りの動作確認を行う手順を示します。
 
 本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)
 を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。
@@ -354,7 +358,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     .. NOTE::
 
         mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ
-        --test-switch-target/--test-switch-testerオプションのデフォルト値と
+        --test-switch-target／--test-switch-testerオプションのデフォルト値と
         なっているため、オプション指定を省略しています。
 
 
@@ -421,8 +425,8 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     サンプルテストパターンファイル一覧
 
-        match/actionsの各設定項目に対応するフローエントリを登録し、
-        フローエントリにmatchする(またはmatchしない)数パターンのパケット
+        match／actionsの各設定項目に対応するフローエントリを登録し、
+        フローエントリにmatchする(またはmatchしない)複数パターンのパケット
         を印加するテストパターンが用意されています。
 
 
@@ -489,7 +493,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 次に、オリジナルのテストパターンを作成してテストツールを実行する手順を示します。
 
-例として、OpenFlowスイッチがルータ機能を実現するために必要なmatch/actionsを
+例として、OpenFlowスイッチがルータ機能を実現するために必要なmatch／actionsを
 処理する機能を備えているかを確認するテストパターンを作成します。
 
 
@@ -499,17 +503,17 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     以下のフローエントリが正しく動作するかを試験します。
 
 
-    ================ ===========================
-    match            actions
-    ================ ===========================
-    宛先IPアドレス帯 送信元MACアドレス書き換え
-                     　
-                     宛先MACアドレス書き換え
-                     　
-                     TTL減算
-                     　
-                     パケット転送
-    ================ ===========================
+    =================================== ==================================================
+    match                               actions
+    =================================== ==================================================
+    宛先IPアドレス帯「192.168.30.0/24」 送信元MACアドレスを「aa:aa:aa:aa:aa:aa」に書き換え
+
+                                        宛先MACアドレスを「bb:bb:bb:bb:bb:bb」に書き換え
+
+                                        TTL減算
+
+                                        パケット転送
+    =================================== ==================================================
 
 
     このテストパターンを実行するテストパターンファイルを作成します。
