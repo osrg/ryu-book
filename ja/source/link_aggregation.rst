@@ -407,8 +407,8 @@ Node: c0:
 
 * slave state changed ...
 
-    LACPライブラリからの ``EventSlaveStateChanged`` イベントをスアプリ
-    ケーションが受信しました(イベントの詳細については後述します)。
+    LACPライブラリからの ``EventSlaveStateChanged`` イベントをアプリケー
+    ションが受信しました(イベントの詳細については後述します)。
 
 その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送
 信します。
