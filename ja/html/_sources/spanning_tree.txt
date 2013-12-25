@@ -32,11 +32,13 @@ STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツ
 .. only:: not latex
 
     .. image:: images/spanning_tree/fig1.png
-        :scale: 70 %
+        :scale: 60 %
+        :align: center
 
 
     .. image:: images/spanning_tree/fig2.png
-        :scale: 70 %
+        :scale: 60 %
+        :align: center
 
 
 STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換
@@ -151,7 +153,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
             .. only:: not latex
 
                .. image:: images/spanning_tree/fig4.png
-                  :scale: 70 %
+                  :scale: 60 %
 
 
     各ポートは状態に応じてフレーム転送有無などの動作を決定します。
