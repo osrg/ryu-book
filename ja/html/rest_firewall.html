@@ -186,7 +186,7 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 --- 10.0.0.2 ping statistics ---
 20 packets transmitted, 0 received, 100% packet loss, time 19003ms</pre>
 </div>
-<p>firewallが無効であった場合と異なり、ルールにマッチしなかったパケットは最低優先度で登録されているPacketInのフローエントリによって通知されます。この通知によって、破棄されたパケットがログに出力されます。</p>
+<p>firewallが無効であった場合と異なり、ルールにマッチしなかったパケットは最低優先度で登録されているPacket-Inのフローエントリによって通知されます。この通知によって、破棄されたパケットがログに出力されます。</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:02',ethertype=2048,src='00:00:00:00:00:01'), ipv4(csum=9895,dst='10.0.0.2',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.1',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=55644,data=echo(data='K\x8e\xaeR\x00\x00\x00\x00=\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./01234567',id=6952,seq=1),type=8)
 ...</pre>
@@ -223,7 +223,7 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 20 packets transmitted, 0 received, 100% packet loss, time 19003ms</pre>
 </div>
 <p>ログ出力を無効にしたため、パケットを遮断した旨のログが出力されないことがわかります。</p>
-<p>あとの動作確認のため、ログ出力を有効に戻しておきます。</p>
+<p>このあとの動作確認のため、ログ出力を有効に戻しておきます。</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/enable/0000000000000001
   [
@@ -247,6 +247,41 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
 <div class="section" id="id7">
 <h3>ルール追加<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>h1とh2の間でpingによる疎通が可能になるようルールを追加します。双方向にルールを設定をする必要がありますので、ルールをふたつ追加します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="20%" />
+<col width="20%" />
+<col width="18%" />
+<col width="8%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>10.0.0.1/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.1/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.1/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
   [
@@ -284,6 +319,41 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x2, duration=118.265s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL</pre>
 </div>
 <p>また、h2とh3の間では、pingを含むすべてのIPv4パケットの疎通が可能になるようルールを追加します。先ほどと同様双方向にルールを設定します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="20%" />
+<col width="20%" />
+<col width="18%" />
+<col width="8%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32"}' http://localhost:8080/firewall/rules/0000000000000001
   [
@@ -322,6 +392,41 @@ root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32
  cookie=0x2, duration=335.362s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL</pre>
 </div>
 <p>先ほど追加したh2とh3の間のルールに、ping(ICMP)のパケットを遮断するルールを追加します。先ほどと同様双方向にルールを設定します。また、先ほど追加したルールよりも優先度を高く設定します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="20%" />
+<col width="20%" />
+<col width="18%" />
+<col width="8%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>10</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>ICMP</td>
+<td>遮断</td>
+<td>5</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>遮断</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d  '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
   [
@@ -432,6 +537,69 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
     }
   ]</pre>
 </div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="20%" />
+<col width="20%" />
+<col width="18%" />
+<col width="8%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>10</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>ICMP</td>
+<td>遮断</td>
+<td>5</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>遮断</td>
+<td>6</td>
+</tr>
+<tr class="row-even"><td>1</td>
+<td>10.0.0.1/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.1/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
 <p>設定したルールを図示すると以下のようになります。</p>
 <a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 475.8px; height: 413.4px;" /></a>
 <p>実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通できることがわかります。</p>
@@ -459,7 +627,7 @@ Connecting to 10.0.0.2:80... ^C</pre>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ssh 10.0.0.3
 ssh: connect to host 10.0.0.3 port 22: Connection refused</pre>
 </div>
-<p>h2からh3にpingを実行すると、パケットがfirewallによって遮断されます。ただしこの遮断はPacketInのフローエントリによって通知されないため、ログは出力されません。</p>
+<p>h2からh3にpingを実行すると、パケットがfirewallによって遮断されます。ただしこの遮断はPacket-Inのフローエントリによって通知されないため、ログは出力されません。</p>
 <p>host: h2:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.3
 PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
@@ -547,6 +715,55 @@ root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "6"}' http://localhost:8080/firewa
     }
   ]</pre>
 </div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="20%" />
+<col width="20%" />
+<col width="18%" />
+<col width="8%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>10.0.0.1/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.1/32</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>1</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>不問</td>
+<td>許可</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
 <p>現在のルールを図示すると以下のようになります。</p>
 <a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 475.8px; height: 413.4px;" /></a>
 <p>フローを確認すると、&#8221;rule_id:5&#8221;と&#8221;rule_id:6&#8221;に該当するフローエントリが削除されていることがわかります。</p>
@@ -677,6 +894,45 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
 <div class="section" id="id13">
 <h3>ルール追加<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>vlan_id=2に10.0.0.0/8で送受信されるping(ICMPパケット)を許可するルールを追加します。双方向にルールを設定をする必要がありますので、ルールをふたつ追加します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="12%" />
+<col width="18%" />
+<col width="18%" />
+<col width="16%" />
+<col width="7%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(優先度)</th>
+<th class="head">VLAN ID</th>
+<th class="head">送信元</th>
+<th class="head">宛先</th>
+<th class="head">プロトコル</th>
+<th class="head">可否</th>
+<th class="head">(ルールID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>2</td>
+<td>10.0.0.0/8</td>
+<td>不問</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>2</td>
+<td>不問</td>
+<td>10.0.0.0/8</td>
+<td>ICMP</td>
+<td>許可</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
   [
@@ -785,6 +1041,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 <div class="console highlight-python"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:04',ethertype=33024,src='00:00:00:00:00:03'), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=9891,dst='10.0.0.4',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.3',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=58104,data=echo(data='\xb8\xa9\xaeR\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./01234567',id=7760,seq=4),type=8)
 ...</pre>
 </div>
+<p>本章では、具体例を挙げながらファイアウォールの使用方法を説明しました。</p>
 </div>
 </div>
 <div class="section" id="rest-api">
