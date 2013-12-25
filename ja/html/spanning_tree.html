@@ -96,23 +96,20 @@
 <blockquote>
 <div><p>各ポートのルートブリッジに至るまでのコストを元に、ポートの役割を決定します。</p>
 <ul>
-<li><dl class="first docutils">
-<dt>ルートポート(Root port)：</dt>
-<dd><p class="first last">ブリッジ内で最もルートブリッジまでのコストが小さいポート。ルートブリッジからのBPDUパケットを受信するポートになります。</p>
-</dd>
-</dl>
+<li><p class="first">ルートポート(Root port)</p>
+<blockquote>
+<div><p>ブリッジ内で最もルートブリッジまでのコストが小さいポート。ルートブリッジからのBPDUパケットを受信するポートになります。</p>
+</div></blockquote>
 </li>
-<li><dl class="first docutils">
-<dt>指定ポート(Designated port)：</dt>
-<dd><p class="first last">各リンクのルートブリッジまでのコストが小さい側のポート。ルートブリッジから受信したBPDUパケットを送信するポートになります。ルートブリッジのポートは全て指定ポートです。</p>
-</dd>
-</dl>
+<li><p class="first">指定ポート(Designated port)</p>
+<blockquote>
+<div><p>各リンクのルートブリッジまでのコストが小さい側のポート。ルートブリッジから受信したBPDUパケットを送信するポートになります。ルートブリッジのポートは全て指定ポートです。</p>
+</div></blockquote>
 </li>
-<li><dl class="first docutils">
-<dt>非指定ポート(Non designated port)：</dt>
-<dd><p class="first last">ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
-</dd>
-</dl>
+<li><p class="first">非指定ポート(Non designated port)</p>
+<blockquote>
+<div><p>ルートポート・指定ポート以外のポート。フレーム転送を抑制するポートです。</p>
+</div></blockquote>
 </li>
 </ul>
 <a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" src="_images/fig33.png" style="width: 596.05px; height: 416.0px;" /></a>
@@ -803,7 +800,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" src="_images/fig9.png" style="width: 1416.8px; height: 445.5px;" /></a>
-<p>STPライブラリ(Stpクラスオブジェクト)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスオブジェクト・Portクラスオブジェクトが生成されます。各クラスオブジェクトが生成・起動された後は、StpクラスオブジェクトからのOpenFlowメッセージ受信通知、BridgeクラスオブジェクトのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスオブジェクトのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
+<p>STPライブラリ(Stpクラスインスタンス)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスインスタンス・Portクラスインスタンスが生成されます。各クラスインスタンスが生成・起動された後は、StpクラスインスタンスからのOpenFlowメッセージ受信通知、BridgeクラスインスタンスのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスインスタンスのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">
 <h4>コンフィグ設定項目<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -949,8 +946,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </div>
 <div class="section" id="id11">
 <h4>BPDUパケット受信<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラによって検出され、Bridgeクラスオブジェクトを経由してPortクラスオブジェクトに通知されます。イベントハンドラの実装は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
-<p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(Stp.compare_bpdu_info())を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、Bridgeクラスオブジェクトに通知されSTP再計算の契機となります。</p>
+<p>BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラによって検出され、Bridgeクラスインスタンスを経由してPortクラスインスタンスに通知されます。イベントハンドラの実装は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
+<p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(Stp.compare_bpdu_info())を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(SUPERIOR)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、Bridgeクラスインスタンスに通知されSTP再計算の契機となります。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
@@ -986,8 +983,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id12">
 <h4>故障検出<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>リンク断などの直接故障や、一定時間ルートブリッジからのBPDUパケットを受信できない間接故障を検出した場合も、STP再計算の契機となります。</p>
-<p>リンク断はStpクラスのPortStatusイベントハンドラによって検出し、Bridgeクラスオブジェクトへ通知されます。</p>
-<p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)で検出します。max age(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスオブジェクトへ通知されます。</p>
+<p>リンク断はStpクラスのPortStatusイベントハンドラによって検出し、Bridgeクラスインスタンスへ通知されます。</p>
+<p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(Port.wait_bpdu_thread)で検出します。max age(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスインスタンスへ通知されます。</p>
 <p>タイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)のhub.Eventとhub.Timeoutを用います。hub.Eventはhub.Event.wait()でwait状態に入りhub.Event.set()が実行されるまでスレッドが中断されます。hub.Timeoutは指定されたタイムアウト時間内にtry節の処理が終了しない場合、hub.Timeout例外を発行します。hub.Eventがwait状態に入りhub.Timeoutで指定されたタイムアウト時間内にhub.Event.set()が実行されない場合に、BPDUパケットの受信待ちタイムアウトと判断しBridgeクラスのSTP再計算処理を呼び出します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
