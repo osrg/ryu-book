@@ -564,7 +564,7 @@ command (ofproto_v1_3.OFPFC_ADD)
     OFPFC_MODIFY         フローエントリを更新します
     OFPFC_MODIFY_STRICT  厳格に一致するフローエントリを更新します
     OFPFC_DELETE         フローエントリを削除します
-    OFPFC_DELETE_STRICT  厳格に一致するフローエントリを更新します
+    OFPFC_DELETE_STRICT  厳格に一致するフローエントリを削除します
     ==================== ========================================
 
 idle_timeout (0)
