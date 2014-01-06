@@ -501,9 +501,9 @@ switch: s1 (root):
      cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
      cookie=0x0, duration=1270.233s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
      cookie=0x0, duration=989s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
-     cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=drop
+     cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=CONTROLLER:128
      cookie=0x1, duration=591.578s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
-     cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=drop
+     cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=CONTROLLER:128
      cookie=0x2, duration=564.793s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
 
 
@@ -666,9 +666,8 @@ host: h2:
     root@ryu-vm:~# ssh 10.0.0.3
     ssh: connect to host 10.0.0.3 port 22: Connection refused
 
-h2からh3にpingを実行すると、パケットがfirewallによって遮断されます。ただし
-この遮断はPacket-Inのフローエントリによって通知されないため、ログは出力され
-ません。
+h2からh3にpingを実行すると、パケットがfirewallによって遮断された旨ログが出
+力されます。
 
 host: h2:
 
@@ -681,6 +680,15 @@ host: h2:
     ^C
     --- 10.0.0.3 ping statistics ---
     8 packets transmitted, 0 received, 100% packet loss, time 7055ms
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:03',ethertype=2048,src='00:00:00:00:00:02'), ipv4(csum=9893,dst='10.0.0.3',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.2',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=35642,data=echo(data='\r\x12\xcaR\x00\x00\x00\x00\xab\x8b\t\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=8705,seq=1),type=8)
+    ...
 
 
 ルール削除
@@ -1039,7 +1047,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -1053,7 +1061,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",

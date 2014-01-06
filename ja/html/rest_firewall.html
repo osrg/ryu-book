@@ -462,9 +462,9 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
  cookie=0x0, duration=1270.233s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
  cookie=0x0, duration=989s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
- cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=drop
+ cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=CONTROLLER:128
  cookie=0x1, duration=591.578s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=drop
+ cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=CONTROLLER:128
  cookie=0x2, duration=564.793s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL</pre>
 </div>
 </div>
@@ -627,13 +627,17 @@ Connecting to 10.0.0.2:80... ^C</pre>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ssh 10.0.0.3
 ssh: connect to host 10.0.0.3 port 22: Connection refused</pre>
 </div>
-<p>h2からh3にpingを実行すると、パケットがfirewallによって遮断されます。ただしこの遮断はPacket-Inのフローエントリによって通知されないため、ログは出力されません。</p>
+<p>h2からh3にpingを実行すると、パケットがfirewallによって遮断された旨ログが出力されます。</p>
 <p>host: h2:</p>
 <div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.3
 PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
 ^C
 --- 10.0.0.3 ping statistics ---
 8 packets transmitted, 0 received, 100% packet loss, time 7055ms</pre>
+</div>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:03',ethertype=2048,src='00:00:00:00:00:02'), ipv4(csum=9893,dst='10.0.0.3',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.2',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=35642,data=echo(data='\r\x12\xcaR\x00\x00\x00\x00\xab\x8b\t\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&amp;\'()*+,-./01234567',id=8705,seq=1),type=8)
+...</pre>
 </div>
 </div>
 <div class="section" id="id9">
@@ -934,7 +938,7 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+<div class="console highlight-python"><pre>root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
   [
     {
       "switch_id": "0000000000000001",
@@ -948,7 +952,7 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
     }
   ]
 
-root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' localhost:8080/firewall/rules/0000000000000001/2
+root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
   [
     {
       "switch_id": "0000000000000001",
