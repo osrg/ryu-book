@@ -88,26 +88,27 @@
 <div class="section" id="id4">
 <h4>試験結果の出力イメージ<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果(OK／ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。</p>
-<div class="console highlight-python"><pre>--- Test start ---
+<div class="console highlight-python"><div class="highlight"><pre>--- Test start ---
 
 match: 29_ICMPV6_TYPE
-    ethernet/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:2'               OK
-    ethernet/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:CONTROLLER'      OK
-    ethernet/ipv6/icmpv6(type=135)--&gt;'icmpv6_type=128,actions=output:2'               OK
-    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:2'          ERROR
+    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
+    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;      OK
+    ethernet/ipv6/icmpv6(type=135)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;          ERROR
         Received incorrect packet-in: ethernet(ethertype=34525)
-    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;'icmpv6_type=128,actions=output:CONTROLLER' ERROR
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39; ERROR
         Received incorrect packet-in: ethernet(ethertype=34525)
 match: 30_ICMPV6_CODE
-    ethernet/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:2'                   OK
-    ethernet/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:CONTROLLER'          OK
-    ethernet/ipv6/icmpv6(code=1)--&gt;'icmpv6_code=0,actions=output:2'                   OK
-    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:2'              ERROR
+    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
+    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;          OK
+    ethernet/ipv6/icmpv6(code=1)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;              ERROR
         Received incorrect packet-in: ethernet(ethertype=34525)
-    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;'icmpv6_code=0,actions=output:CONTROLLER'     ERROR
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;     ERROR
         Received incorrect packet-in: ethernet(ethertype=34525)
 
----  Test end  ---</pre>
+---  Test end  ---
+</pre></div>
 </div>
 </div>
 </div>
@@ -193,41 +194,41 @@ match: 30_ICMPV6_CODE
 <h3>テストパターンファイル<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>試験したいテストパターンに応じたテストパターンファイルを作成する必要があります。</p>
 <p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
-<div class="sourcecode highlight-python"><pre>[
-    "xxxxxxxxxx",                    # 試験項目名
+<div class="sourcecode highlight-python"><div class="highlight"><pre>[
+    &quot;xxxxxxxxxx&quot;,                    # 試験項目名
     {
-        "description": "xxxxxxxxxx", # 試験内容の説明
-        "prerequisite": [
+        &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # 試験内容の説明
+        &quot;prerequisite&quot;: [
             {
-                "OFPFlowMod": {...}  # 登録するフローエントリ
+                &quot;OFPFlowMod&quot;: {...}  # 登録するフローエントリ
             },                       # (RyuのOFPFlowModをjson形式で記述)
             {...},                   #  パケット転送(actions=output)の場合は
             {...}                    #  出力ポート番号に「2」を指定してください
         ],
-        "tests": [
+        &quot;tests&quot;: [
             {
-                "ingress": [         # 印加するパケット
-                    "ethernet(...)", # (Ryuパケットライブラリのコンストラクタの形式で記述)
-                    "ipv4(...)",
-                    "tcp(...)"
+                &quot;ingress&quot;: [         # 印加するパケット
+                    &quot;ethernet(...)&quot;, # (Ryuパケットライブラリのコンストラクタの形式で記述)
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
                 ],
 
                 # 期待する処理結果
                 # 処理結果の種別に応じて(a)(b)(c)のいずれかを記述
                 #  (a) パケット転送(actions=output:X)の確認試験
-                "egress": [          # 期待する転送パケット
-                    "ethernet(...)",
-                    "ipv4(...)",
-                    "tcp(...)"
+                &quot;egress&quot;: [          # 期待する転送パケット
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
                 ]
                 #  (b) パケットイン(actions=CONTROLLER)の確認試験
-                "PACKET_IN": [       # 期待するPacket-Inデータ
-                    "ethernet(...)",
-                    "ipv4(...)",
-                    "tcp(...)"
+                &quot;PACKET_IN&quot;: [       # 期待するPacket-Inデータ
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
                 ]
                 #  (c) table-missの確認試験
-                "table-miss": [      # table-missとなることを期待するフローテーブルID
+                &quot;table-miss&quot;: [      # table-missとなることを期待するフローテーブルID
                     0
                 ]
             },
@@ -237,7 +238,8 @@ match: 30_ICMPV6_CODE
     },                               # 試験1
     {...},                           # 試験2
     {...}                            # 試験3
-]</pre>
+]
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
@@ -294,8 +296,9 @@ match: 30_ICMPV6_CODE
 </table>
 </div></blockquote>
 <p>テストツールは次のコマンドで実行します。</p>
-<div class="console highlight-python"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
- [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py</pre>
+<div class="console highlight-python"><div class="highlight"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+ [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
+</pre></div>
 </div>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -344,31 +347,35 @@ match: 30_ICMPV6_CODE
 <li><p class="first">試験環境の構築</p>
 <blockquote>
 <div><p>VM環境にログインし、試験環境構築スクリプトを実行します。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py</pre>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
+</pre></div>
 </div>
 <p>netコマンドの実行結果は次の通りです。</p>
-<div class="console highlight-python"><pre>mininet&gt; net
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
 c0
 s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
-s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2</pre>
+s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+</pre></div>
 </div>
 </div></blockquote>
 </li>
 <li><p class="first">テストツール実行</p>
 <blockquote>
 <div><p>テストツール実行のため、コントローラのxtermを開きます。</p>
-<div class="console highlight-python"><pre>mininet&gt; xterm c0</pre>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+</pre></div>
 </div>
 <p>「Node: c0 (root)」のxtermから、テストツールを実行します。この際、テストパターンファイルのディレクトリとして、サンプルテストパターンのディレクトリ(ryu/tests/switch/of13)を指定します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p class="last">mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ&#8211;test-switch-target／&#8211;test-switch-testerオプションのデフォルト値となっているため、オプション指定を省略しています。</p>
 </div>
 <p>ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチがコントローラに接続されるまで待機します。</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
 loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -377,10 +384,11 @@ tester_dpid=0000000000000002
 Test files directory = ryu/ryu/tests/switch/of13/
 instantiating app ryu.controller.ofp_handler of OFPHandler
 --- Test start ---
-waiting for switches connection...</pre>
+waiting for switches connection...
+</pre></div>
 </div>
 <p>試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
 loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -393,15 +401,16 @@ waiting for switches connection...
 dpid=0000000000000002 : Join tester SW.
 dpid=0000000000000001 : Join target SW.
 action: 00_OUTPUT
-    ethernet/ipv4/tcp--&gt;'actions=output:2'      OK
-    ethernet/ipv6/tcp--&gt;'actions=output:2'      OK
-    ethernet/arp--&gt;'actions=output:2'           OK
+    ethernet/ipv4/tcp--&gt;&#39;actions=output:2&#39;      OK
+    ethernet/ipv6/tcp--&gt;&#39;actions=output:2&#39;      OK
+    ethernet/arp--&gt;&#39;actions=output:2&#39;           OK
 action: 11_COPY_TTL_OUT
-    ethernet/mpls(ttl=64)/ipv4(ttl=32)/tcp--&gt;'eth_type=0x8847,actions=copy_ttl_out,output:2'        ERROR
+    ethernet/mpls(ttl=64)/ipv4(ttl=32)/tcp--&gt;&#39;eth_type=0x8847,actions=copy_ttl_out,output:2&#39;        ERROR
         Failed to add flows: OFPErrorMsg[type=0x02, code=0x00]
-    ethernet/mpls(ttl=64)/ipv6(hop_limit=32)/tcp--&gt;'eth_type=0x8847,actions=copy_ttl_out,output:2'  ERROR
+    ethernet/mpls(ttl=64)/ipv6(hop_limit=32)/tcp--&gt;&#39;eth_type=0x8847,actions=copy_ttl_out,output:2&#39;  ERROR
         Failed to add flows: OFPErrorMsg[type=0x02, code=0x00]
-...</pre>
+...
+</pre></div>
 </div>
 <p>ryu/tests/switch/of13配下の全てのサンプルテストパターンファイルの試験が完了すると、テストツールは終了します。</p>
 </div></blockquote>
@@ -413,7 +422,7 @@ action: 11_COPY_TTL_OUT
 <div><p>サンプルテストパターンファイル一覧</p>
 <blockquote>
 <div>match／actionsの各設定項目に対応するフローエントリを登録し、フローエントリにmatchする(またはmatchしない)複数パターンのパケットを印加するテストパターンが用意されています。</div></blockquote>
-<div class="console highlight-python"><pre>ryu/tests/switch/of13/action:
+<div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
 00_OUTPUT.json              20_POP_MPLS.json
 11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
 12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
@@ -463,7 +472,8 @@ ryu/tests/switch/of13/match:
 11_IPV4_SRC.json       23_ARP_TPA.json        38_TUNNEL_ID.json
 11_IPV4_SRC_Mask.json  23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
 12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
-12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json</pre>
+12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+</pre></div>
 </div>
 </div></blockquote>
 </div>
@@ -598,7 +608,8 @@ ryu/tests/switch/of13/match:
 <blockquote>
 <div><p>コントローラのxtermから、先ほど作成したオリジナルのテストパターンファイルを指定してテストツールを実行します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
@@ -606,7 +617,7 @@ ryu/tests/switch/of13/match:
 </div>
 <p>試験対象スイッチと補助スイッチがコントローラに接続されると、試験が開始されます。</p>
 <p>「dpid=0000000000000002 : receive_packet...」のログ出力から、テストパターンファイルのegressパケットとして設定した、期待する出力パケットが送信されたことが分かります。</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 loading app ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu.controller.ofp_handler of OFPHandler
@@ -623,12 +634,13 @@ dpid=0000000000000001 : Join target SW.
 
 sample: Router test
 
-send_packet:[ethernet(dst='22:22:22:22:22:22',ethertype=2048,src='11:11:11:11:11:11'), ipv4(csum=53560,dst='192.168.30.10',flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src='192.168.10.10',tos=32,total_length=59,ttl=64,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option='\x00\x00\x00\x00',seq=0,src_port=11111,urgent=0,window_size=0), '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f']
-egress:[ethernet(dst='bb:bb:bb:bb:bb:bb',ethertype=2048,src='aa:aa:aa:aa:aa:aa'), ipv4(csum=53816,dst='192.168.30.10',flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src='192.168.10.10',tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option='\x00\x00\x00\x00',seq=0,src_port=11111,urgent=0,window_size=0), '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f']
+send_packet:[ethernet(dst=&#39;22:22:22:22:22:22&#39;,ethertype=2048,src=&#39;11:11:11:11:11:11&#39;), ipv4(csum=53560,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=64,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
+egress:[ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,ethertype=2048,src=&#39;aa:aa:aa:aa:aa:aa&#39;), ipv4(csum=53816,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
 packet_in:[]
-dpid=0000000000000002 : receive_packet[ethernet(dst='bb:bb:bb:bb:bb:bb',ethertype=2048,src='aa:aa:aa:aa:aa:aa'), ipv4(csum=53816,dst='192.168.30.10',flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src='192.168.10.10',tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option='\x00\x00\x00\x00',seq=0,src_port=11111,urgent=0,window_size=0), '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f']
+dpid=0000000000000002 : receive_packet[ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,ethertype=2048,src=&#39;aa:aa:aa:aa:aa:aa&#39;), ipv4(csum=53816,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
     static routing table                            OK
----  Test end  ---</pre>
+---  Test end  ---
+</pre></div>
 </div>
 <div class="admonition attention">
 <p class="first admonition-title">注意</p>
@@ -636,9 +648,10 @@ dpid=0000000000000002 : receive_packet[ethernet(dst='bb:bb:bb:bb:bb:bb',ethertyp
 </div>
 <p>実際にOpenFlowスイッチに登録されたフローエントリは以下の通りです。テストツールによって印加されたパケットがフローエントリにmatchし、n_packetsがカウントアップされていることが分かります。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa-&gt;eth_src,set_field:bb:bb:bb:bb:bb:bb-&gt;eth_dst,dec_ttl,output:2</pre>
+ cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa-&gt;eth_src,set_field:bb:bb:bb:bb:bb:bb-&gt;eth_dst,dec_ttl,output:2
+</pre></div>
 </div>
 </div></blockquote>
 </li>
@@ -727,8 +740,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Ryuプロジェクト.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+        &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
 </html>

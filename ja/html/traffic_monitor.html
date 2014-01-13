@@ -386,7 +386,7 @@
 <p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。</p>
 <p>次にいよいよトラフィックモニターの実行です。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
 loading app ./simple_monitor.py
 loading app ryu.controller.ofp_handler
 instantiating app ./simple_monitor.py
@@ -398,17 +398,17 @@ BRICK SimpleMonitor
   CONSUMES EventOFPPacketIn
   CONSUMES EventOFPSwitchFeatures
 BRICK ofp_event
-  PROVIDES EventOFPStateChange TO {'SimpleMonitor': set(['main', 'dead'])}
-  PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor': set(['main'])}
-  PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor': set(['main'])}
-  PROVIDES EventOFPPacketIn TO {'SimpleMonitor': set(['main'])}
-  PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor': set(['config'])}
+  PROVIDES EventOFPStateChange TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;, &#39;dead&#39;])}
+  PROVIDES EventOFPFlowStatsReply TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
+  PROVIDES EventOFPPortStatsReply TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
+  PROVIDES EventOFPPacketIn TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
+  PROVIDES EventOFPSwitchFeatures TO {&#39;SimpleMonitor&#39;: set([&#39;config&#39;])}
   CONSUMES EventOFPErrorMsg
   CONSUMES EventOFPPortDescStatsReply
   CONSUMES EventOFPHello
   CONSUMES EventOFPEchoRequest
   CONSUMES EventOFPSwitchFeatures
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x343fb10&gt; address:('127.0.0.1', 55598)
+connected socket:&lt;eventlet.greenio.GreenSocket object at 0x343fb10&gt; address:(&#39;127.0.0.1&#39;, 55598)
 hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x343fed0&gt;
 move onto config mode
 EVENT ofp_event-&gt;SimpleMonitor EventOFPSwitchFeatures
@@ -426,24 +426,26 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 0000000000000001        1        0        0        0        0        0        0
 0000000000000001        2        0        0        0        0        0        0
 0000000000000001        3        0        0        0        0        0        0
-0000000000000001 fffffffe        0        0        0        0        0        0</pre>
+0000000000000001 fffffffe        0        0        0        0        0        0
+</pre></div>
 </div>
 <p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
 <p>この時点では、フローエントリが無く(Table-missフローエントリは表示していません)、各ポートのカウントもすべて0です。</p>
 <p>ここで、ホスト1からホスト2へpingを実行してみます。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ping -c1 10.0.0.2
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping -c1 10.0.0.2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
 
 --- 10.0.0.2 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
-root@ryu-vm:~#</pre>
+root@ryu-vm:~#
+</pre></div>
 </div>
 <p>すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報が変化します。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><pre>datapath         in-port  eth-dst           out-port packets  bytes
+<div class="console highlight-python"><div class="highlight"><pre>datapath         in-port  eth-dst           out-port packets  bytes
 ---------------- -------- ----------------- -------- -------- --------
 0000000000000001        1 00:00:00:00:00:02        2        1       42
 0000000000000001        2 00:00:00:00:00:01        1        2      140
@@ -452,7 +454,8 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 0000000000000001        1        3      182        0        3      182        0
 0000000000000001        2        3      182        0        3      182        0
 0000000000000001        3        0        0        0        1       42        0
-0000000000000001 fffffffe        0        0        0        1       42        0</pre>
+0000000000000001 fffffffe        0        0        0        1       42        0
+</pre></div>
 </div>
 <p>上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィックは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140バイトとなっています。</p>
 <p>下のポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数(rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。</p>
@@ -536,8 +539,7 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Ryuプロジェクト.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+        &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
 </html>

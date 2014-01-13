@@ -267,7 +267,7 @@
 </pre></div>
 </div>
 <p>このスクリプトを実行することにより、ホストh1とスイッチs1の間に2本のリンクが存在するトポロジが作成されます。netコマンドを実行することでトポロジを確認することができます。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -276,7 +276,8 @@ h1 h1-eth0:s1-eth1 h1-eth1:s1-eth2
 h2 h2-eth0:s1-eth3
 h3 h3-eth0:s1-eth4
 h4 h4-eth0:s1-eth5
-mininet&gt;</pre>
+mininet&gt;
+</pre></div>
 </div>
 <p>また、このスクリプトを実行することにより、コントローラc0、ホストh1～h4、およびスイッチs1のxtermが起動します。</p>
 </div>
@@ -285,39 +286,45 @@ mininet&gt;</pre>
 <p>ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってください。</p>
 <p>まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。Linuxではリンク・アグリゲーション機能をボンディングドライバが担当しています。事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成しておきます。</p>
 <p>ファイル名:<tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
-<div class="sourcecode highlight-python"><pre>alias bond0 bonding
-options bonding mode=4</pre>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>alias bond0 bonding
+options bonding mode=4
+</pre></div>
 </div>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# modprobe bonding</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# modprobe bonding
+</pre></div>
 </div>
 <p>mode=4はLACPを用いたダイナミックなリンク・アグリゲーションを行うことを表します。デフォルト値であるためここでは設定を省略していますが、LACPデータユニットの交換間隔はSLOW（30秒間隔）、振り分けロジックは宛先MACアドレスを元に行うように設定されています。</p>
 <p>続いて、bond0という名前の論理インターフェースを新たに作成します。また、bond0のMACアドレスとして適当な値を設定します。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ip link add bond0 type bond
-root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link add bond0 type bond
+root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
+</pre></div>
 </div>
 <p>作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インターフェースを参加させます。このとき、物理インターフェースをダウンさせておく必要があります。また、ランダムに決定された物理インターフェースのMACアドレスをわかりやすい値に書き換えておきます。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ip link set h1-eth0 down
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 down
 root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
 root@ryu-vm:~# ip link set h1-eth0 master bond0
 root@ryu-vm:~# ip link set h1-eth1 down
 root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
-root@ryu-vm:~# ip link set h1-eth1 master bond0</pre>
+root@ryu-vm:~# ip link set h1-eth1 master bond0
+</pre></div>
 </div>
 <p>論理インターフェースにIPアドレスを割り当てます。mnコマンドでホストを作成した場合にならって、10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレスが割り当てられているので、これを削除します。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
-root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
+root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+</pre></div>
 </div>
 <p>最後に、論理インターフェースをアップさせます。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ip link set bond0 up</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set bond0 up
+</pre></div>
 </div>
 <p>ここで各インターフェースの状態を確認しておきます。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ifconfig
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig
 bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
           inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
           UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
@@ -346,12 +353,13 @@ lo        Link encap:Local Loopback
           RX packets:0 errors:0 dropped:0 overruns:0 frame:0
           TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
           collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)</pre>
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+</pre></div>
 </div>
 <p>論理インターフェースbond0がMASTERに、物理インターフェースh1-eth0とh1-eth1がSLAVEになっていることがわかります。また、bond0、h1-eth0、h1-eth1のMACアドレスがすべて同じものになっていることがわかります。</p>
 <p>ボンディングドライバの状態も確認しておきます。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# cat /proc/net/bonding/bond0
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# cat /proc/net/bonding/bond0
 Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
 
 Bonding Mode: IEEE 802.3ad Dynamic link aggregation
@@ -388,7 +396,8 @@ Duplex: full
 Link Failure Count: 0
 Permanent HW addr: 00:00:00:00:00:12
 Aggregator ID: 2
-Slave queue ID: 0</pre>
+Slave queue ID: 0
+</pre></div>
 </div>
 <p>LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定(Transmit Hash Policy: layer2 (0))が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
 <p>以上でホストh1のリンク・アグリゲーションの設定は終了です。</p>
@@ -397,7 +406,8 @@ Slave queue ID: 0</pre>
 <h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」で行ったのと同じように、使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行ってください。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
 </div>
 </div>
 <div class="section" id="id4">
@@ -409,17 +419,18 @@ Slave queue ID: 0</pre>
 </div>
 <p>ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンドを実行します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
 loading app ./simple_switch_lacp_13.py
 loading app ryu.controller.ofp_handler
 creating context lacplib
 instantiating app ./simple_switch_lacp_13.py
 instantiating app ryu.controller.ofp_handler
-...</pre>
+...
+</pre></div>
 </div>
 <p>ホストh1は30秒に1回LACPデータユニットを送信し続けています。起動してからしばらくすると、スイッチはホストh1からのLACPデータユニットを受信し、動作ログに出力します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
 [LACP][INFO] SW=0000000000000001 PORT=1 the slave i/f has just been up.
 [LACP][INFO] SW=0000000000000001 PORT=1 the timeout time has changed.
@@ -430,7 +441,8 @@ slave state changed port: 1 enabled: True
 [LACP][INFO] SW=0000000000000001 PORT=2 the timeout time has changed.
 [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
 slave state changed port: 2 enabled: True
-...</pre>
+...
+</pre></div>
 </div>
 <p>各ログは以下のことを表しています。</p>
 <ul>
@@ -462,20 +474,22 @@ slave state changed port: 2 enabled: True
 </ul>
 <p>その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送信します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
 [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
 [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-...</pre>
+...
+</pre></div>
 </div>
 <p>この時点でのフローエントリを確認します。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535</pre>
+ cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535
+</pre></div>
 </div>
 <p>スイッチには</p>
 <ul class="simple">
@@ -492,27 +506,30 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <p>まずはリンク・アグリゲーションによる通信速度の向上を確認します。ただし、実際に通信性能の確認を行おうとすると大量のデータを間断なく送受信し続ける必要があり、試験が煩雑になってしまいますので、ここでは「スイッチングハブの機能により論理インターフェースを経由するフローエントリを複数登録し、その際特定の物理回線にのみフローが集中しないこと」をもって動作の確認を行います。</p>
 <p>まず、ホストh2からホストh1に対しpingを実行します。</p>
 <p>Node: h2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
 64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
 64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.075 ms
 64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.065 ms
-...</pre>
+...
+</pre></div>
 </div>
 <p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=33.046s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
  cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
+ cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
 </div>
 <p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
-cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
 </div>
 <p>それぞれ、</p>
 <ul class="simple">
@@ -522,17 +539,18 @@ cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_po
 <p>というフローエントリです。h2との通信にはs1-eth1が使用されていることがわかります。</p>
 <p>続いて、ホストh3からホストh1に対しpingを実行します。</p>
 <p>Node: h3:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
 64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
 64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.057 ms
 64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.073 ms
-...</pre>
+...
+</pre></div>
 </div>
 <p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -540,11 +558,13 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=80.974s, table=0, n_packets=82, n_bytes=7924, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
  cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
  cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
+ cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
 </div>
 <p>先ほど確認した時点から、5番めと6番めのフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
-cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4</pre>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
+</pre></div>
 </div>
 <p>それぞれ、</p>
 <ul class="simple">
@@ -554,17 +574,18 @@ cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_po
 <p>というフローエントリです。h3との通信にはs1-eth2が使用されていることがわかります。</p>
 <p>同様にホストh4からホストh1に対しpingを実行します。</p>
 <p>Node: h4:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ping 10.0.0.1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
 PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
 64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=86.3 ms
 64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.397 ms
 64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.136 ms
 64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.035 ms
-...</pre>
+...
+</pre></div>
 </div>
 <p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=199.287s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=199.283s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -574,11 +595,13 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
  cookie=0x0, duration=102.199s, table=0, n_packets=105, n_bytes=10122, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
  cookie=0x0, duration=102.197s, table=0, n_packets=104, n_bytes=10024, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=180.499s, table=0, n_packets=186, n_bytes=17948, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3</pre>
+ cookie=0x0, duration=180.499s, table=0, n_packets=186, n_bytes=17948, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
 </div>
 <p>追加されたフローエントリは以下のふたつです。</p>
-<div class="sourcecode highlight-python"><pre>cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
-cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5</pre>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
+cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5
+</pre></div>
 </div>
 <p>それぞれ、</p>
 <ul class="simple">
@@ -618,11 +641,12 @@ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_po
 <p>次に、リンク・アグリゲーションによる耐障害性の向上を確認します。現在の状況は、h2とh4がh1と通信する際にはs1-eth2を、h3がh1と通信する際にはs1-eth1を使用しています。</p>
 <p>ここで、s1-eth1の対向インターフェースであるh1-eth0をリンク・アグリゲーションのグループから離脱させます。</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ip link set h1-eth0 nomaster</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 nomaster
+</pre></div>
 </div>
 <p>h1-eth0が停止したことにより、ホストh3からホストh1へのpingが疎通不可能になります。そのまま無通信監視時間の上限である90秒が経過すると、コントローラの動作ログに次のようなメッセージが出力されます。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
 [LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
@@ -633,12 +657,13 @@ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_po
 [LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP exchange timeout has occurred.
 slave state changed port: 1 enabled: False
-...</pre>
+...
+</pre></div>
 </div>
 <p>「LACP exchange timeout has occurred.」は無通信監視時間の上限に達し、LACPデータユニットをPacket-Inするフローエントリが削除されたことを表します。<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを受信したスイッチングハブは、学習したMACアドレスをすべて忘却し、転送用のフローエントリをすべて削除します。</p>
 <p>すべての学習結果を忘れた状態でも、ホストh2～h4ではまだpingが実行されているため、通常のスイッチングハブの動作によって再度MACアドレスを学習し、転送用のフローエントリを登録します。このとき、停止しているh1-eth0ではパケットの送受信が行われないため、ホストh2～h4とホストh1との間の通信はすべてh1-eth1が使用されます。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
  cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
@@ -647,11 +672,12 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=6.281s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
  cookie=0x0, duration=5.506s, table=0, n_packets=5, n_bytes=434, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
  cookie=0x0, duration=5.736s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:21 actions=output:3
- cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4</pre>
+ cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4
+</pre></div>
 </div>
 <p>フローエントリが再登録されたことにより、ホストh3で停止していたpingが再開されます。</p>
 <p>Node: h3:</p>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 64 bytes from 10.0.0.1: icmp_req=144 ttl=64 time=0.193 ms
 64 bytes from 10.0.0.1: icmp_req=145 ttl=64 time=0.081 ms
 64 bytes from 10.0.0.1: icmp_req=146 ttl=64 time=0.095 ms
@@ -660,7 +686,8 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 64 bytes from 10.0.0.1: icmp_req=239 ttl=64 time=0.371 ms
 64 bytes from 10.0.0.1: icmp_req=240 ttl=64 time=0.103 ms
 64 bytes from 10.0.0.1: icmp_req=241 ttl=64 time=0.067 ms
-...</pre>
+...
+</pre></div>
 </div>
 <p>以上のように、一部の物理インターフェースに故障が発生した場合でも、他の物理インターフェースを用いて自動的に復旧できることが確認できました。</p>
 </div>
@@ -1116,11 +1143,12 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tbody>
 </table>
 <p>この設定により、データパスID「0000000000000001」のOpenFlowスイッチのポート1とポート2がひとつのリンク・アグリゲーション・グループとして動作します。</p>
-<div class="sourcecode highlight-python"><pre># ...
-    self._lacp = kwargs['lacplib']
+<div class="sourcecode highlight-python"><div class="highlight"><pre># ...
+    self._lacp = kwargs[&#39;lacplib&#39;]
     self._lacp.add(
-        dpid=str_to_dpid('0000000000000001'), ports=[1, 2])
-# ...</pre>
+        dpid=str_to_dpid(&#39;0000000000000001&#39;), ports=[1, 2])
+# ...
+</pre></div>
 </div>
 </div>
 <div class="section" id="id14">
@@ -1269,8 +1297,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Ryuプロジェクト.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+        &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
 </html>

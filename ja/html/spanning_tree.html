@@ -402,7 +402,7 @@
 <div><a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" src="_images/fig51.png" style="width: 641.9px; height: 425.6px;" /></a>
 </div></blockquote>
 <p>netコマンドの実行結果は以下の通りです。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -411,39 +411,44 @@ s2 lo:  s2-eth1:h2-eth0 s2-eth2:s1-eth2 s2-eth3:s3-eth2
 s3 lo:  s3-eth1:h3-eth0 s3-eth2:s2-eth3 s3-eth3:s1-eth3
 h1 h1-eth0:s1-eth1
 h2 h2-eth0:s2-eth1
-h3 h3-eth0:s3-eth1</pre>
+h3 h3-eth0:s3-eth1
+</pre></div>
 </div>
 </div>
 <div class="section" id="openflow">
 <h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1、s2、s3のxterm上で行ってください。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
 </div>
 </div>
 <div class="section" id="id4">
 <h3>スイッチングハブの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>準備が整ったので、Ryuアプリケーションを実行します。ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンドを実行します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
 loading app simple_switch_stp_13.py
 loading app ryu.controller.ofp_handler
 loading app ryu.controller.ofp_handler
 instantiating app None of Stp
 creating context stplib
 instantiating app simple_switch_stp_13.py of SimpleSwitch13
-instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
+instantiating app ryu.controller.ofp_handler of OFPHandler
+</pre></div>
 </div>
 <div class="section" id="openflowstp">
 <h4>OpenFlowスイッチ起動時のSTP計算<a class="headerlink" href="#openflowstp" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。</p>
-<div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000001: Join as stp bridge.
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000001: Join as stp bridge.
 [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
 [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
 [STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
@@ -528,7 +533,8 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
 [STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
-[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD</pre>
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+</pre></div>
 </div>
 <p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
 <blockquote>
@@ -537,16 +543,19 @@ instantiating app ryu.controller.ofp_handler of OFPHandler</pre>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
+</pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp
+</pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp
+</pre></div>
 </div>
 <p>トポロジ構築スクリプトを実行したコンソールで、次のコマンドを実行してホスト1からホスト2へpingを発行します。</p>
-<div class="console highlight-python"><pre>mininet&gt; h1 ping h2
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping h2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.4 ms
 64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.657 ms
@@ -562,45 +571,50 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 ^C
 --- 10.0.0.2 ping statistics ---
 11 packets transmitted, 11 received, 0% packet loss, time 9998ms
-rtt min/avg/max/mdev = 0.041/7.784/84.407/24.230 ms</pre>
+rtt min/avg/max/mdev = 0.041/7.784/84.407/24.230 ms
+</pre></div>
 </div>
 <p>各スイッチで実行したtcpdumpの出力結果から、ARPがループしていないことが確認できます。</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
 tcpdump: WARNING: s1-eth2: no IPv4 address assigned
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on s1-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 11:30:24.692797 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
 11:30:24.749153 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
 11:30:29.797665 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
-11:30:29.798250 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28</pre>
+11:30:29.798250 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+</pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp
 tcpdump: WARNING: s2-eth2: no IPv4 address assigned
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on s2-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 11:30:24.692824 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
 11:30:24.749116 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
 11:30:29.797659 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
-11:30:29.798254 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28</pre>
+11:30:29.798254 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+</pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp
 tcpdump: WARNING: s3-eth2: no IPv4 address assigned
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
-11:30:24.698477 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28</pre>
+11:30:24.698477 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+</pre></div>
 </div>
 </div>
 <div class="section" id="stp">
 <h4>故障検出時のSTP再計算<a class="headerlink" href="#stp" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>次に、リンクダウンが起こった際のSTP再計算の動作を確認します。各OpenFlowスイッチ起動後のSTP計算が完了した状態で次のコマンドを実行し、ポートをダウンさせます。</p>
 <p>Node: s2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ifconfig s2-eth2 down</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig s2-eth2 down
+</pre></div>
 </div>
 <p>リンクダウンが検出され、STP再計算が実行されます。</p>
-<div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
 [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
 [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
 [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
@@ -642,7 +656,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 [STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
 [STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
-[STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD</pre>
+[STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD
+</pre></div>
 </div>
 <p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
@@ -653,10 +668,11 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h4>故障回復時のSTP再計算<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>続けて、リンクダウンが回復した際のSTP再計算の動作を確認します。リンクダウン中の状態で次のコマンドを実行し、ポートを起動させます。</p>
 <p>Node: s2:</p>
-<div class="console highlight-python"><pre>root@ryu-vm:~# ifconfig s2-eth2 up</pre>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig s2-eth2 up
+</pre></div>
 </div>
 <p>リンク復旧が検出され、STP再計算が実行されます。</p>
-<div class="console highlight-python"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
 [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
 [STP][INFO] dpid=0000000000000002: [port=2] Link up.
 [STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / LISTEN
@@ -703,7 +719,8 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 [STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
 [STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
-[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD</pre>
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+</pre></div>
 </div>
 <p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <blockquote>
@@ -1272,12 +1289,13 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <ul>
 <li><p class="first">STPライブラリで定義された<tt class="docutils literal"><span class="pre">stplib.EventPacketIn</span></tt>イベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様のパケットハンドリンクを行います。</p>
 <blockquote>
-<div><div class="sourcecode highlight-python"><pre>class SimpleSwitch13(app_manager.RyuApp):
+<div><div class="sourcecode highlight-python"><div class="highlight"><pre>class SimpleSwitch13(app_manager.RyuApp):
 
     @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
     def _packet_in_handler(self, ev):
 
-        # ...</pre>
+        # ...
+</pre></div>
 </div>
 </div></blockquote>
 </li>
@@ -1436,8 +1454,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Ryuプロジェクト.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+        &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
 </html>

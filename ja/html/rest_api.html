@@ -318,7 +318,7 @@
 <div class="section" id="id3">
 <h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>実際に、REST API搭載スイッチングハブを実行してみます。最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
 loading app ./simple_switch_rest_13.py
@@ -330,77 +330,85 @@ BRICK SimpleSwitchRest13
   CONSUMES EventOFPPacketIn
   CONSUMES EventOFPSwitchFeatures
 BRICK ofp_event
-  PROVIDES EventOFPPacketIn TO {'SimpleSwitchRest13': set(['main'])}
-  PROVIDES EventOFPSwitchFeatures TO {'SimpleSwitchRest13': set(['config'])}
+  PROVIDES EventOFPPacketIn TO {&#39;SimpleSwitchRest13&#39;: set([&#39;main&#39;])}
+  PROVIDES EventOFPSwitchFeatures TO {&#39;SimpleSwitchRest13&#39;: set([&#39;config&#39;])}
   CONSUMES EventOFPErrorMsg
   CONSUMES EventOFPPortDescStatsReply
   CONSUMES EventOFPEchoRequest
   CONSUMES EventOFPSwitchFeatures
   CONSUMES EventOFPHello
 (31135) wsgi starting up on http://0.0.0.0:8080/
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x318c6d0&gt; address:('127.0.0.1', 48914)
+connected socket:&lt;eventlet.greenio.GreenSocket object at 0x318c6d0&gt; address:(&#39;127.0.0.1&#39;, 48914)
 hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x318cc10&gt;
 move onto config mode
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPSwitchFeatures
 switch features ev version: 0x4 msg_type 0x6 xid 0x78dd7a72 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
-move onto main mode</pre>
+move onto main mode
+</pre></div>
 </div>
 <p>起動時のメッセージの中に、「(31135) wsgi starting up on<a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>」という行がありますが、これは、Webサーバがポート番号8080で起動したことを表しています。</p>
 <p>次にmininetのシェル上で、h1からh2へpingを発行します。</p>
-<div class="console highlight-python"><pre>mininet&gt; h1 ping -c 1 h2
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.1 ms
 
 --- 10.0.0.2 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms</pre>
+rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms
+</pre></div>
 </div>
 <p>この時、Ryuへのパケットインは3回発生しています。</p>
-<div class="console highlight-python"><pre>EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
+<div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
 packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
 packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1</pre>
+packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
+</pre></div>
 </div>
 <p>ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。REST APIの呼び出しには、curlコマンドを使用します。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
-{"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}</pre>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
+</pre></div>
 </div>
 <p>h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。</p>
 <p>今度は、h1,h2の2台のホストをあらかじめMACアドレステーブルに格納し、pingを実行してみます。いったんスイッチングハブとMininetを停止します。次に、再度Mininetを起動し、OpenFlowバージョンをOpenFlow13に設定後、スイッチングハブを起動します。</p>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 (26759) wsgi starting up on http://0.0.0.0:8080/
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x2afe6d0&gt; address:('127.0.0.1', 48818)
+connected socket:&lt;eventlet.greenio.GreenSocket object at 0x2afe6d0&gt; address:(&#39;127.0.0.1&#39;, 48818)
 hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x2afec10&gt;
 move onto config mode
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPSwitchFeatures
 switch features ev version: 0x4 msg_type 0x6 xid 0x96681337 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
 switch_features_handler inside sub class
-move onto main mode</pre>
+move onto main mode
+</pre></div>
 </div>
 <p>次に、MACアドレステーブル更新用のREST APIを1ホストごとに呼び出します。REST APIを呼び出す際のデータ形式は、{&#8220;mac&#8221; : &#8220;MACアドレス&#8221;, &#8220;port&#8221; : 接続ポート番号}となるようにします。</p>
-<div class="console highlight-python"><pre>ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
-{"00:00:00:00:00:01": 1}
-ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
-{"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}</pre>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:01&quot;: 1}
+ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quot;, &quot;port&quot; : 2}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
+</pre></div>
 </div>
 <p>これらのコマンド実行の際に、h1,h2に対応したフローエントリがスイッチに登録されます。</p>
 <p>続いて、h1からh2へpingを実行します。</p>
-<div class="console highlight-python"><pre>mininet&gt; h1 ping -c 1 h2
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=4.62 ms
 
 --- 10.0.0.2 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 4.623/4.623/4.623/0.000 ms</pre>
+rtt min/avg/max/mdev = 4.623/4.623/4.623/0.000 ms
+</pre></div>
 </div>
-<div class="console highlight-python"><pre>...
+<div class="console highlight-python"><div class="highlight"><pre>...
 move onto main mode
-(28293) accepted ('127.0.0.1', 44453)
-127.0.0.1 - - [19/Nov/2013 19:59:45] "PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1" 200 124 0.002734
+(28293) accepted (&#39;127.0.0.1&#39;, 44453)
+127.0.0.1 - - [19/Nov/2013 19:59:45] &quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot; 200 124 0.002734
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1</pre>
+packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
+</pre></div>
 </div>
 <p>この時、スイッチにはすでにフローエントリが存在するため、パケットインはh1からh2へのARPリクエストの時だけ発生し、それ以降のパケットのやりとりについては発生していません。</p>
 </div>
@@ -474,8 +482,7 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1</pre>
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2013, Ryuプロジェクト.
-      このドキュメントは <a href="http://sphinx-doc.org/">Sphinx</a> 1.3a0 で生成しました。
+        &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
 </html>
