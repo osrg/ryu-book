@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Ryu book'
-copyright = u'2013, Ryuプロジェクト'
+copyright = u'2014, Ryuプロジェクト'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -338,7 +338,7 @@ texinfo_documents = [
 epub_title = u'RyuによるOpenFlowプログラミング'
 epub_author = u'Ryuプロジェクト'
 epub_publisher = u'Ryuプロジェクト'
-epub_copyright = u'2013, Ryuプロジェクト'
+epub_copyright = u'2014, Ryuプロジェクト'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
