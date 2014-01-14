@@ -23,7 +23,6 @@
 .. only:: epub
 
   .. image:: images/rest_router/fig1.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -464,7 +463,6 @@ switch: s3 (root):
 .. only:: epub
 
   .. image:: images/rest_router/fig2.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -512,7 +510,6 @@ host: h3:
 .. only:: epub
 
   .. image:: images/rest_router/fig3.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -736,7 +733,6 @@ MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向�
 .. only:: epub
 
   .. image:: images/rest_router/fig4.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -1100,7 +1096,6 @@ host: h2:
 .. only:: epub
 
   .. image:: images/rest_router/fig5.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -1684,7 +1679,6 @@ switch: s3 (root):
 .. only:: epub
 
   .. image:: images/rest_router/fig6.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -1756,7 +1750,6 @@ host: h2s3:
 .. only:: epub
 
   .. image:: images/rest_router/fig7.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -2241,7 +2234,6 @@ host: h2s1:
 .. only:: epub
 
   .. image:: images/rest_router/fig8.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub

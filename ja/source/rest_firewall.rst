@@ -24,7 +24,6 @@
 .. only:: epub
 
   .. image:: images/rest_firewall/fig1.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -605,7 +604,6 @@ Node: c0 (root):
 .. only:: epub
 
   .. image:: images/rest_firewall/fig2.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -803,7 +801,6 @@ Node: c0 (root):
 .. only:: epub
 
   .. image:: images/rest_firewall/fig3.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub
@@ -861,10 +858,9 @@ host: h2:
      :scale: 60%
      :align: center
 
-.. only:: lepub
+.. only:: epub
 
   .. image:: images/rest_firewall/fig4.png
-     :scale: 40%
      :align: center
 
 .. only:: not latex and not epub

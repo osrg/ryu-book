@@ -17,23 +17,19 @@
 
 .. only:: latex
 
-   +---------------------------------------------+---------------------------------------------+
-   | .. image:: images/link_aggregation/fig1.eps | .. image:: images/link_aggregation/fig2.eps |
-   +---------------------------------------------+---------------------------------------------+
+  .. image:: images/link_aggregation/fig1.eps
+     :align: center
 
 .. only:: epub
 
-   +---------------------------------------------+---------------------------------------------+
-   | .. image:: images/link_aggregation/fig1.png | .. image:: images/link_aggregation/fig2.png |
-   |    :scale: 17%                              |    :scale: 17%                              |
-   +---------------------------------------------+---------------------------------------------+
+  .. image:: images/link_aggregation/fig1.png
+     :align: center
 
 .. only:: not latex and not epub
 
-   +---------------------------------------------+---------------------------------------------+
-   | .. image:: images/link_aggregation/fig1.png | .. image:: images/link_aggregation/fig2.png |
-   |    :scale: 40%                              |    :scale: 40%                              |
-   +---------------------------------------------+---------------------------------------------+
+  .. image:: images/link_aggregation/fig1.png
+     :scale: 80%
+     :align: center
 
 リンク・アグリゲーション機能を使用するには、それぞれのネットワーク機器において、
 どのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく
@@ -88,19 +84,18 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     .. only:: latex
 
-       .. image:: images/link_aggregation/fig3.eps
+       .. image:: images/link_aggregation/fig2.eps
           :scale: 80 %
           :align: center
 
     .. only:: epub
 
-       .. image:: images/link_aggregation/fig3.png
-          :scale: 35 %
+       .. image:: images/link_aggregation/fig2.png
           :align: center
 
     .. only:: not latex and not epub
 
-       .. image:: images/link_aggregation/fig3.png
+       .. image:: images/link_aggregation/fig2.png
           :scale: 80 %
           :align: center
 
@@ -634,19 +629,18 @@ h4           1
 
     .. only:: latex
 
-       .. image:: images/link_aggregation/fig4.eps
+       .. image:: images/link_aggregation/fig3.eps
           :scale: 80 %
           :align: center
 
     .. only:: epub
 
-       .. image:: images/link_aggregation/fig4.png
-          :scale: 35 %
+       .. image:: images/link_aggregation/fig3.png
           :align: center
 
     .. only:: not latex and not epub
 
-       .. image:: images/link_aggregation/fig4.png
+       .. image:: images/link_aggregation/fig3.png
           :scale: 80 %
           :align: center
 
