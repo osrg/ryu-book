@@ -29,7 +29,7 @@
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig1.png
-     :scale: 60%
+     :scale: 30%
      :align: center
 
 
@@ -609,7 +609,7 @@ Node: c0 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig2.png
-     :scale: 60%
+     :scale: 30%
      :align: center
 
 実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通
@@ -806,7 +806,7 @@ Node: c0 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig3.png
-     :scale: 60%
+     :scale: 30%
      :align: center
 
 フローを確認すると、"rule_id:5"と"rule_id:6"に該当するフローエントリが削除
@@ -866,7 +866,7 @@ host: h2:
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig4.png
-     :scale: 60%
+     :scale: 30%
      :align: center
 
 
