@@ -18,6 +18,7 @@
 .. only:: latex
 
   .. image:: images/link_aggregation/fig1.eps
+     :scale: 80%
      :align: center
 
 .. only:: epub
@@ -28,7 +29,7 @@
 .. only:: not latex and not epub
 
   .. image:: images/link_aggregation/fig1.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 リンク・アグリゲーション機能を使用するには、それぞれのネットワーク機器において、
@@ -82,22 +83,22 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 ように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロ
 ジであるため、mnコマンドで作成することができません。
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/link_aggregation/fig2.eps
-          :scale: 80 %
-          :align: center
+   .. image:: images/link_aggregation/fig2.eps
+      :scale: 80%
+      :align: center
 
-    .. only:: epub
+.. only:: epub
 
-       .. image:: images/link_aggregation/fig2.png
-          :align: center
+   .. image:: images/link_aggregation/fig2.png
+      :align: center
 
-    .. only:: not latex and not epub
+.. only:: not latex and not epub
 
-       .. image:: images/link_aggregation/fig2.png
-          :scale: 80 %
-          :align: center
+   .. image:: images/link_aggregation/fig2.png
+      :scale: 40%
+      :align: center
 
 ここではMininetの低位クラスを直接使用するスクリプトを作成し、実験環境を構築
 することにします。
@@ -627,22 +628,22 @@ h3           2
 h4           1
 ============ ============
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/link_aggregation/fig3.eps
-          :scale: 80 %
-          :align: center
+   .. image:: images/link_aggregation/fig3.eps
+      :scale: 80%
+      :align: center
 
-    .. only:: epub
+.. only:: epub
 
-       .. image:: images/link_aggregation/fig3.png
-          :align: center
+   .. image:: images/link_aggregation/fig3.png
+      :align: center
 
-    .. only:: not latex and not epub
+.. only:: not latex and not epub
 
-       .. image:: images/link_aggregation/fig3.png
-          :scale: 80 %
-          :align: center
+   .. image:: images/link_aggregation/fig3.png
+      :scale: 40%
+      :align: center
 
 以上のように、フローが分散することが確認できました。
 

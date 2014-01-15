@@ -28,7 +28,7 @@
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig1.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 
@@ -468,7 +468,7 @@ switch: s3 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig2.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを
@@ -515,7 +515,7 @@ host: h3:
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig3.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 
@@ -738,7 +738,7 @@ MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向�
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig4.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 
@@ -1101,7 +1101,7 @@ host: h2:
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig5.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 環境構築
@@ -1684,7 +1684,7 @@ switch: s3 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig6.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを
@@ -1755,7 +1755,7 @@ host: h2s3:
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig7.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 
@@ -2239,7 +2239,7 @@ host: h2s1:
 .. only:: not latex and not epub
 
   .. image:: images/rest_router/fig8.png
-     :scale: 80%
+     :scale: 40%
      :align: center
 
 本章では、具体例を挙げながらルータの使用方法を説明しました。
