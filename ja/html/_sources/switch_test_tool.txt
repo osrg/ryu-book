@@ -282,11 +282,11 @@ Failed to request table stats: [err_msg]                   table-missの確認�
     ==================== ======================================== =====================
 
 
-    .. NOTE::
+.. NOTE::
 
-        テストツールはRyuアプリケーションとしてryu.base.app_manager.RyuAppを
-        継承して作成されているため、他のRyuアプリケーションと同様に--verbose
-        オプションによるデバッグ情報出力等にも対応しています。
+    テストツールはRyuアプリケーションとしてryu.base.app_manager.RyuAppを
+    継承して作成されているため、他のRyuアプリケーションと同様に--verbose
+    オプションによるデバッグ情報出力等にも対応しています。
 
 
 
@@ -353,7 +353,9 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     「Node: c0 (root)」のxtermから、テストツールを実行します。
     この際、テストパターンファイルのディレクトリとして、
     サンプルテストパターンのディレクトリ(ryu/tests/switch/of13)を指定します。
-
+    なお、mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ
+    --test-switch-target／--test-switch-testerオプションのデフォルト値と
+    なっているため、オプション指定を省略しています。
 
     Node: c0:
 
@@ -362,13 +364,6 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     ::
 
         root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
-
-
-    .. NOTE::
-
-        mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ
-        --test-switch-target／--test-switch-testerオプションのデフォルト値と
-        なっているため、オプション指定を省略しています。
 
 
     ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチが
@@ -631,7 +626,9 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     コントローラのxtermから、先ほど作成したオリジナルのテストパターンファイル
     を指定してテストツールを実行します。
-    
+    なお、--test-switch-dirオプションはディレクトリだけでなくファイルを直接
+    指定することも可能です。また、送受信パケットの内容を確認するため
+    --verboseオプションを指定しています。
 
 
     Node: c0:
@@ -643,19 +640,13 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 
 
-    .. NOTE::
-        --test-switch-dirオプションはディレクトリだけでなくファイルを直接
-        指定することも可能です。また、送受信パケットの内容を確認するため
-        --verboseオプションを指定しています。
-
-
     試験対象スイッチと補助スイッチがコントローラに接続されると、試験が
     開始されます。
 
     「dpid=0000000000000002 : receive_packet...」のログ出力から、テスト
     パターンファイルのegressパケットとして設定した、期待する出力パケット
     が送信されたことが分かります。
-
+    なお、ここではテストツールが出力したログのみを抜粋しています。
 
     .. rst-class:: console
 
@@ -684,12 +675,6 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         dpid=0000000000000002 : receive_packet[ethernet(dst='bb:bb:bb:bb:bb:bb',ethertype=2048,src='aa:aa:aa:aa:aa:aa'), ipv4(csum=53816,dst='192.168.30.10',flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src='192.168.10.10',tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option='\x00\x00\x00\x00',seq=0,src_port=11111,urgent=0,window_size=0), '\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f']
             static routing table                            OK
         ---  Test end  ---
-
-
-    .. ATTENTION::
-
-        テストツールが出力したログのみを抜粋しています。
-
 
 
     実際にOpenFlowスイッチに登録されたフローエントリは以下の通りです。
