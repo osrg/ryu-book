@@ -58,8 +58,7 @@
 <p>スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの冗長性確保の手段としても用いられます。</p>
 <p>スパニングツリーにはSTP、RSTP、PVST+、MSTPなど様々な種別がありますが、本章では最も基本的なSTPの実装を見ていきます。</p>
 <p>STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツリーとして扱い、各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。</p>
-<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" style="width: 550.2px; height: 363.0px;" /></a>
-<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 550.2px; height: 362.4px;" /></a>
+<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" style="width: 777.2px; height: 294.4px;" /></a>
 <p>STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換しブリッジや各ポートの情報を比較することで、論理ツリーの頂点であるルートブリッジを決定し、さらに各ブリッジのポートのフレーム転送可否を決定します。</p>
 <p>具体的には、次のような手順により実現されます。</p>
 <ol class="arabic">
@@ -112,14 +111,16 @@
 </div></blockquote>
 </li>
 </ul>
-<a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" src="_images/fig33.png" style="width: 596.05px; height: 416.0px;" /></a>
+</div></blockquote>
+</li>
+</ol>
+<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 517.8px; height: 352.2px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p>ルートブリッジに至るまでのコストは、各ポートが受信したBPDUパケットの設定値から次のように比較されます。</p>
 <p>優先1：root path cost値による比較。</p>
 <blockquote>
-<div><p>各ブリッジはBPDUパケットを転送する際に、出力ポートに設定されたpath cost値をBPDUパケットのroot path cost値に加算します。これによりroot path cost値はルートブリッジに到達するまでに経由する各リンクのpath cost値の合計の値となります。</p>
-</div></blockquote>
+<div>各ブリッジはBPDUパケットを転送する際に、出力ポートに設定されたpath cost値をBPDUパケットのroot path cost値に加算します。これによりroot path cost値はルートブリッジに到達するまでに経由する各リンクのpath cost値の合計の値となります。</div></blockquote>
 <p>優先2：root path cost値が同じ場合、対向ブリッジのブリッジIDにより比較。</p>
 <p>優先3：対向ブリッジのブリッジIDが同じ場合(各ポートが同一ブリッジに接続しているケース)、対向ポートのポートIDにより比較</p>
 <blockquote>
@@ -143,43 +144,10 @@
 </div></blockquote>
 <p class="last">ポートのpath cost値やポートpriorityは、RyuのSTPライブラリではコンフィグ設定により変更が可能です。</p>
 </div>
-</div></blockquote>
-</li>
+<ol class="arabic" start="3">
 <li><p class="first">ポートの状態遷移</p>
 <blockquote>
 <div><p>ポート役割の決定後(STP計算の完了時)、各ポートはLISTEN状態になります。その後、以下に示す状態遷移を行い、最終的に各ポートの役割に従ってFORWARD状態またはBLOCK状態に遷移します。コンフィグで無効ポートと設定されたポートはDISABLE状態となり、以降、状態遷移は行われません。</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" src="_images/fig42.png" style="width: 349.2px; height: 547.8px;" /></a>
-</div></blockquote>
-<p>各ポートは状態に応じてフレーム転送有無などの動作を決定します。</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="13%" />
-<col width="87%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">状態</th>
-<th class="head">動作</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>DISABLE</td>
-<td>無効ポート。全ての受信パケットを無視します。</td>
-</tr>
-<tr class="row-odd"><td>BLOCK</td>
-<td>BPDU受信のみ を行います。</td>
-</tr>
-<tr class="row-even"><td>LISTEN</td>
-<td>BPDU送受信 を行います。</td>
-</tr>
-<tr class="row-odd"><td>LEARN</td>
-<td>BPDU送受信／MAC学習 を行います。</td>
-</tr>
-<tr class="row-even"><td>FORWARD</td>
-<td>BPDU送受信／MAC学習／フレーム転送 を行います。</td>
-</tr>
-</tbody>
-</table>
 </div></blockquote>
 </li>
 </ol>
@@ -398,9 +366,7 @@
 </pre></div>
 </div>
 <p>VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" src="_images/fig51.png" style="width: 641.9px; height: 425.6px;" /></a>
-</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" style="width: 528.0px; height: 349.8px;" /></a>
 <p>netコマンドの実行結果は以下の通りです。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -537,9 +503,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/fig61.png"><img alt="_images/fig61.png" src="_images/fig61.png" style="width: 641.9px; height: 425.6px;" /></a>
-</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" class="align-center" src="_images/fig51.png" style="width: 523.5px; height: 346.8px;" /></a>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
 <p>Node: s1:</p>
@@ -660,9 +624,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 <p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" src="_images/fig71.png" style="width: 641.9px; height: 425.6px;" /></a>
-</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig61.png"><img alt="_images/fig61.png" class="align-center" src="_images/fig61.png" style="width: 520.5px; height: 345.0px;" /></a>
 </div>
 <div class="section" id="id5">
 <h4>故障回復時のSTP再計算<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -723,9 +685,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 <p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
-<blockquote>
-<div><a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" src="_images/fig81.png" style="width: 641.9px; height: 425.6px;" /></a>
-</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" class="align-center" src="_images/fig71.png" style="width: 520.8px; height: 345.0px;" /></a>
 </div>
 </div>
 </div>
@@ -817,7 +777,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <h3>ライブラリの実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<a class="reference internal image-reference" href="_images/fig9.png"><img alt="_images/fig9.png" class="align-center" src="_images/fig9.png" style="width: 714.4px; height: 577.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" class="align-center" src="_images/fig81.png" style="width: 592.8px; height: 471.6px;" /></a>
 <p>STPライブラリ(Stpクラスインスタンス)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスインスタンス・Portクラスインスタンスが生成されます。各クラスインスタンスが生成・起動された後は、StpクラスインスタンスからのOpenFlowメッセージ受信通知、BridgeクラスインスタンスのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスインスタンスのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">

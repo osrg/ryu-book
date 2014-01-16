@@ -23,21 +23,21 @@ STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツ
 各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、
 ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。
 
+
 .. only:: latex
 
-   +------------------------------------------+------------------------------------------+
-   | .. image:: images/spanning_tree/fig1.eps | .. image:: images/spanning_tree/fig2.eps |
-   +------------------------------------------+------------------------------------------+
-
-.. only:: not latex
-
-    .. image:: images/spanning_tree/fig1.png
-        :scale: 60 %
+    .. image:: images/spanning_tree/fig1.eps
         :align: center
 
+.. only:: epub
 
-    .. image:: images/spanning_tree/fig2.png
-        :scale: 60 %
+    .. image:: images/spanning_tree/fig1.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig1.png
+        :scale: 40 %
         :align: center
 
 
@@ -94,15 +94,21 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 
 
-    .. only:: latex
+        .. only:: latex
 
-        .. image:: images/spanning_tree/fig3.eps
-            :scale: 75 %
+            .. image:: images/spanning_tree/fig2.eps
+                :scale: 80 %
 
-    .. only:: not latex
+.. only:: epub
 
-        .. image:: images/spanning_tree/fig3.png
-            :scale: 65 %
+    .. image:: images/spanning_tree/fig2.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig2.png
+        :align: center
+        :scale: 30 %
 
 
 
@@ -144,16 +150,21 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 
 
-            .. only:: latex
+.. only:: latex
 
-               .. image:: images/spanning_tree/fig4.eps
-                  :scale: 50 %
+   .. image:: images/spanning_tree/fig3.eps
+        :align: center
 
+.. only:: epub
 
-            .. only:: not latex
+    .. image:: images/spanning_tree/fig3.png
+        :align: center
 
-               .. image:: images/spanning_tree/fig4.png
-                  :scale: 60 %
+.. only:: not latex and not epub
+
+   .. image:: images/spanning_tree/fig3.png
+        :align: center
+        :scale: 30 %
 
 
     各ポートは状態に応じてフレーム転送有無などの動作を決定します。
@@ -227,16 +238,22 @@ VM環境でこのプログラムを実行することにより、スイッチs1�
 
 
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/spanning_tree/fig5.eps
-          :scale: 80 %
+    .. image:: images/spanning_tree/fig4.eps
+        :scale: 70 %
+        :align: center
 
+.. only:: epub
 
-    .. only:: not latex
+    .. image:: images/spanning_tree/fig4.png
+        :align: center
 
-       .. image:: images/spanning_tree/fig5.png
-          :scale: 70 %
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig4.png
+        :align: center
+        :scale: 30 %
 
 
 
@@ -421,16 +438,22 @@ OpenFlowスイッチ起動時のSTP計算
 
 
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/spanning_tree/fig6.eps
-          :scale: 80 %
+    .. image:: images/spanning_tree/fig5.eps
+        :scale: 70 %
+        :align: center
 
+.. only:: epub
 
-    .. only:: not latex
+    .. image:: images/spanning_tree/fig5.png
+        :align: center
 
-       .. image:: images/spanning_tree/fig6.png
-          :scale: 70 %
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig5.png
+        :align: center
+        :scale: 30 %
 
 
 
@@ -621,16 +644,22 @@ Node: s2:
 再びフレーム転送可能な状態となったことが確認できます。
 
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/spanning_tree/fig7.eps
-          :scale: 80 %
+    .. image:: images/spanning_tree/fig6.eps
+        :scale: 70 %
+        :align: center
 
+.. only:: epub
 
-    .. only:: not latex
+    .. image:: images/spanning_tree/fig6.png
+        :align: center
 
-       .. image:: images/spanning_tree/fig7.png
-          :scale: 70 %
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig6.png
+        :align: center
+        :scale: 30 %
 
 
 
@@ -712,16 +741,22 @@ OpenFlowスイッチの初回起動時と同様のツリー構成となり、再
 な状態となったことが確認できます。
 
 
-    .. only:: latex
+.. only:: latex
 
-       .. image:: images/spanning_tree/fig8.eps
-          :scale: 80 %
+    .. image:: images/spanning_tree/fig7.eps
+        :scale: 70 %
+        :align: center
 
+.. only:: epub
 
-    .. only:: not latex
+    .. image:: images/spanning_tree/fig7.png
+        :align: center
 
-       .. image:: images/spanning_tree/fig8.png
-          :scale: 70 %
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig7.png
+        :align: center
+        :scale: 30 %
 
 
 
@@ -814,16 +849,20 @@ simple_switch_stp.pyはスパニングツリーライブラリを適用するこ
 
 .. only:: latex
 
-   .. image:: images/spanning_tree/fig9.eps
-      :scale: 80 %
-      :align: center
+    .. image:: images/spanning_tree/fig8.eps
+        :scale: 80 %
+        :align: center
 
+.. only:: epub
 
-.. only:: not latex
+    .. image:: images/spanning_tree/fig8.png
+        :align: center
 
-   .. image:: images/spanning_tree/fig9.png
-      :scale: 80 %
-      :align: center
+.. only:: not latex and not epub
+
+    .. image:: images/spanning_tree/fig8.png
+        :scale: 40 %
+        :align: center
 
 
 
