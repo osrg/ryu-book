@@ -44,16 +44,21 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 ( `ツール実行環境`_ を参照)します。
 
 
-    .. only:: latex
+.. only:: latex
 
-        .. image:: images/switch_test_tool/fig1.eps
-            :align: center
+    .. image:: images/switch_test_tool/fig1.eps
+        :align: center
 
-    .. only:: not latex
+.. only:: epub
 
-        .. image:: images/switch_test_tool/fig1.png
-            :align: center
+    .. image:: images/switch_test_tool/fig1.png
+        :align: center
 
+.. only:: not latex and not epub
+
+    .. image:: images/switch_test_tool/fig1.png
+        :scale: 40 %
+        :align: center
 
 
 試験結果の出力イメージ
@@ -205,17 +210,21 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 テストツール実行のための環境を構築する必要があります。
 
 
-    .. only:: latex
+.. only:: latex
 
-        .. image:: images/switch_test_tool/fig2.eps
-            :scale: 80 %
-            :align: center
+    .. image:: images/switch_test_tool/fig2.eps
+        :align: center
 
-    .. only:: not latex
+.. only:: epub
 
-        .. image:: images/switch_test_tool/fig2.png
-            :scale: 80 %
-            :align: center
+    .. image:: images/switch_test_tool/fig2.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/switch_test_tool/fig2.png
+        :scale: 40 %
+        :align: center
 
 
 補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。
