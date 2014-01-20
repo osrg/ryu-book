@@ -37,7 +37,7 @@ STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツ
 .. only:: not latex and not epub
 
     .. image:: images/spanning_tree/fig1.png
-        :scale: 40 %
+        :scale: 50 %
         :align: center
 
 
@@ -108,7 +108,7 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
     .. image:: images/spanning_tree/fig2.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
 
@@ -149,7 +149,6 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
     されたポートはDISABLE状態となり、以降、状態遷移は行われません。
 
 
-
 .. only:: latex
 
    .. image:: images/spanning_tree/fig3.eps
@@ -162,9 +161,9 @@ STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互�
 
 .. only:: not latex and not epub
 
-   .. image:: images/spanning_tree/fig3.png
+    .. image:: images/spanning_tree/fig3.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
     各ポートは状態に応じてフレーム転送有無などの動作を決定します。
@@ -253,7 +252,7 @@ VM環境でこのプログラムを実行することにより、スイッチs1�
 
     .. image:: images/spanning_tree/fig4.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
 
@@ -453,7 +452,7 @@ OpenFlowスイッチ起動時のSTP計算
 
     .. image:: images/spanning_tree/fig5.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
 
@@ -659,7 +658,7 @@ Node: s2:
 
     .. image:: images/spanning_tree/fig6.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
 
@@ -756,7 +755,7 @@ OpenFlowスイッチの初回起動時と同様のツリー構成となり、再
 
     .. image:: images/spanning_tree/fig7.png
         :align: center
-        :scale: 30 %
+        :scale: 50 %
 
 
 
