@@ -18,7 +18,7 @@
 .. only:: latex
 
   .. image:: images/rest_firewall/fig1.eps
-     :scale: 60%
+     :scale: 80%
      :align: center
 
 .. only:: epub
@@ -29,7 +29,7 @@
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig1.png
-     :scale: 30%
+     :scale: 40%
      :align: center
 
 
@@ -81,11 +81,6 @@ switch: s1 (root):
 ::
 
     root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.4以降をご利用ください。
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 
@@ -598,7 +593,7 @@ Node: c0 (root):
 .. only:: latex
 
   .. image:: images/rest_firewall/fig2.eps
-     :scale: 60%
+     :scale: 80%
      :align: center
 
 .. only:: epub
@@ -609,7 +604,7 @@ Node: c0 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig2.png
-     :scale: 30%
+     :scale: 40%
      :align: center
 
 実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通
@@ -795,7 +790,7 @@ Node: c0 (root):
 .. only:: latex
 
   .. image:: images/rest_firewall/fig3.eps
-     :scale: 60%
+     :scale: 80%
      :align: center
 
 .. only:: epub
@@ -806,7 +801,7 @@ Node: c0 (root):
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig3.png
-     :scale: 30%
+     :scale: 40%
      :align: center
 
 フローを確認すると、"rule_id:5"と"rule_id:6"に該当するフローエントリが削除
@@ -855,7 +850,7 @@ host: h2:
 .. only:: latex
 
   .. image:: images/rest_firewall/fig4.eps
-     :scale: 60%
+     :scale: 80%
      :align: center
 
 .. only:: epub
@@ -866,7 +861,7 @@ host: h2:
 .. only:: not latex and not epub
 
   .. image:: images/rest_firewall/fig4.png
-     :scale: 30%
+     :scale: 40%
      :align: center
 
 
@@ -957,11 +952,6 @@ switch: s1 (root):
 ::
 
     root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.4以降をご利用ください。
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 

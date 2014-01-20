@@ -109,11 +109,6 @@ switch: s3 (root):
 
     root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
 
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_router.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.3以降をご利用ください。
-
 その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPア
 ドレスを設定します。
 
@@ -1148,10 +1143,6 @@ x            なし         xtermを起動する
     *** Starting CLI:
     mininet>
 
-.. ATTENTION::
-
-    リニアトポロジでのホスト台数はMininet 2.1.0以降で指定可能です。
-
 また、コントローラ用のxtermをもうひとつ起動しておきます。
 
 .. rst-class:: console
@@ -1186,11 +1177,6 @@ switch: s3 (root):
 ::
 
     root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
-
-.. ATTENTION::
-
-    Ryu3.2に含まれているrest_router.pyはOpenFlow1.3以降に対応していませ
-    ん。Ryu3.3以降をご利用ください。
 
 その後、各ホストのインターフェースに VLAN ID を設定し、新たにIPアドレスを設
 定します。
