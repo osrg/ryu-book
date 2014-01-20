@@ -28,8 +28,8 @@
     <link rel="next" title="REST API" href="rest_api.html" />
     <link rel="prev" title="トラフィックモニター" href="traffic_monitor.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -48,7 +48,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-link-aggregation">
 <span id="id1"></span><h1>リンク・アグリゲーションの実装<a class="headerlink" href="#ch-link-aggregation" title="このヘッドラインへのパーマリンク">¶</a></h1>
@@ -56,7 +56,7 @@
 <div class="section" id="id2">
 <h2>リンク・アグリゲーション<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>リンク・アグリゲーションは、IEEE802.1AX-2008で規定されている、複数の物理的な回線を束ねてひとつの論理的なリンクとして扱う技術です。リンク・アグリゲーション機能により、特定のネットワーク機器間の通信速度を向上させることができ、また同時に、冗長性を確保することで耐障害性を向上させることができます。</p>
-<a class="reference internal image-reference" href="_images/fig11.png"><img alt="_images/fig11.png" class="align-center" src="_images/fig11.png" style="width: 706.0px; height: 242.0px;" /></a>
+<a class="reference internal image-reference" href="_images/fig11.png"><img alt="_images/fig11.png" class="align-center" src="_images/fig11.png" style="width: 320.0px; height: 140.0px;" /></a>
 <p>リンク・アグリゲーション機能を使用するには、それぞれのネットワーク機器において、どのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。</p>
 <p>リンク・アグリゲーション機能を開始する方法には、それぞれのネットワーク機器に対し直接指示を行うスタティックな方法と、LACP(Link Aggregation Control Protocol)というプロトコルを使用することによって動的に開始させるダイナミックな方法があります。</p>
 <p>ダイナミックな方法を採用した場合、各ネットワーク機器は対向インターフェース同士でLACPデータユニットを定期的に交換することにより、疎通不可能になっていないことをお互いに確認し続けます。LACPデータユニットの交換が途絶えた場合、故障が発生したものとみなされ、当該ネットワーク機器は使用不可能となり、パケットの送受信は残りのインターフェースによってのみ行われるようになります。この方法には、ネットワーク機器間にメディアコンバータなどの中継装置が存在した場合にも、中継装置の向こう側のリンクダウンを検知することができるというメリットがあります。本章では、LACPを用いたダイナミックなリンク・アグリゲーション機能を取り扱います。</p>
@@ -207,7 +207,7 @@
 <p>リンク・アグリゲーション・アプリケーションの動作確認を行う実験環境を構築します。</p>
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
 <p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロジであるため、mnコマンドで作成することができません。</p>
-<a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 645.2px; height: 566.4px;" /></a>
+<a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 330.8px; height: 258.4px;" /></a>
 <p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、実験環境を構築することにします。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
@@ -399,10 +399,6 @@ Slave queue ID: 0
 <div class="section" id="id4">
 <h3>スイッチングハブの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>準備が整ったので、冒頭で作成したRyuアプリケーションを実行します。</p>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">本Ryuアプリケーションはライブラリとしてlacplib.pyを使用しますが、Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
-</div>
 <p>ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンドを実行します。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
@@ -617,7 +613,7 @@ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_po
 </tr>
 </tbody>
 </table>
-<a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 710.4px; height: 657.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 328.8px; height: 294.0px;" /></a>
 <p>以上のように、フローが分散することが確認できました。</p>
 </div>
 <div class="section" id="id7">
@@ -829,10 +825,6 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p class="last">前述のとおり、simple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを元にアプリケーションの詳細を説明します。</p>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているlacplib.pyには不具合があります。Ryu3.3以降をご利用ください。</p>
 </div>
 <div class="section" id="lacp">
 <h3>LACPライブラリの実装<a class="headerlink" href="#lacp" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -1196,7 +1188,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -1243,12 +1235,14 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="rest_api.html"
                         title="次の章へ">REST API</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/link_aggregation.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/link_aggregation.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -1265,7 +1259,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1280,7 +1274,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>

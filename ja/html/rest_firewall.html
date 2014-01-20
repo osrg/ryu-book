@@ -28,8 +28,8 @@
     <link rel="next" title="ルータの使用例" href="rest_router.html" />
     <link rel="prev" title="Ryuアーキテクチャ" href="arch.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -48,7 +48,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-rest-firewall">
 <span id="id1"></span><h1>ファイアウォールの使用例<a class="headerlink" href="#ch-rest-firewall" title="このヘッドラインへのパーマリンク">¶</a></h1>
@@ -56,7 +56,7 @@
 <div class="section" id="id2">
 <h2>シングルテナントでの動作例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」で作成した環境を使用して、VLANによるテナント分けのされていない以下のようなトポロジを作成し、スイッチs1に対してルールの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
-<a class="reference internal image-reference" href="_images/fig12.png"><img alt="_images/fig12.png" class="align-center" src="_images/fig12.png" style="width: 475.8px; height: 413.4px;" /></a>
+<a class="reference internal image-reference" href="_images/fig12.png"><img alt="_images/fig12.png" class="align-center" src="_images/fig12.png" style="width: 405.6px; height: 295.2px;" /></a>
 <div class="section" id="id3">
 <h3>環境構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>まずはMininet上に環境を構築します。入力するコマンドは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様です。</p>
@@ -90,10 +90,6 @@ mininet&gt;
 <p>switch: s1 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 </pre></div>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していません。Ryu3.4以降をご利用ください。</p>
 </div>
 <p>最後に、コントローラのxterm上でrest_firewallを起動させます。</p>
 <p>controller: c0 (root):</p>
@@ -623,7 +619,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tbody>
 </table>
 <p>設定したルールを図示すると以下のようになります。</p>
-<a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 475.8px; height: 413.4px;" /></a>
+<a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 405.2px; height: 295.2px;" /></a>
 <p>実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通できることがわかります。</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
@@ -799,7 +795,7 @@ root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; 
 </tbody>
 </table>
 <p>現在のルールを図示すると以下のようになります。</p>
-<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 475.8px; height: 413.4px;" /></a>
+<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 405.6px; height: 295.6px;" /></a>
 <p>フローを確認すると、&#8221;rule_id:5&#8221;と&#8221;rule_id:6&#8221;に該当するフローエントリが削除されていることがわかります。</p>
 <p>switch: s1 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
@@ -828,7 +824,7 @@ PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
 <div class="section" id="id10">
 <h2>マルチテナントでの動作例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>続いて、VLANによるテナント分けが行われている以下のようなトポロジを作成し、スイッチs1に対してルールの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
-<a class="reference internal image-reference" href="_images/fig4.png"><img alt="_images/fig4.png" class="align-center" src="_images/fig4.png" style="width: 479.4px; height: 430.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig4.png"><img alt="_images/fig4.png" class="align-center" src="_images/fig4.png" style="width: 399.6px; height: 355.6px;" /></a>
 <div class="section" id="id11">
 <h3>環境構築<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>シングルテナントでの例と同様、Mininet上に環境を構築し、コントローラ用のxtermをもうひとつ起動しておきます。使用するホストがひとつ増えていることにご注意ください。</p>
@@ -887,10 +883,6 @@ root@ryu-vm:~# ip link set dev h4-eth0.110 up
 <p>switch: s1 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 </pre></div>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているrest_firewall.pyはOpenFlow1.3以降に対応していません。Ryu3.4以降をご利用ください。</p>
 </div>
 <p>最後に、コントローラのxterm上でrest_firewallを起動させます。</p>
 <p>controller: c0 (root):</p>
@@ -1274,7 +1266,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -1316,12 +1308,14 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="rest_router.html"
                         title="次の章へ">ルータの使用例</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/rest_firewall.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rest_firewall.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -1338,7 +1332,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1353,7 +1347,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>

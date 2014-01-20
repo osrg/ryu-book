@@ -28,8 +28,8 @@
     <link rel="next" title="OpenFlowスイッチテストツール" href="switch_test_tool.html" />
     <link rel="prev" title="ファイアウォールの使用例" href="rest_firewall.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -48,7 +48,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-rest-router">
 <span id="id1"></span><h1>ルータの使用例<a class="headerlink" href="#ch-rest-router" title="このヘッドラインへのパーマリンク">¶</a></h1>
@@ -56,7 +56,7 @@
 <div class="section" id="id2">
 <h2>シングルテナントでの動作例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>まず、VLANによるテナント分けのされていない以下のようなトポロジを作成し、各スイッチ(ルータ)に対してアドレスやルートの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
-<a class="reference internal image-reference" href="_images/fig13.png"><img alt="_images/fig13.png" class="align-center" src="_images/fig13.png" style="width: 681.2px; height: 571.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig13.png"><img alt="_images/fig13.png" class="align-center" src="_images/fig13.png" style="width: 401.2px; height: 248.0px;" /></a>
 <div class="section" id="id3">
 <h3>環境構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
@@ -134,10 +134,6 @@ mininet&gt;
 <p>switch: s3 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
 </pre></div>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているrest_router.pyはOpenFlow1.3以降に対応していません。Ryu3.3以降をご利用ください。</p>
 </div>
 <p>その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPアドレスを設定します。</p>
 <p>host: h1:</p>
@@ -385,7 +381,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </pre></div>
 </div>
 <p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 656.4px; height: 571.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 404.0px; height: 304.4px;" /></a>
 <p>各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブネットが等しいものをデフォルトゲートウェイとして設定します。</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
@@ -400,7 +396,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </pre></div>
 </div>
 <p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 792.4px; height: 549.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 402.4px; height: 308.8px;" /></a>
 </div>
 <div class="section" id="id5">
 <h3>デフォルトルートの設定<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -549,7 +545,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 <p>その内容は「宛先IPアドレスが192.168.30.0/24であれば、TTLを減らし、送信元MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」というものです。</p>
 <p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" style="width: 777.2px; height: 560.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" style="width: 410.4px; height: 288.0px;" /></a>
 </div>
 <div class="section" id="id7">
 <h3>設定内容の確認<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -824,7 +820,7 @@ PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
 <div class="section" id="id10">
 <h2>マルチテナントでの動作例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>続いて、VLANによるテナント分けが行われている以下のようなトポロジを作成し、各スイッチ(ルータ)に対してアドレスやルートの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
-<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" class="align-center" src="_images/fig5.png" style="width: 778.8px; height: 582.0px;" /></a>
+<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" class="align-center" src="_images/fig5.png" style="width: 499.2px; height: 319.6px;" /></a>
 <div class="section" id="id11">
 <h3>環境構築<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
@@ -886,10 +882,6 @@ s1 s2 s3
 mininet&gt;
 </pre></div>
 </div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">リニアトポロジでのホスト台数はMininet 2.1.0以降で指定可能です。</p>
-</div>
 <p>また、コントローラ用のxtermをもうひとつ起動しておきます。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
 mininet&gt;
@@ -907,10 +899,6 @@ mininet&gt;
 <p>switch: s3 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
 </pre></div>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">注意</p>
-<p class="last">Ryu3.2に含まれているrest_router.pyはOpenFlow1.3以降に対応していません。Ryu3.3以降をご利用ください。</p>
 </div>
 <p>その後、各ホストのインターフェースに VLAN ID を設定し、新たにIPアドレスを設定します。</p>
 <p>host: h1s1:</p>
@@ -1282,7 +1270,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </pre></div>
 </div>
 <p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" style="width: 726.4px; height: 582.0px;" /></a>
+<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" style="width: 488.8px; height: 378.0px;" /></a>
 <p>各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブネットが等しいものをデフォルトゲートウェイとして設定します。</p>
 <p>host: h1s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
@@ -1309,7 +1297,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </pre></div>
 </div>
 <p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" style="width: 784.8px; height: 592.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" style="width: 480.0px; height: 347.6px;" /></a>
 </div>
 <div class="section" id="id13">
 <h3>デフォルトルートと静的ルートの設定<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -1750,7 +1738,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
 8 packets transmitted, 0 received, 100% packet loss, time 7009ms
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" style="width: 784.8px; height: 592.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" style="width: 480.0px; height: 347.6px;" /></a>
 <p>本章では、具体例を挙げながらルータの使用方法を説明しました。</p>
 </div>
 </div>
@@ -1921,7 +1909,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -1962,12 +1950,14 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="switch_test_tool.html"
                         title="次の章へ">OpenFlowスイッチテストツール</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/rest_router.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rest_router.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
@@ -1984,7 +1974,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1999,7 +1989,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, Ryuプロジェクト.
     </div>
   </body>
