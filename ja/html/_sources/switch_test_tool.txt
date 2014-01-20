@@ -57,7 +57,7 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 .. only:: not latex and not epub
 
     .. image:: images/switch_test_tool/fig1.png
-        :scale: 40 %
+        :scale: 60 %
         :align: center
 
 
@@ -223,7 +223,7 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 .. only:: not latex and not epub
 
     .. image:: images/switch_test_tool/fig2.png
-        :scale: 40 %
+        :scale: 60 %
         :align: center
 
 
