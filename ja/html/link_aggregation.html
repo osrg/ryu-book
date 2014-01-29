@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>リンク・アグリゲーションの実装 &mdash; Ryu book 0.1 ドキュメント</title>
+    <title>リンク・アグリゲーション &mdash; Ryu book 0.1 ドキュメント</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
-    <link rel="next" title="スパニングツリーの実装" href="spanning_tree.html" />
-    <link rel="prev" title="REST API" href="rest_api.html" /> 
+    <link rel="next" title="スパニングツリー" href="spanning_tree.html" />
+    <link rel="prev" title="REST連携" href="rest_api.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,10 +36,10 @@
           <a href="genindex.html" title="総合索引"
              accesskey="I">索引</a></li>
         <li class="right" >
-          <a href="spanning_tree.html" title="スパニングツリーの実装"
+          <a href="spanning_tree.html" title="スパニングツリー"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
-          <a href="rest_api.html" title="REST API"
+          <a href="rest_api.html" title="REST連携"
              accesskey="P">前へ</a> |</li>
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
@@ -51,7 +51,7 @@
           <div class="body" role="main">
             
   <div class="section" id="ch-link-aggregation">
-<span id="id1"></span><h1>リンク・アグリゲーションの実装<a class="headerlink" href="#ch-link-aggregation" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<span id="id1"></span><h1>リンク・アグリゲーション<a class="headerlink" href="#ch-link-aggregation" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>本章では、Ryuを用いたリンク・アグリゲーション機能の実装方法を解説していきます。</p>
 <div class="section" id="id2">
 <h2>リンク・アグリゲーション<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
@@ -64,7 +64,7 @@
 <div class="section" id="ryu">
 <h2>Ryuアプリケーションの実行<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>ソースの説明は後回しにして、まずはRyuのリンク・アグリゲーション・アプリケーションを実行してみます。</p>
-<p>Ryuのソースツリーに用意されているsimple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにリンク・アグリゲーション機能を追加したアプリケーションです。</p>
+<p>Ryuのソースツリーに用意されているsimple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにリンク・アグリゲーション機能を追加したアプリケーションです。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
@@ -190,8 +190,8 @@
 <div class="section" id="id3">
 <h3>実験環境の構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>リンク・アグリゲーション・アプリケーションの動作確認を行う実験環境を構築します。</p>
-<p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」を参照してください。</p>
-<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行しますが、下図のように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロジであるため、mnコマンドで作成することができません。</p>
+<p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
+<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行しますが、下図のように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロジであるため、mnコマンドで作成することができません。</p>
 <a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 330.8px; height: 258.4px;" /></a>
 <p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、実験環境を構築することにします。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
@@ -375,7 +375,7 @@ Slave queue ID: 0
 </div>
 <div class="section" id="openflow">
 <h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」で行ったのと同じように、使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行ってください。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で行ったのと同じように、使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行ってください。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 </pre></div>
@@ -462,7 +462,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <ul class="simple">
 <li>h1のh1-eth1(入力ポートがs1-eth2でMACアドレスが00:00:00:00:00:12)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
 <li>h1のh1-eth0(入力ポートがs1-eth1でMACアドレスが00:00:00:00:00:11)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
-<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」でも登録しているTable-missフローエントリ</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」でも登録しているTable-missフローエントリ</li>
 </ul>
 <p>の3つのフローエントリが登録されていることがわかります。</p>
 </div>
@@ -666,9 +666,9 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <li>LACPデータユニットを受信したら応答を作成して送信する</li>
 <li>LACPデータユニットが一定時間受信できなかったら当該物理インターフェースを使用するフローエントリを削除し、以降そのインターフェースを使用するフローエントリを登録しない</li>
 <li>無効とされた物理インターフェースでLACPデータユニットを受信した場合、当該インターフェースを再度有効化する</li>
-<li>LACPデータユニット以外のパケットは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブ機能で学習・転送する</li>
+<li>LACPデータユニット以外のパケットは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブ機能で学習・転送する</li>
 </ul>
-<p>という処理を実装すれば、リンク・アグリゲーションの基本的な動作が可能となります。LACPに関わる部分とそうでない部分が明確に分かれているので、LACPに関わる部分をLACPライブラリとして切り出し、そうでない部分は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブを拡張するかたちで実装します。</p>
+<p>という処理を実装すれば、リンク・アグリゲーションの基本的な動作が可能となります。LACPに関わる部分とそうでない部分が明確に分かれているので、LACPに関わる部分をLACPライブラリとして切り出し、そうでない部分は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブを拡張するかたちで実装します。</p>
 <p>LACPデータユニット受信時の応答作成・送信はフローエントリだけでは実現不可能であるため、Packet-Inメッセージを使用してOpenFlowコントローラ側で処理を行います。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
@@ -788,7 +788,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <p class="first admonition-title">ノート</p>
 <p class="last">振り分けロジックについては仕様で定められておらず、各機器の実装に委ねられています。Ryuのリンク・アグリゲーション・アプリケーションでは独自の振り分け処理を行わず、対向装置によって振り分けられた経路を使用するものとします。</p>
 </div>
-<p>LACPデータユニット以外のフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブ機能で登録しているため、それらのフローエントリを削除するのもスイッチングハブで行うべきです。</p>
+<p>LACPデータユニット以外のフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブ機能で登録しているため、それらのフローエントリを削除するのもスイッチングハブで行うべきです。</p>
 <p>以上のことを整理すると、リンク・アグリゲーション機能として実装すべき項目は</p>
 <p><strong>LACPライブラリ</strong></p>
 <ul class="simple">
@@ -844,7 +844,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 <div class="section" id="packet-in">
 <h4>Packet-In処理<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブは、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば専用の動作を行い、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理分岐を行い、スイッチングハブにLACPデータユニットを処理させないようにします。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブは、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば専用の動作を行い、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理分岐を行い、スイッチングハブにLACPデータユニットを処理させないようにします。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
@@ -858,9 +858,9 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
         <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>イベントハンドラ自体は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様です。受信したメッセージにLACPデータユニットが含まれているかどうかで処理を分岐させています。</p>
+<p>イベントハンドラ自体は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様です。受信したメッセージにLACPデータユニットが含まれているかどうかで処理を分岐させています。</p>
 <p>LACPデータユニットが含まれていた場合はLACPライブラリのLACPデータユニット受信処理を行います。LACPデータユニットが含まれていなかった場合、send_event_to_observers()というメソッドを呼んでいます。これはryu.base.app_manager.RyuAppクラスで定義されている、イベントを送信するためのメソッドです。</p>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」ではRyuで定義されたOpenFlowメッセージ受信イベントについて触れましたが、ユーザが独自にイベントを定義することもできます。上記ソースで送信している<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というイベントは、LACPライブラリ内で作成したユーザ定義イベントです。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」ではRyuで定義されたOpenFlowメッセージ受信イベントについて触れましたが、ユーザが独自にイベントを定義することもできます。上記ソースで送信している<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というイベントは、LACPライブラリ内で作成したユーザ定義イベントです。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
@@ -1052,7 +1052,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 <div class="section" id="id12">
 <h3>アプリケーションの実装<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3対応のリンク・アグリゲーション・アプリケーション (simple_switch_lacp_13.py) と、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
+<p>「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3対応のリンク・アグリゲーション・アプリケーション (simple_switch_lacp_13.py) と、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
 <div class="section" id="contexts">
 <h4>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_CONTEXTS」ディクショナリに他のRyuアプリケーションを設定することにより、他のアプリケーションを別スレッドで起動させることができます。ここではLACPライブラリのLacpLibクラスを「lacplib」という名前で「_CONTEXTS」に設定しています。</p>
@@ -1177,7 +1177,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
-<li><a class="reference internal" href="#">リンク・アグリゲーションの実装</a><ul>
+<li><a class="reference internal" href="#">リンク・アグリゲーション</a><ul>
 <li><a class="reference internal" href="#id2">リンク・アグリゲーション</a></li>
 <li><a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a><ul>
 <li><a class="reference internal" href="#id3">実験環境の構築</a></li>
@@ -1216,10 +1216,10 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 
   <h4>前のトピックへ</h4>
   <p class="topless"><a href="rest_api.html"
-                        title="前の章へ">REST API</a></p>
+                        title="前の章へ">REST連携</a></p>
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="spanning_tree.html"
-                        title="次の章へ">スパニングツリーの実装</a></p>
+                        title="次の章へ">スパニングツリー</a></p>
   <div role="note" aria-label="source link">
     <h3>このページ</h3>
     <ul class="this-page-menu">
@@ -1251,10 +1251,10 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
           <a href="genindex.html" title="総合索引"
              >索引</a></li>
         <li class="right" >
-          <a href="spanning_tree.html" title="スパニングツリーの実装"
+          <a href="spanning_tree.html" title="スパニングツリー"
              >次へ</a> |</li>
         <li class="right" >
-          <a href="rest_api.html" title="REST API"
+          <a href="rest_api.html" title="REST連携"
              >前へ</a> |</li>
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>

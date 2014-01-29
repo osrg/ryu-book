@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>REST API &mdash; Ryu book 0.1 ドキュメント</title>
+    <title>REST連携 &mdash; Ryu book 0.1 ドキュメント</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
-    <link rel="next" title="リンク・アグリゲーションの実装" href="link_aggregation.html" />
+    <link rel="next" title="リンク・アグリゲーション" href="link_aggregation.html" />
     <link rel="prev" title="トラフィックモニター" href="traffic_monitor.html" /> 
   </head>
   <body role="document">
@@ -36,7 +36,7 @@
           <a href="genindex.html" title="総合索引"
              accesskey="I">索引</a></li>
         <li class="right" >
-          <a href="link_aggregation.html" title="リンク・アグリゲーションの実装"
+          <a href="link_aggregation.html" title="リンク・アグリゲーション"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
           <a href="traffic_monitor.html" title="トラフィックモニター"
@@ -50,11 +50,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="rest-api">
-<span id="ch-rest-api"></span><h1>REST API<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」で説明したスイッチングハブに、REST APIを追加します。</p>
-<div class="section" id="ryurest-api">
-<h2>RyuにおけるREST APIの組み込み<a class="headerlink" href="#ryurest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
+  <div class="section" id="rest">
+<span id="ch-rest-api"></span><h1>REST連携<a class="headerlink" href="#rest" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、REST連携の機能を追加します。</p>
+<div class="section" id="rest-api">
+<h2>REST APIの組み込み<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>Ryuには、WSGIに対応したWebサーバの機能が含まれています。コントローラにREST APIを付加することで、ブラウザやcurlコマンド等からコントローラの振る舞いを変えるようなアプリケーションを作成することもできます。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
@@ -79,7 +79,7 @@
 </div>
 <div class="section" id="id2">
 <h2>REST API付きスイッチングハブの実装<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにREST APIを追加したソースコードです。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにREST APIを追加したソースコードです。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
@@ -174,7 +174,7 @@
             <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>simple_switch_rest_13.pyでは、二つのクラスを定義しています。一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス(SimpleSwitchController)です。また、二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブを拡張し、MACアドレステーブルの更新を行えるようにしたクラス(SimpleSwitchRest13)です。SimpleSwitchRest13では、任意のタイミングでフローエントリの追加ができるように、FeatureReplyメソッドをオーバライドし、スイッチングハブのインスタンス内でdatapathオブジェクトを保持するようにしています。</p>
+<p>simple_switch_rest_13.pyでは、二つのクラスを定義しています。一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス(SimpleSwitchController)です。また、二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブを拡張し、MACアドレステーブルの更新を行えるようにしたクラス(SimpleSwitchRest13)です。SimpleSwitchRest13では、任意のタイミングでフローエントリの追加ができるように、FeatureReplyメソッドをオーバライドし、スイッチングハブのインスタンス内でdatapathオブジェクトを保持するようにしています。</p>
 </div>
 <div class="section" id="simpleswitchrest13">
 <h2>SimpleSwitchRest13クラスの実装<a class="headerlink" href="#simpleswitchrest13" title="このヘッドラインへのパーマリンク">¶</a></h2>
@@ -317,7 +317,7 @@
 </div>
 <div class="section" id="id3">
 <h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>実際に、REST API搭載スイッチングハブを実行してみます。最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
+<p>実際に、REST API搭載スイッチングハブを実行してみます。最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
@@ -426,8 +426,8 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
-<li><a class="reference internal" href="#">REST API</a><ul>
-<li><a class="reference internal" href="#ryurest-api">RyuにおけるREST APIの組み込み</a></li>
+<li><a class="reference internal" href="#">REST連携</a><ul>
+<li><a class="reference internal" href="#rest-api">REST APIの組み込み</a></li>
 <li><a class="reference internal" href="#id1">実装するREST API</a></li>
 <li><a class="reference internal" href="#id2">REST API付きスイッチングハブの実装</a></li>
 <li><a class="reference internal" href="#simpleswitchrest13">SimpleSwitchRest13クラスの実装</a></li>
@@ -443,7 +443,7 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
                         title="前の章へ">トラフィックモニター</a></p>
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="link_aggregation.html"
-                        title="次の章へ">リンク・アグリゲーションの実装</a></p>
+                        title="次の章へ">リンク・アグリゲーション</a></p>
   <div role="note" aria-label="source link">
     <h3>このページ</h3>
     <ul class="this-page-menu">
@@ -475,7 +475,7 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
           <a href="genindex.html" title="総合索引"
              >索引</a></li>
         <li class="right" >
-          <a href="link_aggregation.html" title="リンク・アグリゲーションの実装"
+          <a href="link_aggregation.html" title="リンク・アグリゲーション"
              >次へ</a> |</li>
         <li class="right" >
           <a href="traffic_monitor.html" title="トラフィックモニター"

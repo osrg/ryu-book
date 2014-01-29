@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Ryuアーキテクチャ &mdash; Ryu book 0.1 ドキュメント</title>
+    <title>アーキテクチャ &mdash; Ryu book 0.1 ドキュメント</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -50,33 +50,33 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="ryu">
-<h1>Ryuアーキテクチャ<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<div class="section" id="id1">
-<h2>アプリケーションプログラミングモデル<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+  <div class="section" id="id1">
+<h1>アーキテクチャ<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<div class="section" id="id2">
+<h2>アプリケーションプログラミングモデル<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>Ryuアプリケーションのプログラミングモデルを説明します。</p>
 <img alt="_images/fig1.png" src="_images/fig1.png" />
-<div class="section" id="id2">
-<h3>アプリケーション<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id3">
+<h3>アプリケーション<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>アプリケーションとはryu.base.app_manager.RyuAppを継承したクラスです。ユーザーロジックはアプリケーションとして記述します。</p>
 </div>
-<div class="section" id="id3">
-<h3>イベント<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id4">
+<h3>イベント<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>イベントとはryu.controller.event.EventBaseを継承したクラスのオブジェクトです。アプリケーション間の通信はイベントを送受信することで行ないます。</p>
 </div>
-<div class="section" id="id4">
-<h3>イベントキュー<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id5">
+<h3>イベントキュー<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>各アプリケーションはイベント受信のためのキューを一つ持っています。</p>
 </div>
-<div class="section" id="id5">
-<h3>スレッド<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>Ryuはeventletを使用したマルチスレッドで動作します。スレッドは非プリエンプトですので、時間のかかる処理を行なう場合は注意が必要です。</p>
 <div class="section" id="id6">
-<h4>イベントループ<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<h3>スレッド<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Ryuはeventletを使用したマルチスレッドで動作します。スレッドは非プリエンプトですので、時間のかかる処理を行なう場合は注意が必要です。</p>
+<div class="section" id="id7">
+<h4>イベントループ<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>アプリケーションにつき一個のスレッドが自動的に作成されます。このスレッドはイベントループを実行します。イベントループは、イベントキューにイベントがあれば取り出し、対応するイベントハンドラ(後述)を呼び出します。</p>
 </div>
-<div class="section" id="id7">
-<h4>追加のスレッド<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id8">
+<h4>追加のスレッド<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>hub.spawn関数を使用して追加のスレッドを作成し、アプリケーション固有の処理を行なうことができます。</p>
 </div>
 <div class="section" id="eventlet">
@@ -84,8 +84,8 @@
 <p>eventletの機能をアプリケーションから直接使用することもできますが、非推奨です。可能ならhubモジュールの提供するラッパーを使用するようにしてください。</p>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>イベントハンドラ<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id9">
+<h3>イベントハンドラ<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>アプリケーションクラスのメソッドをryu.controller.handler.set_ev_clsデコレータで修飾することでイベントハンドラを定義できます。イベントハンドラは指定した種類のイベントが発生した際に、アプリケーションのイベントループから呼び出されます。</p>
 </div>
 </div>
@@ -99,18 +99,18 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Ryuアーキテクチャ</a><ul>
-<li><a class="reference internal" href="#id1">アプリケーションプログラミングモデル</a><ul>
-<li><a class="reference internal" href="#id2">アプリケーション</a></li>
-<li><a class="reference internal" href="#id3">イベント</a></li>
-<li><a class="reference internal" href="#id4">イベントキュー</a></li>
-<li><a class="reference internal" href="#id5">スレッド</a><ul>
-<li><a class="reference internal" href="#id6">イベントループ</a></li>
-<li><a class="reference internal" href="#id7">追加のスレッド</a></li>
+<li><a class="reference internal" href="#">アーキテクチャ</a><ul>
+<li><a class="reference internal" href="#id2">アプリケーションプログラミングモデル</a><ul>
+<li><a class="reference internal" href="#id3">アプリケーション</a></li>
+<li><a class="reference internal" href="#id4">イベント</a></li>
+<li><a class="reference internal" href="#id5">イベントキュー</a></li>
+<li><a class="reference internal" href="#id6">スレッド</a><ul>
+<li><a class="reference internal" href="#id7">イベントループ</a></li>
+<li><a class="reference internal" href="#id8">追加のスレッド</a></li>
 <li><a class="reference internal" href="#eventlet">eventlet</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id8">イベントハンドラ</a></li>
+<li><a class="reference internal" href="#id9">イベントハンドラ</a></li>
 </ul>
 </li>
 </ul>

@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Ryu book 0.1 ドキュメント" href="index.html" />
-    <link rel="next" title="REST API" href="rest_api.html" />
-    <link rel="prev" title="スイッチングハブの実装" href="switching_hub.html" /> 
+    <link rel="next" title="REST連携" href="rest_api.html" />
+    <link rel="prev" title="スイッチングハブ" href="switching_hub.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,10 +36,10 @@
           <a href="genindex.html" title="総合索引"
              accesskey="I">索引</a></li>
         <li class="right" >
-          <a href="rest_api.html" title="REST API"
+          <a href="rest_api.html" title="REST連携"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
-          <a href="switching_hub.html" title="スイッチングハブの実装"
+          <a href="switching_hub.html" title="スイッチングハブ"
              accesskey="P">前へ</a> |</li>
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
@@ -52,7 +52,7 @@
             
   <div class="section" id="ch-traffic-monitor">
 <span id="id1"></span><h1>トラフィックモニター<a class="headerlink" href="#ch-traffic-monitor" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにOpenFlowスイッチの統計情報をモニターする機能を追加します。</p>
+<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにOpenFlowスイッチの統計情報をモニターする機能を追加します。</p>
 <div class="section" id="id2">
 <h2>ネットワークの定期健診<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>ネットワークは既に多くのサービスや業務のインフラとなっているため、正常で安定した稼働が維持されることが求められます。とは言え、いつも何かしらの問題が発生するものです。</p>
@@ -61,7 +61,7 @@
 </div>
 <div class="section" id="id3">
 <h2>トラフィックモニターの実装<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
+<p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
@@ -383,7 +383,7 @@
 <div class="section" id="id5">
 <h2>トラフィックモニターの実行<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>それでは、実際にこのトラフィックモニターを実行してみます。</p>
-<p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。</p>
+<p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。</p>
 <p>次にいよいよトラフィックモニターの実行です。</p>
 <p>controller: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
@@ -429,7 +429,7 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 0000000000000001 fffffffe        0        0        0        0        0        0
 </pre></div>
 </div>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブの実装</em></a>」のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
 <p>この時点では、フローエントリが無く(Table-missフローエントリは表示していません)、各ポートのカウントもすべて0です。</p>
 <p>ここで、ホスト1からホスト2へpingを実行してみます。</p>
 <p>host: h1:</p>
@@ -497,10 +497,10 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 
   <h4>前のトピックへ</h4>
   <p class="topless"><a href="switching_hub.html"
-                        title="前の章へ">スイッチングハブの実装</a></p>
+                        title="前の章へ">スイッチングハブ</a></p>
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="rest_api.html"
-                        title="次の章へ">REST API</a></p>
+                        title="次の章へ">REST連携</a></p>
   <div role="note" aria-label="source link">
     <h3>このページ</h3>
     <ul class="this-page-menu">
@@ -532,10 +532,10 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
           <a href="genindex.html" title="総合索引"
              >索引</a></li>
         <li class="right" >
-          <a href="rest_api.html" title="REST API"
+          <a href="rest_api.html" title="REST連携"
              >次へ</a> |</li>
         <li class="right" >
-          <a href="switching_hub.html" title="スイッチングハブの実装"
+          <a href="switching_hub.html" title="スイッチングハブ"
              >前へ</a> |</li>
         <li><a href="index.html">Ryu book 0.1 ドキュメント</a> &raquo;</li> 
       </ul>
