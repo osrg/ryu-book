@@ -52,36 +52,33 @@
             
   <div class="section" id="ch-switching-hub">
 <span id="id1"></span><h1>スイッチングハブ<a class="headerlink" href="#ch-switching-hub" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、簡単なスイッチングハブの実装を題材として、RyuによるOpenFlowコントローラの実装方法を解説していきます。</p>
+<p>本章では、簡単なスイッチングハブの実装を題材として、Ryuによるアプリケーションの実装方法を解説していきます。</p>
 <div class="section" id="id2">
 <h2>スイッチングハブ<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>世の中には様々な機能を持つスイッチングハブがありますが、ここでは一番単純な、必要最低限の機能を持ったスイッチングハブの実装をみてみます。</p>
-<p>スイッチングハブの機能は次のようなものとします。</p>
+<p>世の中には様々な機能を持つスイッチングハブがありますが、ここでは次のような単純な機能を持ったスイッチングハブの実装を見てみます。</p>
 <ul class="simple">
 <li>ポートに接続されているホストのMACアドレスを学習し、MACアドレステーブルに保持する</li>
-<li>受信パケットの宛先ホストが接続されているポートへ、パケットを転送する</li>
-<li>未知の宛先ホストへのパケットは、フラッディングする</li>
+<li>学習済みのホスト宛のパケットを受信したら、ホストの接続されているポートに転送する</li>
+<li>未知のホスト宛のパケットを受信したら、フラッディングする</li>
 </ul>
-<p>これらの機能をOpenFlowで実現します。</p>
+<p>このようなスイッチをRyuを使って実現してみましょう。</p>
 </div>
 <div class="section" id="openflow">
 <h2>OpenFlowによるスイッチングハブ<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>コントローラは、OpenFlowスイッチがパケット受信時に発行するPacket-Inメッセージから、ポートに接続されているホストのMACアドレスを学習します。</p>
-<p>OpenFlow 1.3では、OpenFlowスイッチにPacket-Inを発行させるために、Table-missフローエントリという特別なエントリをフローテーブルに追加する必要があります。</p>
-<p>Table-missフローエントリは、優先度が最低(0)で、すべてのパケットにマッチするエントリです。このエントリのインストラクションにコントローラポートへの出力アクションを指定することで、受信パケットが、すべての通常のフローエントリにマッチしなかった場合、Packet-Inを発行するようになります。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">現時点のOpen vSwitchでは、まだOpenFlow 1.3への対応が不完全であり、OpenFlow 1.3以前と同様にデフォルトでPacket-Inが発行されます。また、Table-missフローエントリにも現時点では未対応で、通常のフローエントリとして扱われます。</p>
-</div>
-<p>コントローラは、受信したPacket-Inメッセージから、パケットの受信ポートと送信元MACアドレスを得て、MACアドレステーブルを更新します。</p>
-<p>また、宛先MACアドレスをMACアドレステーブルから検索し、見つかった場合は対応するポートへ転送するようPacket-OutメッセージをOpenFlowスイッチに発行します。</p>
-<p>さらに、対応するModify Flow Entry(Flow Mod)メッセージを発行し、OpenFlowスイッチにフローエントリを設定することで、同一条件のパケットについては、Packet-Inメッセージを発行せずにパケット転送するようにします。</p>
-<p>宛先MACアドレスがMACアドレステーブルに存在しないアドレスだった場合は、フラッディングを指定したPacket-Outメッセージを発行します。</p>
-<div class="admonition hint">
-<p class="first admonition-title">ヒント</p>
-<p class="last">OpenFlowでは、NORMALポートという論理的な出力ポートがオプションで規定されており、出力ポートにNORMALを指定すると、スイッチのL2/L3機能を使ってパケットを処理するようになります。つまり、すべてのパケットをNORMALポートに出力するように指示するだけで、スイッチングハブとして動作するようにできます(スイッチがNORMALポートをサポートしている場合)が、ここでは各々の処理をOpenFlowを使って実現するものとします。</p>
-</div>
-<p>これらの動作を順を追って図とともに説明します。なお、ここではTable-missフローエントリについては省略しています。</p>
+<p>OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示を受けて、次のようなことを行えます。</p>
+<ul class="simple">
+<li>受信したパケットのアドレスを書き換えたり、指定のポートから転送</li>
+<li>受信したパケットをコントローラへ転送(Packet-In)</li>
+<li>コントローラから転送されたパケットを指定のポートから転送(Packet-Out)</li>
+</ul>
+<p>これらの機能を組み合わせ、スイッチングハブを実現することが出来ます。</p>
+<p>まずは、Packet-Inの機能を利用したMACアドレスの学習です。コントローラは、Packet-Inの機能を利用し、スイッチからパケットを受け取る事が出来ます。受け取ったパケットを解析し、ホストのMACアドレスや接続されているポートの情報を学習することが出来ます。</p>
+<p>学習の後は受信したパケットの転送です。パケットの宛先MACアドレスが学習済みのホストのものか検索します。検索結果によって次の処理を実行します。</p>
+<ul class="simple">
+<li>学習済みのホストの場合…Packet-Outの機能で、接続先のポートからパケットを転送</li>
+<li>未知のホストの場合…Packet-Outの機能でパケットをフラッディング</li>
+</ul>
+<p>これらの動作を順を追って図とともに説明します。</p>
 <ol class="arabic">
 <li><p class="first">初期状態</p>
 <blockquote>
@@ -352,14 +349,18 @@ eth-src: ホストA
     <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Table-missフローエントリを作成します。</p>
+<p>Table-missフローエントリは、優先度が最低(0)で、すべてのパケットにマッチするエントリです。このエントリのインストラクションにコントローラポートへの出力アクションを指定することで、受信パケットが、すべての通常のフローエントリにマッチしなかった場合、Packet-Inを発行するようになります。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">2014年1月現在のOpen vSwitchは、OpenFlow 1.3への対応が不完全であり、OpenFlow 1.3以前と同様にデフォルトでPacket-Inが発行されます。また、Table-missフローエントリにも現時点では未対応で、通常のフローエントリとして扱われます。</p>
+</div>
 <p>すべてのパケットにマッチさせるため、空のマッチを生成します。マッチは<tt class="docutils literal"><span class="pre">OFPMatch</span></tt>クラスで表されます。</p>
 <p>次に、コントローラポートへ転送するためのOUTPUTアクションクラス(<tt class="docutils literal"><span class="pre">OFPActionOutput</span></tt>)のインスタンスを生成します。出力先にコントローラ、パケット全体をコントローラに送信するためにmax_lenには<tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt>を指定しています。</p>
 <p>最後に、優先度に0(最低)を指定して<tt class="docutils literal"><span class="pre">add_flow()</span></tt>メソッドを実行してFlow Modメッセージを送信します。add_flow()メソッドの内容については後述します。</p>
 </div>
 <div class="section" id="packet-in">
 <h4>Packet-inメッセージ<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>未知の受信パケットを受け付けるため、Packet-Inメッセージを受け取ります。</p>
+<p>未知の宛先の受信パケットを受け付けるため、Packet-Inイベントのハンドラを作成します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
@@ -446,13 +447,17 @@ eth-src: ホストA
     <span class="c"># ...</span>
 </pre></div>
 </div>
-<p>宛先MACアドレスがみつかった場合は、OpenFlowスイッチのフローテーブルにエントリを追加します。</p>
+<p>宛先MACアドレスが見つかった場合は、OpenFlowスイッチのフローテーブルにエントリを追加します。</p>
 <p>Table-missフローエントリの追加と同様に、マッチとアクションを指定してadd_flow()を実行し、フローエントリを追加します。</p>
 <p>Table-missフローエントリとは違って、今回はマッチに条件を設定します。今回のスイッチングハブの実装では、受信ポート(in_port)と宛先MACアドレス(eth_dst)を指定しています。例えば、「ポート1で受信したホストB宛」のパケットが対象となります。</p>
-<p>今回のフローエントリでは、優先度に1を指定しています。優先度は値が大きいほど優先度が高くなるので、ここで追加するフローエントリは、Table-missフローエントリより先に評価されるようになります。</p>
+<p>今回のフローエントリでは、優先度に1を指定しています。値が大きいほど優先度が高くなるので、ここで追加するフローエントリは、Table-missフローエントリより先に評価されるようになります。</p>
 <p>前述のアクションを含めてまとめると、以下のようなエントリをフローテーブルに追加します。</p>
 <blockquote>
 <div>ポート1で受信した、ホストB宛(宛先MACアドレスがB)のパケットを、ポート4に転送する</div></blockquote>
+<div class="admonition hint">
+<p class="first admonition-title">ヒント</p>
+<p class="last">OpenFlowでは、NORMALポートという論理的な出力ポートがオプションで規定されており、出力ポートにNORMALを指定すると、スイッチのL2/L3機能を使ってパケットを処理するようになります。つまり、すべてのパケットをNORMALポートに出力するように指示するだけで、スイッチングハブとして動作するようにできますが、ここでは各々の処理をOpenFlowを使って実現するものとします。</p>
+</div>
 </div>
 <div class="section" id="id6">
 <h4>フローエントリの追加処理<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h4>
