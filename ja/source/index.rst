@@ -12,15 +12,15 @@ RyuによるOpenFlowプログラミング
    preface.rst
    switching_hub.rst
    traffic_monitor.rst
-   link_aggregation.rst
    rest_api.rst
+   link_aggregation.rst
    spanning_tree.rst
-   packet_lib.rst
    openflow_protocol.rst
-   arch.rst
+   packet_lib.rst
+   of_config.rst
    rest_firewall.rst
    rest_router.rst
    switch_test_tool.rst
-   of_config.rst
+   arch.rst
    contribute.rst
    introduction_example.rst
