@@ -52,7 +52,7 @@
             
   <div class="section" id="ch-traffic-monitor">
 <span id="id1"></span><h1>トラフィックモニター<a class="headerlink" href="#ch-traffic-monitor" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにOpenFlowスイッチの統計情報をモニターする機能を追加します。</p>
+<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、OpenFlowスイッチの統計情報をモニターする機能を追加します。</p>
 <div class="section" id="id2">
 <h2>ネットワークの定期健診<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>ネットワークは既に多くのサービスや業務のインフラとなっているため、正常で安定した稼働が維持されることが求められます。とは言え、いつも何かしらの問題が発生するものです。</p>
@@ -61,7 +61,7 @@
 </div>
 <div class="section" id="id3">
 <h2>トラフィックモニターの実装<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
+<p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
@@ -88,7 +88,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
         <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;deregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -178,7 +178,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
     <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;deregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -191,7 +191,7 @@
 </div>
 <p>スレッド関数<tt class="docutils literal"><span class="pre">_monitor()</span></tt>では、登録されたスイッチに対する統計情報取得リクエストの発行を10秒間隔で無限に繰り返します。</p>
 <p>接続中のスイッチを監視対象とするため、スイッチの接続および切断の検出に<tt class="docutils literal"><span class="pre">EventOFPStateChange</span></tt>イベントを利用しています。このイベントはRyuフレームワークが発行するもので、Datapathのステートが変わったときに発行されます。</p>
-<p>ここでは、Datapathのステートが<tt class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></tt>になった時に、そのスイッチを監視対象に登録、<tt class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></tt>になった時に登録の削除を行っています。</p>
+<p>ここでは、Datapathのステートが<tt class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></tt>になった時にそのスイッチを監視対象に登録、<tt class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></tt>になった時に登録の削除を行っています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
 <span class="k">def</span> <span class="nf">_request_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;send stats request: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -206,13 +206,13 @@
 <span class="c"># ...</span>
 </pre></div>
 </div>
-<p>定期的に呼び出される<tt class="docutils literal"><span class="pre">_request_stats()</span></tt>では、対象となるスイッチに<tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt>と<tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt>を発行しています。</p>
-<p>OFPFlowStatsRequestは、フローエントリに関する統計情報を取得します。テーブルID、出力ポート、cookie値、マッチの条件などで取得対象のフローエントリを絞ることができますが、ここではすべてのフローエントリを対称としています。</p>
-<p>OFPPortStatsRequestは、スイッチのポートに関する統計情報を取得します。統計情報を取得するポートのポート番号を指定します。ここではOFPP_ANYを指定し、すべてのポートの統計情報を取得しています。</p>
+<p>定期的に呼び出される<tt class="docutils literal"><span class="pre">_request_stats()</span></tt>では、スイッチに<tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt>と<tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt>を発行しています。</p>
+<p><tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt>は、フローエントリに関する統計情報をスイッチに要求します。テーブルID、出力ポート、cookie値、マッチの条件などで要求対象のフローエントリを絞ることができますが、ここではすべてのフローエントリを対象としています。</p>
+<p><tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt>は、ポートに関する統計情報をスイッチに要求します。取得したいポートの番号を指定することが出来ます。ここでは<tt class="docutils literal"><span class="pre">OFPP_ANY</span></tt>を指定し、すべてのポートの統計情報を要求しています。</p>
 </div>
 <div class="section" id="flowstats">
 <h3>FlowStats<a class="headerlink" href="#flowstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>FlowStatsReplyメッセージを受信して、フローエントリの統計情報を出力します。</p>
+<p>スイッチからの応答を受け取るため、FlowStatsReplyメッセージを受信するイベントハンドラを作成します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_flow_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -235,9 +235,9 @@
 <span class="c"># ...</span>
 </pre></div>
 </div>
-<p>OPFFlowStatsReplyクラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPFlowStats</span></tt>のリストで、FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。</p>
-<p>ここでは、プライオリティが1である、Table-missフロー以外の通常のフローエントリのみを選択し、受信ポートと宛先MACアドレスでソートして、そのフローエントリにマッチしたパケット数とバイト数を出力しています。</p>
-<p>なお、ここでは選択した一部の数値をログに出しているだけですが、継続的に情報を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような場合、OFPFlowStatsReplyの内容をJSONフォーマットに変換することができます。</p>
+<p><tt class="docutils literal"><span class="pre">OPFFlowStatsReply</span></tt>クラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPFlowStats</span></tt>のリストで、FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。</p>
+<p>プライオリティが0のTable-missフローを除いて、全てのフローエントリを選択しています。受信ポートと宛先MACアドレスでソートして、それぞれのフローエントリにマッチしたパケット数とバイト数を出力しています。</p>
+<p>なお、ここでは一部の数値をログに出しているだけですが、継続的に情報を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような場合、<tt class="docutils literal"><span class="pre">OFPFlowStatsReply</span></tt>の内容をJSONフォーマットに変換することができます。</p>
 <p>例えば次のように書くことができます。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 
@@ -356,7 +356,7 @@
 </div>
 <div class="section" id="portstats">
 <h3>PortStats<a class="headerlink" href="#portstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>PortStatsReplyメッセージを受信して、ポートの統計情報を出力します。</p>
+<p>スイッチからの応答を受け取るため、PortStatsReplyメッセージを受信するイベントハンドラを作成します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_port_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -375,8 +375,8 @@
                          <span class="n">stat</span><span class="o">.</span><span class="n">tx_packets</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_bytes</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_errors</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>OPFPortStatsReplyクラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPPortStats</span></tt>のリストになっています。</p>
-<p>OFPPortStatsには、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ数、エラー数、フレームエラー数、オーバーラン数、CRCエラー数、コリジョン数などの統計情報が格納されます。</p>
+<p><tt class="docutils literal"><span class="pre">OPFPortStatsReply</span></tt>クラスの属性<tt class="docutils literal"><span class="pre">body</span></tt>は、<tt class="docutils literal"><span class="pre">OFPPortStats</span></tt>のリストになっています。</p>
+<p><tt class="docutils literal"><span class="pre">OFPPortStats</span></tt>には、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ数、エラー数、フレームエラー数、オーバーラン数、CRCエラー数、コリジョン数などの統計情報が格納されます。</p>
 <p>ここでは、ポート番号でソートし、受信パケット数、受信バイト数、受信エラー数、送信パケット数、送信バイト数、送信エラー数を出力しています。</p>
 </div>
 </div>
@@ -429,9 +429,9 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 0000000000000001 fffffffe        0        0        0        0        0        0
 </pre></div>
 </div>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブの時は、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」では、ryu-managerコマンドにSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。</p>
 <p>この時点では、フローエントリが無く(Table-missフローエントリは表示していません)、各ポートのカウントもすべて0です。</p>
-<p>ここで、ホスト1からホスト2へpingを実行してみます。</p>
+<p>ホスト1からホスト2へpingを実行してみましょう。</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping -c1 10.0.0.2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
@@ -443,7 +443,7 @@ rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
 root@ryu-vm:~#
 </pre></div>
 </div>
-<p>すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報が変化します。</p>
+<p>パケットの転送や、フローエントリが登録され、統計情報が変化します。</p>
 <p>controller: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>datapath         in-port  eth-dst           out-port packets  bytes
 ---------------- -------- ----------------- -------- -------- --------
@@ -457,14 +457,14 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 0000000000000001 fffffffe        0        0        0        1       42        0
 </pre></div>
 </div>
-<p>上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィックは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140バイトとなっています。</p>
-<p>下のポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数(rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。</p>
-<p>フローエントリの統計情報とポートの統計情報で数字が合っていませんが、これはフローエントリの統計情報は、そのエントリにマッチしたパケットの情報だからです。つまり、Table-missによりPacket-Inを発行し、Packet-Outで転送されたパケットは、この統計の対象になっていないためです。</p>
-<p>このケースでは、ホスト1が最初にブロードキャストしたARPリクエスト、ホスト2がホスト1に返したARPリプライ、ホスト1がホスト2へ発行したecho requestの3パケットがPacket-Outされています。そのため、ポートの統計情報では、ポート1の受信パケット数が1、ポート2の受信パケット数が2、フローエントリの統計情報より多くなっています。</p>
+<p>フローエントリの統計情報では、受信ポート1のフローにマッチしたトラフィックは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140バイトとなっています。</p>
+<p>ポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数(rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。</p>
+<p>フローエントリの統計情報とポートの統計情報で数字が合っていませんが、これはフローエントリの統計情報は、そのエントリにマッチし転送されたパケットの情報だからです。つまり、Table-missによりPacket-Inを発行し、Packet-Outで転送されたパケットは、この統計の対象になっていないためです。</p>
+<p>このケースでは、ホスト1が最初にブロードキャストしたARPリクエスト、ホスト2がホスト1に返したARPリプライ、ホスト1がホスト2へ発行したecho requestの3パケットが、Packet-Outによって転送されています。そのため、ポートの統計量は、フローエントリの統計量よりも多くなっています。</p>
 </div>
 <div class="section" id="id6">
 <h2>まとめ<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本章では、統計情報の取得機能の実装追加を題材として、以下の項目について説明しました。</p>
+<p>本章では、統計情報の取得機能を題材として、以下の項目について説明しました。</p>
 <ul class="simple">
 <li>Ryuアプリケーションでのスレッドの生成方法</li>
 <li>Datapathの状態遷移の捕捉</li>

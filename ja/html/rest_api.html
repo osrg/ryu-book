@@ -55,31 +55,28 @@
 <p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、REST連携の機能を追加します。</p>
 <div class="section" id="rest-api">
 <h2>REST APIの組み込み<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>Ryuには、WSGIに対応したWebサーバの機能が含まれています。コントローラにREST APIを付加することで、ブラウザやcurlコマンド等からコントローラの振る舞いを変えるようなアプリケーションを作成することもできます。</p>
+<p>RyuにはWSGIに対応したWebサーバの機能があります。この機能を利用することで、他のシステムやブラウザなどとの連携をする際に役に立つ、REST APIを作成することができます。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p class="last">WSGIとは、Pythonにおいて、WebアプリケーションとWebサーバをつなぐための統一されたフレームワークのことを指します。</p>
 </div>
 </div>
 <div class="section" id="id1">
-<h2>実装するREST API<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>実装するREST APIは以下の二つとします。</p>
+<h2>REST API付きスイッチングハブの実装<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、次の二つのREST APIを追加してみましょう。</p>
 <ol class="arabic">
 <li><p class="first">MACアドレステーブル取得API</p>
 <blockquote>
-<div><p>スイッチングハブで保持されているMACアドレステーブルの内容を返却します。MACアドレスおよびポート番号の組をJSON形式で返却します。</p>
+<div><p>スイッチングハブが保持しているMACアドレステーブルの内容を返却します。MACアドレスおよびポート番号の組をJSON形式で返却します。</p>
 </div></blockquote>
 </li>
 <li><p class="first">MACアドレステーブル登録API</p>
 <blockquote>
-<div><p>REST APIへのパラメータとして入力されたMACアドレスとポート番号の組をMACアドレステーブルに登録します。また、あわせてフローエントリの追加も行います。</p>
+<div><p>MACアドレスとポート番号の組をMACアドレステーブルに登録し、スイッチへフローエントリの追加を行います。</p>
 </div></blockquote>
 </li>
 </ol>
-</div>
-<div class="section" id="id2">
-<h2>REST API付きスイッチングハブの実装<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにREST APIを追加したソースコードです。</p>
+<p>それではソースコードを見てみましょう。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
@@ -174,7 +171,10 @@
             <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>simple_switch_rest_13.pyでは、二つのクラスを定義しています。一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス(SimpleSwitchController)です。また、二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブを拡張し、MACアドレステーブルの更新を行えるようにしたクラス(SimpleSwitchRest13)です。SimpleSwitchRest13では、任意のタイミングでフローエントリの追加ができるように、FeatureReplyメソッドをオーバライドし、スイッチングハブのインスタンス内でdatapathオブジェクトを保持するようにしています。</p>
+<p>simple_switch_rest_13.pyでは、二つのクラスを定義しています。</p>
+<p>一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス<tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt>です。</p>
+<p>二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を拡張し、MACアドレステーブルの更新を行えるようにしたクラス<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>です。</p>
+<p><tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>では、スイッチにフローエントリを追加するため、FeaturesReplyメソッドをオーバライドし、datapathオブジェクトを保持しています。</p>
 </div>
 <div class="section" id="simpleswitchrest13">
 <h2>SimpleSwitchRest13クラスの実装<a class="headerlink" href="#simpleswitchrest13" title="このヘッドラインへのパーマリンク">¶</a></h2>
@@ -184,7 +184,7 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>クラス変数_CONTEXTで、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、「wsgi」というキーで、WSGIのWebサーバインスタンスが取得できます。</p>
+<p>クラス変数<tt class="docutils literal"><span class="pre">_CONTEXT</span></tt>で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、<tt class="docutils literal"><span class="pre">wsgi</span></tt>というキーで、WSGIのWebサーバインスタンスが取得できます。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
@@ -193,7 +193,7 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>コンストラクタでは、後述するコントローラクラスを登録するために、WSGIApplicationのインスタンスを取得しています。登録には、registerメソッドを使用します。registerメソッド実行の際、コントローラのコンストラクタでSimpleSwitchRest13クラスのインスタンスにアクセスできるように、第2引数で、「simple_switch_api_app」というキー名でインスタンスを保持するディクショナリオブジェクトを渡しています。</p>
+<p>コンストラクタでは、後述するコントローラクラスを登録するために、<tt class="docutils literal"><span class="pre">WSGIApplication</span></tt>のインスタンスを取得しています。登録には、<tt class="docutils literal"><span class="pre">register</span></tt>メソッドを使用します。<tt class="docutils literal"><span class="pre">register</span></tt>メソッド実行の際、コントローラのコンストラクタで<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>クラスのインスタンスにアクセスできるように、<tt class="docutils literal"><span class="pre">simple_switch_api_app</span></tt>というキー名でディクショナリオブジェクトを渡しています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
@@ -203,7 +203,7 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>親クラスのswitch_features_handlerをオーバライドしています。このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、イベントオブジェクトevに格納されたdatapathオブジェクトを取得し、インスタンス変数switchesに保持しています。また、このタイミングで、MACアドレステーブルに初期値(空のディクショナリ)をセットしています。</p>
+<p>親クラスの<tt class="docutils literal"><span class="pre">switch_features_handler</span></tt>をオーバライドしています。このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、イベントオブジェクト<tt class="docutils literal"><span class="pre">ev</span></tt>に格納された<tt class="docutils literal"><span class="pre">datapath</span></tt>オブジェクトを取得し、インスタンス変数<tt class="docutils literal"><span class="pre">switches</span></tt>に保持しています。また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
     <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
@@ -232,19 +232,27 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>REST APIへのリクエスト時に渡されたdatapath IDに対応するスイッチに、MACアドレスとポートを格納するためのメソッドです。REST APIがPUTで呼ばれた際にこのメソッドが実行されます。このメソッドでは、引数entryに格納されたMACアドレスと接続ポートのペアと、self.mac_to_portにすでに保持されているMACアドレスと接続ポートとを組み合わせてフローエントリを作成し、親クラスのadd_flowメソッドを用いてそのフローエントリをスイッチに登録します。また続いて、引数entryのMACアドレスとポートは、スイッチングハブ内のMACアドレスとポートアドレステーブルに格納します。</p>
-<p>作成されるフローエントリについて、少し説明します。例えば、すでに格納されているMACアドレスと接続ポートが、</p>
-<p>・00:00:00:00:00:01, 1</p>
-<p>また、このメソッドに渡されたMACアドレスとポートの組が、</p>
-<p>・00:00:00:00:00:02, 2</p>
-<p>である場合、スイッチに登録されるフローエントリは以下となります。</p>
-<p>(1)マッチング条件：in_port = 1, dst_mac = 00:00:00:00:00:02  アクション：output=2</p>
-<p>(2)マッチング条件：in_port = 2, dst_mac = 00:00:00:00:00:01  アクション：output=1</p>
-<p>なお、今回の実装では、self.mac_to_portにすでに登録済みのポートがこのメソッドに渡された場合は、フローエントリの設定は行わず、その時点で格納済みのMACアドレスと接続ポートの組を返却するのみとしています。</p>
+<p>指定のスイッチにMACアドレスとポートを登録するメソッドです。REST APIがPUTメソッドで呼ばれると実行されます。</p>
+<p>引数<tt class="docutils literal"><span class="pre">entry</span></tt>には、登録をしたいMACアドレスと接続ポートのペアが格納されています。</p>
+<p>MACアドレステーブル<tt class="docutils literal"><span class="pre">self.mac_to_port</span></tt>の情報を参照しながら、スイッチに登録するフローエントリを求めていきます。</p>
+<p>例えば、MACアドレステーブルに、次のMACアドレスと接続ポートのペアが登録されていて、</p>
+<ul class="simple">
+<li>00:00:00:00:00:01, 1</li>
+</ul>
+<p>引数<tt class="docutils literal"><span class="pre">entry</span></tt>で渡されたMACアドレスとポートのペアが、</p>
+<ul class="simple">
+<li>00:00:00:00:00:02, 2</li>
+</ul>
+<p>の場合、スイッチに登録する必要のあるフローエントリは次の通りです。</p>
+<ul class="simple">
+<li>マッチング条件：in_port = 1, dst_mac = 00:00:00:00:00:02  アクション：output=2</li>
+<li>マッチング条件：in_port = 2, dst_mac = 00:00:00:00:00:01  アクション：output=1</li>
+</ul>
+<p>フローエントリの登録は親クラスの<tt class="docutils literal"><span class="pre">add_flow</span></tt>メソッドを利用しています。最後に、引数<tt class="docutils literal"><span class="pre">entry</span></tt>で渡された情報をMACアドレステーブルに格納しています。</p>
 </div>
 <div class="section" id="simpleswitchcontroller">
 <h2>SimpleSwitchControllerクラスの実装<a class="headerlink" href="#simpleswitchcontroller" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。クラス名はSimpleSwitchControllerです。なお、このコンストラクタはWSGIApplicationインスタンスから呼び出されます。</p>
+<p>次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。クラス名は<tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt>です。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
@@ -252,7 +260,7 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>コンストラクタで、SimpleSwitchRest13クラスのインスタンスを取得します。</p>
+<p>コンストラクタで、<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>クラスのインスタンスを取得します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
@@ -268,9 +276,9 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけにRyuで定義されたrouteデコレータを用いています。このデコレータを用いることで、HTTPリクエストがデコレータの第2引数で指定したURLにマッチした時、list_mac_tableメソッドが呼ばれるようになります。</p>
-<p>なお、デコレータで指定する内容は、それぞれ以下となります。</p>
-<ol class="arabic">
+<p>REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけにRyuで定義された<tt class="docutils literal"><span class="pre">route</span></tt>デコレータを用いています。</p>
+<p>デコレータで指定する内容は、次の通りです。</p>
+<ul>
 <li><p class="first">第1引数</p>
 <blockquote>
 <div><p>任意の名前</p>
@@ -278,21 +286,21 @@
 </li>
 <li><p class="first">第2引数</p>
 <blockquote>
-<div><p>URLを指定します。ここでは、URLがhttp://&lt;サーバIP&gt;:8080/simpleswitch/mactable/&lt;データパスID&gt;となるようにします。</p>
+<div><p>URLを指定します。URLがhttp://&lt;サーバIP&gt;:8080/simpleswitch/mactable/&lt;データパスID&gt;となるようにします。</p>
 </div></blockquote>
 </li>
 <li><p class="first">第3引数</p>
 <blockquote>
-<div><p>HTTPメソッドを指定します。ここではGETメソッドを指定しています。</p>
+<div><p>HTTPメソッドを指定します。GETメソッドを指定しています。</p>
 </div></blockquote>
 </li>
 <li><p class="first">第4引数</p>
 <blockquote>
-<div><p>指定箇所の形式を指定します。ここでは、URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、ryu/lib/dpid.pyのDPID_PATTERNで規定されたパターン(16桁の16進数値)に合致することを条件としています。</p>
+<div><p>指定箇所の形式を指定します。URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、ryu/lib/dpid.pyの<tt class="docutils literal"><span class="pre">DPID_PATTERN</span></tt>で定義された16桁の16進数値の表現に合致することを条件としています。</p>
 </div></blockquote>
 </li>
-</ol>
-<p>第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、このlist_mac_tableメソッドが呼ばれます。このメソッドでは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、JSON形式に変換後クライアントに返却しています。</p>
+</ul>
+<p>第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、<tt class="docutils literal"><span class="pre">list_mac_table</span></tt>メソッドが呼ばれます。このメソッドは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、JSON形式に変換し呼び出し元に返却しています。</p>
 <p>なお、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -313,11 +321,13 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>次は、MACアドレステーブルを登録するREST APIです。URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合にこのput_mac_tableメソッドが呼ばれます。このメソッドでは、内部でスイッチングハブインスタンスのset_mac_to_portメソッドを呼び出しています。なお、put_mac_tableメソッド内で例外が発生した場合、レスポンスコード500のレスポンスを返却します。また、list_mac_tableメソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
+<p>次は、MACアドレステーブルを登録するREST APIです。</p>
+<p>URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合に<tt class="docutils literal"><span class="pre">put_mac_table</span></tt>メソッドが呼ばれます。このメソッドでは、内部でスイッチングハブインスタンスの<tt class="docutils literal"><span class="pre">set_mac_to_port</span></tt>メソッドを呼び出しています。なお、<tt class="docutils literal"><span class="pre">put_mac_table</span></tt>メソッド内で例外が発生した場合、レスポンスコード500を返却します。また、<tt class="docutils literal"><span class="pre">list_mac_table</span></tt>メソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
 </div>
-<div class="section" id="id3">
-<h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>実際に、REST API搭載スイッチングハブを実行してみます。最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
+<div class="section" id="id2">
+<h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>REST APIを追加したスイッチングハブを実行してみましょう。</p>
+<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
@@ -357,7 +367,7 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms
 </pre></div>
 </div>
-<p>この時、Ryuへのパケットインは3回発生しています。</p>
+<p>この時、RyuへのPacket-Inは3回発生しています。</p>
 <div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
 packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
 EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
@@ -366,7 +376,7 @@ EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
 packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
 </pre></div>
 </div>
-<p>ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。REST APIの呼び出しには、curlコマンドを使用します。</p>
+<p>ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。今回は、REST APIの呼び出しにcurlコマンドを使用します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
 </pre></div>
@@ -391,7 +401,7 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
 </pre></div>
 </div>
-<p>これらのコマンド実行の際に、h1,h2に対応したフローエントリがスイッチに登録されます。</p>
+<p>これらのコマンドを実行すると、h1,h2に対応したフローエントリがスイッチに登録されます。</p>
 <p>続いて、h1からh2へpingを実行します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
 PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
@@ -410,11 +420,11 @@ EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
 packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
 </pre></div>
 </div>
-<p>この時、スイッチにはすでにフローエントリが存在するため、パケットインはh1からh2へのARPリクエストの時だけ発生し、それ以降のパケットのやりとりについては発生していません。</p>
+<p>この時、スイッチにはすでにフローエントリが存在するため、Packet-Inはh1からh2へのARPリクエストの時だけ発生し、それ以降のパケットのやりとりでは発生していません。</p>
 </div>
-<div class="section" id="id4">
-<h2>まとめ<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本章では、MACアドレステーブルの参照/更新機能の実装追加を題材として、REST APIの追加方法について説明しました。その他の応用として、スイッチに任意のフローエントリを追加できるようなREST APIを作成し、ブラウザから操作できるようにするのもよいのではないでしょうか。</p>
+<div class="section" id="id3">
+<h2>まとめ<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>本章では、MACアドレステーブルの参照や更新をする機能を題材として、REST APIの追加方法について説明しました。その他の応用として、スイッチに任意のフローエントリを追加できるようなREST APIを作成し、ブラウザから操作できるようにするのもよいのではないでしょうか。</p>
 </div>
 </div>
 
@@ -428,12 +438,11 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
   <ul>
 <li><a class="reference internal" href="#">REST連携</a><ul>
 <li><a class="reference internal" href="#rest-api">REST APIの組み込み</a></li>
-<li><a class="reference internal" href="#id1">実装するREST API</a></li>
-<li><a class="reference internal" href="#id2">REST API付きスイッチングハブの実装</a></li>
+<li><a class="reference internal" href="#id1">REST API付きスイッチングハブの実装</a></li>
 <li><a class="reference internal" href="#simpleswitchrest13">SimpleSwitchRest13クラスの実装</a></li>
 <li><a class="reference internal" href="#simpleswitchcontroller">SimpleSwitchControllerクラスの実装</a></li>
-<li><a class="reference internal" href="#id3">REST API搭載スイッチングハブの実行</a></li>
-<li><a class="reference internal" href="#id4">まとめ</a></li>
+<li><a class="reference internal" href="#id2">REST API搭載スイッチングハブの実行</a></li>
+<li><a class="reference internal" href="#id3">まとめ</a></li>
 </ul>
 </li>
 </ul>
