@@ -24,7 +24,7 @@ class SimpleMonitor(simple_switch_13.SimpleSwitch13):
                 self.datapaths[datapath.id] = datapath
         elif ev.state == DEAD_DISPATCHER:
             if datapath.id in self.datapaths:
-                self.logger.debug('deregister datapath: %016x', datapath.id)
+                self.logger.debug('unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
 
     def _monitor(self):

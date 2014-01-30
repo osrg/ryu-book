@@ -3,7 +3,7 @@
 トラフィックモニター
 ====================
 
-本章では、「 :ref:`ch_switching_hub` 」のスイッチングハブにOpenFlowスイッチ
+本章では、「 :ref:`ch_switching_hub` 」で説明したスイッチングハブに、OpenFlowスイッチ
 の統計情報をモニターする機能を追加します。
 
 
@@ -31,7 +31,7 @@
 トラフィックモニターの実装
 --------------------------
 
-早速ですが、「 :ref:`ch_switching_hub` 」のスイッチングハブにトラフィック
+早速ですが、「 :ref:`ch_switching_hub` 」で説明したスイッチングハブにトラフィック
 モニター機能を追加したソースコードです。
 
 .. rst-class:: sourcecode
@@ -88,7 +88,7 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
                 self.datapaths[datapath.id] = datapath
         elif ev.state == DEAD_DISPATCHER:
             if datapath.id in self.datapaths:
-                self.logger.debug('deregister datapath: %016x', datapath.id)
+                self.logger.debug('unregister datapath: %016x', datapath.id)
                 del self.datapaths[datapath.id]
 
     def _monitor(self):
@@ -105,7 +105,7 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 ``EventOFPStateChange`` イベントを利用しています。このイベントはRyuフレーム
 ワークが発行するもので、Datapathのステートが変わったときに発行されます。
 
-ここでは、Datapathのステートが ``MAIN_DISPATCHER`` になった時に、そのスイッチ
+ここでは、Datapathのステートが ``MAIN_DISPATCHER`` になった時にそのスイッチ
 を監視対象に登録、 ``DEAD_DISPATCHER`` になった時に登録の削除を行っています。
 
 .. rst-class:: sourcecode
@@ -125,22 +125,21 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
         datapath.send_msg(req)
     # ...
 
-定期的に呼び出される ``_request_stats()`` では、対象となるスイッチに
+定期的に呼び出される ``_request_stats()`` では、スイッチに
 ``OFPFlowStatsRequest`` と ``OFPPortStatsRequest`` を発行しています。
 
-OFPFlowStatsRequestは、フローエントリに関する統計情報を取得します。
-テーブルID、出力ポート、cookie値、マッチの条件などで取得対象のフローエントリ
-を絞ることができますが、ここではすべてのフローエントリを対称としています。
+``OFPFlowStatsRequest`` は、フローエントリに関する統計情報をスイッチに要求します。
+テーブルID、出力ポート、cookie値、マッチの条件などで要求対象のフローエントリ
+を絞ることができますが、ここではすべてのフローエントリを対象としています。
 
-OFPPortStatsRequestは、スイッチのポートに関する統計情報を取得します。
-統計情報を取得するポートのポート番号を指定します。ここではOFPP_ANYを指定し、
-すべてのポートの統計情報を取得しています。
+``OFPPortStatsRequest`` は、ポートに関する統計情報をスイッチに要求します。
+取得したいポートの番号を指定することが出来ます。ここでは ``OFPP_ANY`` を指定し、
+すべてのポートの統計情報を要求しています。
 
 
 FlowStats
 ^^^^^^^^^
-
-FlowStatsReplyメッセージを受信して、フローエントリの統計情報を出力します。
+スイッチからの応答を受け取るため、FlowStatsReplyメッセージを受信するイベントハンドラを作成します。
 
 .. rst-class:: sourcecode
 
@@ -167,16 +166,16 @@ FlowStatsReplyメッセージを受信して、フローエントリの統計情
                              stat.packet_count, stat.byte_count)
     # ...
 
-OPFFlowStatsReplyクラスの属性 ``body`` は、 ``OFPFlowStats`` のリストで、
+``OPFFlowStatsReply`` クラスの属性 ``body`` は、 ``OFPFlowStats`` のリストで、
 FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。
 
-ここでは、プライオリティが1である、Table-missフロー以外の通常のフローエントリ
-のみを選択し、受信ポートと宛先MACアドレスでソートして、そのフローエントリに
+プライオリティが0のTable-missフローを除いて、全てのフローエントリ
+を選択しています。受信ポートと宛先MACアドレスでソートして、それぞれのフローエントリに
 マッチしたパケット数とバイト数を出力しています。
 
-なお、ここでは選択した一部の数値をログに出しているだけですが、継続的に情報
+なお、ここでは一部の数値をログに出しているだけですが、継続的に情報
 を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような
-場合、OFPFlowStatsReplyの内容をJSONフォーマットに変換することができます。
+場合、 ``OFPFlowStatsReply`` の内容をJSONフォーマットに変換することができます。
 
 例えば次のように書くことができます。
 
@@ -305,7 +304,7 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
 PortStats
 ^^^^^^^^^
 
-PortStatsReplyメッセージを受信して、ポートの統計情報を出力します。
+スイッチからの応答を受け取るため、PortStatsReplyメッセージを受信するイベントハンドラを作成します。
 
 .. rst-class:: sourcecode
 
@@ -328,10 +327,10 @@ PortStatsReplyメッセージを受信して、ポートの統計情報を出力
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
 
-OPFPortStatsReplyクラスの属性 ``body`` は、``OFPPortStats`` のリストになって
+``OPFPortStatsReply`` クラスの属性 ``body`` は、``OFPPortStats`` のリストになって
 います。
 
-OFPPortStatsには、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ
+``OFPPortStats`` には、ポート番号、送受信それぞれのパケット数、バイト数、ドロップ
 数、エラー数、フレームエラー数、オーバーラン数、CRCエラー数、コリジョン数など
 の統計情報が格納されます。
 
@@ -397,14 +396,14 @@ controller: c0:
     0000000000000001        3        0        0        0        0        0        0
     0000000000000001 fffffffe        0        0        0        0        0        0
 
-「 :ref:`ch_switching_hub` 」のスイッチングハブの時は、ryu-managerコマンド
+「 :ref:`ch_switching_hub` 」では、ryu-managerコマンド
 にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
 ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
 
 この時点では、フローエントリが無く(Table-missフローエントリは表示して
 いません)、各ポートのカウントもすべて0です。
 
-ここで、ホスト1からホスト2へpingを実行してみます。
+ホスト1からホスト2へpingを実行してみましょう。
 
 host: h1:
 
@@ -421,7 +420,7 @@ host: h1:
     rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
     root@ryu-vm:~# 
 
-すると、パケットが転送されたり、フローエントリが設定されたりして、統計情報
+パケットの転送や、フローエントリが登録され、統計情報
 が変化します。
 
 controller: c0:
@@ -441,31 +440,31 @@ controller: c0:
     0000000000000001        3        0        0        0        1       42        0
     0000000000000001 fffffffe        0        0        0        1       42        0
 
-上のフローエントリの統計情報では、受信ポート1のエントリにマッチしたトラフィッ
+フローエントリの統計情報では、受信ポート1のフローにマッチしたトラフィッ
 クは、1パケット、42バイトと記録されています。受信ポート2では、2パケット、140
 バイトとなっています。
 
-下のポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数
+ポートの統計情報では、ポート1の受信パケット数(rx-pkts)は3、受信バイト数
 (rx-bytes)は182バイト、ポート2も3パケット、182バイトとなっています。
 
 フローエントリの統計情報とポートの統計情報で数字が合っていませんが、これは
-フローエントリの統計情報は、そのエントリにマッチしたパケットの情報だから
+フローエントリの統計情報は、そのエントリにマッチし転送されたパケットの情報だから
 です。つまり、Table-missによりPacket-Inを発行し、Packet-Outで転送された
 パケットは、この統計の対象になっていないためです。
 
 このケースでは、ホスト1が最初にブロードキャストしたARPリクエスト、ホスト2が
 ホスト1に返したARPリプライ、ホスト1がホスト2へ発行したecho requestの3パケット
-がPacket-Outされています。
-そのため、ポートの統計情報では、ポート1の受信パケット数が1、ポート2の受信
-パケット数が2、フローエントリの統計情報より多くなっています。
+が、Packet-Outによって転送されています。
+そのため、ポートの統計量は、フローエントリの統計量よりも多くなっています。
 
 
 まとめ
 ------
 
-本章では、統計情報の取得機能の実装追加を題材として、以下の項目について
+本章では、統計情報の取得機能を題材として、以下の項目について
 説明しました。
 
 * Ryuアプリケーションでのスレッドの生成方法
 * Datapathの状態遷移の捕捉
 * FlowStatsおよびPortStatsの取得方法
+
