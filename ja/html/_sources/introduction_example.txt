@@ -64,12 +64,30 @@ SmartSDN Controller (NTTコムウェア)
     よる設備コストの低減を可能とする。また、これまで個々に情報を参照、設定
     していたスイッチ・ルーターを一元管理することで、ネットワーク全体を把握し、
     故障やネットワークのトラヒック状況に応じた柔軟な経路変更を可能とする。
-    
+
     サービス利用者の体感品質（「QoE」：Quality of Experience）に注目し、
     通信が流れているネットワークの品質（帯域、遅延、ロス、ゆらぎなど）から
     体感品質（QoE)を判断し、より良い経路へ迂回することで、サービス品質の
     安定維持を実現する。
-    
+
+
+.. only:: latex
+
+    .. image:: images/introduction_example/fig1.eps
+        :align: center
+
+.. only:: epub
+
+    .. image:: images/introduction_example/fig1.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/introduction_example/fig1.png
+        :scale: 80 %
+        :align: center
+
+
 2. 高度な保守運用機能でネットワークの信頼性確保
 
     コントローラの故障発生時にもサービスを継続するため、冗長化構成を実現
