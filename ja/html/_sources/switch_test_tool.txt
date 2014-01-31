@@ -3,8 +3,8 @@
 OpenFlowスイッチテストツール
 ============================
 
-本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、Ryuの
-OpenFlowスイッチテストツールの使用方法を解説します。
+本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、
+テストツールの使用方法を解説します。
 
 
 テストツールの概要
@@ -12,7 +12,7 @@ OpenFlowスイッチテストツールの使用方法を解説します。
 
 本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに
 対してフローエントリ登録／パケット印加を実施し、OpenFlowスイッチのパケット
-編集や転送(または破棄)の処理結果とテストパターンファイルに記述された
+書き換えや転送(または破棄)の処理結果と、テストパターンファイルに記述された
 「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様
 への対応状況を検証するテストツールです。
 
@@ -28,8 +28,7 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 ============================= ================================
 
 
-また印加パケットとして、Ryuのパケットライブラリで定義されたプロトコルを
-用いることが出来ます。
+印加するパケットの生成やパケット書き換え結果の確認などに「 :ref:`ch_packet_lib` 」を利用しています。
 
 
 動作概要
@@ -92,38 +91,6 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
             Received incorrect packet-in: ethernet(ethertype=34525)
 
     ---  Test end  ---
-
-
-
-
-エラーメッセージ一覧
-^^^^^^^^^^^^^^^^^^^^
-
-本ツールで出力されるエラーメッセージの一覧を示します。
-
-========================================================== ==============================================================================
-エラーメッセージ                                           説明
-========================================================== ==============================================================================
-Failed to initialize flow tables: barrier request timeout. 前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
-Failed to initialize flow tables: [err_msg]                前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
-Failed to add flows: barrier request timeout.              フローエントリ登録に失敗(Barrier Requestのタイムアウト)
-Failed to add flows: [err_msg]                             フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
-Added incorrect flows: [flows]                             フローエントリ登録確認エラー(想定外のフローエントリが登録された)
-Failed to add flows: flow stats request timeout.           フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
-Failed to add flows: [err_msg]                             フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from target: request timeout. 試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from target: [err_msg]        試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from tester: request timeout. 補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from tester: [err_msg]        補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Received incorrect [packet]                                期待した出力パケットの受信エラー(異なるパケットを受信)
-Receiving timeout: [detail]                                期待した出力パケットの受信に失敗(タイムアウト)
-Faild to send packet: barrier request timeout.             パケット印加に失敗(Barrier Requestのタイムアウト)
-Faild to send packet: [err_msg]                            パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)
-Table-miss error: increment in matched_count.              table-miss確認エラー(フローにmatchしている)
-Table-miss error: no change in lookup_count.               table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)
-Failed to request table stats: request timeout.            table-missの確認に失敗(TableStats Requestのタイムアウト)
-Failed to request table stats: [err_msg]                   table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
-========================================================== ==============================================================================
 
 
 
@@ -207,7 +174,7 @@ Failed to request table stats: [err_msg]                   table-missの確認�
 ツール実行環境
 ^^^^^^^^^^^^^^
 
-テストツール実行のための環境を構築する必要があります。
+テストツール実行のための環境は次のとおりです。
 
 
 .. only:: latex
@@ -691,3 +658,33 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
         OFPST_FLOW reply (OF1.3) (xid=0x2):
          cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa->eth_src,set_field:bb:bb:bb:bb:bb:bb->eth_dst,dec_ttl,output:2
+
+
+エラーメッセージ一覧
+^^^^^^^^^^^^^^^^^^^^
+
+本ツールで出力されるエラーメッセージの一覧を示します。
+
+========================================================== ==============================================================================
+エラーメッセージ                                           説明
+========================================================== ==============================================================================
+Failed to initialize flow tables: barrier request timeout. 前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
+Failed to initialize flow tables: [err_msg]                前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
+Failed to add flows: barrier request timeout.              フローエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add flows: [err_msg]                             フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
+Added incorrect flows: [flows]                             フローエントリ登録確認エラー(想定外のフローエントリが登録された)
+Failed to add flows: flow stats request timeout.           フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to add flows: [err_msg]                             フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from target: request timeout. 試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from target: [err_msg]        試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from tester: request timeout. 補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from tester: [err_msg]        補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Received incorrect [packet]                                期待した出力パケットの受信エラー(異なるパケットを受信)
+Receiving timeout: [detail]                                期待した出力パケットの受信に失敗(タイムアウト)
+Faild to send packet: barrier request timeout.             パケット印加に失敗(Barrier Requestのタイムアウト)
+Faild to send packet: [err_msg]                            パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)
+Table-miss error: increment in matched_count.              table-miss確認エラー(フローにmatchしている)
+Table-miss error: no change in lookup_count.               table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)
+Failed to request table stats: request timeout.            table-missの確認に失敗(TableStats Requestのタイムアウト)
+Failed to request table stats: [err_msg]                   table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
+========================================================== ==============================================================================

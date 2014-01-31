@@ -52,7 +52,7 @@
             
   <div class="section" id="openflow">
 <span id="ch-openflow-protocol"></span><h1>OpenFlowプロトコル<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、これまで詳しく説明していなかったマッチとインストラクションおよびアクションについて説明します。</p>
+<p>本章では、OpenFlowプロトコルで定義されている、マッチとインストラクションおよびアクションについて説明します。</p>
 <div class="section" id="id1">
 <h2>マッチ<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>マッチに指定できる条件には様々なものがあり、OpenFlowのバージョンが上がる度にその種類は増えています。OpenFlow 1.0では12種類でしたが、OpenFlow 1.3では40種類もの条件が定義されています。</p>
@@ -282,10 +282,6 @@
 </tbody>
 </table>
 <p>max_lenに0を指定すると、Packet-Inメッセージにパケットのバイナリデータは添付されなくなります。<tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt>を指定すると、OpenFlowスイッチ上でそのパケットをバッファせず、Packet-Inメッセージにパケット全体が添付されます。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">max_lenには通常、Packet-Inハンドラ内の処理で必要となるバイト数を指定します。OFPCML_NO_BUFFERを指定するとパケット全体が送られるため、パフォーマンスが悪くなります。ところが、現時点のOpen vSwitchの実装では、例えばmax_lenに128を指定した場合、バッファリングせずにパケットの先頭128バイトのみを添付したPacket-Inが発行されます。これでは128バイトを越えるサイズのパケットが正しく転送できなくなってしまいますので、OFPCML_NO_BUFFERを指定してパケット全体を添付させるなどの対策が必要です。</p>
-</div>
 </div>
 </div>
 

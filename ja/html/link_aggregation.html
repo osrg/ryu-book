@@ -189,11 +189,11 @@
 </div>
 <div class="section" id="id3">
 <h3>実験環境の構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>リンク・アグリゲーション・アプリケーションの動作確認を行う実験環境を構築します。</p>
+<p>OpenFlowスイッチとLinuxホストの間でリンク・アグリゲーションを構成してみましょう。</p>
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
-<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行しますが、下図のように「ホストh1とスイッチs1の間に2本のリンクが存在する」という特殊なトポロジであるため、mnコマンドで作成することができません。</p>
+<p>最初にMininetを利用して下図の様なトポロジを作成します。</p>
 <a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 330.8px; height: 258.4px;" /></a>
-<p>ここではMininetの低位クラスを直接使用するスクリプトを作成し、実験環境を構築することにします。</p>
+<p>MininetのAPIを呼び出すスクリプトを作成し、必要なトポロジを構築します。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 
@@ -237,7 +237,7 @@
     <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>このスクリプトを実行することにより、ホストh1とスイッチs1の間に2本のリンクが存在するトポロジが作成されます。netコマンドを実行することでトポロジを確認することができます。</p>
+<p>このスクリプトを実行することにより、ホストh1とスイッチs1の間に2本のリンクが存在するトポロジが作成されます。netコマンドで作成されたトポロジを確認することができます。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
@@ -250,11 +250,10 @@ h4 h4-eth0:s1-eth5
 mininet&gt;
 </pre></div>
 </div>
-<p>また、このスクリプトを実行することにより、コントローラc0、ホストh1～h4、およびスイッチs1のxtermが起動します。</p>
 </div>
 <div class="section" id="h1">
 <h3>ホストh1でのリンク・アグリゲーションの設定<a class="headerlink" href="#h1" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>ホストh1のxtermで、ホスト側のリンク・アグリゲーションの設定を行います。本節でのコマンド入力は、すべてホストh1のxterm上で行ってください。</p>
+<p>ホストh1のLinuxに必要な事前設定を行いましょう。本節でのコマンド入力は、ホストh1のxterm上で行ってください。</p>
 <p>まず、リンク・アグリゲーションを行うためのドライバモジュールをロードします。Linuxではリンク・アグリゲーション機能をボンディングドライバが担当しています。事前にドライバの設定ファイルを/etc/modprobe.d/bonding.confとして作成しておきます。</p>
 <p>ファイル名:<tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre>alias bond0 bonding
@@ -282,7 +281,7 @@ root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
 root@ryu-vm:~# ip link set h1-eth1 master bond0
 </pre></div>
 </div>
-<p>論理インターフェースにIPアドレスを割り当てます。mnコマンドでホストを作成した場合にならって、10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレスが割り当てられているので、これを削除します。</p>
+<p>論理インターフェースにIPアドレスを割り当てます。ここでは10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレスが割り当てられているので、これを削除します。</p>
 <p>Node: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
 root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
@@ -371,11 +370,11 @@ Slave queue ID: 0
 </pre></div>
 </div>
 <p>LACPデータユニットの交換間隔(LACP rate: slow)や振り分けロジックの設定(Transmit Hash Policy: layer2 (0))が確認できます。また、物理インターフェースh1-eth0とh1-eth1のMACアドレスが確認できます。</p>
-<p>以上でホストh1のリンク・アグリゲーションの設定は終了です。</p>
+<p>以上でホストh1への事前設定は終了です。</p>
 </div>
 <div class="section" id="openflow">
 <h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で行ったのと同じように、使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行ってください。</p>
+<p>スイッチs1のOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1のxterm上で行ってください。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 </pre></div>
@@ -395,7 +394,7 @@ instantiating app ryu.controller.ofp_handler
 ...
 </pre></div>
 </div>
-<p>ホストh1は30秒に1回LACPデータユニットを送信し続けています。起動してからしばらくすると、スイッチはホストh1からのLACPデータユニットを受信し、動作ログに出力します。</p>
+<p>ホストh1は30秒に1回LACPデータユニットを送信しています。起動してからしばらくすると、スイッチはホストh1からのLACPデータユニットを受信し、動作ログに出力します。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
@@ -411,7 +410,7 @@ slave state changed port: 2 enabled: True
 ...
 </pre></div>
 </div>
-<p>各ログは以下のことを表しています。</p>
+<p>ログは以下のことを表しています。</p>
 <ul>
 <li><p class="first">LACP received.</p>
 <blockquote>
@@ -439,7 +438,7 @@ slave state changed port: 2 enabled: True
 </div></blockquote>
 </li>
 </ul>
-<p>その後は定期的にホストh1から送られてくるたび、応答用LACPデータユニットを送信します。</p>
+<p>スイッチは、ホストh1からLACPデータユニットを受信の都度、応答用LACPデータユニットを送信します。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
@@ -449,7 +448,7 @@ slave state changed port: 2 enabled: True
 ...
 </pre></div>
 </div>
-<p>この時点でのフローエントリを確認します。</p>
+<p>フローエントリを確認してみましょう。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
@@ -462,15 +461,15 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <ul class="simple">
 <li>h1のh1-eth1(入力ポートがs1-eth2でMACアドレスが00:00:00:00:00:12)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
 <li>h1のh1-eth0(入力ポートがs1-eth1でMACアドレスが00:00:00:00:00:11)からLACPデータユニット(ethertypeが0x8809)が送られてきたらPacket-Inメッセージを送信する</li>
-<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」でも登録しているTable-missフローエントリ</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
 </ul>
-<p>の3つのフローエントリが登録されていることがわかります。</p>
+<p>の3つのフローエントリが登録されています。</p>
 </div>
 <div class="section" id="id5">
 <h3>リンク・アグリゲーション機能の確認<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id6">
 <h4>通信速度の向上<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>まずはリンク・アグリゲーションによる通信速度の向上を確認します。ただし、実際に通信性能の確認を行おうとすると大量のデータを間断なく送受信し続ける必要があり、試験が煩雑になってしまいますので、ここでは「スイッチングハブの機能により論理インターフェースを経由するフローエントリを複数登録し、その際特定の物理回線にのみフローが集中しないこと」をもって動作の確認を行います。</p>
+<p>まずはリンク・アグリゲーションによる通信速度の向上を確認します。通信に応じて複数のリンクを使い分ける様子を見てみましょう。</p>
 <p>まず、ホストh2からホストh1に対しpingを実行します。</p>
 <p>Node: h2:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -493,17 +492,13 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
 </pre></div>
 </div>
-<p>先ほど確認した時点から、4番めと5番めのフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
-cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
-</pre></div>
-</div>
+<p>先ほど確認した時点から、2つのフローエントリが追加されています。durationの値が小さい4番目と5番目のエントリです。</p>
 <p>それぞれ、</p>
 <ul class="simple">
 <li>3番ポート(s1-eth3、つまりh2の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する</li>
 <li>1番ポート(s1-eth1)からh2宛のパケットを受信したら3番ポート(s1-eth3)から出力する</li>
 </ul>
-<p>というフローエントリです。h2との通信にはs1-eth1が使用されていることがわかります。</p>
+<p>というフローエントリです。h2とh1の間の通信にはs1-eth1が使用されていることがわかります。</p>
 <p>続いて、ホストh3からホストh1に対しpingを実行します。</p>
 <p>Node: h3:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
@@ -528,54 +523,14 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
 </pre></div>
 </div>
-<p>先ほど確認した時点から、5番めと6番めのフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
-cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
-</pre></div>
-</div>
+<p>先ほど確認した時点から、2つのフローエントリが追加されています。durationの値が小さい5番目と6番目のエントリです。</p>
 <p>それぞれ、</p>
 <ul class="simple">
-<li>4番ポート(s1-eth4、つまりh3の対向インターフェース)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する</li>
 <li>2番ポート(s1-eth2)からh3宛のパケットを受信したら4番ポート(s1-eth4)から出力する</li>
+<li>4番ポート(s1-eth4、つまりh3の対向インターフェース)からh1のbond0宛のパケットを受信したら2番ポート(s1-eth2)から出力する</li>
 </ul>
-<p>というフローエントリです。h3との通信にはs1-eth2が使用されていることがわかります。</p>
-<p>同様にホストh4からホストh1に対しpingを実行します。</p>
-<p>Node: h4:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
-PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
-64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=86.3 ms
-64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.397 ms
-64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.136 ms
-64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.035 ms
-...
-</pre></div>
-</div>
-<p>pingを送信し続けたまま、スイッチs1のフローエントリを確認します。</p>
-<p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=199.287s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=199.283s, table=0, n_packets=7, n_bytes=868, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=210.283s, table=0, n_packets=14, n_bytes=920, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5
- cookie=0x0, duration=180.496s, table=0, n_packets=185, n_bytes=17850, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=102.199s, table=0, n_packets=105, n_bytes=10122, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
- cookie=0x0, duration=102.197s, table=0, n_packets=104, n_bytes=10024, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=180.499s, table=0, n_packets=186, n_bytes=17948, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
-</pre></div>
-</div>
-<p>追加されたフローエントリは以下のふたつです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x0, duration=2.804s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:1
-cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=1,dl_dst=00:00:00:00:00:24 actions=output:5
-</pre></div>
-</div>
-<p>それぞれ、</p>
-<ul class="simple">
-<li>5番ポート(s1-eth5、つまりh4の対向インターフェース)からh1のbond0宛のパケットを受信したら1番ポート(s1-eth1)から出力する</li>
-<li>1番ポート(s1-eth1)からh4宛のパケットを受信したら5番ポート(s1-eth5)から出力する</li>
-</ul>
-<p>というフローエントリです。h4との通信にはs1-eth1が使用されていることがわかります。</p>
+<p>というフローエントリです。h3とh1の間のの通信にはs1-eth2が使用されていることがわかります。</p>
+<p>もちろんホストh4からホストh1に対しても、pingを実行出来ます。これまでと同様に新たなフローエントリが登録され、h4とh1の間の通信にはs1-eth1が使用されます。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="50%" />
@@ -599,7 +554,7 @@ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_po
 </tbody>
 </table>
 <a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 328.8px; height: 294.0px;" /></a>
-<p>以上のように、フローが分散することが確認できました。</p>
+<p>以上のように、通信に応じて複数リンクを使い分ける様子を確認できました。</p>
 </div>
 <div class="section" id="id7">
 <h4>耐障害性の向上<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -609,7 +564,7 @@ cookie=0x0, duration=2.807s, table=0, n_packets=3, n_bytes=294, priority=1,in_po
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 nomaster
 </pre></div>
 </div>
-<p>h1-eth0が停止したことにより、ホストh3からホストh1へのpingが疎通不可能になります。そのまま無通信監視時間の上限である90秒が経過すると、コントローラの動作ログに次のようなメッセージが出力されます。</p>
+<p>h1-eth0が停止したことにより、ホストh3からホストh1へのpingが疎通不可能になります。無通信監視時間の90秒が経過すると、コントローラの動作ログに次のようなメッセージが出力されます。</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>...
 [LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
@@ -625,8 +580,9 @@ slave state changed port: 1 enabled: False
 ...
 </pre></div>
 </div>
-<p>「LACP exchange timeout has occurred.」は無通信監視時間の上限に達し、LACPデータユニットをPacket-Inするフローエントリが削除されたことを表します。<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>イベントを受信したスイッチングハブは、学習したMACアドレスをすべて忘却し、転送用のフローエントリをすべて削除します。</p>
-<p>すべての学習結果を忘れた状態でも、ホストh2～h4ではまだpingが実行されているため、通常のスイッチングハブの動作によって再度MACアドレスを学習し、転送用のフローエントリを登録します。このとき、停止しているh1-eth0ではパケットの送受信が行われないため、ホストh2～h4とホストh1との間の通信はすべてh1-eth1が使用されます。</p>
+<p>「LACP exchange timeout has occurred.」は無通信監視時間に達したことを表します。ここでは、学習したMACアドレスと転送用のフローエントリをすべて削除することで、スイッチを起動直後の状態に戻します。</p>
+<p>新たな通信が発生すれば、新たにMACアドレスを学習し、生きているリンクのみを利用したフローエントリが再び登録されます。</p>
+<p>ホストh3とホストh1の間も新たなフローエントリが登録され、</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
@@ -640,7 +596,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
  cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4
 </pre></div>
 </div>
-<p>フローエントリが再登録されたことにより、ホストh3で停止していたpingが再開されます。</p>
+<p>ホストh3で停止していたpingが再開します。</p>
 <p>Node: h3:</p>
 <div class="console highlight-python"><div class="highlight"><pre>...
 64 bytes from 10.0.0.1: icmp_req=144 ttl=64 time=0.193 ms
@@ -654,30 +610,29 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 ...
 </pre></div>
 </div>
-<p>以上のように、一部の物理インターフェースに故障が発生した場合でも、他の物理インターフェースを用いて自動的に復旧できることが確認できました。</p>
+<p>以上のように、一部のリンクに故障が発生した場合でも、他のリンクを用いて自動的に復旧できることが確認できました。</p>
 </div>
 </div>
 </div>
 <div class="section" id="id8">
 <h2>Ryuによるリンク・アグリゲーション機能の実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>Ryuのリンク・アグリゲーション・アプリケーションにおいて、OpenFlowを用いてどのようにリンク・アグリゲーション機能を実現しているかを見ていきます。</p>
-<p>冒頭でも述べたとおり、LACPを用いたリンク・アグリゲーションでは「LACPデータユニットの交換が正常に行われている間は当該物理インターフェースは有効」「LACPデータユニットの交換が途絶えたら当該物理インターフェースは無効」という振る舞いをします。物理インターフェースが無効ということは、そのインターフェースを使用するフローエントリが存在しないということでもあります。従って、</p>
+<p>OpenFlowを用いてどのようにリンク・アグリゲーション機能を実現しているかを見ていきます。</p>
+<p>LACPを用いたリンク・アグリゲーションでは「LACPデータユニットの交換が正常に行われている間は当該物理インターフェースは有効」「LACPデータユニットの交換が途絶えたら当該物理インターフェースは無効」という振る舞いをします。物理インターフェースが無効ということは、そのインターフェースを使用するフローエントリが存在しないということでもあります。従って、</p>
 <ul class="simple">
 <li>LACPデータユニットを受信したら応答を作成して送信する</li>
 <li>LACPデータユニットが一定時間受信できなかったら当該物理インターフェースを使用するフローエントリを削除し、以降そのインターフェースを使用するフローエントリを登録しない</li>
 <li>無効とされた物理インターフェースでLACPデータユニットを受信した場合、当該インターフェースを再度有効化する</li>
-<li>LACPデータユニット以外のパケットは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブ機能で学習・転送する</li>
+<li>LACPデータユニット以外のパケットは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様に学習・転送する</li>
 </ul>
 <p>という処理を実装すれば、リンク・アグリゲーションの基本的な動作が可能となります。LACPに関わる部分とそうでない部分が明確に分かれているので、LACPに関わる部分をLACPライブラリとして切り出し、そうでない部分は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブを拡張するかたちで実装します。</p>
 <p>LACPデータユニット受信時の応答作成・送信はフローエントリだけでは実現不可能であるため、Packet-Inメッセージを使用してOpenFlowコントローラ側で処理を行います。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p>LACPデータユニットを交換する物理インターフェースは、その役割によってACTIVEとPASSIVEに分類されます。ACTIVEは一定時間ごとにLACPデータユニットを送信し、疎通を能動的に確認します。PASSIVEはACTIVEから送信されたLACPデータユニットを受信した際に応答を返すことにより、疎通を受動的に確認します。</p>
-<p>Ryuのリンク・アグリゲーション・アプリケーションは、PASSIVEモードのみ実装しています。</p>
-<p class="last">ACTIVEの実装には定期送信のためのタイマー処理が必要となります。リンク・アグリゲーションとは本来無関係な処理が増えてしまうのを避けるため、ACTIVEモードを非対応としています。</p>
+<p class="last">Ryuのリンク・アグリゲーション・アプリケーションは、PASSIVEモードのみ実装しています。</p>
 </div>
 <p>一定時間LACPデータユニットを受信しなかった場合に当該物理インターフェースを無効にする、という処理は、LACPデータユニットをPacket-Inさせるフローエントリにidle_timeoutを設定し、時間切れの際にFlowRemovedメッセージを送信させることにより、OpenFlowコントローラで当該インターフェースが無効になった際の対処を行うことができます。</p>
-<p>無効となったインターフェースでLACPデータユニットの交換が再開された場合の処理は、LACPデータユニット受信時のPacket-Inメッセージ処理中で当該インターフェースの有効/無効状態を判別・変更することで実現します。</p>
+<p>無効となったインターフェースでLACPデータユニットの交換が再開された場合の処理は、LACPデータユニット受信時のPacket-Inメッセージのハンドラで当該インターフェースの有効/無効状態を判別・変更することで実現します。</p>
 <p>物理インターフェースが無効となったとき、OpenFlowコントローラの処理としては「当該インターフェースを使用するフローエントリを削除する」だけでよさそうに思えますが、それでは不充分です。</p>
 <p>たとえば3つの物理インターフェースをグループ化して使用している論理インターフェースがあり、振り分けロジックが「有効なインターフェース数によるMACアドレスの剰余」となっている場合を仮定します。</p>
 <table border="1" class="docutils">
@@ -783,25 +738,23 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tbody>
 </table>
 <p>インターフェース1を使用していたフローエントリだけではなく、インターフェース2やインターフェース3のフローエントリも書き換える必要があることがわかります。これは物理インターフェースが無効になったときだけでなく、有効になったときも同様です。</p>
-<p>従って、ある物理インターフェースの有効/無効状態が変更された場合の処理は、当該物理インターフェースが所属する論理インターフェースに含まれるすべての物理インターフェースを使用するフローエントリを削除する、ということになります。</p>
+<p>従って、ある物理インターフェースの有効/無効状態が変更された場合の処理は、当該物理インターフェースが所属する論理インターフェースに含まれるすべての物理インターフェースを使用するフローエントリを削除する、としています。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p class="last">振り分けロジックについては仕様で定められておらず、各機器の実装に委ねられています。Ryuのリンク・アグリゲーション・アプリケーションでは独自の振り分け処理を行わず、対向装置によって振り分けられた経路を使用するものとします。</p>
+<p class="last">振り分けロジックについては仕様で定められておらず、各機器の実装に委ねられています。Ryuのリンク・アグリゲーション・アプリケーションでは独自の振り分け処理を行わず、対向装置によって振り分けられた経路を使用しています。</p>
 </div>
-<p>LACPデータユニット以外のフローエントリは「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブ機能で登録しているため、それらのフローエントリを削除するのもスイッチングハブで行うべきです。</p>
-<p>以上のことを整理すると、リンク・アグリゲーション機能として実装すべき項目は</p>
+<p>ここでは、次のような機能を実装します。</p>
 <p><strong>LACPライブラリ</strong></p>
 <ul class="simple">
 <li>LACPデータユニットを受信したら応答を作成して送信する</li>
-<li>FlowRemovedメッセージ受信時、当該物理インターフェースを無効とみなし、所属する論理インターフェースのフローエントリをスイッチングハブに削除させる</li>
-<li>無効状態の物理インターフェースでLACPデータユニットを受信した場合、当該物理インターフェースを有効とみなし、所属する論理インターフェースのフローエントリをスイッチングハブに削除させる</li>
+<li>LACPデータユニットの受信が途絶えたら、対応する物理インターフェースを無効とみなし、スイッチングハブに通知する</li>
+<li>LACPデータユニットの受信が再開されたら、対応する物理インターフェースを有効とみなし、スイッチングハブに通知する</li>
 </ul>
 <p><strong>スイッチングハブ</strong></p>
 <ul class="simple">
-<li>LACPデータユニット以外を受信したら従来どおり学習・転送する</li>
-<li>LACPライブラリの指示により、登録済みのフローエントリを削除する</li>
+<li>LACPライブラリからの通知を受け、初期化が必要なフローエントリを削除する</li>
+<li>LACPデータユニット以外のパケットは従来どおり学習・転送する</li>
 </ul>
-<p>となります。</p>
 <p>LACPライブラリおよびスイッチングハブのソースコードは、Ryuのソースツリーにあります。</p>
 <blockquote>
 <div><p>ryu/lib/lacliblib.py</p>
@@ -809,14 +762,14 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p class="last">前述のとおり、simple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを元にアプリケーションの詳細を説明します。</p>
+<p class="last">simple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_lacp_13.pyを元にアプリケーションの詳細を説明します。</p>
 </div>
 <div class="section" id="lacp">
 <h3>LACPライブラリの実装<a class="headerlink" href="#lacp" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>以降の節で、前述の機能がLACPライブラリにおいて具体的にどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
+<p>以降の節で、前述の機能がLACPライブラリにおいてどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
 <div class="section" id="id9">
 <h4>論理インターフェースの作成<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>前述のとおり、リンク・アグリゲーション機能を使用するには、どのネットワーク機器においてどのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。LACPライブラリでは、以下のメソッドでこの設定を行います。</p>
+<p>リンク・アグリゲーション機能を使用するには、どのネットワーク機器においてどのインターフェースをどのグループとして束ねるのかという設定を事前に行っておく必要があります。LACPライブラリでは、以下のメソッドでこの設定を行います。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
     <span class="c"># ...</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
@@ -836,7 +789,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <p>ports</p>
 <blockquote>
 <div>グループ化したいポート番号のリストを指定します。</div></blockquote>
-<p>このメソッドを呼び出すことにより、LACPライブラリは指定されたデータパスIDのOpenFlowスイッチの指定されたポートをひとつのインターフェースとして扱うようになります。複数のグループを作成したい場合、その都度add()メソッドを呼び出します。なお、論理インターフェースに割り当てられるMACアドレスは、OpenFlowスイッチの持つLOCALポートと同じものが自動的に使用されます。</p>
+<p>このメソッドを呼び出すことにより、LACPライブラリは指定されたデータパスIDのOpenFlowスイッチの指定されたポートをひとつのグループとみなします。複数のグループを作成したい場合は繰り返しadd()メソッドを呼び出します。なお、論理インターフェースに割り当てられるMACアドレスは、OpenFlowスイッチの持つLOCALポートと同じものが自動的に使用されます。</p>
 <div class="admonition tip">
 <p class="first admonition-title">ちなみに</p>
 <p class="last">OpenFlowスイッチの中には、スイッチ自身の機能としてリンク・アグリゲーション機能を提供しているものもあります（Open vSwitchなど）。ここではそうしたスイッチ独自の機能は使用せず、OpenFlowコントローラによる制御によってリンク・アグリゲーション機能を実現します。</p>
@@ -844,7 +797,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 <div class="section" id="packet-in">
 <h4>Packet-In処理<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブは、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば専用の動作を行い、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理分岐を行い、スイッチングハブにLACPデータユニットを処理させないようにします。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」は、宛先のMACアドレスが未学習の場合、受信したパケットをフラッディングします。LACPデータユニットは隣接するネットワーク機器間でのみ交換されるべきもので、他の機器に転送してしまうとリンク・アグリゲーション機能が正しく動作しません。そこで、「Packet-Inで受信したパケットがLACPデータユニットであれば横取りし、LACPデータユニット以外のパケットであればスイッチングハブの動作に委ねる」という処理を行い、スイッチングハブにはLACPデータユニットを見せないようにします。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
@@ -876,8 +829,8 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <h4>ポートの有効/無効状態変更に伴う処理<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>LACPライブラリのLACPデータユニット受信処理は、以下の処理からなっています。</p>
 <ol class="arabic simple">
-<li>LACPデータユニットを受信したポートが利用不能状態であれば利用可能状態に変更し、状態が変更したことをイベントで通知します。</li>
-<li>無通信タイムアウトの待機時間が変更された場合、LACPデータユニット受信時にPacket-Inを送信するフローエントリを登録します。</li>
+<li>LACPデータユニットを受信したポートが無効状態であれば有効状態に変更し、状態が変更したことをイベントで通知します。</li>
+<li>無通信タイムアウトの待機時間が変更された場合、LACPデータユニット受信時にPacket-Inを送信するフローエントリを再登録します。</li>
 <li>受信したLACPデータユニットに対する応答を作成し、送信します。</li>
 </ol>
 <p>2.の処理については後述の「<a class="reference internal" href="#lacppacket-in">LACPデータユニットをPacket-Inさせるフローエントリの登録</a>」で、3.の処理については後述の「<a class="reference internal" href="#id11">LACPデータユニットの送受信処理</a>」で、それぞれ説明します。ここでは1.の処理について説明します。</p>
@@ -918,7 +871,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 <div class="section" id="lacppacket-in">
 <h4>LACPデータユニットをPacket-Inさせるフローエントリの登録<a class="headerlink" href="#lacppacket-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>LACPデータユニットの交換間隔には、FAST（1秒ごと）とSLOW（30秒ごと）の2種類があります。リンク・アグリゲーションの仕様によれば、交換間隔の3倍の時間無通信状態が続いた場合、そのインターフェースはリンク・アグリゲーションのグループから除外され、パケットの転送には使用されなくなります。</p>
+<p>LACPデータユニットの交換間隔には、FAST（1秒ごと）とSLOW（30秒ごと）の2種類が定義されています。リンク・アグリゲーションの仕様では、交換間隔の3倍の時間無通信状態が続いた場合、そのインターフェースはリンク・アグリゲーションのグループから除外され、パケットの転送には使用されなくなります。</p>
 <p>LACPライブラリでは、LACPデータユニット受信時にPacket-Inさせるフローエントリに対し、交換間隔の3倍の時間（SHORT_TIMEOUT_TIMEは3秒、LONG_TIMEOUT_TIMEは90秒）をidle_timeoutとして設定することにより、無通信の監視を行っています。</p>
 <p>交換間隔が変更された場合、idle_timeoutの時間も再設定する必要があるため、LACPライブラリでは以下のような実装をしています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
@@ -1143,7 +1096,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
     <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
 </pre></div>
 </div>
-<p>本節の冒頭で整理したとおり、ポートの有効/無効状態が変更され、パケットの転送に使用可能な物理インターフェースの個数が増減すると、論理インターフェースを通過するパケットが実際に使用する物理インターフェースが変更になる可能性があります。パケットの経路が変更される場合、すでに登録されているフローエントリを削除し、新たにフローエントリを登録する必要があります。この例では処理を簡略化するため、「ポートの有効/無効状態が変更された場合、当該OpenFlowスイッチの全学習結果を削除する」という実装となっています。</p>
+<p>本節の冒頭で説明したとおり、ポートの有効/無効状態が変更されると、論理インターフェースを通過するパケットが実際に使用する物理インターフェースが変更になる可能性があります。そのため、登録されているフローエントリを全て削除しています。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>

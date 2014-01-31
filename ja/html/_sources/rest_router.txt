@@ -3,14 +3,14 @@
 ルータ
 ======
 
-本章では、「 :ref:`ch_rest_api` 」を拡張して実装され、Ryuのソースツリーに登
-録されているルータ(ryu/app/rest_router.py)の使用方法について説明します。
+本章では、RESTで設定が出来る
+ルータの使用方法について説明します。
 
 
 シングルテナントでの動作例
 --------------------------
 
-まず、VLANによるテナント分けのされていない以下のようなトポロジを作成し、各ス
+以下のようなトポロジを作成し、各ス
 イッチ(ルータ)に対してアドレスやルートの追加・削除を行い、各ホスト間の疎通可
 否を確認する例を紹介します。
 
@@ -175,44 +175,6 @@ controller: c0 (root):
 
 上記ログがルータ3台分表示されれば準備完了です。
 
-この時点での各ルータのフローエントリは以下のようになっています。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
 
 アドレスの設定
 ^^^^^^^^^^^^^^
@@ -346,129 +308,9 @@ Node: c0 (root):
         }
       ]
 
-この時点での各ルータのフローエントリを詳しく見ていきます。
 
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=2959.014s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
-     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x2, duration=2959.013s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x0, duration=3264.839s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=3264.839s, table=0, n_packets=4, n_bytes=168, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=3264.839s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x1, duration=2968.378s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=2959.016s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-ルータs1には「172.16.20.1/24」と「172.16.30.30/24」というアドレスを設定し
-ました。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x2, duration=2959.014s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
-
-1番めと2番めに登録されている優先度1037のフローエントリは、「ルータ宛のパケッ
-トが到達したらPacket-Inメッセージを送信する」というものです。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x2, duration=2959.013s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-
-3番めと4番めに登録されている優先度36のフローエントリは、「同じサブネット内宛
-のパケットが到達したら通常のL2スイッチと同じように振る舞う」というものです。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x1, duration=2968.378s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=2959.016s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-一番下とその上の優先度2のフローエントリは、「 :ref:`ch_switching_hub` 」の
-スイッチングハブと同等の機能です。
-
-.. NOTE::
-
-    確認するタイミングによっては、idle_timeout=1800のフローエントリが登録さ
-    れている場合があります。これは上記スイッチングハブ機能によって登録された
-    ものです。REST APIによって明示的に登録したフローエントリではないため、
-    ここでは説明を省略します。
-
-s2とs3にも、s1と同様に3種類のフローエントリが追加されます。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=2108.172s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x2, duration=2099.929s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=2108.172s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x2, duration=2099.928s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x0, duration=2433.12s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=2433.12s, table=0, n_packets=4, n_bytes=168, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=2433.12s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=2108.173s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=2099.929s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=3034.293s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.20 actions=CONTROLLER:65535
-     cookie=0x1, duration=3047.037s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=3047.037s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x2, duration=3034.293s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x0, duration=3410.131s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=3410.131s, table=0, n_packets=3, n_bytes=126, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=3410.131s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x2, duration=3034.294s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=3047.038s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-
-この時点でのトポロジは、次のようなものになります。
-
-.. only:: latex
-
-  .. image:: images/rest_router/fig2.eps
-     :scale: 80%
-     :align: center
-
-.. only:: epub
-
-  .. image:: images/rest_router/fig2.png
-     :align: center
-
-.. only:: not latex and not epub
-
-  .. image:: images/rest_router/fig2.png
-     :scale: 40%
-     :align: center
-
-各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを
-登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブ
-ネットが等しいものをデフォルトゲートウェイとして設定します。
+ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして
+登録します。
 
 host: h1:
 
@@ -493,25 +335,6 @@ host: h3:
 ::
 
     root@ryu-vm:~# ip route add default via 192.168.30.1
-
-この時点でのトポロジは、次のようなものになります。
-
-.. only:: latex
-
-  .. image:: images/rest_router/fig3.eps
-     :scale: 80%
-     :align: center
-
-.. only:: epub
-
-  .. image:: images/rest_router/fig3.png
-     :align: center
-
-.. only:: not latex and not epub
-
-  .. image:: images/rest_router/fig3.png
-     :scale: 40%
-     :align: center
 
 
 デフォルトルートの設定
@@ -582,78 +405,6 @@ Node: c0 (root):
         }
       ]
 
-この時点での各ルータのフローエントリを詳しく見ていきます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=300.558s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
-     cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x2, duration=300.558s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x10000, duration=63.768s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58->eth_src,set_field:f2:97:d6:37:76:4f->eth_dst,output:2
-     cookie=0x0, duration=424.577s, table=0, n_packets=6, n_bytes=252, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=424.577s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=300.559s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-5番めに優先度1のフローエントリが追加されています。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x10000, duration=63.768s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58->eth_src,set_field:f2:97:d6:37:76:4f->eth_dst,output:2
-
-その内容は「TTLを減らし、送信元MACをルータs1、宛先MACをルータs2に書き換え、
-デフォルトルートに向けて送信する」であり、一般的なルータの動作と同様のもので
-す。
-
-s2とs3にも、s1と同様のフローエントリが追加されます。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x3, duration=320.843s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=366.178s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=366.178s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x3, duration=320.843s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x10000, duration=134.406s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f->eth_src,set_field:ea:35:54:4a:f4:58->eth_dst,output:2
-     cookie=0x0, duration=516.45s, table=0, n_packets=7, n_bytes=294, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=516.45s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x3, duration=320.844s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=366.179s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.20 actions=CONTROLLER:65535
-     cookie=0x1, duration=410.033s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=410.033s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x10000, duration=223.636s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:62:4f:3c:69:70:ef->eth_src,set_field:4a:5e:39:87:3c:14->eth_dst,output:2
-     cookie=0x0, duration=623.403s, table=0, n_packets=5, n_bytes=210, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=623.403s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=410.034s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
 
 
 静的ルートの設定
@@ -681,43 +432,8 @@ Node: c0 (root):
         }
       ]
 
-この時点でのルータs2のフローエントリを確認してみます。
 
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x3, duration=498.185s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=543.52s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=543.52s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x3, duration=498.185s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x10000, duration=311.748s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f->eth_src,set_field:ea:35:54:4a:f4:58->eth_dst,output:2
-     cookie=0x0, duration=693.792s, table=0, n_packets=8, n_bytes=336, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=693.792s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x3, duration=498.186s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=543.521s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14->eth_src,set_field:62:4f:3c:69:70:ef->eth_dst,output:3
-     cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-
-下から2番めのフローエントリが追加されています。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14->eth_src,set_field:62:4f:3c:69:70:ef->eth_dst,output:3
-
-その内容は「宛先IPアドレスが192.168.30.0/24であれば、TTLを減らし、送信元
-MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」とい
-うものです。
-
-この時点でのトポロジは、次のようなものになります。
+アドレスやルートの設定状態は、次のようになります。
 
 .. only:: latex
 
@@ -941,30 +657,6 @@ Node: c0 (root):
         }
       ]
 
-この時点でのルータs2のフローエントリを確認してみます。
-「 `静的ルートの設定`_ 」で追加されたcookie=0x20000のフローエントリが削除
-されていることがわかります。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x3, duration=966.583s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=1011.918s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
-     cookie=0x1, duration=1011.918s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x3, duration=966.583s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
-     cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x10000, duration=780.146s, table=0, n_packets=3, n_bytes=294, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f->eth_src,set_field:ea:35:54:4a:f4:58->eth_dst,output:2
-     cookie=0x0, duration=1162.19s, table=0, n_packets=9, n_bytes=378, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=1162.19s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x3, duration=966.584s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
-     cookie=0x1, duration=1011.919s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 
 この状態で、pingによる疎通を確認してみます。h2からh3へはルート情報がなくなっ
 たため、疎通できないことがわかります。
@@ -1039,24 +731,6 @@ Node: c0 (root):
         }
       ]
 
-この時点でのルータs1のフローエントリを確認してみます。IPアドレス
-「172.16.20.1/24」が削除されたことにより、当該アドレスに関連するフローエン
-トリが削除されていることがわかります。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x2, duration=1672.897s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
-     cookie=0x2, duration=1672.897s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-     cookie=0x10000, duration=1436.107s, table=0, n_packets=15, n_bytes=1470, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58->eth_src,set_field:f2:97:d6:37:76:4f->eth_dst,output:2
-     cookie=0x0, duration=1796.916s, table=0, n_packets=9, n_bytes=378, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=1796.916s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x2, duration=1672.898s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 
 この状態で、pingによる疎通を確認してみます。h2からh1へは、h1の所属するサブ
 ネットに関する情報がルータs1から削除されたため、疎通できないことがわかりま
@@ -1283,48 +957,9 @@ controller: c0 (root):
 
 上記ログがルータ3台分表示されれば準備完了です。
 
-この時点での各ルータのフローエントリは以下のようになっています。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-
 
 アドレスの設定
 ^^^^^^^^^^^^^^
-
 
 各ルータにアドレスを設定します。
 
@@ -1523,159 +1158,8 @@ Node: c0 (root):
         }
       ]
 
-この時点での各ルータのフローエントリを詳しく見ていきます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x0, duration=193.556s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=193.556s, table=0, n_packets=6, n_bytes=276, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=127.796s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=149.878s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=138.464s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=193.556s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-     cookie=0x200000000, duration=149.879s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
-     cookie=0x6e00000000, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-
-ルータs1には「172.16.10.1/24」と「10.10.10.1/24」というアドレスを設定し
-ました。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-
-下から3～6番めの優先度1037のフローエントリは、「ルータ宛のパケットが到達した
-らPacket-Inメッセージを送信する」というものです。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-
-先頭4件の優先度1036のフローエントリは、「同じサブネット内宛のパケットが到達
-したら通常のL2スイッチと同じように振る舞う」というものです。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x200000001, duration=149.878s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=138.464s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=127.796s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-
-7～10番めに登録されている優先度1002のフローエントリは、
-「 :ref:`ch_switching_hub` 」のスイッチングハブと同等の機能です。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x200000000, duration=149.879s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
-     cookie=0x6e00000000, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-
-末尾2件の優先度1001のフローエントリは「上記条件に合致しないVLANタグつきのパ
-ケットは破棄する」というものです。
-
-s2とs3にも、s1と同様に4種類のフローエントリが追加されます。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=246.929s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x200000001, duration=266.336s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x0, duration=357.916s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=357.916s, table=0, n_packets=8, n_bytes=368, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=246.93s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=357.916s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x6e00000002, duration=246.93s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x200000000, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
-     cookie=0x6e00000000, duration=249.862s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000002, duration=387.391s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=380.962s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x200000001, duration=402.138s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x0, duration=551.808s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=551.808s, table=0, n_packets=4, n_bytes=184, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=380.963s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=402.142s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=387.393s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=551.808s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x200000001, duration=402.139s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=380.962s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.3 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=387.392s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.3 actions=CONTROLLER:65535
-     cookie=0x200000000, duration=402.143s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
-     cookie=0x6e00000000, duration=383.832s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-
-この時点でのトポロジは、次のようなものになります。
-
-.. only:: latex
-
-  .. image:: images/rest_router/fig6.eps
-     :scale: 80%
-     :align: center
-
-.. only:: epub
-
-  .. image:: images/rest_router/fig6.png
-     :align: center
-
-.. only:: not latex and not epub
-
-  .. image:: images/rest_router/fig6.png
-     :scale: 40%
-     :align: center
-
-各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを
-登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブ
-ネットが等しいものをデフォルトゲートウェイとして設定します。
+ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして
+登録します。
 
 host: h1s1:
 
@@ -1725,7 +1209,7 @@ host: h2s3:
 
     root@ryu-vm:~# ip route add default via 172.16.20.1
 
-この時点でのトポロジは、次のようなものになります。
+設定されたアドレスは、次の通りです。
 
 .. only:: latex
 
@@ -1858,95 +1342,9 @@ Node: c0 (root):
         }
       ]
 
-この時点での各ルータのフローエントリを詳しく見ていきます。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000002, duration=2639.984s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=2632.846s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x200000001, duration=2651.398s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=2629.316s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x0, duration=2695.077s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=2695.077s, table=0, n_packets=10, n_bytes=460, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=2629.317s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=2651.399s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=2632.847s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=2639.985s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=2695.077s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x6e00000001, duration=2632.846s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=2629.316s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=2651.398s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=2639.984s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-     cookie=0x200010000, duration=750.008s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:a2:a0:a0:cf:8c:71->eth_src,set_field:f2:c4:23:49:fe:99->eth_dst,output:3
-     cookie=0x6e00010000, duration=747.398s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:a2:a0:a0:cf:8c:71->eth_src,set_field:f2:c4:23:49:fe:99->eth_dst,output:3
-
-末尾2件の優先度1001のフローエントリが、「上記条件に合致しないVLANタグつきの
-パケットは破棄する」という内容から「TTLを減らし、送信元MACをルータs1、
-宛先MACをルータs2に書き換え、デフォルトルートに向けて送信する」という内容に
-書き換わっています。これは一般的なルータの動作と同様のものです。
-
-s2とs3にも、s1と同様のフローエントリが追加されます。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=2965.817s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x200000001, duration=2985.224s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x0, duration=3076.804s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=3076.804s, table=0, n_packets=14, n_bytes=644, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=2965.818s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=2985.225s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=3076.804s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x6e00000002, duration=2965.818s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=2985.225s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x200010000, duration=828.691s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
-     cookie=0x6e00010000, duration=826.537s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
-
-switch: s3 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000002, duration=3025.871s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=3019.442s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x200000001, duration=3040.618s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-     cookie=0x0, duration=3190.288s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=3190.288s, table=0, n_packets=8, n_bytes=368, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=3019.443s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=3040.622s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=3025.873s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=3190.288s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x200000001, duration=3040.619s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=3019.442s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.3 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=3025.872s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.3 actions=CONTROLLER:65535
-     cookie=0x200010000, duration=686.337s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:a5:5c:7f:8d:01->eth_src,set_field:9e:1a:e9:0d:51:a0->eth_dst,output:3
-     cookie=0x6e00010000, duration=683.707s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:a5:5c:7f:8d:01->eth_src,set_field:9e:1a:e9:0d:51:a0->eth_dst,output:3
 
 続いてルータs2に対し、ルータs3配下のホスト(172.16.20.0/24)へのスタティック
-ルートを設定します。vlan_id=2の場合のみ設定し、vlan_id=110では設定しません。
+ルートを設定します。vlan_id=2の場合のみ設定します。
 
 Node: c0 (root):
 
@@ -1967,47 +1365,6 @@ Node: c0 (root):
           ]
         }
       ]
-
-この時点でのルータs2のフローエントリを確認してみます。
-
-switch: s2 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x6e00000002, duration=3543.887s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-     cookie=0x200000001, duration=3563.294s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
-     cookie=0x0, duration=3654.874s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
-     cookie=0x0, duration=3654.874s, table=0, n_packets=22, n_bytes=1012, priority=1,arp actions=CONTROLLER:65535
-     cookie=0x6e00000002, duration=3543.888s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200020000, duration=59.814s, table=0, n_packets=0, n_bytes=0, priority=1026,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=dec_ttl,set_field:9e:1a:e9:0d:51:a0->eth_src,set_field:f2:a5:5c:7f:8d:01->eth_dst,output:4
-     cookie=0x200000001, duration=3563.295s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-     cookie=0x0, duration=3654.874s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-     cookie=0x6e00000002, duration=3543.888s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x200000001, duration=3563.295s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
-     cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
-     cookie=0x200010000, duration=1406.761s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
-     cookie=0x6e00010000, duration=1404.607s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:c4:23:49:fe:99->eth_src,set_field:a2:a0:a0:cf:8c:71->eth_dst,output:3
-
-9番めに優先度1026のフローエントリが追加されています。
-
-.. rst-class:: sourcecode
-
-::
-
-     cookie=0x200020000, duration=59.814s, table=0, n_packets=0, n_bytes=0, priority=1026,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=dec_ttl,set_field:9e:1a:e9:0d:51:a0->eth_src,set_field:f2:a5:5c:7f:8d:01->eth_dst,output:4
-
-その内容は「宛先IPアドレスが172.16.20.0/24であれば、TTLを減らし、送信元
-MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」とい
-うものです。
 
 
 設定内容の確認
@@ -2237,8 +1594,8 @@ REST API一覧
 本章で紹介したrest_routerのREST API一覧です。
 
 
-登録済み情報の取得
-^^^^^^^^^^^^^^^^^^
+設定の取得
+^^^^^^^^^^
 
 =============  ========================================
 **メソッド**   GET
@@ -2269,7 +1626,7 @@ REST API一覧
 =============  ================================================
 
 
-固定ルートの設定
+静的ルートの設定
 ^^^^^^^^^^^^^^^^
 
 =============  ================================================
@@ -2316,8 +1673,8 @@ REST API一覧
 =============  ==========================================
 
 
-固定ルート/デフォルトルートの削除
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ルートの削除
+^^^^^^^^^^^^
 
 =============  ==========================================
 **メソッド**   DELETE

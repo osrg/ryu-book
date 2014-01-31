@@ -52,10 +52,10 @@
             
   <div class="section" id="ch-rest-router">
 <span id="id1"></span><h1>ルータ<a class="headerlink" href="#ch-rest-router" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="rest_api.html#ch-rest-api"><em>REST連携</em></a>」を拡張して実装され、Ryuのソースツリーに登録されているルータ(ryu/app/rest_router.py)の使用方法について説明します。</p>
+<p>本章では、RESTで設定が出来るルータの使用方法について説明します。</p>
 <div class="section" id="id2">
 <h2>シングルテナントでの動作例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>まず、VLANによるテナント分けのされていない以下のようなトポロジを作成し、各スイッチ(ルータ)に対してアドレスやルートの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
+<p>以下のようなトポロジを作成し、各スイッチ(ルータ)に対してアドレスやルートの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。</p>
 <a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" style="width: 401.2px; height: 248.0px;" /></a>
 <div class="section" id="id3">
 <h3>環境構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -176,31 +176,6 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>上記ログがルータ3台分表示されれば準備完了です。</p>
-<p>この時点での各ルータのフローエントリは以下のようになっています。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
 </div>
 <div class="section" id="id4">
 <h3>アドレスの設定<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -313,76 +288,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24
   ]
 </pre></div>
 </div>
-<p>この時点での各ルータのフローエントリを詳しく見ていきます。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x2, duration=2959.014s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
- cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x2, duration=2959.013s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x0, duration=3264.839s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=3264.839s, table=0, n_packets=4, n_bytes=168, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=3264.839s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x1, duration=2968.378s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x2, duration=2959.016s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>ルータs1には「172.16.20.1/24」と「172.16.30.30/24」というアドレスを設定しました。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
-cookie=0x2, duration=2959.014s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>1番めと2番めに登録されている優先度1037のフローエントリは、「ルータ宛のパケットが到達したらPacket-Inメッセージを送信する」というものです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x1, duration=2968.377s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
-cookie=0x2, duration=2959.013s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
-</pre></div>
-</div>
-<p>3番めと4番めに登録されている優先度36のフローエントリは、「同じサブネット内宛のパケットが到達したら通常のL2スイッチと同じように振る舞う」というものです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x1, duration=2968.378s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
-cookie=0x2, duration=2959.016s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>一番下とその上の優先度2のフローエントリは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブと同等の機能です。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">確認するタイミングによっては、idle_timeout=1800のフローエントリが登録されている場合があります。これは上記スイッチングハブ機能によって登録されたものです。REST APIによって明示的に登録したフローエントリではないため、ここでは説明を省略します。</p>
-</div>
-<p>s2とs3にも、s1と同様に3種類のフローエントリが追加されます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
- cookie=0x1, duration=2108.172s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x2, duration=2099.929s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=2108.172s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x2, duration=2099.928s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x0, duration=2433.12s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=2433.12s, table=0, n_packets=4, n_bytes=168, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=2433.12s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x3, duration=2088.278s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=2108.173s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x2, duration=2099.929s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x2, duration=3034.293s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.20 actions=CONTROLLER:65535
- cookie=0x1, duration=3047.037s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=3047.037s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x2, duration=3034.293s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x0, duration=3410.131s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=3410.131s, table=0, n_packets=3, n_bytes=126, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=3410.131s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x2, duration=3034.294s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=3047.038s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 404.0px; height: 304.4px;" /></a>
-<p>各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブネットが等しいものをデフォルトゲートウェイとして設定します。</p>
+<p>ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして登録します。</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
 </pre></div>
@@ -395,8 +301,6 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
 </pre></div>
 </div>
-<p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 402.4px; height: 308.8px;" /></a>
 </div>
 <div class="section" id="id5">
 <h3>デフォルトルートの設定<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -449,58 +353,6 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   ]
 </pre></div>
 </div>
-<p>この時点での各ルータのフローエントリを詳しく見ていきます。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x2, duration=300.558s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
- cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x2, duration=300.558s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x10000, duration=63.768s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58-&gt;eth_src,set_field:f2:97:d6:37:76:4f-&gt;eth_dst,output:2
- cookie=0x0, duration=424.577s, table=0, n_packets=6, n_bytes=252, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=424.577s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x1, duration=347.48s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x2, duration=300.559s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>5番めに優先度1のフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x10000, duration=63.768s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58-&gt;eth_src,set_field:f2:97:d6:37:76:4f-&gt;eth_dst,output:2
-</pre></div>
-</div>
-<p>その内容は「TTLを減らし、送信元MACをルータs1、宛先MACをルータs2に書き換え、デフォルトルートに向けて送信する」であり、一般的なルータの動作と同様のものです。</p>
-<p>s2とs3にも、s1と同様のフローエントリが追加されます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=320.843s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
- cookie=0x1, duration=366.178s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=366.178s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x3, duration=320.843s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x10000, duration=134.406s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f-&gt;eth_src,set_field:ea:35:54:4a:f4:58-&gt;eth_dst,output:2
- cookie=0x0, duration=516.45s, table=0, n_packets=7, n_bytes=294, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=516.45s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x3, duration=320.844s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=366.179s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x2, duration=344.069s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.20 actions=CONTROLLER:65535
- cookie=0x1, duration=410.033s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=410.033s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x10000, duration=223.636s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:62:4f:3c:69:70:ef-&gt;eth_src,set_field:4a:5e:39:87:3c:14-&gt;eth_dst,output:2
- cookie=0x0, duration=623.403s, table=0, n_packets=5, n_bytes=210, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=623.403s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x2, duration=387.061s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=410.034s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
 </div>
 <div class="section" id="id6">
 <h3>静的ルートの設定<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -520,31 +372,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   ]
 </pre></div>
 </div>
-<p>この時点でのルータs2のフローエントリを確認してみます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=498.185s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
- cookie=0x1, duration=543.52s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=543.52s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x3, duration=498.185s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x10000, duration=311.748s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f-&gt;eth_src,set_field:ea:35:54:4a:f4:58-&gt;eth_dst,output:2
- cookie=0x0, duration=693.792s, table=0, n_packets=8, n_bytes=336, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=693.792s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x3, duration=498.186s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=543.521s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14-&gt;eth_src,set_field:62:4f:3c:69:70:ef-&gt;eth_dst,output:3
- cookie=0x2, duration=521.411s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>下から2番めのフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x20000, duration=14.78s, table=0, n_packets=0, n_bytes=0, priority=26,ip,nw_dst=192.168.30.0/24 actions=dec_ttl,set_field:4a:5e:39:87:3c:14-&gt;eth_src,set_field:62:4f:3c:69:70:ef-&gt;eth_dst,output:3
-</pre></div>
-</div>
-<p>その内容は「宛先IPアドレスが192.168.30.0/24であれば、TTLを減らし、送信元MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」というものです。</p>
-<p>この時点でのトポロジは、次のようなものになります。</p>
+<p>アドレスやルートの設定状態は、次のようになります。</p>
 <a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" style="width: 410.4px; height: 288.0px;" /></a>
 </div>
 <div class="section" id="id7">
@@ -721,24 +549,6 @@ PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
   ]
 </pre></div>
 </div>
-<p>この時点でのルータs2のフローエントリを確認してみます。「<a class="reference internal" href="#id6">静的ルートの設定</a>」で追加されたcookie=0x20000のフローエントリが削除されていることがわかります。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=966.583s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=192.168.10.1 actions=CONTROLLER:65535
- cookie=0x1, duration=1011.918s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.1 actions=CONTROLLER:65535
- cookie=0x1, duration=1011.918s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x3, duration=966.583s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=192.168.10.0/24,nw_dst=192.168.10.0/24 actions=NORMAL
- cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x10000, duration=780.146s, table=0, n_packets=3, n_bytes=294, priority=1,ip actions=dec_ttl,set_field:f2:97:d6:37:76:4f-&gt;eth_src,set_field:ea:35:54:4a:f4:58-&gt;eth_dst,output:2
- cookie=0x0, duration=1162.19s, table=0, n_packets=9, n_bytes=378, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=1162.19s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x3, duration=966.584s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=192.168.10.0/24 actions=CONTROLLER:65535
- cookie=0x1, duration=1011.919s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x2, duration=989.809s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
 <p>この状態で、pingによる疎通を確認してみます。h2からh3へはルート情報がなくなったため、疎通できないことがわかります。</p>
 <p>host: h2:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
@@ -792,18 +602,6 @@ PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
       &quot;switch_id&quot;: &quot;0000000000000001&quot;
     }
   ]
-</pre></div>
-</div>
-<p>この時点でのルータs1のフローエントリを確認してみます。IPアドレス「172.16.20.1/24」が削除されたことにより、当該アドレスに関連するフローエントリが削除されていることがわかります。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x2, duration=1672.897s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,nw_dst=172.16.30.30 actions=CONTROLLER:65535
- cookie=0x2, duration=1672.897s, table=0, n_packets=0, n_bytes=0, priority=36,ip,nw_src=172.16.30.0/24,nw_dst=172.16.30.0/24 actions=NORMAL
- cookie=0x10000, duration=1436.107s, table=0, n_packets=15, n_bytes=1470, priority=1,ip actions=dec_ttl,set_field:ea:35:54:4a:f4:58-&gt;eth_src,set_field:f2:97:d6:37:76:4f-&gt;eth_dst,output:2
- cookie=0x0, duration=1796.916s, table=0, n_packets=9, n_bytes=378, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=1796.916s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x2, duration=1672.898s, table=0, n_packets=0, n_bytes=0, priority=2,ip,nw_dst=172.16.30.0/24 actions=CONTROLLER:65535
 </pre></div>
 </div>
 <p>この状態で、pingによる疎通を確認してみます。h2からh1へは、h1の所属するサブネットに関する情報がルータs1から削除されたため、疎通できないことがわかります。</p>
@@ -968,31 +766,6 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>上記ログがルータ3台分表示されれば準備完了です。</p>
-<p>この時点での各ルータのフローエントリは以下のようになっています。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=10.988s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=85.928s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=1,arp actions=CONTROLLER:65535
- cookie=0x0, duration=117.248s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
-</pre></div>
-</div>
 </div>
 <div class="section" id="id12">
 <h3>アドレスの設定<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -1174,104 +947,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&qu
   ]
 </pre></div>
 </div>
-<p>この時点での各ルータのフローエントリを詳しく見ていきます。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x0, duration=193.556s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=193.556s, table=0, n_packets=6, n_bytes=276, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=127.796s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=149.878s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=138.464s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=193.556s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
- cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
- cookie=0x200000000, duration=149.879s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
- cookie=0x6e00000000, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-</pre></div>
-</div>
-<p>ルータs1には「172.16.10.1/24」と「10.10.10.1/24」というアドレスを設定しました。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
-cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>下から3～6番めの優先度1037のフローエントリは、「ルータ宛のパケットが到達したらPacket-Inメッセージを送信する」というものです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x200000001, duration=149.877s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-cookie=0x200000002, duration=138.463s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-cookie=0x6e00000001, duration=131.325s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
-cookie=0x6e00000002, duration=127.795s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
-</pre></div>
-</div>
-<p>先頭4件の優先度1036のフローエントリは、「同じサブネット内宛のパケットが到達したら通常のL2スイッチと同じように振る舞う」というものです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x200000001, duration=149.878s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-cookie=0x200000002, duration=138.464s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-cookie=0x6e00000001, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
-cookie=0x6e00000002, duration=127.796s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
-</pre></div>
-</div>
-<p>7～10番めに登録されている優先度1002のフローエントリは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブと同等の機能です。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x200000000, duration=149.879s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
-cookie=0x6e00000000, duration=131.326s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-</pre></div>
-</div>
-<p>末尾2件の優先度1001のフローエントリは「上記条件に合致しないVLANタグつきのパケットは破棄する」というものです。</p>
-<p>s2とs3にも、s1と同様に4種類のフローエントリが追加されます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=246.929s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x200000001, duration=266.336s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x0, duration=357.916s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=357.916s, table=0, n_packets=8, n_bytes=368, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=246.93s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=357.916s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x6e00000002, duration=246.93s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x200000001, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=249.861s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x200000002, duration=253.507s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x200000000, duration=266.337s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
- cookie=0x6e00000000, duration=249.862s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x200000002, duration=387.391s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=380.962s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x200000001, duration=402.138s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x0, duration=551.808s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=551.808s, table=0, n_packets=4, n_bytes=184, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=380.963s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=402.142s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=387.393s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=551.808s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x200000001, duration=402.139s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=383.831s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=380.962s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.3 actions=CONTROLLER:65535
- cookie=0x200000002, duration=387.392s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.3 actions=CONTROLLER:65535
- cookie=0x200000000, duration=402.143s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=drop
- cookie=0x6e00000000, duration=383.832s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=drop
-</pre></div>
-</div>
-<p>この時点でのトポロジは、次のようなものになります。</p>
-<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" style="width: 488.8px; height: 378.0px;" /></a>
-<p>各ルータにIPアドレスが割り当てられたので、各ホストのデフォルトゲートウェイを登録します。各ホストは隣接するルータに割り当てられたIPアドレスのうち、サブネットが等しいものをデフォルトゲートウェイとして設定します。</p>
+<p>ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして登録します。</p>
 <p>host: h1s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
 </pre></div>
@@ -1296,7 +972,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
 </pre></div>
 </div>
-<p>この時点でのトポロジは、次のようなものになります。</p>
+<p>設定されたアドレスは、次の通りです。</p>
 <a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" style="width: 480.0px; height: 347.6px;" /></a>
 </div>
 <div class="section" id="id13">
@@ -1395,76 +1071,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;
   ]
 </pre></div>
 </div>
-<p>この時点での各ルータのフローエントリを詳しく見ていきます。</p>
-<p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x200000002, duration=2639.984s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000001, duration=2632.846s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x200000001, duration=2651.398s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.10.0/24,nw_dst=172.16.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=2629.316s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x0, duration=2695.077s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=2695.077s, table=0, n_packets=10, n_bytes=460, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=2629.317s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=2651.399s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=2632.847s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.10.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=2639.985s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=2695.077s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x6e00000001, duration=2632.846s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=2629.316s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.1 actions=CONTROLLER:65535
- cookie=0x200000001, duration=2651.398s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.10.1 actions=CONTROLLER:65535
- cookie=0x200000002, duration=2639.984s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.1 actions=CONTROLLER:65535
- cookie=0x200010000, duration=750.008s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:a2:a0:a0:cf:8c:71-&gt;eth_src,set_field:f2:c4:23:49:fe:99-&gt;eth_dst,output:3
- cookie=0x6e00010000, duration=747.398s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:a2:a0:a0:cf:8c:71-&gt;eth_src,set_field:f2:c4:23:49:fe:99-&gt;eth_dst,output:3
-</pre></div>
-</div>
-<p>末尾2件の優先度1001のフローエントリが、「上記条件に合致しないVLANタグつきのパケットは破棄する」という内容から「TTLを減らし、送信元MACをルータs1、宛先MACをルータs2に書き換え、デフォルトルートに向けて送信する」という内容に書き換わっています。これは一般的なルータの動作と同様のものです。</p>
-<p>s2とs3にも、s1と同様のフローエントリが追加されます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=2965.817s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x200000001, duration=2985.224s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x0, duration=3076.804s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=3076.804s, table=0, n_packets=14, n_bytes=644, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=2965.818s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=2985.225s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=3076.804s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x6e00000002, duration=2965.818s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=2968.749s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x200000001, duration=2985.225s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x200000002, duration=2972.395s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x200010000, duration=828.691s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:c4:23:49:fe:99-&gt;eth_src,set_field:a2:a0:a0:cf:8c:71-&gt;eth_dst,output:3
- cookie=0x6e00010000, duration=826.537s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:c4:23:49:fe:99-&gt;eth_src,set_field:a2:a0:a0:cf:8c:71-&gt;eth_dst,output:3
-</pre></div>
-</div>
-<p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s3
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x200000002, duration=3025.871s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=3019.442s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x200000001, duration=3040.618s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=172.16.20.0/24,nw_dst=172.16.20.0/24 actions=NORMAL
- cookie=0x0, duration=3190.288s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=3190.288s, table=0, n_packets=8, n_bytes=368, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=3019.443s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x200000001, duration=3040.622s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=3025.873s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=3190.288s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x200000001, duration=3040.619s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=3022.311s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=172.16.20.1 actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=3019.442s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.3 actions=CONTROLLER:65535
- cookie=0x200000002, duration=3025.872s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.3 actions=CONTROLLER:65535
- cookie=0x200010000, duration=686.337s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:a5:5c:7f:8d:01-&gt;eth_src,set_field:9e:1a:e9:0d:51:a0-&gt;eth_dst,output:3
- cookie=0x6e00010000, duration=683.707s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:a5:5c:7f:8d:01-&gt;eth_src,set_field:9e:1a:e9:0d:51:a0-&gt;eth_dst,output:3
-</pre></div>
-</div>
-<p>続いてルータs2に対し、ルータs3配下のホスト(172.16.20.0/24)へのスタティックルートを設定します。vlan_id=2の場合のみ設定し、vlan_id=110では設定しません。</p>
+<p>続いてルータs2に対し、ルータs3配下のホスト(172.16.20.0/24)へのスタティックルートを設定します。vlan_id=2の場合のみ設定します。</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2
   [
@@ -1481,35 +1088,6 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   ]
 </pre></div>
 </div>
-<p>この時点でのルータs2のフローエントリを確認してみます。</p>
-<p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x6e00000002, duration=3543.887s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=110,nw_src=10.10.10.0/24,nw_dst=10.10.10.0/24 actions=NORMAL
- cookie=0x200000001, duration=3563.294s, table=0, n_packets=0, n_bytes=0, priority=1036,ip,dl_vlan=2,nw_src=192.168.30.0/24,nw_dst=192.168.30.0/24 actions=NORMAL
- cookie=0x0, duration=3654.874s, table=0, n_packets=0, n_bytes=0, priority=1,ip actions=drop
- cookie=0x0, duration=3654.874s, table=0, n_packets=22, n_bytes=1012, priority=1,arp actions=CONTROLLER:65535
- cookie=0x6e00000002, duration=3543.888s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=110,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200020000, duration=59.814s, table=0, n_packets=0, n_bytes=0, priority=1026,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=dec_ttl,set_field:9e:1a:e9:0d:51:a0-&gt;eth_src,set_field:f2:a5:5c:7f:8d:01-&gt;eth_dst,output:4
- cookie=0x200000001, duration=3563.295s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=192.168.30.0/24 actions=CONTROLLER:65535
- cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1002,ip,dl_vlan=2,nw_dst=10.10.10.0/24 actions=CONTROLLER:65535
- cookie=0x0, duration=3654.874s, table=0, n_packets=0, n_bytes=0, priority=0 actions=NORMAL
- cookie=0x6e00000002, duration=3543.888s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x6e00000001, duration=3546.819s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=110,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x200000001, duration=3563.295s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=192.168.30.1 actions=CONTROLLER:65535
- cookie=0x200000002, duration=3550.465s, table=0, n_packets=0, n_bytes=0, priority=1037,ip,dl_vlan=2,nw_dst=10.10.10.2 actions=CONTROLLER:65535
- cookie=0x200010000, duration=1406.761s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=2 actions=dec_ttl,set_field:f2:c4:23:49:fe:99-&gt;eth_src,set_field:a2:a0:a0:cf:8c:71-&gt;eth_dst,output:3
- cookie=0x6e00010000, duration=1404.607s, table=0, n_packets=0, n_bytes=0, priority=1001,ip,dl_vlan=110 actions=dec_ttl,set_field:f2:c4:23:49:fe:99-&gt;eth_src,set_field:a2:a0:a0:cf:8c:71-&gt;eth_dst,output:3
-</pre></div>
-</div>
-<p>9番めに優先度1026のフローエントリが追加されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>cookie=0x200020000, duration=59.814s, table=0, n_packets=0, n_bytes=0, priority=1026,ip,dl_vlan=2,nw_dst=172.16.20.0/24 actions=dec_ttl,set_field:9e:1a:e9:0d:51:a0-&gt;eth_src,set_field:f2:a5:5c:7f:8d:01-&gt;eth_dst,output:4
-</pre></div>
-</div>
-<p>その内容は「宛先IPアドレスが172.16.20.0/24であれば、TTLを減らし、送信元MACをルータs2、宛先MACをルータs3に書き換え、ルータs3に向けて送信する」というものです。</p>
 </div>
 <div class="section" id="id14">
 <h3>設定内容の確認<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h3>
@@ -1746,7 +1324,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
 <h2>REST API一覧<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章で紹介したrest_routerのREST API一覧です。</p>
 <div class="section" id="id15">
-<h3>登録済み情報の取得<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<h3>設定の取得<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -1797,7 +1375,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id17">
-<h3>固定ルートの設定<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<h3>静的ルートの設定<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -1877,7 +1455,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id20">
-<h3>固定ルート/デフォルトルートの削除<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<h3>ルートの削除<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -1932,12 +1510,12 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
 </ul>
 </li>
 <li><a class="reference internal" href="#rest-api">REST API一覧</a><ul>
-<li><a class="reference internal" href="#id15">登録済み情報の取得</a></li>
+<li><a class="reference internal" href="#id15">設定の取得</a></li>
 <li><a class="reference internal" href="#id16">アドレスの設定</a></li>
-<li><a class="reference internal" href="#id17">固定ルートの設定</a></li>
+<li><a class="reference internal" href="#id17">静的ルートの設定</a></li>
 <li><a class="reference internal" href="#id18">デフォルトルートの設定</a></li>
 <li><a class="reference internal" href="#id19">アドレスの削除</a></li>
-<li><a class="reference internal" href="#id20">固定ルート/デフォルトルートの削除</a></li>
+<li><a class="reference internal" href="#id20">ルートの削除</a></li>
 </ul>
 </li>
 </ul>

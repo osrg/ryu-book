@@ -53,16 +53,12 @@
   <div class="section" id="id1">
 <h1>パケットライブラリ<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h1>
 <p>OpenFlowのPacket-InやPacket-Outメッセージには、生のパケット内容をあらわすバイト列が入るフィールドがあります。Ryuには、このような生のパケットをアプリケーションから扱いやすくするためのライブラリが用意されています。本章はこのライブラリについて紹介します。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">OpenFlow 1.2以降では、Packet-Inメッセージのmatchフィールドから、パース済みのパケットヘッダーの内容を取得できる場合があります。ただし、このフィールドにどれだけの情報を入れてくれるかは、スイッチの実装によります。例えばOpen vSwitchは最低限の情報しか入れてくれませんので、多くの場合コントローラー側でパケット内容を解析する必要があります。一方LINCは可能な限り多くの情報を入れてくれます。</p>
-</div>
 <div class="section" id="id2">
 <h2>基本的な使い方<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <div class="section" id="id3">
 <h3>プロトコルヘッダクラス<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>Ryuパケットライブラリには、色々なプロトコルヘッダに対応するクラスが用意されています。</p>
-<p>以下のものを含むプロトコルがサポートされています。各プロトコルに対応するクラスなどの詳細はAPIリファレンスをご参照ください。</p>
+<p>以下のものを含むプロトコルがサポートされています。各プロトコルに対応するクラスなどの詳細は<a class="reference external" href="http://ryu.readthedocs.org/en/latest/">APIリファレンス</a>をご参照ください。</p>
 <ul class="simple">
 <li>arp</li>
 <li>bgp</li>
@@ -77,6 +73,7 @@
 <li>llc</li>
 <li>lldp</li>
 <li>mpls</li>
+<li>ospf</li>
 <li>pbb</li>
 <li>sctp</li>
 <li>slow</li>
@@ -306,6 +303,10 @@
                                   <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
         <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">OpenFlow 1.2以降では、Packet-Inメッセージのmatchフィールドから、パース済みのパケットヘッダーの内容を取得できる場合があります。ただし、このフィールドにどれだけの情報を入れてくれるかは、スイッチの実装によります。例えばOpen vSwitchは最低限の情報しか入れてくれませんので、多くの場合コントローラー側でパケット内容を解析する必要があります。一方LINCは可能な限り多くの情報を入れてくれます。</p>
 </div>
 <p>以下はping -c 3を実行した場合のログの例です。</p>
 <div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;IcmpResponder EventOFPSwitchFeatures

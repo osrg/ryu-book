@@ -3,17 +3,16 @@
 ファイアウォール
 ================
 
-本章では、「 :ref:`ch_rest_api` 」を拡張して実装され、Ryuのソースツリーに登
-録されているファイアウォール(ryu/app/rest_firewall.py)の使用方法について説
+本章では、RESTで設定が出来る
+ファイアウォールの使用方法について説
 明します。
 
 
 シングルテナントでの動作例
 --------------------------
 
-まず、「 :ref:`ch_switching_hub` 」で作成した環境を使用して、VLANによるテ
-ナント分けのされていない以下のようなトポロジを作成し、スイッチs1に対してルー
-ルの追加・削除を行い、各ホスト間の疎通可否を確認する例を紹介します。
+以下のようなトポロジを作成し、スイッチs1に対してルー
+ルの追加・削除を行う例を紹介します。
 
 .. only:: latex
 
@@ -111,71 +110,18 @@ controller: c0 (root):
     [FW][INFO] switch_id=0000000000000001: Join as firewall
 
 
-初期状態の確認
+
+初期状態の変更
 ^^^^^^^^^^^^^^
 
-firewallの状態を確認します。初期状態は無効(disable)になっています。
+firewallの起動直後は、すべての通信を遮断するよう無効状態となっています。
+次のコマンドで有効(enable)にします。
 
 .. NOTE::
 
     以降の説明で使用するREST APIの詳細は、章末の「 `REST API一覧`_ 」を参照
     してください。
 
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-      [
-        {
-          "status": "disable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-.. NOTE::
-
-    RESTコマンドの実行結果は見やすいように整形しています。
-
-この時点でのフローエントリは以下のようになっています。最高優先度で全パケット
-の破棄が登録されていることがわかります。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=32.538s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=32.575s, table=0, n_packets=0, n_bytes=0, priority=65535 actions=drop
-     cookie=0x0, duration=32.538s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
-
-この状態でh1からh2へのpingの疎通を確認してみます。全パケットを破棄するフロー
-エントリが登録されているため、pingは届きません。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 10.0.0.2
-    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-    From 10.0.0.1 icmp_seq=1 Destination Host Unreachable
-    From 10.0.0.1 icmp_seq=2 Destination Host Unreachable
-    From 10.0.0.1 icmp_seq=3 Destination Host Unreachable
-    From 10.0.0.1 icmp_seq=4 Destination Host Unreachable
-    ...
-
-
-初期状態の変更
-^^^^^^^^^^^^^^
-
-firewallを有効(enable)にします。
 
 Node: c0 (root):
 
@@ -202,23 +148,13 @@ Node: c0 (root):
         }
       ]
 
-firewallを有効にしたことにより、最高優先度で登録されていた破棄の指示が削除さ
-れます。
+.. NOTE::
 
-switch: s1 (root):
+    RESTコマンドの実行結果は見やすいように整形しています。
 
-.. rst-class:: console
 
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x0, duration=110.148s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=110.148s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
-
-この状態で再度h1からh2へのpingの疎通を確認してみます。全パケットを破棄する
-フローエントリはなくなりましたが、h1からh2へのpingパケットを転送するための
-フローエントリが登録されていないため、やはりpingは届きません。
+h1からh2へのpingの疎通を確認してみます。
+しかし、アクセス許可のルールを設定していないため遮断されてしまいます。
 
 host: h1:
 
@@ -232,9 +168,7 @@ host: h1:
     --- 10.0.0.2 ping statistics ---
     20 packets transmitted, 0 received, 100% packet loss, time 19003ms
 
-firewallが無効であった場合と異なり、ルールにマッチしなかったパケットは最低優
-先度で登録されているPacket-Inのフローエントリによって通知されます。この通知
-によって、破棄されたパケットがログに出力されます。
+遮断されたパケットはログに出力されます。
 
 controller: c0 (root):
 
@@ -245,93 +179,20 @@ controller: c0 (root):
     [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:02',ethertype=2048,src='00:00:00:00:00:01'), ipv4(csum=9895,dst='10.0.0.2',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.1',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=55644,data=echo(data='K\x8e\xaeR\x00\x00\x00\x00=\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=6952,seq=1),type=8)
     ...
 
-
-ログ出力機能の設定変更
-^^^^^^^^^^^^^^^^^^^^^^
-
-firewallのログ出力を無効にします。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/disable/0000000000000001
-      [
-        [
-          "command_result", {
-            "result": "success",
-            "details": "Log collection stopped."
-          }
-        ]
-      ]
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
-      [
-        {
-          "log status": "disable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-この状態で先ほどと同様にpingを送信し、遮断されることを確認します。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 10.0.0.2
-    PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-    ^C
-    --- 10.0.0.2 ping statistics ---
-    20 packets transmitted, 0 received, 100% packet loss, time 19003ms
-
-ログ出力を無効にしたため、パケットを遮断した旨のログが出力されないことがわか
-ります。
-
-このあとの動作確認のため、ログ出力を有効に戻しておきます。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/log/enable/0000000000000001
-      [
-        [
-          "command_result", {
-            "result": "success",
-            "details": "Log collection started."
-          }
-        ]
-      ]
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/log/status
-      [
-        {
-          "log status": "enable",
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-
 ルール追加
 ^^^^^^^^^^
 
-h1とh2の間でpingによる疎通が可能になるようルールを追加します。双方向にルール
-を設定をする必要がありますので、ルールをふたつ追加します。なお、優先度の指定
-を省略すると自動的に優先度1で登録されます。また、ルールIDは自動採番されます。
+h1とh2の間でpingを許可するルールを追加します。双方向にルール
+を追加をする必要があります。
 
-=========  ============  ============  ===========  =====  ===========
-(優先度)   送信元        宛先          プロトコル   可否   (ルールID)
-=========  ============  ============  ===========  =====  ===========
-1          10.0.0.1/32   10.0.0.2/32   ICMP         許可   1
-1          10.0.0.2/32   10.0.0.1/32   ICMP         許可   2
-=========  ============  ============  ===========  =====  ===========
+次のルールを追加してみましょう。ルールIDは自動採番されます。
+
+============  ============  ===========  =====  ===========
+送信元        宛先          プロトコル   可否   (ルールID)
+============  ============  ===========  =====  ===========
+10.0.0.1/32   10.0.0.2/32   ICMP         許可   1
+10.0.0.2/32   10.0.0.1/32   ICMP         許可   2
+============  ============  ===========  =====  ===========
 
 Node: c0 (root):
 
@@ -380,15 +241,15 @@ switch: s1 (root):
      cookie=0x1, duration=145.05s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
      cookie=0x2, duration=118.265s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
 
-また、h2とh3の間では、pingを含むすべてのIPv4パケットの疎通が可能になるよう
-ルールを追加します。先ほどと同様双方向にルールを設定します。
+また、h2とh3の間で、pingを含むすべてのIPv4パケットを許可するよう
+ルールを追加します。
 
-=========  ============  ============  ===========  =====  ===========
-(優先度)   送信元        宛先          プロトコル   可否   (ルールID)
-=========  ============  ============  ===========  =====  ===========
-1          10.0.0.2/32   10.0.0.3/32   不問         許可   3
-1          10.0.0.3/32   10.0.0.2/32   不問         許可   4
-=========  ============  ============  ===========  =====  ===========
+============  ============  ===========  =====  ===========
+送信元        宛先          プロトコル   可否   (ルールID)
+============  ============  ===========  =====  ===========
+10.0.0.2/32   10.0.0.3/32   any          許可   3
+10.0.0.3/32   10.0.0.2/32   any          許可   4
+============  ============  ===========  =====  ===========
 
 Node: c0 (root):
 
@@ -438,9 +299,11 @@ switch: s1 (root):
      cookie=0x1, duration=362.147s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
      cookie=0x2, duration=335.362s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
 
-先ほど追加したh2とh3の間のルールに、ping(ICMP)のパケットを遮断するルールを
-追加します。先ほどと同様双方向にルールを設定します。また、先ほど追加したルー
-ルよりも優先度を高く設定します。
+ルールには優先度を設定することが出来ます。
+
+h2とh3の間でping(ICMP)を遮断するルールを
+追加してみましょう。
+優先度としてデフォルト値の1より大きい値を設定します。
 
 =========  ============  ============  ===========  =====  ===========
 (優先度)   送信元        宛先          プロトコル   可否   (ルールID)
@@ -577,17 +440,6 @@ Node: c0 (root):
         }
       ]
 
-=========  ============  ============  ===========  =====  ===========
-(優先度)   送信元        宛先          プロトコル   可否   (ルールID)
-=========  ============  ============  ===========  =====  ===========
-10         10.0.0.2/32   10.0.0.3/32   ICMP         遮断   5
-10         10.0.0.3/32   10.0.0.2/32   ICMP         遮断   6
-1          10.0.0.1/32   10.0.0.2/32   ICMP         許可   1
-1          10.0.0.2/32   10.0.0.1/32   ICMP         許可   2
-1          10.0.0.2/32   10.0.0.3/32   不問         許可   3
-1          10.0.0.3/32   10.0.0.2/32   不問         許可   4
-=========  ============  ============  ===========  =====  ===========
-
 設定したルールを図示すると以下のようになります。
 
 .. only:: latex
@@ -607,8 +459,8 @@ Node: c0 (root):
      :scale: 40%
      :align: center
 
-実際にh1からh2にpingを実行して確認します。設定したルールにより、pingが疎通
-できることがわかります。
+h1からh2にpingを実行してみます。許可するルールが設定されているので、pingが疎通
+します。
 
 host: h1:
 
@@ -721,69 +573,6 @@ Node: c0 (root):
         }
       ]
 
-再度ルールを確認します。
-
-Node: c0 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
-      [
-        {
-          "access_control_list": [
-            {
-              "rules": [
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_dst": "10.0.0.3",
-                  "nw_src": "10.0.0.2",
-                  "rule_id": 3,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_dst": "10.0.0.2",
-                  "nw_src": "10.0.0.3",
-                  "rule_id": 4,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "10.0.0.2",
-                  "nw_src": "10.0.0.1",
-                  "rule_id": 1,
-                  "actions": "ALLOW"
-                },
-                {
-                  "priority": 1,
-                  "dl_type": "IPv4",
-                  "nw_proto": "ICMP",
-                  "nw_dst": "10.0.0.1",
-                  "nw_src": "10.0.0.2",
-                  "rule_id": 2,
-                  "actions": "ALLOW"
-                }
-              ]
-            }
-          ],
-          "switch_id": "0000000000000001"
-        }
-      ]
-
-=========  ============  ============  ===========  =====  ===========
-(優先度)   送信元        宛先          プロトコル   可否   (ルールID)
-=========  ============  ============  ===========  =====  ===========
-1          10.0.0.1/32   10.0.0.2/32   ICMP         許可   1
-1          10.0.0.2/32   10.0.0.1/32   ICMP         許可   2
-1          10.0.0.2/32   10.0.0.3/32   不問         許可   3
-1          10.0.0.3/32   10.0.0.2/32   不問         許可   4
-=========  ============  ============  ===========  =====  ===========
 
 現在のルールを図示すると以下のようになります。
 
@@ -804,23 +593,6 @@ Node: c0 (root):
      :scale: 40%
      :align: center
 
-フローを確認すると、"rule_id:5"と"rule_id:6"に該当するフローエントリが削除
-されていることがわかります。
-
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x3, duration=300.883s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
-     cookie=0x4, duration=292.668s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
-     cookie=0x0, duration=431.556s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=431.556s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
-     cookie=0x1, duration=345.616s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
-     cookie=0x2, duration=336.091s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
 
 実際に確認します。h2とh3の間のping(ICMP)を遮断するルールが削除されたため、
 pingが疎通できるようになったことがわかります。
@@ -1023,8 +795,8 @@ vlan_id=2に10.0.0.0/8で送受信されるping(ICMPパケット)を許可する
 =========  ========  ============  ============  ===========  =====  ===========
 (優先度)   VLAN ID   送信元        宛先          プロトコル   可否   (ルールID)
 =========  ========  ============  ============  ===========  =====  ===========
-1          2         10.0.0.0/8    不問          ICMP         許可   1
-1          2         不問          10.0.0.0/8    ICMP         許可   2
+1          2         10.0.0.0/8    any           ICMP         許可   1
+1          2         any           10.0.0.0/8    ICMP         許可   2
 =========  ========  ============  ============  ===========  =====  ===========
 
 Node: c0 (root):
@@ -1105,18 +877,6 @@ Node: c0 (root):
         }
       ]
 
-switch: s1 (root):
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-    OFPST_FLOW reply (OF1.3) (xid=0x2):
-     cookie=0x200000001, duration=190.226s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_src=10.0.0.0/8 actions=NORMAL
-     cookie=0x0, duration=329.515s, table=0, n_packets=0, n_bytes=0, priority=65534,arp actions=NORMAL
-     cookie=0x0, duration=329.515s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:128
-     cookie=0x200000002, duration=174.986s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,dl_vlan=2,nw_dst=10.0.0.0/8 actions=NORMAL
 
 実際に確認してみます。vlan_id=2であるh1から、同じくvlan_id=2であるh2に対し、
 pingを実行すると、追加したルールのとおり疎通できることがわかります。
@@ -1135,23 +895,6 @@ host: h1:
     64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.047 ms
     ...
 
-vlan_id=2であるh1からvlan_id=110であるh3へは、VLAN IDが異なるためpingパ
-ケットは到達しません。
-
-host: h1:
-
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# ping 10.0.0.3
-    PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
-    From 10.0.0.1 icmp_seq=1 Destination Host Unreachable
-    From 10.0.0.1 icmp_seq=2 Destination Host Unreachable
-    From 10.0.0.1 icmp_seq=3 Destination Host Unreachable
-    ^C
-    --- 10.0.0.3 ping statistics ---
-    6 packets transmitted, 0 received, +3 errors, 100% packet loss, time 5032ms
 
 vlan_id=110同士であるh3とh4の間は、ルールが登録されていないため、pingパケッ
 トは遮断されます。
@@ -1168,7 +911,7 @@ host: h3:
     --- 10.0.0.4 ping statistics ---
     6 packets transmitted, 0 received, 100% packet loss, time 4999ms
 
-firewallでパケットが遮断されるとログが出力されます。
+パケットが遮断されたのでログが出力されます。
 
 controller: c0 (root):
 
@@ -1225,8 +968,8 @@ REST API一覧
 =============  ==========================================
 
 
-新規ルールの追加
-^^^^^^^^^^^^^^^^
+ルールの追加
+^^^^^^^^^^^^
 
 =============  =========================================================
 **メソッド**   POST
@@ -1262,8 +1005,8 @@ REST API一覧
 =============  =========================================================
 
 
-既存ルールの削除
-^^^^^^^^^^^^^^^^
+ルールの削除
+^^^^^^^^^^^^
 
 =============  ==========================================
 **メソッド**   DELETE

@@ -52,10 +52,10 @@
             
   <div class="section" id="openflow">
 <span id="ch-switch-test-tool"></span><h1>OpenFlowスイッチテストツール<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、RyuのOpenFlowスイッチテストツールの使用方法を解説します。</p>
+<p>本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、テストツールの使用方法を解説します。</p>
 <div class="section" id="id1">
 <h2>テストツールの概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリ登録／パケット印加を実施し、OpenFlowスイッチのパケット編集や転送(または破棄)の処理結果とテストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。</p>
+<p>本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリ登録／パケット印加を実施し、OpenFlowスイッチのパケット書き換えや転送(または破棄)の処理結果と、テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。</p>
 <p>ツールは、OpenFlowバージョン1.3のFlowModメッセージの試験に対応しています。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -75,12 +75,12 @@
 </tr>
 </tbody>
 </table>
-<p>また印加パケットとして、Ryuのパケットライブラリで定義されたプロトコルを用いることが出来ます。</p>
+<p>印加するパケットの生成やパケット書き換え結果の確認などに「<em class="xref std std-ref">ch_packet_lib</em>」を利用しています。</p>
 <div class="section" id="id2">
 <h3>動作概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id3">
 <h4>試験実行イメージ<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>テストツールを実行した際の動作イメージを示します。テストパターンファイルには、「登録するフローエントリ」「印加パケット」「期待する処理結果」が記述されます。また、ツール実行のための環境設定については後述(<a class="reference internal" href="#id8">ツール実行環境</a>を参照)します。</p>
+<p>テストツールを実行した際の動作イメージを示します。テストパターンファイルには、「登録するフローエントリ」「印加パケット」「期待する処理結果」が記述されます。また、ツール実行のための環境設定については後述(<a class="reference internal" href="#id7">ツール実行環境</a>を参照)します。</p>
 <a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" style="width: 726.6px; height: 247.8px;" /></a>
 </div>
 <div class="section" id="id4">
@@ -110,86 +110,12 @@ match: 30_ICMPV6_CODE
 </div>
 </div>
 </div>
+</div>
 <div class="section" id="id5">
-<h3>エラーメッセージ一覧<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="43%" />
-<col width="57%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">エラーメッセージ</th>
-<th class="head">説明</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
-<td>前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)</td>
-</tr>
-<tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
-<td>前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
-<td>フローエントリ登録に失敗(Barrier Requestのタイムアウト)</td>
-</tr>
-<tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
-<td>フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-even"><td>Added incorrect flows: [flows]</td>
-<td>フローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
-</tr>
-<tr class="row-odd"><td>Failed to add flows: flow stats request timeout.</td>
-<td>フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)</td>
-</tr>
-<tr class="row-even"><td>Failed to add flows: [err_msg]</td>
-<td>フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
-<td>試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
-</tr>
-<tr class="row-even"><td>Failed to request port stats from target: [err_msg]</td>
-<td>試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-odd"><td>Failed to request port stats from tester: request timeout.</td>
-<td>補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
-</tr>
-<tr class="row-even"><td>Failed to request port stats from tester: [err_msg]</td>
-<td>補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-odd"><td>Received incorrect [packet]</td>
-<td>期待した出力パケットの受信エラー(異なるパケットを受信)</td>
-</tr>
-<tr class="row-even"><td>Receiving timeout: [detail]</td>
-<td>期待した出力パケットの受信に失敗(タイムアウト)</td>
-</tr>
-<tr class="row-odd"><td>Faild to send packet: barrier request timeout.</td>
-<td>パケット印加に失敗(Barrier Requestのタイムアウト)</td>
-</tr>
-<tr class="row-even"><td>Faild to send packet: [err_msg]</td>
-<td>パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)</td>
-</tr>
-<tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
-<td>table-miss確認エラー(フローにmatchしている)</td>
-</tr>
-<tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
-<td>table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)</td>
-</tr>
-<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
-<td>table-missの確認に失敗(TableStats Requestのタイムアウト)</td>
-</tr>
-<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
-<td>table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="section" id="id6">
-<h2>使用方法<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<h2>使用方法<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>テストツールの使用方法を解説します。</p>
-<div class="section" id="id7">
-<h3>テストパターンファイル<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id6">
+<h3>テストパターンファイル<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>試験したいテストパターンに応じたテストパターンファイルを作成する必要があります。</p>
 <p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre>[
@@ -246,10 +172,10 @@ match: 30_ICMPV6_CODE
 <div>ryu/tests/switch/of13</div></blockquote>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>ツール実行環境<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>テストツール実行のための環境を構築する必要があります。</p>
-<a class="reference internal image-reference" href="_images/fig24.png"><img alt="_images/fig24.png" class="align-center" src="_images/fig24.png" style="width: 592.2px; height: 277.8px;" /></a>
+<div class="section" id="id7">
+<h3>ツール実行環境<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストツール実行のための環境は次のとおりです。</p>
+<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 592.2px; height: 277.8px;" /></a>
 <p>補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。</p>
 <ul class="simple">
 <li>actions=CONTROLLERのフローエントリ登録</li>
@@ -261,11 +187,11 @@ match: 30_ICMPV6_CODE
 <p>Open vSwitchを試験対象スイッチとしたツール実行環境をmininet上で実現する環境構築スクリプトが、Ryuのソースツリーに用意されています。</p>
 <blockquote>
 <div>ryu/tests/switch/run_mininet.py</div></blockquote>
-<p class="last">スクリプトの使用例を「<a class="reference internal" href="#id10">テストツール使用例</a>」に記載しています。</p>
+<p class="last">スクリプトの使用例を「<a class="reference internal" href="#id9">テストツール使用例</a>」に記載しています。</p>
 </div>
 </div>
-<div class="section" id="id9">
-<h3>テストツールの実行方法<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id8">
+<h3>テストツールの実行方法<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストツールはRyuのソースツリー上で公開されています。</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -332,11 +258,11 @@ match: 30_ICMPV6_CODE
 <p>テストツールの起動後、試験対象スイッチと補助スイッチがコントローラに接続されると、指定したテストパターンファイルを元に試験が開始されます。</p>
 </div>
 </div>
-<div class="section" id="id10">
-<h2>テストツール使用例<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id9">
+<h2>テストツール使用例<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>サンプルテストパターンやオリジナルのテストパターンファイルを用いたテストツールの実行手順を紹介します。</p>
-<div class="section" id="id11">
-<h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id10">
+<h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch／actionsの一通りの動作確認を行う手順を示します。</p>
 <p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
 <ol class="arabic">
@@ -408,8 +334,8 @@ action: 11_COPY_TTL_OUT
 </div></blockquote>
 </li>
 </ol>
-<div class="section" id="id12">
-<h4>&lt;参考&gt;<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id11">
+<h4>&lt;参考&gt;<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <blockquote>
 <div><p>サンプルテストパターンファイル一覧</p>
 <blockquote>
@@ -470,8 +396,8 @@ ryu/tests/switch/of13/match:
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id13">
-<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id12">
+<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>次に、オリジナルのテストパターンを作成してテストツールを実行する手順を示します。</p>
 <p>例として、OpenFlowスイッチがルータ機能を実現するために必要なmatch／actionsを処理する機能を備えているかを確認するテストパターンを作成します。</p>
 <ol class="arabic">
@@ -593,7 +519,7 @@ ryu/tests/switch/of13/match:
 <ol class="arabic" start="2">
 <li><p class="first">試験環境構築</p>
 <blockquote>
-<div><p>試験環境構築スクリプトを用いて試験環境を構築します。手順は<a class="reference internal" href="#id11">サンプルテストパターンの実行手順</a>を参照してください。</p>
+<div><p>試験環境構築スクリプトを用いて試験環境を構築します。手順は<a class="reference internal" href="#id10">サンプルテストパターンの実行手順</a>を参照してください。</p>
 </div></blockquote>
 </li>
 <li><p class="first">テストツール実行</p>
@@ -641,6 +567,80 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </li>
 </ol>
 </div>
+<div class="section" id="id13">
+<h3>エラーメッセージ一覧<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="43%" />
+<col width="57%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">エラーメッセージ</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
+<td>前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
+<td>前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
+<td>フローエントリ登録に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
+<td>フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-even"><td>Added incorrect flows: [flows]</td>
+<td>フローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: flow stats request timeout.</td>
+<td>フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows: [err_msg]</td>
+<td>フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
+<td>試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from target: [err_msg]</td>
+<td>試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from tester: request timeout.</td>
+<td>補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from tester: [err_msg]</td>
+<td>補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Received incorrect [packet]</td>
+<td>期待した出力パケットの受信エラー(異なるパケットを受信)</td>
+</tr>
+<tr class="row-even"><td>Receiving timeout: [detail]</td>
+<td>期待した出力パケットの受信に失敗(タイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Faild to send packet: barrier request timeout.</td>
+<td>パケット印加に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Faild to send packet: [err_msg]</td>
+<td>パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
+<td>table-miss確認エラー(フローにmatchしている)</td>
+</tr>
+<tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
+<td>table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
+<td>table-missの確認に失敗(TableStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
+<td>table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 
@@ -659,21 +659,21 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <li><a class="reference internal" href="#id4">試験結果の出力イメージ</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">エラーメッセージ一覧</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id6">使用方法</a><ul>
-<li><a class="reference internal" href="#id7">テストパターンファイル</a></li>
-<li><a class="reference internal" href="#id8">ツール実行環境</a></li>
-<li><a class="reference internal" href="#id9">テストツールの実行方法</a></li>
+<li><a class="reference internal" href="#id5">使用方法</a><ul>
+<li><a class="reference internal" href="#id6">テストパターンファイル</a></li>
+<li><a class="reference internal" href="#id7">ツール実行環境</a></li>
+<li><a class="reference internal" href="#id8">テストツールの実行方法</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id10">テストツール使用例</a><ul>
-<li><a class="reference internal" href="#id11">サンプルテストパターンの実行手順</a><ul>
-<li><a class="reference internal" href="#id12">&lt;参考&gt;</a></li>
+<li><a class="reference internal" href="#id9">テストツール使用例</a><ul>
+<li><a class="reference internal" href="#id10">サンプルテストパターンの実行手順</a><ul>
+<li><a class="reference internal" href="#id11">&lt;参考&gt;</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id13">オリジナルテストパターンの実行手順</a></li>
+<li><a class="reference internal" href="#id12">オリジナルテストパターンの実行手順</a></li>
+<li><a class="reference internal" href="#id13">エラーメッセージ一覧</a></li>
 </ul>
 </li>
 </ul>

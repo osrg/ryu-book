@@ -7,16 +7,16 @@ OF-Configライブラリ
 OF-Configプロトコル
 -------------------
 
-OF-ConfigはOpenFlowスイッチ(OF-Configサーバー)の管理のための
+OF-ConfigはOpenFlowスイッチの管理のための
 プロトコルです。
+NETCONF(RFC 6241)のスキーマとして定義されており、
+論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。
+
 OpenFlowと同じONFが策定したもので、以下のサイトから仕様が入手できます。
 
 https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config
 
 本ライブラリはOF-Config 1.1.1に準拠しています。
-
-OF-ConfigはNETCONF(RFC 6241)のスキーマとして定義されており、
-論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。
 
 .. NOTE::
     現在Open vSwitchはOF-Configをサポートしていませんが、

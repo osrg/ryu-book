@@ -57,21 +57,21 @@
 <h2>スパニングツリー<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>スパニングツリーはループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制する機能です。また、ループを防止するという本来の機能を応用して、ネットワーク故障が発生した際に自動的に経路を切り替えるネットワークの冗長性確保の手段としても用いられます。</p>
 <p>スパニングツリーにはSTP、RSTP、PVST+、MSTPなど様々な種別がありますが、本章では最も基本的なSTPの実装を見ていきます。</p>
-<p>STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツリーとして扱い、各ブリッジのポートをフレーム転送可能または不可能な状態に設定することで、ループ構造を持つネットワークにおけるブロードキャストストームの発生を抑制します。</p>
+<p>STP(spanning tree protocol：IEEE 802.1D)はネットワークを論理的なツリーとして扱い、各スイッチ(本章ではブリッジと呼ぶことがあります)のポートをフレーム転送可能または不可能な状態に設定することで、ループ構造を持つネットワークでブロードキャストストームの発生を抑制します。</p>
 <a class="reference internal image-reference" href="_images/fig15.png"><img alt="_images/fig15.png" class="align-center" src="_images/fig15.png" style="width: 676.0px; height: 256.0px;" /></a>
-<p>STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換しブリッジや各ポートの情報を比較することで、論理ツリーの頂点であるルートブリッジを決定し、さらに各ブリッジのポートのフレーム転送可否を決定します。</p>
+<p>STPではブリッジ間でBPDU(Bridge Protocol Data Unit)パケットを相互に交換し、ブリッジやポートの情報を比較しあうことで、各ポートのフレーム転送可否を決定します。</p>
 <p>具体的には、次のような手順により実現されます。</p>
 <ol class="arabic">
 <li><p class="first">ルートブリッジの選出</p>
 <blockquote>
-<div><p>ブリッジ間のBPDUパケットの交換により、最小のブリッジIDを持つブリッジがルートブリッジとして選出され、以降はルートブリッジのみがオリジナルのBPDUパケットを送信し、他のブリッジはルートブリッジから受信したBPDUパケットを転送します。</p>
+<div><p>ブリッジ間のBPDUパケットの交換により、最小のブリッジIDを持つブリッジがルートブリッジとして選出されます。以降はルートブリッジのみがオリジナルのBPDUパケットを送信し、他のブリッジはルートブリッジから受信したBPDUパケットを転送します。</p>
 </div></blockquote>
 </li>
 </ol>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p>ブリッジIDは、各ブリッジに設定されたブリッジpriorityと特定ポートのMACアドレスの組み合わせで算出されます。</p>
-<blockquote>
+<blockquote class="last">
 <div><p>ブリッジID</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -90,7 +90,6 @@
 </tbody>
 </table>
 </div></blockquote>
-<p class="last">ブリッジpriorityは、RyuのSTPライブラリではコンフィグ設定により変更が可能です。</p>
 </div>
 <ol class="arabic" start="2">
 <li><p class="first">ポートの役割の決定</p>
@@ -116,11 +115,11 @@
 </div></blockquote>
 </li>
 </ol>
-<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 408.0px; height: 299.5px;" /></a>
+<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 408.0px; height: 299.5px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
 <p>ルートブリッジに至るまでのコストは、各ポートが受信したBPDUパケットの設定値から次のように比較されます。</p>
-<blockquote>
+<blockquote class="last">
 <div><p>優先1：root path cost値による比較。</p>
 <blockquote>
 <div>各ブリッジはBPDUパケットを転送する際に、出力ポートに設定されたpath cost値をBPDUパケットのroot path cost値に加算します。これによりroot path cost値はルートブリッジに到達するまでに経由する各リンクのpath cost値の合計の値となります。</div></blockquote>
@@ -146,7 +145,6 @@
 </table>
 </div></blockquote>
 </div></blockquote>
-<p class="last">ポートのpath cost値やポートpriorityは、RyuのSTPライブラリではコンフィグ設定により変更が可能です。</p>
 </div>
 <ol class="arabic" start="3">
 <li><p class="first">ポートの状態遷移</p>
@@ -155,7 +153,7 @@
 </div></blockquote>
 </li>
 </ol>
-<a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" style="width: 632.5px; height: 198.5px;" /></a>
+<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 632.5px; height: 198.5px;" /></a>
 <p>各ポートは状態に応じてフレーム転送有無などの動作を決定します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -191,7 +189,7 @@
 <div class="section" id="ryu">
 <h2>Ryuアプリケーションの実行<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>スパニングツリーの機能をOpenFlowを用いて実現した、Ryuのスパニングツリーアプリケーションを実行してみます。</p>
-<p>Ryuのソースツリーに用意されているsimple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブにスパニングツリー機能を追加したアプリケーションです。</p>
+<p>Ryuのソースツリーに用意されているsimple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」にスパニングツリー機能を追加したアプリケーションです。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">simple_switch_stp_13.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
@@ -524,7 +522,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>この結果、最終的に各ポートはFORWARD状態またはBLOCK状態となります。</p>
 <a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" class="align-center" src="_images/fig51.png" style="width: 400.5px; height: 286.5px;" /></a>
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
-<p>pingコマンドを実行する前に、各スイッチでパケットがループしていないことを確認できるようにtcpdumpコマンドを実行しておきます。</p>
+<p>pingコマンドを実行する前に、tcpdumpコマンドを実行しておきます。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
 </pre></div>
@@ -557,7 +555,7 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.041/7.784/84.407/24.230 ms
 </pre></div>
 </div>
-<p>各スイッチで実行したtcpdumpの出力結果から、ARPがループしていないことが確認できます。</p>
+<p>tcpdumpの出力結果から、ARPがループしていないことが確認できます。</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
 tcpdump: WARNING: s1-eth2: no IPv4 address assigned
@@ -643,7 +641,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 <p>これまでBLOCK状態だったs3-eth2のポートがFORWARD状態となり、再びフレーム転送可能な状態となったことが確認できます。</p>
-<a class="reference internal image-reference" href="_images/fig61.png"><img alt="_images/fig61.png" class="align-center" src="_images/fig61.png" style="width: 404.5px; height: 300.0px;" /></a>
+<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" style="width: 404.5px; height: 300.0px;" /></a>
 </div>
 <div class="section" id="id5">
 <h4>故障回復時のSTP再計算<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -703,7 +701,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 [STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
 </pre></div>
 </div>
-<p>OpenFlowスイッチの初回起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
+<p>アプリケーション起動時と同様のツリー構成となり、再びフレーム転送可能な状態となったことが確認できます。</p>
 <a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" class="align-center" src="_images/fig71.png" style="width: 404.5px; height: 297.5px;" /></a>
 </div>
 </div>
@@ -711,7 +709,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id6">
 <h2>OpenFlowによるスパニングツリー<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>Ryuのスパニングツリーアプリケーションにおいて、OpenFlowを用いてどのようにスパニングツリーの機能を実現しているかを見ていきます。</p>
-<p>OpenFlow 1.3には次のようなポートの動作を設定するコンフィグが用意されているため、各ポートの状態に応じてPort ModificationメッセージをOpenFlowスイッチに発行することで、ポートのフレーム転送有無などの動作を制御することができます。</p>
+<p>OpenFlow 1.3には次のようなポートの動作を設定するコンフィグが用意されています。Port ModificationメッセージをOpenFlowスイッチに発行することで、ポートのフレーム転送有無などの動作を制御することができます。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -778,7 +776,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <p class="first admonition-title">ノート</p>
 <p class="last">Ryuに実装されているスパニングツリーのライブラリは、簡略化のためLEARN状態でのMACアドレス学習(BPDU以外のパケット受信)を行っていません。</p>
 </div>
-<p>これらの設定に加え、コントローラはOpenFlowスイッチとの接続時に収集したポート情報や各OpenFlowスイッチが受信したBPDUパケットに設定されたルートブリッジの情報を元に送信用のBPDUパケットを構築しPacket-Outメッセージを発行することで、OpenFlowスイッチ間のBPDUパケットの交換を実現します。</p>
+<p>これらの設定に加え、コントローラはOpenFlowスイッチとの接続時に収集したポート情報や各OpenFlowスイッチが受信したBPDUパケットに設定されたルートブリッジの情報を元に、送信用のBPDUパケットを構築しPacket-Outメッセージを発行することで、OpenFlowスイッチ間のBPDUパケットの交換を実現します。</p>
 </div>
 <div class="section" id="id7">
 <h2>Ryuによるスパニングツリーの実装<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
@@ -790,14 +788,20 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <p>stplib.pyはBPDUパケットの交換や各ポートの役割・状態の管理などのスパニングツリー機能を提供するライブラリです。simple_switch_stp.pyはスパニングツリーライブラリを適用することでスイッチングハブのアプリケーションにスパニングツリー機能を追加したアプリケーションプログラムです。</p>
 <div class="admonition attention">
 <p class="first admonition-title">注意</p>
-<p class="last">前述の通り、simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_stp_13.pyを元にアプリケーションの詳細を説明します。</p>
+<p class="last">simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_stp_13.pyを元にアプリケーションの詳細を説明します。</p>
 </div>
 <div class="section" id="id8">
 <h3>ライブラリの実装<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <div class="section" id="id9">
 <h4>ライブラリ概要<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" class="align-center" src="_images/fig81.png" style="width: 448.4px; height: 281.6px;" /></a>
-<p>STPライブラリ(Stpクラスインスタンス)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスインスタンス・Portクラスインスタンスが生成されます。各クラスインスタンスが生成・起動された後は、StpクラスインスタンスからのOpenFlowメッセージ受信通知、BridgeクラスインスタンスのSTP計算(ルートブリッジ選択・各ポートの役割選択)、Portクラスインスタンスのポート状態遷移・BPDUパケット送受信が連動し、スパニングツリー機能を実現します。</p>
+<p>STPライブラリ(Stpクラスインスタンス)がOpenFlowスイッチのコントローラへの接続を検出すると、Bridgeクラスインスタンス・Portクラスインスタンスが生成されます。各クラスインスタンスが生成・起動された後は、</p>
+<ul class="simple">
+<li>StpクラスインスタンスからのOpenFlowメッセージ受信通知</li>
+<li>BridgeクラスインスタンスのSTP計算(ルートブリッジ選択・各ポートの役割選択)</li>
+<li>Portクラスインスタンスのポート状態遷移・BPDUパケット送受信</li>
+</ul>
+<p>が連動し、スパニングツリー機能を実現します。</p>
 </div>
 <div class="section" id="id10">
 <h4>コンフィグ設定項目<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h4>
@@ -1265,8 +1269,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 <div class="section" id="id17">
 <h4>STPイベント処理<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーション</em></a>」と同様にSTPライブラリから通知されるイベントを受信するイベントハンドラを用意します。</p>
-<ul>
-<li><p class="first">STPライブラリで定義された<tt class="docutils literal"><span class="pre">stplib.EventPacketIn</span></tt>イベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のパケットハンドリンクを行います。</p>
+<p>STPライブラリで定義された<tt class="docutils literal"><span class="pre">stplib.EventPacketIn</span></tt>イベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のパケットハンドリンクを行います。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><div class="highlight"><pre>class SimpleSwitch13(app_manager.RyuApp):
 
@@ -1277,8 +1280,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-<li><p class="first">ネットワークトポロジの変更通知イベント(<tt class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></tt>)を受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。</p>
+<p>ネットワークトポロジの変更通知イベント(<tt class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></tt>)を受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
@@ -1309,8 +1311,7 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-<li><p class="first">ポート状態の変更通知イベント(<tt class="docutils literal"><span class="pre">stplib.EventPortStateChange</span></tt>)を受け取り、ポート状態のデバッグログ出力を行っています。</p>
+<p>ポート状態の変更通知イベント(<tt class="docutils literal"><span class="pre">stplib.EventPortStateChange</span></tt>)を受け取り、ポート状態のデバッグログ出力を行っています。</p>
 <blockquote>
 <div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
@@ -1327,8 +1328,6 @@ listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ul>
 <p>以上のように、スパニングツリー機能を提供するライブラリと、ライブラリを利用するアプリケーションによって、スパニングツリー機能を持つスイッチングハブのアプリケーションを実現しています。</p>
 </div>
 </div>
