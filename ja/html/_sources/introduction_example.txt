@@ -52,18 +52,19 @@ SmartSDN Controller (NTTコムウェア)
 
 .. only:: latex
 
-    .. image:: images/introduction_example/fig1.eps
+    .. image:: images/introduction_example/fig1.png
         :align: center
 
 .. only:: epub
 
     .. image:: images/introduction_example/fig1.png
+        :scale: 150 %
         :align: center
 
 .. only:: not latex and not epub
 
     .. image:: images/introduction_example/fig1.png
-        :scale: 50 %
+        :scale: 70 %
         :align: center
 
 
