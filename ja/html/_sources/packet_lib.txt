@@ -68,7 +68,7 @@ __init__引数名には、type_のように最後に_が付きます。
 
         print pkt_ipv4.dst
         print pkt_ipv4.src
-        print pkt_ipvr.proto
+        print pkt_ipv4.proto
 
 ネットワークアドレス
 ^^^^^^^^^^^^^^^^^^^^
