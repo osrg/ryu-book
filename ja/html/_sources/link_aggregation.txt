@@ -798,7 +798,7 @@ MACアドレスの剰余」という振り分けロジックに従うと、次�
 LACPライブラリおよびスイッチングハブのソースコードは、Ryuのソースツリーにあ
 ります。
 
-    ryu/lib/lacliblib.py
+    ryu/lib/lacplib.py
 
     ryu/app/simple_switch_lacp.py
 
