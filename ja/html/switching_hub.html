@@ -316,14 +316,16 @@ eth-src: ホストA
 <td><p class="first">使用しているOpenFlowバージョンに対応したofprotoモジュールを示します。現時点では、以下のいずれかになります。</p>
 <p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0</span></tt></p>
 <p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2</span></tt></p>
-<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3</span></tt></p>
+<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4</span></tt></p>
 </td>
 </tr>
 <tr class="row-even"><td>ofproto_parser</td>
 <td><p class="first">ofprotoと同様に、ofproto_parserモジュールを示します。現時点では、以下のいずれかになります。</p>
 <p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0_parser</span></tt></p>
 <p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2_parser</span></tt></p>
-<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser</span></tt></p>
+<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4_parser</span></tt></p>
 </td>
 </tr>
 </tbody>
@@ -356,6 +358,10 @@ eth-src: ホストA
 </div>
 <p>すべてのパケットにマッチさせるため、空のマッチを生成します。マッチは<tt class="docutils literal"><span class="pre">OFPMatch</span></tt>クラスで表されます。</p>
 <p>次に、コントローラポートへ転送するためのOUTPUTアクションクラス(<tt class="docutils literal"><span class="pre">OFPActionOutput</span></tt>)のインスタンスを生成します。出力先にコントローラ、パケット全体をコントローラに送信するためにmax_lenには<tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt>を指定しています。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">コントローラにはパケットの先頭部分(Ethernetヘッダー分)だけを送信させ、残りはスイッチにバッファーさせた方が効率の点では望ましいのですが、Open vSwitchのバグ(2014年1月現在)を回避するために、ここではパケット全体を送信させます。</p>
+</div>
 <p>最後に、優先度に0(最低)を指定して<tt class="docutils literal"><span class="pre">add_flow()</span></tt>メソッドを実行してFlow Modメッセージを送信します。add_flow()メソッドの内容については後述します。</p>
 </div>
 <div class="section" id="packet-in">

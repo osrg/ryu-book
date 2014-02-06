@@ -280,6 +280,9 @@ ofproto        使用しているOpenFlowバージョンに対応したofproto�
                ``ryu.ofproto.ofproto_v1_2``
 
                ``ryu.ofproto.ofproto_v1_3``
+
+               ``ryu.ofproto.ofproto_v1_4``
+
 ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示します。
                現時点では、以下のいずれかになります。
 
@@ -288,6 +291,8 @@ ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示しま�
                ``ryu.ofproto.ofproto_v1_2_parser``
 
                ``ryu.ofproto.ofproto_v1_3_parser``
+
+               ``ryu.ofproto.ofproto_v1_4_parser``
 ============== ==============================================================
 
 Ryuアプリケーションで利用するDatapathクラスの主なメソッドは以下のものです。
@@ -341,6 +346,13 @@ Table-missフローエントリは、優先度が最低(0)で、すべてのパ�
 ``OFPActionOutput``)のインスタンスを生成します。
 出力先にコントローラ、パケット全体をコントローラに送信するためにmax_lenには
 ``OFPCML_NO_BUFFER`` を指定しています。
+
+.. NOTE::
+
+    コントローラにはパケットの先頭部分(Ethernetヘッダー分)だけを送信
+    させ、残りはスイッチにバッファーさせた方が効率の点では望ましいの
+    ですが、Open vSwitchのバグ(2014年1月現在)を回避するために、ここでは
+    パケット全体を送信させます。
 
 最後に、優先度に0(最低)を指定して ``add_flow()`` メソッドを実行してFlow Mod
 メッセージを送信します。add_flow()メソッドの内容については後述します。
