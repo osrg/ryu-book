@@ -280,6 +280,9 @@ ofproto        使用しているOpenFlowバージョンに対応したofproto�
                ``ryu.ofproto.ofproto_v1_2``
 
                ``ryu.ofproto.ofproto_v1_3``
+
+               ``ryu.ofproto.ofproto_v1_4``
+
 ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示します。
                現時点では、以下のいずれかになります。
 
@@ -288,6 +291,8 @@ ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示しま�
                ``ryu.ofproto.ofproto_v1_2_parser``
 
                ``ryu.ofproto.ofproto_v1_3_parser``
+
+               ``ryu.ofproto.ofproto_v1_4_parser``
 ============== ==============================================================
 
 Ryuアプリケーションで利用するDatapathクラスの主なメソッドは以下のものです。
