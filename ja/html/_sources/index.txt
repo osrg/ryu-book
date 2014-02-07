@@ -16,6 +16,7 @@ RyuによるOpenFlowプログラミング
    link_aggregation.rst
    spanning_tree.rst
    openflow_protocol.rst
+   ofproto_lib.rst
    packet_lib.rst
    of_config.rst
    rest_firewall.rst
