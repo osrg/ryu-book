@@ -373,3 +373,5 @@ epub_copyright = '2014, RYU project team'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+epub_use_index = False
