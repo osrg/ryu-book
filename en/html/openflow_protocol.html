@@ -1,0 +1,360 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenFlow Protocol &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="Packet Library" href="packet_lib.html" />
+    <link rel="prev" title="Spanning Tree" href="spanning_tree.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Packet Library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="Spanning Tree"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="openflow-protocol">
+<span id="ch-openflow-protocol"></span><h1>OpenFlow Protocol<a class="headerlink" href="#openflow-protocol" title="Permalink to this headline">¶</a></h1>
+<p>This section describes match, instructions and actions defined in the OpenFlow protocol.</p>
+<div class="section" id="match">
+<h2>Match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h2>
+<p>There are a variety of conditions that can be specified to match, and it grows each time OpenFlow is updated. OpenFlow 1.0 had 12 types but in OpenFlow 1.3 as many as 40 types of conditions are defined.</p>
+<p>For details of individual matches, please refer to the OpenFlow specification. This section gives a brief description of the Match field in OpenFlow 1.3.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Match field name</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>in_port</td>
+<td>Port number of receiving port</td>
+</tr>
+<tr class="row-odd"><td>in_phy_port</td>
+<td>Physical port number of receiving port</td>
+</tr>
+<tr class="row-even"><td>metadata</td>
+<td>Metadata used to pass information between tables</td>
+</tr>
+<tr class="row-odd"><td>eth_dst</td>
+<td>Destination MAC address of Ethernet</td>
+</tr>
+<tr class="row-even"><td>eth_src</td>
+<td>Source MAC address of Ethernet</td>
+</tr>
+<tr class="row-odd"><td>eth_type</td>
+<td>Frame type of Ethernet</td>
+</tr>
+<tr class="row-even"><td>vlan_vid</td>
+<td>VLAN ID</td>
+</tr>
+<tr class="row-odd"><td>vlan_pcp</td>
+<td>VLAN PCP</td>
+</tr>
+<tr class="row-even"><td>ip_dscp</td>
+<td>IP DSCP</td>
+</tr>
+<tr class="row-odd"><td>ip_ecn</td>
+<td>IP ECN</td>
+</tr>
+<tr class="row-even"><td>ip_proto</td>
+<td>Protocol type of IP</td>
+</tr>
+<tr class="row-odd"><td>ipv4_src</td>
+<td>Source IP address of IPv4</td>
+</tr>
+<tr class="row-even"><td>ipv4_dst</td>
+<td>Destination IP address of IPv4</td>
+</tr>
+<tr class="row-odd"><td>tcp_src</td>
+<td>Source port number of TCP</td>
+</tr>
+<tr class="row-even"><td>tcp_dst</td>
+<td>Destination port number of TCP</td>
+</tr>
+<tr class="row-odd"><td>udp_src</td>
+<td>Source port number of UDP</td>
+</tr>
+<tr class="row-even"><td>udp_dst</td>
+<td>Destination port number of UDP</td>
+</tr>
+<tr class="row-odd"><td>sctp_src</td>
+<td>Source port number of SCTP</td>
+</tr>
+<tr class="row-even"><td>sctp_dst</td>
+<td>Destination port number of SCTP</td>
+</tr>
+<tr class="row-odd"><td>icmpv4_type</td>
+<td>Type of ICMP</td>
+</tr>
+<tr class="row-even"><td>icmpv4_code</td>
+<td>Code of ICMP</td>
+</tr>
+<tr class="row-odd"><td>arp_op</td>
+<td>Opcode of ARP</td>
+</tr>
+<tr class="row-even"><td>arp_spa</td>
+<td>Source IP address of ARP</td>
+</tr>
+<tr class="row-odd"><td>arp_tpa</td>
+<td>Target IP address of ARP</td>
+</tr>
+<tr class="row-even"><td>arp_sha</td>
+<td>Source MAC address of ARP</td>
+</tr>
+<tr class="row-odd"><td>arp_tha</td>
+<td>Target MAC address of ARP</td>
+</tr>
+<tr class="row-even"><td>ipv6_src</td>
+<td>Source IP address of IPv6</td>
+</tr>
+<tr class="row-odd"><td>ipv6_dst</td>
+<td>Destination IP address of IPv6</td>
+</tr>
+<tr class="row-even"><td>ipv6_flabel</td>
+<td>Flow label of IPv6</td>
+</tr>
+<tr class="row-odd"><td>icmpv6_type</td>
+<td>Type of ICMPv6</td>
+</tr>
+<tr class="row-even"><td>icmpv6_code</td>
+<td>Code of ICMPv6</td>
+</tr>
+<tr class="row-odd"><td>ipv6_nd_target</td>
+<td>Target address of IPv6 neighbor discovery</td>
+</tr>
+<tr class="row-even"><td>ipv6_nd_sll</td>
+<td>Source link-layer address of IPv6 neighbor discovery</td>
+</tr>
+<tr class="row-odd"><td>ipv6_nd_tll</td>
+<td>Target link-layer address of IPv6 neighbor discovery</td>
+</tr>
+<tr class="row-even"><td>mpls_label</td>
+<td>MPLS label</td>
+</tr>
+<tr class="row-odd"><td>mpls_tc</td>
+<td>MPLS traffic class (TC)</td>
+</tr>
+<tr class="row-even"><td>mpls_bos</td>
+<td>MPLS BoS bit</td>
+</tr>
+<tr class="row-odd"><td>pbb_isid</td>
+<td>I-SID of 802.1ah PBB</td>
+</tr>
+<tr class="row-even"><td>tunnel_id</td>
+<td>Metadata about logical port</td>
+</tr>
+<tr class="row-odd"><td>ipv6_exthdr</td>
+<td>Pseudo-field of extension header of IPv6</td>
+</tr>
+</tbody>
+</table>
+<p>Depending on fields such as the MAC address and IP address, you can further specify the mask.</p>
+</div>
+<div class="section" id="instruction">
+<h2>Instruction<a class="headerlink" href="#instruction" title="Permalink to this headline">¶</a></h2>
+<p>The instruction is intended to define what happens when a packet corresponding to the match is received. The following types are defined.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Instruction</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Goto Table (Required)</td>
+<td><p class="first">In OpenFlow 1.1 and later, multiple flow tables
+are supported. Using GotoTable, you can take over
+the process of matching packets to a flow table
+you specify. For example, you can set flow entry
+such as &#8220;Add a VLAN-ID200 to packets received on
+port 1 and send it to table 2&#8221;.</p>
+<p class="last">The table ID you specify must be a value greater
+than the current table ID.</p>
+</td>
+</tr>
+<tr class="row-odd"><td>Write Metadata (Optional)</td>
+<td>Set the metadata that can be referenced in the
+following table.</td>
+</tr>
+<tr class="row-even"><td>Write Actions (Required)</td>
+<td>Add an action that is specified in the current
+set of actions. If same type of action has been
+set already, it is replaced with the new action.</td>
+</tr>
+<tr class="row-odd"><td>Apply Actions (Optional)</td>
+<td>Immediately apply the specified action without
+changing the action set.</td>
+</tr>
+<tr class="row-even"><td>Clear Actions (Optional)</td>
+<td>Delete all actions in the current action set.</td>
+</tr>
+<tr class="row-odd"><td>Meter (Optional)</td>
+<td>Apply the packet to the meter you specify.</td>
+</tr>
+</tbody>
+</table>
+<p>The following classes corresponding to each instruction are implemented in Ryu.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">OFPInstructionGotoTable</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionWriteMetadata</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionActions</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">OFPInstructionMeter</span></tt></li>
+</ul>
+<p>Write/Apply/Clear Actions is grouped into OPFInstructionActions and is selected at the time of instantiation.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Support for Write Actions is said to be essential, but at the current time it is not supported in Open vSwitch. Apply Actions is supported, so you need to use it instead.</p>
+</div>
+</div>
+<div class="section" id="action">
+<h2>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h2>
+<p>The OFPActionOutput class is used to specify packet forwarding to be used in Packet-Out and Flow Mod messages. Specify the maximum data size (max_len) to be transmitted to the controller and the destination in the constructor arguments. For the destination, other than the physical port number of the switch, some defined value can be used.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Value</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPP_IN_PORT</td>
+<td>Forwarded to the receive port</td>
+</tr>
+<tr class="row-odd"><td>OFPP_TABLE</td>
+<td>Applied to the first flow table.</td>
+</tr>
+<tr class="row-even"><td>OFPP_NORMAL</td>
+<td>Forwarded by the L2/L3 switch function</td>
+</tr>
+<tr class="row-odd"><td>OFPP_FLOOD</td>
+<td>Flooded to all physical ports of the VLAN except blocked ports and receiving ports</td>
+</tr>
+<tr class="row-even"><td>OFPP_ALL</td>
+<td>Forwarded to all physical ports except receiving ports</td>
+</tr>
+<tr class="row-odd"><td>OFPP_CONTROLLER</td>
+<td>Sent to the controller as a Packet-In message.</td>
+</tr>
+<tr class="row-even"><td>OFPP_LOCAL</td>
+<td>Indicates a local port of the switch</td>
+</tr>
+<tr class="row-odd"><td>OFPP_ANY</td>
+<td>Meant to be used as a wild card when you select a port using Flow Mod (delete) or Stats Requests messages, and it&#8217;s not used in packet forwarding.</td>
+</tr>
+</tbody>
+</table>
+<p>When you specify 0 for max_len, binary data of packet is not attached to the Packet-In message. If <tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt> is specified, the entire packet is attached to the Packet-In message without buffering the packet on the OpenFlow switch.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenFlow Protocol</a><ul>
+<li><a class="reference internal" href="#match">Match</a></li>
+<li><a class="reference internal" href="#instruction">Instruction</a></li>
+<li><a class="reference internal" href="#action">Action</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="spanning_tree.html"
+                        title="previous chapter">Spanning Tree</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="next chapter">Packet Library</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/openflow_protocol.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Packet Library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="Spanning Tree"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

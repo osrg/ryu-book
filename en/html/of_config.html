@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OF-Config Library &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="Firewall" href="rest_firewall.html" />
+    <link rel="prev" title="Packet Library" href="packet_lib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="Firewall"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Packet Library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="of-config-library">
+<span id="ch-of-config"></span><h1>OF-Config Library<a class="headerlink" href="#of-config-library" title="Permalink to this headline">¶</a></h1>
+<p>This section describes Client library of OF-Config that comes with Ryu.</p>
+<div class="section" id="of-config-protocol">
+<h2>OF-Config Protocol<a class="headerlink" href="#of-config-protocol" title="Permalink to this headline">¶</a></h2>
+<p>OF-Config is a protocol for the management of the OpenFlow switch.
+It has been defined as the NETCONF (RFC 6241) schema and can perform status acquisition and settings of logical switch, port, and queue.</p>
+<p>It&#8217;s formulated by ONF the same as OpenFlow and specifications can be obtained from the following website.</p>
+<p><a class="reference external" href="https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config">https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config</a></p>
+<p>This library is in compliance with OF-Config 1.1.1.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Currently Open vSwitch does not support OF-Config, but it does offer a service called OVSDB for the same purpose. OF-Config is a relatively new standard and did not yet exist when Open vSwitch implemented OVSDB.</p>
+<p class="last">The OVSDB protocol specification is published as 7047 RFC, but for all practical purposes it is become a protocol only for Open vSwitch. OF-Config only recently appeared but it is expected to be implemented a lot in future OpenFlow switches.</p>
+</div>
+</div>
+<div class="section" id="library-configuration">
+<h2>Library Configuration<a class="headerlink" href="#library-configuration" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch-class">
+<h3>ryu.lib.of_config.capable_switch.OFCapableSwitch Class<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch-class" title="Permalink to this headline">¶</a></h3>
+<p>A class to handle NETCONF sessions.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="kn">import</span> <span class="n">OFCapableSwitch</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ryu-lib-of-config-classes-module">
+<h3>ryu.lib.of_config.classes Module<a class="headerlink" href="#ryu-lib-of-config-classes-module" title="Permalink to this headline">¶</a></h3>
+<p>A module to provide a set of classes to treat setting contents as python objects.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The class name is basically the same as the names used by the grouping keyword in the yang specification of OF-Config 1.1.1.
+Example: OFPortType</p>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="kn">as</span> <span class="nn">ofc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="usage-example">
+<h2>Usage Example<a class="headerlink" href="#usage-example" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="connection-to-the-switch">
+<h3>Connection to the Switch<a class="headerlink" href="#connection-to-the-switch" title="Permalink to this headline">¶</a></h3>
+<p>Connect to the switch using SSH transport.
+For unknown_host_cb, specify a callback function that performs processing of an unknown SSH host key, but right now it is set to continue the connection unconditionally.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get">
+<h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
+<p>The following is an example to obtain the state using NETCONF GET.
+It displays /resources/port/resource-id and /resources/port/current-rate of all ports.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-config">
+<h3>GET-CONFIG<a class="headerlink" href="#get-config" title="Permalink to this headline">¶</a></h3>
+<p>The following is an example to obtain settings using NETCONF GET-CONFIG.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">running is a currently running setting at data store of NETCONF. It depends on the implementation, but you can also use a data store such as startup (settings that are loaded when you start the device) and candidate (candidate set).</p>
+</div>
+<p>It displays the /resources/port/resource-id and /resources/port/configuration/admin-state of all ports.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="edit-config">
+<h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="Permalink to this headline">¶</a></h3>
+<p>The following is an example of how you can change settings using NETCONF EDIT-CONFIG.
+The basic procedure is to obtain settings using GET-CONFIG, edit them and send them back using EDIT-CONFIG.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can also partially edit settings in EDIT-CONFIG on the protocol, but this usage is safer.</p>
+</div>
+<p>Set /resources/port/configuration/admin-state of all ports to down.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OF-Config Library</a><ul>
+<li><a class="reference internal" href="#of-config-protocol">OF-Config Protocol</a></li>
+<li><a class="reference internal" href="#library-configuration">Library Configuration</a><ul>
+<li><a class="reference internal" href="#ryu-lib-of-config-capable-switch-ofcapableswitch-class">ryu.lib.of_config.capable_switch.OFCapableSwitch Class</a></li>
+<li><a class="reference internal" href="#ryu-lib-of-config-classes-module">ryu.lib.of_config.classes Module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-example">Usage Example</a><ul>
+<li><a class="reference internal" href="#connection-to-the-switch">Connection to the Switch</a></li>
+<li><a class="reference internal" href="#get">GET</a></li>
+<li><a class="reference internal" href="#get-config">GET-CONFIG</a></li>
+<li><a class="reference internal" href="#edit-config">EDIT-CONFIG</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="previous chapter">Packet Library</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rest_firewall.html"
+                        title="next chapter">Firewall</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/of_config.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="Firewall"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="packet_lib.html" title="Packet Library"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

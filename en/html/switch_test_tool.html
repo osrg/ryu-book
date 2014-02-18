@@ -1,0 +1,733 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenFlow Switch Test Tool &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="Architecture" href="arch.html" />
+    <link rel="prev" title="Router" href="rest_router.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="arch.html" title="Architecture"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rest_router.html" title="Router"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="openflow-switch-test-tool">
+<span id="ch-switch-test-tool"></span><h1>OpenFlow Switch Test Tool<a class="headerlink" href="#openflow-switch-test-tool" title="Permalink to this headline">¶</a></h1>
+<p>This section explains how to use the test tool to verify the degree of compliance of an OpenFlow switch with the OpenFlow specifications.</p>
+<div class="section" id="overview-of-test-tool">
+<h2>Overview of Test Tool<a class="headerlink" href="#overview-of-test-tool" title="Permalink to this headline">¶</a></h2>
+<p>This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.</p>
+<p>This tool is compatible with FlowMod message test of OpenFlow version 1.3.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="45%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Test subject message</th>
+<th class="head">Corresponding parameters</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OpenFlow1.3 FlowMod message</td>
+<td>match (Excludes IN_PHY_PORT)
+actions (Excludes SET_QUEUE, GROUP)</td>
+</tr>
+</tbody>
+</table>
+<p>&#8220;<a class="reference internal" href="packet_lib.html#ch-packet-lib"><em>Packet Library</em></a>&#8221; is used to confirm packet rewriting and results generation of packets to be applied.</p>
+<div class="section" id="operation-overview">
+<h3>Operation Overview<a class="headerlink" href="#operation-overview" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="test-execution-image">
+<h4>Test execution image<a class="headerlink" href="#test-execution-image" title="Permalink to this headline">¶</a></h4>
+<p>The following shows an image of operation when you run the test tool. &#8220;flow entry to be registered, &#8220;application packet&#8221; and &#8220;expected processing result to&#8221; are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to <a class="reference internal" href="#tool-execution-environment">Tool execution environment</a>)</p>
+<a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" style="width: 657.0px; height: 246.6px;" /></a>
+</div>
+<div class="section" id="output-image-of-test-results">
+<h4>Output image of test results<a class="headerlink" href="#output-image-of-test-results" title="Permalink to this headline">¶</a></h4>
+<p>The specified test items of the test pattern file are run in order and test results (OK / ERROR) are output. If a test result is ERROR, details of the error are also output.</p>
+<div class="console highlight-python"><div class="highlight"><pre>--- Test start ---
+
+match: 29_ICMPV6_TYPE
+    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
+    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;      OK
+    ethernet/ipv6/icmpv6(type=135)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;          ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39; ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+match: 30_ICMPV6_CODE
+    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
+    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;          OK
+    ethernet/ipv6/icmpv6(code=1)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;              ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;     ERROR
+        Received incorrect packet-in: ethernet(ethertype=34525)
+
+---  Test end  ---
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<p>This section explains how to use the test tool.</p>
+<div class="section" id="test-pattern-file">
+<h3>Test Pattern File<a class="headerlink" href="#test-pattern-file" title="Permalink to this headline">¶</a></h3>
+<p>You need to create a test pattern file in accordance with the test pattern that you want to test.</p>
+<p>A test pattern file is a text file that has a &#8221;.json&#8221; extension. It is described using the following format.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>[
+    &quot;xxxxxxxxxx&quot;,                    # Test item name
+    {
+        &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # Description of the test content
+        &quot;prerequisite&quot;: [
+            {
+                &quot;OFPFlowMod&quot;: {...}  # Flow entry to register
+            },                       # (Descrobe OFPFlowMod of Ryu in json format)
+            {...},                   #  In case of packet transfer (actions=output),
+            {...}                    #  specify &quot;2&quot; as the output port number.
+        ],
+        &quot;tests&quot;: [
+            {
+                &quot;ingress&quot;: [         # Packet to be applied
+                    &quot;ethernet(...)&quot;, # (Describe in format of Ryu packet library constructor)
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ],
+
+                # Expected processing results
+                # Depending on the type of processing results, describe either (a)(b)(c)
+                #  (a) Confirmation test of packet transfer (actions=output:X)
+                &quot;egress&quot;: [          # Expected transfer packet
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ]
+                #  (b) Confirmation test of Packet-In (actions=CONTROLLER)
+                &quot;PACKET_IN&quot;: [       # Expected Packet-In data
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ]
+                #  (c) Confirmation test of table-miss
+                &quot;table-miss&quot;: [      # flow table ID that is expected to be table-miss
+                    0
+                ]
+            },
+            {...},
+            {...}
+        ]
+    },                               # Test 1
+    {...},                           # Test 2
+    {...}                            # Test 3
+]
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>As a sample test pattern, the source tree of Ryu offers a test pattern file to check if each parameter that can be specified in the match/actions of OpenFlow1.3 FlowMod message works properly or not.</p>
+<blockquote class="last">
+<div>ryu/tests/switch/of13</div></blockquote>
+</div>
+</div>
+<div class="section" id="tool-execution-environment">
+<h3>Tool Execution Environment<a class="headerlink" href="#tool-execution-environment" title="Permalink to this headline">¶</a></h3>
+<p>The environment for test execution tools is described below.</p>
+<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 592.2px; height: 277.8px;" /></a>
+<p>As an auxiliary switch, an OpenFlow switch that can be used to perform following the operation successfully is required.</p>
+<ul class="simple">
+<li>Flow entry registration of actions=CONTROLLER</li>
+<li>Packet-In message transmission by flow entry of actions=CONTROLLER</li>
+<li>Packet transmission by Packet-Out message reception</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The source tree of Ryu offers an environment build script that allows realization of a tool execution environment on mininet that uses Open vSwitch as a test target switch.</p>
+<blockquote>
+<div>ryu/tests/switch/run_mininet.py</div></blockquote>
+<p class="last">A example script is described in &#8220;<a class="reference internal" href="#test-tool-usage-example">Test tool usage example</a>&#8221;.</p>
+</div>
+</div>
+<div class="section" id="how-to-run-the-test-tool">
+<h3>How To Run The Test Tool<a class="headerlink" href="#how-to-run-the-test-tool" title="Permalink to this headline">¶</a></h3>
+<p>The test tool is available on the source tree on Ryu.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Source code</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ryu/tests/switch/tester.py</td>
+<td>Test tool</td>
+</tr>
+<tr class="row-odd"><td>ryu/tests/switch/of13</td>
+<td>Sample of test pattern file</td>
+</tr>
+<tr class="row-even"><td>ryu/tests/switch/run_mininet.py</td>
+<td>Test environment build script</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The test tool is executed by the following command.</p>
+<div class="console highlight-python"><div class="highlight"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+ [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
+</pre></div>
+</div>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="46%" />
+<col width="27%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Option</th>
+<th class="head">Explanation</th>
+<th class="head">Default value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>&#8211;test-switch-target</td>
+<td>Data path ID of test target switch</td>
+<td>0000000000000001</td>
+</tr>
+<tr class="row-odd"><td>&#8211;test-switch-tester</td>
+<td>Data path ID of auxiliary switch</td>
+<td>0000000000000002</td>
+</tr>
+<tr class="row-even"><td>&#8211;test-switch-dir</td>
+<td>Directory path of test pattern file</td>
+<td>ryu/tests/switch/of13</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Since the test tool is created as a Ryu application and inherits ryu.base.app_manager.RyuApp, it supports output of debugging information by the &#8211;verbose option, as with other Ryu applications.</p>
+</div>
+<p>After starting the test tool, when the auxiliary switch and test target switch are connected to the controller, the test starts based on the test pattern file that you specify.</p>
+</div>
+</div>
+<div class="section" id="test-tool-usage-example">
+<h2>Test Tool Usage Example<a class="headerlink" href="#test-tool-usage-example" title="Permalink to this headline">¶</a></h2>
+<p>The following is the procedure to execute the test tool using a sample test pattern and original test pattern file.</p>
+<div class="section" id="procedure-for-executing-sample-test-pattern">
+<h3>Procedure for Executing Sample Test Pattern<a class="headerlink" href="#procedure-for-executing-sample-test-pattern" title="Permalink to this headline">¶</a></h3>
+<p>The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages.</p>
+<p>In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a> &#8221; for environment settings and the login method for usage of the VM image.</p>
+<ol class="arabic">
+<li><p class="first">Building the test environment</p>
+<blockquote>
+<div><p>Log in to the VM environment and run the test environment build script.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
+</pre></div>
+</div>
+<p>Execution result of the net command is as follows.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
+c0
+s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
+s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p class="first">Execution of the test tool</p>
+<blockquote>
+<div><p>For execution of test tool, open xterm of controller.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+</pre></div>
+</div>
+<p>Execute test tool from xterm of &#8220;Node: c0 (root)&#8221;
+At this time, as the directory for the test pattern file, specify the directory of the sample test pattern (ryu/tests/switch/of13).
+Since the data path ID of the test target switch and auxiliary switch in the mininet environment has the default value of each option of &#8211;test-switch-target / &#8211;test-switch-tester, it the option specification is omitted.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
+</pre></div>
+</div>
+<p>When the tool is executed it appears as follows and waits until the test target switch and auxiliary switch is connected to the controller.</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+loading app ryu/ryu/tests/switch/tester.py
+loading app ryu.controller.ofp_handler
+instantiating app ryu/ryu/tests/switch/tester.py of OfTester
+target_dpid=0000000000000001
+tester_dpid=0000000000000002
+Test files directory = ryu/ryu/tests/switch/of13/
+instantiating app ryu.controller.ofp_handler of OFPHandler
+--- Test start ---
+waiting for switches connection...
+</pre></div>
+</div>
+<p>When the test target switch and auxiliary switch is connected to the controller, the test begins.</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+loading app ryu/ryu/tests/switch/tester.py
+loading app ryu.controller.ofp_handler
+instantiating app ryu/ryu/tests/switch/tester.py of OfTester
+target_dpid=0000000000000001
+tester_dpid=0000000000000002
+Test files directory = ryu/ryu/tests/switch/of13/
+instantiating app ryu.controller.ofp_handler of OFPHandler
+--- Test start ---
+waiting for switches connection...
+dpid=0000000000000002 : Join tester SW.
+dpid=0000000000000001 : Join target SW.
+action: 00_OUTPUT
+    ethernet/ipv4/tcp--&gt;&#39;actions=output:2&#39;      OK
+    ethernet/ipv6/tcp--&gt;&#39;actions=output:2&#39;      OK
+    ethernet/arp--&gt;&#39;actions=output:2&#39;           OK
+action: 11_COPY_TTL_OUT
+    ethernet/mpls(ttl=64)/ipv4(ttl=32)/tcp--&gt;&#39;eth_type=0x8847,actions=copy_ttl_out,output:2&#39;        ERROR
+        Failed to add flows: OFPErrorMsg[type=0x02, code=0x00]
+    ethernet/mpls(ttl=64)/ipv6(hop_limit=32)/tcp--&gt;&#39;eth_type=0x8847,actions=copy_ttl_out,output:2&#39;  ERROR
+        Failed to add flows: OFPErrorMsg[type=0x02, code=0x00]
+...
+</pre></div>
+</div>
+<p>When all testing of the sample test pattern file under ryu/tests/switch/of13 is complete, the test tool ends.</p>
+</div></blockquote>
+</li>
+</ol>
+<div class="section" id="reference">
+<h4>&lt;Reference&gt;<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>Sample test pattern file list</p>
+<blockquote>
+<div>Offers a test pattern that registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries.</div></blockquote>
+<div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
+00_OUTPUT.json              20_POP_MPLS.json
+11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
+12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
+15_SET_MPLS_TTL.json        24_DEC_NW_TTL_IPv4.json
+16_DEC_MPLS_TTL.json        24_DEC_NW_TTL_IPv6.json
+17_PUSH_VLAN.json           25_SET_FIELD
+17_PUSH_VLAN_multiple.json  26_PUSH_PBB.json
+18_POP_VLAN.json            26_PUSH_PBB_multiple.json
+19_PUSH_MPLS.json           27_POP_PBB.json
+19_PUSH_MPLS_multiple.json
+
+ryu/tests/switch/of13/action/25_SET_FIELD:
+03_ETH_DST.json        14_TCP_DST_IPv4.json   24_ARP_SHA.json
+04_ETH_SRC.json        14_TCP_DST_IPv6.json   25_ARP_THA.json
+05_ETH_TYPE.json       15_UDP_SRC_IPv4.json   26_IPV6_SRC.json
+06_VLAN_VID.json       15_UDP_SRC_IPv6.json   27_IPV6_DST.json
+07_VLAN_PCP.json       16_UDP_DST_IPv4.json   28_IPV6_FLABEL.json
+08_IP_DSCP_IPv4.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+08_IP_DSCP_IPv6.json   17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+09_IP_ECN_IPv4.json    17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+09_IP_ECN_IPv6.json    18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+10_IP_PROTO_IPv4.json  18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+10_IP_PROTO_IPv6.json  19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+11_IPV4_SRC.json       20_ICMPV4_CODE.json    35_MPLS_TC.json
+12_IPV4_DST.json       21_ARP_OP.json         36_MPLS_BOS.json
+13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
+13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
+
+ryu/tests/switch/of13/match:
+00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
+02_METADATA.json       13_TCP_SRC_IPv6.json   25_ARP_THA_Mask.json
+02_METADATA_Mask.json  14_TCP_DST_IPv4.json   26_IPV6_SRC.json
+03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC_Mask.json
+03_ETH_DST_Mask.json   15_UDP_SRC_IPv4.json   27_IPV6_DST.json
+04_ETH_SRC.json        15_UDP_SRC_IPv6.json   27_IPV6_DST_Mask.json
+04_ETH_SRC_Mask.json   16_UDP_DST_IPv4.json   28_IPV6_FLABEL.json
+05_ETH_TYPE.json       16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+06_VLAN_VID.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+06_VLAN_VID_Mask.json  17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+07_VLAN_PCP.json       18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+08_IP_DSCP_IPv4.json   18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+08_IP_DSCP_IPv6.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+09_IP_ECN_IPv4.json    20_ICMPV4_CODE.json    35_MPLS_TC.json
+09_IP_ECN_IPv6.json    21_ARP_OP.json         36_MPLS_BOS.json
+10_IP_PROTO_IPv4.json  22_ARP_SPA.json        37_PBB_ISID.json
+10_IP_PROTO_IPv6.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
+11_IPV4_SRC.json       23_ARP_TPA.json        38_TUNNEL_ID.json
+11_IPV4_SRC_Mask.json  23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
+12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
+12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="procedure-for-executing-original-test-pattern">
+<h3>Procedure for Executing Original Test Pattern<a class="headerlink" href="#procedure-for-executing-original-test-pattern" title="Permalink to this headline">¶</a></h3>
+<p>The following is the procedure to run the test tool by creating an original test pattern.</p>
+<p>The following is an example of creating a test tool that checks if it has a function to process the match/actions required for OpenFlow switch to implement the router function.</p>
+<ol class="arabic">
+<li><p class="first">Creating the test pattern file</p>
+<blockquote>
+<div><p>It will test the following flow entry, which has a function for the router to forward packets according to the routing table, and check if it is working correctly.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="44%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">match</th>
+<th class="head">actions</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Destination IP address range &#8220;192.168.30.0/24&#8221;</td>
+<td><p class="first">Rewrite the source MAC address to &#8220;aa:aa:aa:aa:aa:aa&#8221;.</p>
+<p>Rewrite the destination MAC address to &#8220;bb:bb:bb:bb:bb:bb&#8221;</p>
+<p>TTL decrement</p>
+<p class="last">Packet forwarding</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Create a test pattern file to perform this test pattern.</p>
+</div></blockquote>
+</li>
+</ol>
+<p>File name: <tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
+   <span class="s">&quot;sample: Router test&quot;</span><span class="p">,</span>
+   <span class="p">{</span>
+       <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;static routing table&quot;</span><span class="p">,</span>
+       <span class="s">&quot;prerequisite&quot;</span><span class="p">:</span> <span class="p">[</span>
+           <span class="p">{</span>
+               <span class="s">&quot;OFPFlowMod&quot;</span><span class="p">:</span> <span class="p">{</span>
+                   <span class="s">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="s">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
+                       <span class="s">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                           <span class="s">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[</span>
+                               <span class="p">{</span>
+                                   <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                       <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;eth_type&quot;</span><span class="p">,</span>
+                                       <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="mi">2048</span>
+                                   <span class="p">}</span>
+                               <span class="p">},</span>
+                               <span class="p">{</span>
+                                   <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                       <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;ipv4_dst&quot;</span><span class="p">,</span>
+                                       <span class="s">&quot;mask&quot;</span><span class="p">:</span> <span class="mi">4294967040</span><span class="p">,</span>
+                                       <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="s">&quot;192.168.30.0&quot;</span>
+                                   <span class="p">}</span>
+                               <span class="p">}</span>
+                          <span class="p">]</span>
+                       <span class="p">}</span>
+                   <span class="p">},</span>
+                   <span class="s">&quot;instructions&quot;</span><span class="p">:[</span>
+                       <span class="p">{</span>
+                           <span class="s">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                               <span class="s">&quot;actions&quot;</span><span class="p">:[</span>
+                                   <span class="p">{</span>
+                                       <span class="s">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
+                                           <span class="s">&quot;field&quot;</span><span class="p">:{</span>
+                                               <span class="s">&quot;OXMTlv&quot;</span><span class="p">:{</span>
+                                                   <span class="s">&quot;field&quot;</span><span class="p">:</span><span class="s">&quot;eth_src&quot;</span><span class="p">,</span>
+                                                   <span class="s">&quot;value&quot;</span><span class="p">:</span><span class="s">&quot;aa:aa:aa:aa:aa:aa&quot;</span>
+                                               <span class="p">}</span>
+                                           <span class="p">}</span>
+                                       <span class="p">}</span>
+                                   <span class="p">},</span>
+                                   <span class="p">{</span>
+                                       <span class="s">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
+                                           <span class="s">&quot;field&quot;</span><span class="p">:{</span>
+                                               <span class="s">&quot;OXMTlv&quot;</span><span class="p">:{</span>
+                                                   <span class="s">&quot;field&quot;</span><span class="p">:</span><span class="s">&quot;eth_dst&quot;</span><span class="p">,</span>
+                                                   <span class="s">&quot;value&quot;</span><span class="p">:</span><span class="s">&quot;bb:bb:bb:bb:bb:bb&quot;</span>
+                                               <span class="p">}</span>
+                                           <span class="p">}</span>
+                                       <span class="p">}</span>
+                                   <span class="p">},</span>
+                                   <span class="p">{</span>
+                                       <span class="s">&quot;OFPActionDecNwTtl&quot;</span><span class="p">:{}</span>
+                                   <span class="p">},</span>
+                                   <span class="p">{</span>
+                                       <span class="s">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                           <span class="s">&quot;port&quot;</span><span class="p">:</span><span class="mi">2</span>
+                                       <span class="p">}</span>
+                                   <span class="p">}</span>
+                               <span class="p">],</span>
+                               <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
+                           <span class="p">}</span>
+                       <span class="p">}</span>
+                   <span class="p">]</span>
+               <span class="p">}</span>
+           <span class="p">}</span>
+       <span class="p">],</span>
+       <span class="s">&quot;tests&quot;</span><span class="p">:[</span>
+           <span class="p">{</span>
+               <span class="s">&quot;ingress&quot;</span><span class="p">:[</span>
+                   <span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;,src=&#39;11:11:11:11:11:11&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=64)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e</span><span class="se">\\</span><span class="s">x0f&#39;&quot;</span>
+               <span class="p">],</span>
+               <span class="s">&quot;egress&quot;</span><span class="p">:[</span>
+                   <span class="s">&quot;ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,src=&#39;aa:aa:aa:aa:aa:aa&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=63)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                   <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e</span><span class="se">\\</span><span class="s">x0f&#39;&quot;</span>
+               <span class="p">]</span>
+           <span class="p">}</span>
+       <span class="p">]</span>
+   <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<ol class="arabic" start="2">
+<li><p class="first">Building a test environment</p>
+<blockquote>
+<div><p>Build a test environment using a test environment build script. Please refer to the execution procedure in <a class="reference internal" href="#procedure-for-executing-sample-test-pattern">Procedure for Executing Sample Test Pattern</a>.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Executing the test tool</p>
+<blockquote>
+<div><p>Execute the test tool from Xterm from the controller by specifying the original test pattern you just created.
+For &#8211;test-switch-dir option, you can also directly specify a file as well as a directory. In order to confirm the contents of packets sent and received, the &#8211;verbose option is also specified.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+</pre></div>
+</div>
+<p>When the test target switch and auxiliary switch is connected to the controller, the test begins.</p>
+<p>In log output of &#8220;dpid=0000000000000002 : receive_packet...&#8221;, you can see that the expected output packet set in egress packed of the test pattern file was sent.
+Note that only logs the test tool outputs are excerpted.</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+loading app ryu/tests/switch/tester.py
+loading app ryu.controller.ofp_handler
+instantiating app ryu.controller.ofp_handler of OFPHandler
+instantiating app ryu/tests/switch/tester.py of OfTester
+target_dpid=0000000000000001
+tester_dpid=0000000000000002
+Test files directory = ./sample_test_pattern.json
+
+--- Test start ---
+waiting for switches connection...
+
+dpid=0000000000000002 : Join tester SW.
+dpid=0000000000000001 : Join target SW.
+
+sample: Router test
+
+send_packet:[ethernet(dst=&#39;22:22:22:22:22:22&#39;,ethertype=2048,src=&#39;11:11:11:11:11:11&#39;), ipv4(csum=53560,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=64,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
+egress:[ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,ethertype=2048,src=&#39;aa:aa:aa:aa:aa:aa&#39;), ipv4(csum=53816,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
+packet_in:[]
+dpid=0000000000000002 : receive_packet[ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,ethertype=2048,src=&#39;aa:aa:aa:aa:aa:aa&#39;), ipv4(csum=53816,dst=&#39;192.168.30.10&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=6,src=&#39;192.168.10.10&#39;,tos=32,total_length=59,ttl=63,version=4), tcp(ack=0,bits=0,csum=33311,dst_port=2222,offset=6,option=&#39;\x00\x00\x00\x00&#39;,seq=0,src_port=11111,urgent=0,window_size=0), &#39;\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f&#39;]
+    static routing table                            OK
+---  Test end  ---
+</pre></div>
+</div>
+<p>Actual flow entries registered in the OpenFlow switch are shown below.
+You can see that packets applied by the test tool match the flow entry and n_packets has been incremented.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa-&gt;eth_src,set_field:bb:bb:bb:bb:bb:bb-&gt;eth_dst,dec_ttl,output:2
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="list-of-error-messages">
+<h3>List of Error Messages<a class="headerlink" href="#list-of-error-messages" title="Permalink to this headline">¶</a></h3>
+<p>The following is a list of error messages that can be output with this tool.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Error message</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
+<td>Failed to delete the flow entry of the previous test (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
+<td>Failed to delete the flow entry of the previous test (error message received for FlowMod)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
+<td>Failed to register the flow entry (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
+<td>Failed to register flow entry (error message is received for FlowMod)</td>
+</tr>
+<tr class="row-even"><td>Added incorrect flows: [flows]</td>
+<td>Flow entry registration confirmation error (unexpected flow entry is registered)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows: flow stats request timeout.</td>
+<td>Flow entry registration confirmation failure (time-out of FlowStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows: [err_msg]</td>
+<td>Flow entry registration confirmation failure (error message received for FlowStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
+<td>Failed to acquire PortStats of the tested SW (time-out of PortStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from target: [err_msg]</td>
+<td>Failed to acquire PortStats of the tested SW (error message received for PortStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from tester: request timeout.</td>
+<td>Failed to acquire PortStats of Auxiliary SW (time-out of PortStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to request port stats from tester: [err_msg]</td>
+<td>Failed to acquire PortStats of Auxiliary SW (error message received for PortStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Received incorrect [packet]</td>
+<td>Reception error of output expected packets (received different packets)</td>
+</tr>
+<tr class="row-even"><td>Receiving timeout: [detail]</td>
+<td>Reception error of expected output packets (time-out)</td>
+</tr>
+<tr class="row-odd"><td>Faild to send packet: barrier request timeout.</td>
+<td>Failed to apply packet (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-even"><td>Faild to send packet: [err_msg]</td>
+<td>Failed to apply packet (error message received for Packet-Out)</td>
+</tr>
+<tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
+<td>table-miss check error (matches the flow)</td>
+</tr>
+<tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
+<td>table-miss check error (packet has not been processed by the flow table being checked)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
+<td>Failed to check table-miss (time-out of TableStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
+<td>Failed to check table-miss (error message received for TableStats Request)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OpenFlow Switch Test Tool</a><ul>
+<li><a class="reference internal" href="#overview-of-test-tool">Overview of Test Tool</a><ul>
+<li><a class="reference internal" href="#operation-overview">Operation Overview</a><ul>
+<li><a class="reference internal" href="#test-execution-image">Test execution image</a></li>
+<li><a class="reference internal" href="#output-image-of-test-results">Output image of test results</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-use">How to use</a><ul>
+<li><a class="reference internal" href="#test-pattern-file">Test Pattern File</a></li>
+<li><a class="reference internal" href="#tool-execution-environment">Tool Execution Environment</a></li>
+<li><a class="reference internal" href="#how-to-run-the-test-tool">How To Run The Test Tool</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-tool-usage-example">Test Tool Usage Example</a><ul>
+<li><a class="reference internal" href="#procedure-for-executing-sample-test-pattern">Procedure for Executing Sample Test Pattern</a><ul>
+<li><a class="reference internal" href="#reference">&lt;Reference&gt;</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#procedure-for-executing-original-test-pattern">Procedure for Executing Original Test Pattern</a></li>
+<li><a class="reference internal" href="#list-of-error-messages">List of Error Messages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rest_router.html"
+                        title="previous chapter">Router</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="arch.html"
+                        title="next chapter">Architecture</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/switch_test_tool.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="arch.html" title="Architecture"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rest_router.html" title="Router"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

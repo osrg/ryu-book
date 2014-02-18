@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction example &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="prev" title="Contribution" href="contribute.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="Contribution"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction-example">
+<span id="ch-introduction-example"></span><h1>Introduction example<a class="headerlink" href="#introduction-example" title="Permalink to this headline">¶</a></h1>
+<p>This section shows examples of services and products that use Ryu.</p>
+<div class="section" id="stratosphere-sdn-platform-stratosphere">
+<h2>Stratosphere SDN Platform (Stratosphere)<a class="headerlink" href="#stratosphere-sdn-platform-stratosphere" title="Permalink to this headline">¶</a></h2>
+<p>The Stratosphere SDN Platform (hereinafter abbreviated as SSP) is a software product developed by Stratosphere. Using SSP, you can construct a virtual network with an Edge Overlay-model using tunneling protocols such as VXLAN, STT, and MPLS.</p>
+<p>Each tunneling protocol is converted to and from VLAN. Since the identifier of each tunneled protocol is larger than the 12 bits of VLAN, many more L2 segments can be managed than directly using VLAN. Also SSP can be used in conjunction with software such as OpenStack, CloudStack and IaaS.</p>
+<p>SSP uses OpenFlow to implement functions and is adopting Ryu as the controller in version 1.1.4. One of the reasons for this is to support OpenFlow1.1 and later. Upon supporting MPLS to SSP, introduction of a framework that supports OpenFlow1.1 is being considered since it has support at the protocol level.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Apart from support for the OpenFlow protocol itself, for items for which implementation is optional, it is also necessary to consider sufficient support of the OpenFlow switch side being used.</p>
+</div>
+<p>The fact that Python can be used as a development language is also a factor. Python is actively used in the development of Stratosphere, and many parts of SSP are written in Python as well. The outstanding descriptive power of Python and the fact that work can be performed using a familiar language results in improved development efficiency.</p>
+<p>Software consists of multiple Ryu applications and interacts with other components of SSP through the REST API. The ability to divide software into multiple applications at the functional level is essential to maintaining good source code.</p>
+</div>
+<div class="section" id="smartsdn-controller-ntt-comware">
+<h2>SmartSDN Controller (NTT COMWARE)<a class="headerlink" href="#smartsdn-controller-ntt-comware" title="Permalink to this headline">¶</a></h2>
+<p>SmartSDN Controller is an SDN controller that provides centralized control functions of the network (network virtualization, optimization, etc.) to replace conventional autonomous distributed control.</p>
+<a class="reference internal image-reference" href="_images/fig1.png"><img alt="_images/fig1.png" class="align-center" src="_images/fig1.png" style="width: 955.5px; height: 452.9px;" /></a>
+<p>SmartSDN Controller has the following two characteristics:</p>
+<ol class="arabic">
+<li><p class="first">Flexible network routing by virtual networks</p>
+<blockquote>
+<div><p>By building multiple virtual networks on the same physical network, a flexible environment is provided to the network for requests from users, enabling reduced equipment cost through effective utilization of facilities. Also, by centrally managing the switches and routers in which information is individually referred and set, the entire network can be understood, allowing flexible route changes depending on the traffic situation and network failures.</p>
+<p>It focuses on Quality of Experience (QoE) of the user, and by determining QoE of network communication that is flowing (such as bandwidth, delay, loss, and fluctuation) and bypassing to a better path, stable maintenance of service quality is achieved.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Ensure network reliability with a high degree of maintenance and operation functionality</p>
+<blockquote>
+<div><p>It has a redundant configuration in order to continue service even in the event of controller failure. Also, by creating artificial communication packets that flow between sites and sending them on the path, early detection of failure on the path is provided, which cannot be detected by standard monitoring functions specified by the OpenFlow specification, allowing various tests (communication confirmation, route confirmation, etc.) to be performed.</p>
+<p>Furthermore, network design and network state confirmation is visualized using a GUI, allowing operation that does not depend on the skill level of maintenance personnel, which can reduce network operating costs.</p>
+</div></blockquote>
+</li>
+</ol>
+<p>In the development of SmartSDN Controller, it was necessary to select an OpenFlow framework that meets the following conditions.</p>
+<ul class="simple">
+<li>Framework that can comprehensively support the OpenFlow specification.</li>
+<li>Framework that allows updates relatively quickly because it is planning to follow updates to OpenFlow.</li>
+</ul>
+<p>Within the above, Ryu had the following characteristics.</p>
+<ul class="simple">
+<li>Comprehensive support for functions in each version of OpenFlow.</li>
+<li>Quick compliance for updating of OpenFlow. The development community is also active and responds quickly to bugs.</li>
+<li>Substantial amounts of sample code and documentation.</li>
+</ul>
+<p>Therefore, Ryu was deemed appropriate as a framework and has been adopted.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction example</a><ul>
+<li><a class="reference internal" href="#stratosphere-sdn-platform-stratosphere">Stratosphere SDN Platform (Stratosphere)</a></li>
+<li><a class="reference internal" href="#smartsdn-controller-ntt-comware">SmartSDN Controller (NTT COMWARE)</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="previous chapter">Contribution</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/introduction_example.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="Contribution"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

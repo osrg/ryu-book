@@ -1,0 +1,1228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Link Aggregation &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="Spanning Tree" href="spanning_tree.html" />
+    <link rel="prev" title="REST Linkage" href="rest_api.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="Spanning Tree"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rest_api.html" title="REST Linkage"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="link-aggregation">
+<span id="ch-link-aggregation"></span><h1>Link Aggregation<a class="headerlink" href="#link-aggregation" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to implement the link aggregation function using Ryu.</p>
+<div class="section" id="id1">
+<h2>Link Aggregation<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Link aggregation is a technology defined in IEEE802.1AX-2008, which combines multiple physical lines to be used as a logical link. With the link aggregation function, it is possible to increase communication speed between specific network devices. At the same time, by securing redundancy, it is possible to improve fault tolerance.</p>
+<a class="reference internal image-reference" href="_images/fig12.png"><img alt="_images/fig12.png" class="align-center" src="_images/fig12.png" style="width: 320.0px; height: 140.0px;" /></a>
+<p>In order to use the link aggregation function, it is necessary to configure beforehand the respective network devices as to which interfaces are aggregated as one group.</p>
+<p>There are two methods used to start the link aggregation function, the static method, in which each each network device is instructed directly, and the dynamic method, in which the function is started dynamically using the protocol called Link Aggregation Control Protocol (LACP).</p>
+<p>When the dynamic method is adopted, counterpart interfaces of the network devices periodically exchange LACP data units to continuously check with each other that communication is available. When exchange of LACP data units is interrupted, the occurrence of a failure is assumed and the relevant network device becomes unavailable. As a result, sending or receiving of packets is only performed by the remaining interfaces. This method has the advantage that even when a relay device such as a media converter is installed between network devices, link down of the other side of the relay device can be detected.
+This chapter discusses the dynamic link aggregation function using LACP.</p>
+</div>
+<div class="section" id="executing-the-ryu-application">
+<h2>Executing the Ryu Application<a class="headerlink" href="#executing-the-ryu-application" title="Permalink to this headline">¶</a></h2>
+<p>Let&#8217;s put off explaining the source and first execute Ryu&#8217;s link aggregation application.</p>
+<p>simple_switch_lacp.py provided in Ryu&#8217;s source tree is an application dedicated to OpenFlow 1.0, therefore, we will create simple_switch_lacp_13.py, which supports OpenFlow 1.3. This program is an application to which the link aggregation function has been added to the switching hub of &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>.&#8221;</p>
+<p>Source name: <tt class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.dpid</span> <span class="kn">import</span> <span class="n">str_to_dpid</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">ports</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c"># install table-miss flow entry</span>
+        <span class="c">#</span>
+        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c"># correctly.</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
+                                <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+                                <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">,</span>
+                                <span class="n">out_group</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPG_ANY</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+
+        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
+
+        <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+
+        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
+        <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                         <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">del_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+</pre></div>
+</div>
+<div class="section" id="configuring-an-experimental-environment">
+<h3>Configuring an Experimental Environment<a class="headerlink" href="#configuring-an-experimental-environment" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s configure a link aggregation between the OpenFlow switch and Linux host.</p>
+<p>For details on the environment setting and login method, etc. to use the VM images, refer to &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>.&#8221;</p>
+<p>First of all, using Mininet, create the topology shown below.</p>
+<a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 330.8px; height: 258.4px;" /></a>
+<p>Create a script to call Mininet&#8217;s API and configure the necessary topology.</p>
+<p>Source name: <tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
+<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
+<span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">RemoteController</span>
+<span class="kn">from</span> <span class="nn">mininet.term</span> <span class="kn">import</span> <span class="n">makeTerm</span>
+
+<span class="k">if</span> <span class="s">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">)</span>
+
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">)</span>
+
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+
+    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:22&#39;</span><span class="p">)</span>
+    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:23&#39;</span><span class="p">)</span>
+    <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h4&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:24&#39;</span><span class="p">)</span>
+
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h3</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h4</span><span class="p">)</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">c0</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">s1</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">c0</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h2</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h3</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h4</span><span class="p">))</span>
+
+    <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By executing this script, a topology is created in which two links exist between host h1 and switch s1. It is possible to use the net command to check the created topology.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
+Unable to contact the remote controller at 127.0.0.1:6633
+mininet&gt; net
+c0
+s1 lo:  s1-eth1:h1-eth0 s1-eth2:h1-eth1 s1-eth3:h2-eth0 s1-eth4:h3-eth0 s1-eth5:h4-eth0
+h1 h1-eth0:s1-eth1 h1-eth1:s1-eth2
+h2 h2-eth0:s1-eth3
+h3 h3-eth0:s1-eth4
+h4 h4-eth0:s1-eth5
+mininet&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="setting-link-aggregation-in-host-h1">
+<h3>Setting Link Aggregation in Host h1<a class="headerlink" href="#setting-link-aggregation-in-host-h1" title="Permalink to this headline">¶</a></h3>
+<p>Make necessary settings on Linux of host h1 beforehand.
+About command input in this section, input them on xterm of host h1.</p>
+<p>First of all, load the driver module to perform link aggregation.
+In Linux, the link aggregation function is taken care of by the bonding driver.
+Create the /etc/modprobe.d/bonding.conf configuration file beforehand.</p>
+<p>File name: <tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>alias bond0 bonding
+options bonding mode=4
+</pre></div>
+</div>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# modprobe bonding
+</pre></div>
+</div>
+<p>mode=4 indicates that dynamic link aggregation is performed using LACP. Setting is omitted here because it is the default but it has been set so that the exchange interval of the LACP data units is SLOW (30-second intervals) and the sort logic is based on the destination MAC address.</p>
+<p>Next, create a new logical interface named bond0. Also, set an appropriate value for the MAC address of bond0.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link add bond0 type bond
+root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
+</pre></div>
+</div>
+<p>Add the physical interfaces of h1-eth0 and h1-eth1 to the created local interface group. At that time, you need to make the physical interface to have been down. Also, rewrite the MAC address of the physical interface, which was randomly decided, to an easy-to-understand value beforehand.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 down
+root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
+root@ryu-vm:~# ip link set h1-eth0 master bond0
+root@ryu-vm:~# ip link set h1-eth1 down
+root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
+root@ryu-vm:~# ip link set h1-eth1 master bond0
+</pre></div>
+</div>
+<p>Assign an IP address to the logical interface.
+Here, let&#8217;s assign 10.0.0.1. Because an IP address has been assigned to h1-eth0, delete this address.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
+root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+</pre></div>
+</div>
+<p>Finally, make the logical interface up.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set bond0 up
+</pre></div>
+</div>
+<p>Now, let&#8217;s check the state of each interface.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig
+bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+          inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
+          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:10 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:1240 (1.2 KB)
+
+h1-eth0   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+
+h1-eth1   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
+          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+</pre></div>
+</div>
+<p>You can see that logical interface bond0 is the MASTER and physical interface h1-eth0 and h1-eth1 are the SLAVE. Also, you can see that all of the MAC addresses of bond0, h1-eth0, and h1-eth1 are the same.</p>
+<p>Check the state of the bonding driver as well.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# cat /proc/net/bonding/bond0
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+
+802.3ad info
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+Active Aggregator Info:
+        Aggregator ID: 1
+        Number of ports: 1
+        Actor Key: 33
+        Partner Key: 1
+        Partner Mac Address: 00:00:00:00:00:00
+
+Slave Interface: h1-eth0
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 00:00:00:00:00:11
+Aggregator ID: 1
+Slave queue ID: 0
+
+Slave Interface: h1-eth1
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 00:00:00:00:00:12
+Aggregator ID: 2
+Slave queue ID: 0
+</pre></div>
+</div>
+<p>You can check the exchange intervals (LACP rate: slow) of the LACP data units and sort logic setting (Transmit Hash Policy: layer2 (0)). You can also check the MAC address of the physical interfaces h1-eth0 and h1-eth1.</p>
+<p>Now pre-setting for host h1 has been completed.</p>
+</div>
+<div class="section" id="setting-openflow-version">
+<h3>Setting OpenFlow Version<a class="headerlink" href="#setting-openflow-version" title="Permalink to this headline">¶</a></h3>
+<p>Set the OpenFlow version of switch s1 to 1.3. Input this command on xterm of switch s1.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+</div>
+<div class="section" id="executing-the-switching-hub">
+<h3>Executing the Switching Hub<a class="headerlink" href="#executing-the-switching-hub" title="Permalink to this headline">¶</a></h3>
+<p>This completes the preparation portion so let&#8217;s move on to executing the Ryu application created at the beginning of the document.</p>
+<p>Execute the following commands on xterm having the window title &#8220;Node: c0 (root)&#8221;.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
+loading app ./simple_switch_lacp_13.py
+loading app ryu.controller.ofp_handler
+creating context lacplib
+instantiating app ./simple_switch_lacp_13.py
+instantiating app ryu.controller.ofp_handler
+...
+</pre></div>
+</div>
+<p>Host h1 sends one LACP data unit every 30 seconds. A while after start, the switch receives the LACP data unit from host h1 and outputs it to the operation log.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=1 the slave i/f has just been up.
+[LACP][INFO] SW=0000000000000001 PORT=1 the timeout time has changed.
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+slave state changed port: 1 enabled: True
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=2 the slave i/f has just been up.
+[LACP][INFO] SW=0000000000000001 PORT=2 the timeout time has changed.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+slave state changed port: 2 enabled: True
+...
+</pre></div>
+</div>
+<p>The log indicates the following items:</p>
+<ul>
+<li><p class="first">LACP received.</p>
+<blockquote>
+<div><p>An LACP data unit was received.</p>
+</div></blockquote>
+</li>
+<li><p class="first">the slave i/f has just been up.</p>
+<blockquote>
+<div><p>The port, which was in a disabled state, was enabled.</p>
+</div></blockquote>
+</li>
+<li><p class="first">the timeout time has changed.</p>
+<blockquote>
+<div><p>The communication monitoring time of the LACP data unit was changed (in this case, the default state of 0 seconds was changed to LONG_TIMEOUT_TIME 90 seconds).</p>
+</div></blockquote>
+</li>
+<li><p class="first">LACP sent.</p>
+<blockquote>
+<div><p>The response LACP data unit was sent.</p>
+</div></blockquote>
+</li>
+<li><p class="first">slave state changed ...</p>
+<blockquote>
+<div><p>The application received an <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> event from the LACP library (details of the event are explained later).</p>
+</div></blockquote>
+</li>
+</ul>
+<p>The switch sends response LACP data unit each time it receives LACP data unit from host h1.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+...
+</pre></div>
+</div>
+<p>Let&#8217;s check flow entry.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>In the switch,</p>
+<ul class="simple">
+<li>The Packet-In message is sent when the LACP data unit (ethertype is 0x8809) is sent from h1&#8217;s h1-eth1 (the input port is s1-eth2 and the MAC address is 00:00:00:00:00:12).</li>
+<li>The Packet-In message is sent when the LACP data unit (ethertype is 0x8809) is sent from h1&#8217;s h1-eth0 (the input port is s1-eth1 and the MAC address is 00:00:00:00:00:11)</li>
+<li>The same Table-miss flow entry as that of &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;.</li>
+</ul>
+<p>The above three flow entries have been registered.</p>
+</div>
+<div class="section" id="checking-the-link-aggregation-function">
+<h3>Checking the Link Aggregation Function<a class="headerlink" href="#checking-the-link-aggregation-function" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="improving-communication-speed">
+<h4>Improving Communication Speed<a class="headerlink" href="#improving-communication-speed" title="Permalink to this headline">¶</a></h4>
+<p>First of all, check improvement in the communication speed as a result of link aggregation.
+Let&#8217;s take a look at the ways of using different links depending on communication.</p>
+<p>First, execute ping from host h2 to host h1.</p>
+<p>Node: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
+PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
+64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
+64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.075 ms
+64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.065 ms
+...
+</pre></div>
+</div>
+<p>While continuing to send pings, check the flow entry of switch s1.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=33.046s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
+</div>
+<p>After the previous check point, two flow entries have been added.
+They are the 4th and 5th entries with a small duration value.</p>
+<p>The respective flow entry is as follows:</p>
+<ul class="simple">
+<li>When a packet address to bond0 of h1 is received from the 3rd port (s1-eth3, that is, the counterpart interface of h2), it is output from the first port (s1-eth1).</li>
+<li>When a packet addressed to h2 is received from the 1st port (s1-eth1), it is output from the 3rd port (s1-eth3).</li>
+</ul>
+<p>You can tell that s1-eth1 is used for communication between h2 and h1.</p>
+<p>Next, execute ping from host h3 to host h1.</p>
+<p>Node: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
+PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
+64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
+64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.057 ms
+64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.073 ms
+...
+</pre></div>
+</div>
+<p>While continuing to send pings, check the flow entry of switch s1.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=110.761s, table=0, n_packets=10, n_bytes=696, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=80.974s, table=0, n_packets=82, n_bytes=7924, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
+ cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
+ cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+</pre></div>
+</div>
+<p>After the previous check point, two flow entries have been added.
+They are the 5th and 6th entries with a small duration value.</p>
+<p>The respective flow entry is as follows:</p>
+<ul class="simple">
+<li>When a packet addressed to h3 is received from the 2nd port (s1-eth2), it is output from the 4th port (s1-eth4).</li>
+<li>When a packet address to bond0 of h1 is received from the 4th port (s1-eth4, that is, the counterpart interface of h3), it is output from the 2nd port (s1-eth2).</li>
+</ul>
+<p>You can tell that s1-eth2 is used for communication between h3 and h1.</p>
+<p>As a matter of course, ping can be executed from host H4 to host h1 as well.
+As before, new flow entries are registered and s1-eth1 is used for communication between h4 and h1.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="55%" />
+<col width="45%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Destination host</th>
+<th class="head">Port used</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>h2</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>h3</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td>h4</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 328.8px; height: 294.0px;" /></a>
+<p>As shown above, we were able to confirm use of different links depending on communication.</p>
+</div>
+<div class="section" id="improving-fault-tolerance">
+<h4>Improving Fault Tolerance<a class="headerlink" href="#improving-fault-tolerance" title="Permalink to this headline">¶</a></h4>
+<p>Check improvement in fault tolerance as a result of link aggregation. The current state is that when h2 and h4 communicate with h1, s1-eth2 is used and when h3 communicates with h1,  s1-eth1 is used.</p>
+<p>Here, we separate h1-eth0, which is the counterpart interface of s1-eth1, from the link aggregation group.</p>
+<p>Node: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 nomaster
+</pre></div>
+</div>
+<p>Because h1-eth0 has stopped, pings can no longer be sent from host h3 to host h1. When 90 seconds of no communication monitoring time elapses, the following message is output to the controller&#8217;s operation log.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
+[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
+[LACP][INFO] SW=0000000000000001 PORT=1 LACP exchange timeout has occurred.
+slave state changed port: 1 enabled: False
+...
+</pre></div>
+</div>
+<p>&#8220;LACP exchange timeout has occurred.&#8221; indicates that the no communication monitoring time has elapsed.
+Here, by deleting all learned MAC addresses and flow entries for transfer, the switch is returned to the state that was in effect just after it started.</p>
+<p>If new communication arises, the new MAC address is learned and flow entries are registered again using only living links.</p>
+<p>New flow entries are registered related to communication between host h3 and host h1.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
+ cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
+ cookie=0x0, duration=5.738s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=6.279s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:5
+ cookie=0x0, duration=6.281s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=5.506s, table=0, n_packets=5, n_bytes=434, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
+ cookie=0x0, duration=5.736s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:21 actions=output:3
+ cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4
+</pre></div>
+</div>
+<p>ping that had been stopped at host h3 resumes.</p>
+<p>Node: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+64 bytes from 10.0.0.1: icmp_req=144 ttl=64 time=0.193 ms
+64 bytes from 10.0.0.1: icmp_req=145 ttl=64 time=0.081 ms
+64 bytes from 10.0.0.1: icmp_req=146 ttl=64 time=0.095 ms
+64 bytes from 10.0.0.1: icmp_req=237 ttl=64 time=44.1 ms
+64 bytes from 10.0.0.1: icmp_req=238 ttl=64 time=2.52 ms
+64 bytes from 10.0.0.1: icmp_req=239 ttl=64 time=0.371 ms
+64 bytes from 10.0.0.1: icmp_req=240 ttl=64 time=0.103 ms
+64 bytes from 10.0.0.1: icmp_req=241 ttl=64 time=0.067 ms
+...
+</pre></div>
+</div>
+<p>As explained above, even though a failure occurs in some links, we were able to check that it can be automatically recovered using other links.</p>
+</div>
+</div>
+</div>
+<div class="section" id="implementing-the-link-aggregation-function-with-ryu">
+<h2>Implementing the Link Aggregation Function with Ryu<a class="headerlink" href="#implementing-the-link-aggregation-function-with-ryu" title="Permalink to this headline">¶</a></h2>
+<p>Now we are going to see how the link aggregation function is implemented using OpenFlow.</p>
+<p>With a link aggregation using LACP, the behavior is like this: &#8220;While LACP data units are exchanged normally, the relevant physical interface is enabled&#8221; and &#8220;If exchange of LACP data units is suspended, the physical interface becomes disabled&#8221;. Disabling of a physical interface means that no flow entries exist that use that interface. Therefore, by implementing the following processing:</p>
+<ul class="simple">
+<li>Create and send a response when an LACP data unit is received.</li>
+<li>If an LACP data unit cannot be received for a certain period of time, the flow entry that uses the physical interface and after that flow entries that use the interface are not registered.</li>
+<li>If an LACP data unit is received by the disabled physical interface, said interface is enabled again.</li>
+<li>Packets other than the LACP data unit are learned and transferred, as with &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;.</li>
+</ul>
+<p>...basic operation of link aggregation becomes possible. Because the part related to LACP and the part not related to LACP are clearly separated, you can implement by cutting out the part related to LACP as an LACP library and extending the switching hub of &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221; for the part not related to LACP.</p>
+<p>Because creation and sending of responses after an LACP data unit is received cannot be achieved only by flow entries, we use the Packet-In message for processing at the OpenFlow controller side.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Physical interfaces that exchange LACP data units are classified as ACTIVE and PASSIVE, depending on their role. ACTIVE sends LACP data units at specified intervals to actively check communication. PASSIVE passively checks communication by returning a response after receiving the LACP data unit sent from ACTIVE.</p>
+<p class="last">Ryu&#8217;s link aggregation application implements only the PASSIVE mode.</p>
+</div>
+<p>If no LACP data unit is received for a predetermined period of time, the physical interface is disabled. Because of this processing, by setting idle_timeout for the flow entry that performs Packet-In of the LACP data unit, when timeout occurs, by sending the FlowRemoved message, it is possible for the OpenFlow controller to handle it when the interface is disabled.</p>
+<p>Processing when the exchange of LACP data units is resumed with the disabled interface is achieved by the handler of the Packet-In message to determine and change the enable/disable state of the interface upon receiving a LACP data unit.</p>
+<p>When the physical interface is disabled, as OpenFlow controller processing, it looks OK to simply &#8220;delete the flow entry that uses the interface&#8221; but it is not sufficient to do so.</p>
+<p>For example, assume there is a logical interface using a group of three physical interfaces and the sort logic is &#8220;Surplus of MAC address by the number of enabled interfaces&#8221;.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="34%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Interface 1</th>
+<th class="head">Interface 2</th>
+<th class="head">Interface 3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Surplus of MAC address:0</td>
+<td>Surplus of MAC address:1</td>
+<td>Surplus of MAC address:2</td>
+</tr>
+</tbody>
+</table>
+<p>Then, assume that flow entry that uses each physical interface has been registered for three entries, each.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Interface 1</th>
+<th class="head">Interface 2</th>
+<th class="head">Interface 3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Address:00:00:00:00:00:00</td>
+<td>Address:00:00:00:00:00:01</td>
+<td>Address:00:00:00:00:00:02</td>
+</tr>
+<tr class="row-odd"><td>Address:00:00:00:00:00:03</td>
+<td>Address:00:00:00:00:00:04</td>
+<td>Address:00:00:00:00:00:05</td>
+</tr>
+<tr class="row-even"><td>Address:00:00:00:00:00:06</td>
+<td>Address:00:00:00:00:00:07</td>
+<td>Address:00:00:00:00:00:08</td>
+</tr>
+</tbody>
+</table>
+<p>Here, if interface 1 is disabled, according to the sort logic &#8220;Surplus of MAC address by the number of enabled interfaces&#8221;, it must be sorted as follows:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Interface 1</th>
+<th class="head">Interface 2</th>
+<th class="head">Interface 3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Disabled</td>
+<td>Surplus of MAC address:0</td>
+<td>Surplus of MAC address:1</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="37%" />
+<col width="35%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Interface 1</th>
+<th class="head">Interface 2</th>
+<th class="head">Interface 3</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td></td>
+<td>Address:00:00:00:00:00:00</td>
+<td>Address:00:00:00:00:00:01</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>Address:00:00:00:00:00:02</td>
+<td>Address:00:00:00:00:00:03</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>Address:00:00:00:00:00:04</td>
+<td>Address:00:00:00:00:00:05</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>Address:00:00:00:00:00:06</td>
+<td>Address:00:00:00:00:00:07</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>Address:00:00:00:00:00:08</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>In addition to the flow entry that used interface 1, you can see it is also necessary to rewrite the flow entry of interface 2 and interface 3 as well. This is the same for both when the physical interface is disabled and when it is enabled.</p>
+<p>Therefore, when the enable/disable state of a physical interface is changed, processing is to delete all flow entries that use the physical interfaces included in the logical interface to which the said physical interface belongs.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The sort logic is not defined in the specification and it is up to the implementation of each device. In Ryu&#8217;s link aggregation application, unique sort processing is not used and the path sorted by the counterpart device is used.</p>
+</div>
+<p>Here, implement the following functions.</p>
+<p><strong>LACP library</strong></p>
+<ul class="simple">
+<li>When an LACP data unit is received, a response is created and sent.</li>
+<li>When reception of LACP data units is interrupted, the corresponding physical interface is assumed to be disabled and the switching hub is notified accordingly.</li>
+<li>When reception of LACP data unit is resumed, the corresponding physical interface is assumed to be enabled and the switching hub is notified accordingly.</li>
+</ul>
+<p><strong>Switching hub</strong></p>
+<ul class="simple">
+<li>Receives notification from the LACP library and deletes the flow entry that needs initialization.</li>
+<li>Learns and transfers packets other than LACP data units as usual</li>
+</ul>
+<p>The source code of the LACP library and switching hub are in Ryu&#8217;s source tree.</p>
+<blockquote>
+<div><p>ryu/lib/lacplib.py</p>
+<p>ryu/app/simple_switch_lacp.py</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Because simple_switch_lacp.py is an application dedicated to OpenFlow 1.0, this section describes details of the application based on simple_switch_lacp_13.py, which supports OpenFlow 1.3 indicated in &#8220;<a class="reference internal" href="#executing-the-ryu-application">Executing the Ryu Application</a>&#8221;.</p>
+</div>
+<div class="section" id="implementing-the-lacp-library">
+<h3>Implementing the LACP Library<a class="headerlink" href="#implementing-the-lacp-library" title="Permalink to this headline">¶</a></h3>
+<p>In the following section, we take a look at how the aforementioned functions are implemented in the LACP library. The quoted sources are excerpts. For the entire picture, refer to the actual source.</p>
+<div class="section" id="creating-a-logical-interface">
+<h4>Creating a Logical Interface<a class="headerlink" href="#creating-a-logical-interface" title="Permalink to this headline">¶</a></h4>
+<p>In order to use the link aggregation function, it is necessary to configure beforehand the respective network devices as to which interfaces are aggregated as one group. The LACP library uses the following method to configure this setting.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span>
+    <span class="n">ifs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+        <span class="n">ifs</span><span class="p">[</span><span class="n">port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">bond</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">bond</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifs</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The content of the arguments are as follows:</p>
+<p>dpid</p>
+<blockquote>
+<div>Specifies the data path ID of the OpenFlow switch.</div></blockquote>
+<p>ports</p>
+<blockquote>
+<div>Specifies the list of port numbers to be grouped.</div></blockquote>
+<p>By calling this method, the LACP library assumes ports specified by the OpenFlow switch of the specified data path ID as one group.
+If you wish to create multiple groups, repeat calling the add() method. For the MAC address assigned to a logical interface, the same address of the LOCAL port having the OpenFlow switch is used automatically.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">Some OpenFlow switches provide a link aggregation function as thje switches&#8217; own function (Open vSwitch, etc.). Here, we don&#8217;t use such functions unique to the switch and instead implement the link aggregation function through control by the OpenFlow controller.</p>
+</div>
+</div>
+<div class="section" id="packet-in-processing">
+<h4>Packet-In Processing<a class="headerlink" href="#packet-in-processing" title="Permalink to this headline">¶</a></h4>
+<p>&#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a> &#8221; performs flooding on the received packet when the destination MAC address has not been learned. LACP data units should only be exchanged between adjacent network devices and if transferred to another device the link aggregation function does not operate correctly. Therefore, operation is that if a packet received by Packet-In is an LACP data unit, it is snatched and if the packet is not a LACP data unit, it is left up to the operation of the switching hub. In this operation LACP data units are not shown to the switching hub.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
+<span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
+    <span class="n">req_pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span> <span class="ow">in</span> <span class="n">req_pkt</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_eth</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_lacp</span><span class="p">(</span><span class="n">req_lacp</span><span class="p">,</span> <span class="n">req_eth</span><span class="o">.</span><span class="n">src</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The event handler itself is the same as &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;. Processing is branched depending on whether or not the LACP data unit is included in the received massage.</p>
+<p>When the LACP data unit is included, the LACP library&#8217;s LACP data unit receive processing is performed. If the LACP data unit is not included, a method named send_event_to_observers() is called. This method is used to send an event defined in the ryu.base.app_manager.RyuApp class.</p>
+<p>In <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>, we mentioned the OpenFlow message receive event defined in Ryu, but users can define their own event.
+The event called <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>, which is sent in the above source, is a user-defined event created in the LACP library.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
+</pre></div>
+</div>
+<p>User-defined events are created by inheriting the ryu.controller.event.EventBase class. There is no limit on data enclosed in the event class. In the <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt> class, the ryu.ofproto.OFPPacketIn instance received by the Packet-In message is used as is.</p>
+<p>The method of receiving user-defined events is explained in a later section.</p>
+</div>
+<div class="section" id="processing-accompanying-port-enable-disable-state-change">
+<h4>Processing Accompanying Port Enable/Disable State Change<a class="headerlink" href="#processing-accompanying-port-enable-disable-state-change" title="Permalink to this headline">¶</a></h4>
+<p>The LACP data unit reception processing of the LACP library consists of the following processing.</p>
+<ol class="arabic simple">
+<li>If the port that received an LACP data unit is in disabled state, it is changed to enabled state and the state change is notified by the event.</li>
+<li>When the waiting time of the no communication timeout was changed, a flow entry to send Packet-In is re-registered when the LACP data unit is received.</li>
+<li>Creates and sends a response for the received LACP data unit.</li>
+</ol>
+<p>The processing of 2 above is explained in <a class="reference internal" href="#registering-flow-entry-sending-packet-in-of-an-lacp-data-unit">Registering Flow Entry Sending Packet-In of an LACP Data Unit</a> in a later section and the processing of 3 above is explained in <a class="reference internal" href="#send-receive-processing-for-lacp-data-unit">Send/Receive Processing for LACP DATA Unit</a> in a later section, respectively. In this section, we explain the processing of 1 above.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># when LACP arrived at disabled port, update the state of</span>
+    <span class="c"># the slave i/f to enabled, and send a event.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the slave i/f has just been up.&quot;</span><span class="p">,</span>
+            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
+            <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The _get_slave_enabled() method acquires information as to whether or not the port specified by the specified switch is enabled. The _set_slave_enabled() method sets the enable/disable state of the port specified by the specified switch.</p>
+<p>In the above source, when an LACP data unit is received by a port in the disabled state, the user-defined event called <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> is sent, which indicates that the port state has been changed.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;a event class that notifies the changes of the statuses of the</span>
+<span class="sd">    slave i/fs.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datapath</span> <span class="o">=</span> <span class="n">datapath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
+</pre></div>
+</div>
+<p>Other than when a port is enabled, the <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> event is also sent when a port is disabled. Processing when disabled is implemented in &#8220;<a class="reference internal" href="#receive-processing-of-flowremoved-message">Receive Processing of FlowRemoved Message</a>&#8221;.</p>
+<p>The <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> class includes the following information:</p>
+<ul class="simple">
+<li>OpenFlow switch where port enable/disable state has been changed</li>
+<li>Port number where port enable/disable state has been changed</li>
+<li>State after the change</li>
+</ul>
+</div>
+<div class="section" id="registering-flow-entry-sending-packet-in-of-an-lacp-data-unit">
+<h4>Registering Flow Entry Sending Packet-In of an LACP Data Unit<a class="headerlink" href="#registering-flow-entry-sending-packet-in-of-an-lacp-data-unit" title="Permalink to this headline">¶</a></h4>
+<p>For exchange intervals of LACP data units, two types have been defined, FAST (every 1 second) and SLOW (every 30 seconds). In the link aggregation specifications, if no communication status continues for three times the exchange interval, the interface is removed from the link aggregation group and is no longer used for packet transfer.</p>
+<p>The LACP library monitors no communication by setting three times the exchange interval (SHORT_TIMEOUT_TIME is 3 seconds, and LONG_TIMEOUT_TIME is 90 seconds) as idle_timeout for the flow entry sending Packet-In when an LACP data unit is received.</p>
+<p>If the exchange interval was changed, it is necessary to re-set the idle_timeout time, which the LACP library implements as follows:</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># set the idle_timeout time using the actor state of the</span>
+    <span class="c"># received packet.</span>
+    <span class="k">if</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LACP_STATE_SHORT_TIMEOUT</span> <span class="o">==</span> \
+       <span class="n">req_lacp</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">:</span>
+        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">SHORT_TIMEOUT_TIME</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LONG_TIMEOUT_TIME</span>
+
+    <span class="c"># when the timeout time has changed, update the timeout time of</span>
+    <span class="c"># the slave i/f and re-enter a flow entry for the packet from</span>
+    <span class="c"># the slave i/f with idle_timeout.</span>
+    <span class="k">if</span> <span class="n">idle_timeout</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the timeout time has changed.&quot;</span><span class="p">,</span>
+            <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_flow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">func</span>
+        <span class="n">func</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>The _get_slave_timeout() method acquires the current idle_timeout value of the port specified by the specified switch. The _set_slave_timeout() method registers the idle_timeout value of the port specified by the specified switch. In initial status or when the port is removed from the link aggregation group, because the idle_timeout value is set to 0, if a new LACP data unit is received, the flow entry is registered regardless of which exchange interval is used.</p>
+<p>Depending on the OpenFlow version used, the argument of the constructor of the <tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt> class is different, an the flow entry registration method according to the version is acquired. The following is the flow entry registration method used by OpenFlow 1.2 and later.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;enter a flow entry for the packet from the slave i/f</span>
+<span class="sd">    with idle_timeout. for OpenFlow ver1.2 and ver1.3.&quot;&quot;&quot;</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span>
+        <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_src</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">eth_type</span><span class="o">=</span><span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span><span class="p">)</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span>
+        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_MAX</span><span class="p">)]</span>
+    <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span>
+        <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span> <span class="n">actions</span><span class="p">)]</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_ADD</span><span class="p">,</span>
+        <span class="n">idle_timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span>
+        <span class="n">flags</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFF_SEND_FLOW_REM</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above source, the flow entry that &#8220;sends Packet-In when the LACP data unit is received form the counterpart interface&#8221; is set with the highest priority with no communication monitoring time.</p>
+</div>
+<div class="section" id="send-receive-processing-for-lacp-data-unit">
+<h4>Send/Receive Processing for LACP DATA Unit<a class="headerlink" href="#send-receive-processing-for-lacp-data-unit" title="Permalink to this headline">¶</a></h4>
+<p>When an LACP data unit is received, after performing &#8220;<a class="reference internal" href="#processing-accompanying-port-enable-disable-state-change">Processing Accompanying Port Enable/Disable State Change</a>&#8221; or &#8220;<a class="reference internal" href="#registering-flow-entry-sending-packet-in-of-an-lacp-data-unit">Registering Flow Entry Sending Packet-In of an LACP Data Unit</a>&#8221;, processing creates and sends the response LACP data unit.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># create a response packet.</span>
+    <span class="n">res_pkt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_response</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">)</span>
+
+    <span class="c"># packet-out the response packet.</span>
+    <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The _create_response() method called in the above source is response packet creation processing. Using the _create_lacp() method called there, a response LACP data unit is created. The created response packet is Packet-Out from the port that received the LACP data unit.</p>
+<p>In the LACP data unit, the send side (Actor) information and receive side (Partner) information are set. Because the counterpart interface information is described in the send side information of the received LACP data unit, that is set as the receive side information when a response is returned from the OpenFlow switch.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;create a LACP packet.&quot;&quot;&quot;</span>
+    <span class="n">actor_system</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span><span class="p">]</span><span class="o">.</span><span class="n">hw_addr</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">(</span>
+        <span class="c"># ...</span>
+        <span class="n">partner_system_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system_priority</span><span class="p">,</span>
+        <span class="n">partner_system</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system</span><span class="p">,</span>
+        <span class="n">partner_key</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_key</span><span class="p">,</span>
+        <span class="n">partner_port_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port_priority</span><span class="p">,</span>
+        <span class="n">partner_port</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_port</span><span class="p">,</span>
+        <span class="n">partner_state_activity</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_activity</span><span class="p">,</span>
+        <span class="n">partner_state_timeout</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">,</span>
+        <span class="n">partner_state_aggregation</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_aggregation</span><span class="p">,</span>
+        <span class="n">partner_state_synchronization</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_synchronization</span><span class="p">,</span>
+        <span class="n">partner_state_collecting</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_collecting</span><span class="p">,</span>
+        <span class="n">partner_state_distributing</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_distributing</span><span class="p">,</span>
+        <span class="n">partner_state_defaulted</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_defaulted</span><span class="p">,</span>
+        <span class="n">partner_state_expired</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_expired</span><span class="p">,</span>
+        <span class="n">collector_max_delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP sent.&quot;</span><span class="p">,</span>
+                     <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">res</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="receive-processing-of-flowremoved-message">
+<h4>Receive Processing of FlowRemoved Message<a class="headerlink" href="#receive-processing-of-flowremoved-message" title="Permalink to this headline">¶</a></h4>
+<p>When LACP data units are not exchanged during the specified period, the OpenFlow switch sends a FlowRemoved message to the OpenFlow controller.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">flow_removed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;FlowRemoved event handler. when the removed flow entry was</span>
+<span class="sd">    for LACP, set the status of the slave i/f to disabled, and</span>
+<span class="sd">    send a event.&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span>
+    <span class="k">if</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">:</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">in_port</span>
+        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">dl_type</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_type&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span> <span class="o">!=</span> <span class="n">dl_type</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP exchange timeout has occurred.&quot;</span><span class="p">,</span>
+        <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
+        <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>When a FlowRemoved message is received, the OpenFlow controller uses the _set_slave_enabled() method to set port disabled state, uses the _set_slave_timeout() method to set the idle_timeout value to 0, and uses the send_event_to_observers() method to send an <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> event.</p>
+</div>
+</div>
+<div class="section" id="implementing-the-application">
+<h3>Implementing the Application<a class="headerlink" href="#implementing-the-application" title="Permalink to this headline">¶</a></h3>
+<p>We explain the difference between the link aggregation application (simple_switch_lacp_13.py) that supports OpenFlow 1.3 described in <a class="reference internal" href="#executing-the-ryu-application">Executing the Ryu Application</a> and the switching hub of &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;, in order.</p>
+<div class="section" id="setting-contexts">
+<h4>Setting &#8220;_CONTEXTS&#8221;<a class="headerlink" href="#setting-contexts" title="Permalink to this headline">¶</a></h4>
+<p>A Ryu application that inherits ryu.base.app_manager.RyuApp starts other applications using separate threads by setting other Ryu applications in the &#8220;_CONTEXTS&#8221; dictionary. Here, the LacpLib class of the LACP library is set in &#8220;_CONTEXTS&#8221; in the name of &#8221; lacplib&#8221;.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
+
+<span class="c"># ...</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>Applications set in &#8220;_CONTEXTS&#8221; can acquire instances from the kwargs of the __init__() method.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
+<span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initial-setting-of-the-library">
+<h4>Initial Setting of the Library<a class="headerlink" href="#initial-setting-of-the-library" title="Permalink to this headline">¶</a></h4>
+<p>Initialize the LACP library set in &#8220;_CONTEXTS&#8221;. For the initial setting, execute the add() method provided by the LACP library. Here, set the following values.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="44%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Value</th>
+<th class="head">Explanation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dpid</td>
+<td>str_to_dpid(&#8216;0000000000000001&#8217;)</td>
+<td>Data path ID</td>
+</tr>
+<tr class="row-odd"><td>ports</td>
+<td>[1, 2]</td>
+<td>List of port to be grouped</td>
+</tr>
+</tbody>
+</table>
+<p>With this setting, part 1 and port 2 of the OpenFlow switch of data path ID &#8220;0000000000000001&#8221; operate as one link aggregation group.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre># ...
+    self._lacp = kwargs[&#39;lacplib&#39;]
+    self._lacp.add(
+        dpid=str_to_dpid(&#39;0000000000000001&#39;), ports=[1, 2])
+# ...
+</pre></div>
+</div>
+</div>
+<div class="section" id="receiving-user-defined-events">
+<h4>Receiving User-defined Events<a class="headerlink" href="#receiving-user-defined-events" title="Permalink to this headline">¶</a></h4>
+<p>As explained in <a class="reference internal" href="#implementing-the-lacp-library">Implementing the LACP Library</a>, the LACP library sends a Packet-In message that does not contain the LACP data unit as a user-defined event called <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>. The event handler of the user-defined event uses the <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt> decorator to decorate, as with the event handler provided by Ryu.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>Also, when the enable/disable condition of a port is changed, the LACP library sends an <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> event, therefore, create an event handler for this as well.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">del_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+</pre></div>
+</div>
+<p>As explained at the beginning of this document, when the enable/disable state of a port is changed, the actual physical interface used by the packet that passes through the logical interface may be changed. For that reason, all registered flow entries are deleted.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
+                            <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+                            <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+    <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Flow entries are deleted by the instance of the <tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt> class.</p>
+<p>As explained above, a switching hub application having an link aggregation function is achieved by a library that provides the link aggregation function and applications that use the library.</p>
+</div>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>This section uses the link aggregation library as material to explain the following items:</p>
+<ul class="simple">
+<li>How to use the library using &#8220;_CONTEXTS&#8221;</li>
+<li>Method of defining user-defined events and method of raising event triggers</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Link Aggregation</a><ul>
+<li><a class="reference internal" href="#id1">Link Aggregation</a></li>
+<li><a class="reference internal" href="#executing-the-ryu-application">Executing the Ryu Application</a><ul>
+<li><a class="reference internal" href="#configuring-an-experimental-environment">Configuring an Experimental Environment</a></li>
+<li><a class="reference internal" href="#setting-link-aggregation-in-host-h1">Setting Link Aggregation in Host h1</a></li>
+<li><a class="reference internal" href="#setting-openflow-version">Setting OpenFlow Version</a></li>
+<li><a class="reference internal" href="#executing-the-switching-hub">Executing the Switching Hub</a></li>
+<li><a class="reference internal" href="#checking-the-link-aggregation-function">Checking the Link Aggregation Function</a><ul>
+<li><a class="reference internal" href="#improving-communication-speed">Improving Communication Speed</a></li>
+<li><a class="reference internal" href="#improving-fault-tolerance">Improving Fault Tolerance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementing-the-link-aggregation-function-with-ryu">Implementing the Link Aggregation Function with Ryu</a><ul>
+<li><a class="reference internal" href="#implementing-the-lacp-library">Implementing the LACP Library</a><ul>
+<li><a class="reference internal" href="#creating-a-logical-interface">Creating a Logical Interface</a></li>
+<li><a class="reference internal" href="#packet-in-processing">Packet-In Processing</a></li>
+<li><a class="reference internal" href="#processing-accompanying-port-enable-disable-state-change">Processing Accompanying Port Enable/Disable State Change</a></li>
+<li><a class="reference internal" href="#registering-flow-entry-sending-packet-in-of-an-lacp-data-unit">Registering Flow Entry Sending Packet-In of an LACP Data Unit</a></li>
+<li><a class="reference internal" href="#send-receive-processing-for-lacp-data-unit">Send/Receive Processing for LACP DATA Unit</a></li>
+<li><a class="reference internal" href="#receive-processing-of-flowremoved-message">Receive Processing of FlowRemoved Message</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementing-the-application">Implementing the Application</a><ul>
+<li><a class="reference internal" href="#setting-contexts">Setting &#8220;_CONTEXTS&#8221;</a></li>
+<li><a class="reference internal" href="#initial-setting-of-the-library">Initial Setting of the Library</a></li>
+<li><a class="reference internal" href="#receiving-user-defined-events">Receiving User-defined Events</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rest_api.html"
+                        title="previous chapter">REST Linkage</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="spanning_tree.html"
+                        title="next chapter">Spanning Tree</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/link_aggregation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="Spanning Tree"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rest_api.html" title="REST Linkage"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

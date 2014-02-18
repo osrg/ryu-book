@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Architecture &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="Contribution" href="contribute.html" />
+    <link rel="prev" title="OpenFlow Switch Test Tool" href="switch_test_tool.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="Contribution"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow Switch Test Tool"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="architecture">
+<span id="ch-arch"></span><h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
+<p>This section introduces the Ryu architecture.
+Refer to the API reference &lt;<a class="reference external" href="http://ryu.readthedocs.org/en/latest/">http://ryu.readthedocs.org/en/latest/</a>&gt; for how to use each class.</p>
+<div class="section" id="application-programming-model">
+<h2>Application Programming Model<a class="headerlink" href="#application-programming-model" title="Permalink to this headline">¶</a></h2>
+<p>The following section explains the programming model used for Ryu applications.</p>
+<img alt="_images/fig11.png" src="_images/fig11.png" />
+<div class="section" id="applications">
+<h3>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h3>
+<p>Applications are a class that inherits <tt class="docutils literal"><span class="pre">ryu.base.app_manager.RyuApp</span></tt>. User logic is described as an application.</p>
+</div>
+<div class="section" id="event">
+<h3>Event<a class="headerlink" href="#event" title="Permalink to this headline">¶</a></h3>
+<p>Events are class objects that inherit <tt class="docutils literal"><span class="pre">ryu.controller.event.EventBase</span></tt>. Communication between applications is performed by transmitting and receiving events.</p>
+</div>
+<div class="section" id="event-queue">
+<h3>Event Queue<a class="headerlink" href="#event-queue" title="Permalink to this headline">¶</a></h3>
+<p>Each application has a single queue for receiving events.</p>
+</div>
+<div class="section" id="threads">
+<h3>Threads<a class="headerlink" href="#threads" title="Permalink to this headline">¶</a></h3>
+<p>Ryu runs in multi-thread using eventlets. Because threads are non-preemptive, you need to be careful when performing time-consuming processes.</p>
+<div class="section" id="event-loops">
+<h4>Event loops<a class="headerlink" href="#event-loops" title="Permalink to this headline">¶</a></h4>
+<p>One thread is automatically created for each application. This thread runs an event loop. If there is an event in the event queue, the event loop will load the event and call the corresponding event handler (described later).</p>
+</div>
+<div class="section" id="additional-threads">
+<h4>Additional threads<a class="headerlink" href="#additional-threads" title="Permalink to this headline">¶</a></h4>
+<p>You can create additional threads using the hub.spawn function to perform application-specific processing.</p>
+</div>
+<div class="section" id="eventlets">
+<h4>eventlets<a class="headerlink" href="#eventlets" title="Permalink to this headline">¶</a></h4>
+<p>It can also be used directly from the application function of eventlet, but it&#8217;s not recommended. Please be sure to use the wrapper provided by the hub module if possible.</p>
+</div>
+</div>
+<div class="section" id="event-handlers">
+<h3>Event handlers<a class="headerlink" href="#event-handlers" title="Permalink to this headline">¶</a></h3>
+<p>You can define an event handler by decorating application class method with an <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt> decorator. When an event of the specified type occurs, the event handler is called from the application&#8217;s event loop.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Architecture</a><ul>
+<li><a class="reference internal" href="#application-programming-model">Application Programming Model</a><ul>
+<li><a class="reference internal" href="#applications">Applications</a></li>
+<li><a class="reference internal" href="#event">Event</a></li>
+<li><a class="reference internal" href="#event-queue">Event Queue</a></li>
+<li><a class="reference internal" href="#threads">Threads</a><ul>
+<li><a class="reference internal" href="#event-loops">Event loops</a></li>
+<li><a class="reference internal" href="#additional-threads">Additional threads</a></li>
+<li><a class="reference internal" href="#eventlets">eventlets</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#event-handlers">Event handlers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="previous chapter">OpenFlow Switch Test Tool</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="next chapter">Contribution</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/arch.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="Contribution"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow Switch Test Tool"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>
