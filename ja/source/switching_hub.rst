@@ -218,7 +218,7 @@ set_ev_clsは、引数に受け取るメッセージに対応したイベント�
 イベントクラス名は、 ``ryu.controller.ofp_event.EventOFP`` + <OpenFlow
 メッセージ名>となっています。例えば、Packet-Inメッセージの場合は、
 ``EventOFPPacketIn`` になります。
-詳しくは、Ryuのドキュメント *Ryu application API* を参照してください。
+詳しくは、Ryuのドキュメント `APIリファレンス <http://ryu.readthedocs.org/en/latest/>`_ を参照してください。
 ステートには、以下のいずれか、またはリストを指定します。
 
 .. tabularcolumns:: |l|L|
@@ -762,7 +762,7 @@ Mininetの実行
 
 mininetからxtermを起動するため、Xが使える環境が必要です。
 
-ここでは、OpenFlow TutorialのVMを利用しているため、デスクトップPCから
+ここでは、OpenFlow TutorialのVMを利用しているため、
 sshでX11 Forwardingを有効にしてログインします。
 
     ::

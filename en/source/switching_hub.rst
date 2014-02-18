@@ -193,7 +193,7 @@ The event handler defines a function having the event object for the argument an
 set_ev_cls specifies the event class supporting the received message and the state of the OpenFlow switch for the argument.
 
 The event class name is ``ryu.controller.ofp_event.EventOFP`` + <OpenFlow message name>. For example, in case of a Packet-In message, it becomes ``EventOFPPacketIn``. 
-For details, refer to Ryu's document titled *Ryu application API*.
+For details, refer to Ryu's document titled `API Reference <http://ryu.readthedocs.org/en/latest/>`_ .
 For the state, specify one of the following or list.
 
 .. tabularcolumns:: |l|L|
@@ -301,7 +301,7 @@ The Table-miss flow entry has the lowest (0) priority and this entry matches all
 
 An empty match is generated to match all packets. Match is expressed in the ``OFPMatch`` class.
 
-Next, an instance of the OUTPTU action class (``OFPActionOutput``) is generated to transfer to the controller port.
+Next, an instance of the OUTPUT action class (``OFPActionOutput``) is generated to transfer to the controller port.
 The controller is specified as the output destination and ``OFPCML_NO_BUFFER`` is specified to max_len in order to send all packets to the controller.
 
 Finall, 0 (lowest) is specified for priority and the ``add_flow()`` method is executed to send the Flow Mod message. The content of the add_flow() method is explained in a later section.
@@ -420,7 +420,7 @@ Based on the summary including the aforementioned actions, add the following ent
 
 .. HINT::
 
-    With OpenFlow, a logical output port called NORMALP is prescribed in option and when NORMAL is specified for the output port, the L2/L3 function of the switch is used to process the packets. That means, by instructing to output all packets to the NORMAL port, it is possible to make the switch operate as a switching hub. However, we implement each processing using OpenFlow.
+    With OpenFlow, a logical output port called NORMAL is prescribed in option and when NORMAL is specified for the output port, the L2/L3 function of the switch is used to process the packets. That means, by instructing to output all packets to the NORMAL port, it is possible to make the switch operate as a switching hub. However, we implement each processing using OpenFlow.
 
 
 Adding Processing of Flow Entry
@@ -654,7 +654,7 @@ Execution of Mininet
 
 Because xterm is started from mininet, an environment where X can be used is necessary.
 
-Because VM of OpenFlow Tutorial is used, log in from a desktop PC using ssh with X11 Forwarding enabled.
+Because VM of OpenFlow Tutorial is used, log in using ssh with X11 Forwarding enabled.
 
     ::
 
