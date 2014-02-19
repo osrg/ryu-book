@@ -59,11 +59,12 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
 
        .. image:: images/switching_hub/fig1.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/switching_hub/fig1.png
-          :scale: 80 %
+          :align: center
 
 
 2. ホストA→ホストB
@@ -77,11 +78,12 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
 
        .. image:: images/switching_hub/fig2.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/switching_hub/fig2.png
-          :scale: 80 %
+          :align: center
 
     Packet-In::
 
@@ -104,11 +106,12 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
 
        .. image:: images/switching_hub/fig3.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/switching_hub/fig3.png
-          :scale: 80 %
+          :align: center
 
 
     Packet-In::
@@ -131,11 +134,12 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
 
        .. image:: images/switching_hub/fig4.eps
           :scale: 80 %
+          :align: center
 
     .. only:: not latex
 
        .. image:: images/switching_hub/fig4.png
-          :scale: 80 %
+          :align: center
 
 
     Packet-In::
