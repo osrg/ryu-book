@@ -86,7 +86,7 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
 
 それでは手順を紹介します。
 
-1. ソースコードをチェックアウトする
+1．ソースコードをチェックアウトする
 
  まずはRyuのソースコードをチェックアウトします。
  GitHub上でソースコードをforkして自分の作業用リポジトリを作っても
@@ -95,14 +95,14 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
    ``$ git clone https://github.com/osrg/ryu.git``
    ``$ cd ryu/``
 
-2. ソースコードに変更を加える
+2．ソースコードに変更を加える
 
  Ryuのソースコードに必要な変更を加えます。
  作業に区切りがついたら、変更内容をコミットしましょう。
 
    ``$ git commit -a``
 
-3. パッチを作る
+3．パッチを作る
 
  変更内容の差分をパッチにします。
  パッチには Signed-off-by: 行を付けることを忘れないでください。
@@ -111,7 +111,7 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
 
    ``$ git format-patch origin -s``
 
-4. パッチを送る
+4．パッチを送る
 
  完成したパッチの内容が正しいことを確認した後に、メーリングリストに送ります。
  お使いのメーラで直接送ることもできますがgit-send-email(1)を使うことで
@@ -119,7 +119,7 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
 
    ``$ git send-email 0001-sample.patch``
 
-5. 応答を待つ
+5．応答を待つ
 
  パッチに対する応答を待ちます。
  そのまま取り込まれる場合もありますが、指摘事項などがあれば
