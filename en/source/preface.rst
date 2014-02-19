@@ -3,11 +3,17 @@
 Preface
 ========
 
-Chapters 1 to 5 describe programming techniques with Ryu through enhancment of traffic monitoring and link aggregation functions, using a switching hub as an example.
+This specialized book is for the Ryu development framework, which is used to achieve Software Defined Networking (SDN).
 
-Chapters 6 to 8 describe the OpenFlow protocol and packet libraries which are needed for programming with Ryu.
+Why Ryu?
 
-Chapters 9 to 11 describe how to use firewall and testing tools bundled in Ryu as sample applications.
+We hope you can find the answer in this book.
 
-Chapters 12 to 14 describe the Ryu architecture and introduction examples.
+We recommend that you read Chapters 1 to 5, in that order. In Chapter 1, a simple switch hub is implemented, and in later chapters, traffic monitor and link aggregation functions are added. Through actual examples, we describe programming using Ryu.
+
+Chapters 6 to 8 provide details about the OpenFlow protocol and the packet libraries that are necessary for programming using Ryu. In Chapters 9 to 11, we talk about how to use the firewall and test tool included in the Ryu package as sample applications. Chapters 12 to 14 introduce Ryu's architecture and introduction cases.
+
+Finally, we would like to say thank you to those people, in particular users, who supported the Ryu project. We are waiting for your opinions via the mailing list.
+
+Let's develop Ryu together!
 
