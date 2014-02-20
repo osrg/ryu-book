@@ -187,7 +187,7 @@ FlowStatsRequestの対象となった各フローエントリの統計情報が�
 
     # ...
 
-    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=Ture,
+    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=True,
                                       indent=3, sort_keys=True))
 
 この場合、以下のように出力されます。
