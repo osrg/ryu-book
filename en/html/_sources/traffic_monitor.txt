@@ -160,7 +160,7 @@ For example, it can be written as follows:
 
     # ...
 
-    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=Ture,
+    self.logger.info('%s', json.dumps(ev.msg.to_jsondict(), ensure_ascii=True,
                                       indent=3, sort_keys=True))
 
 In this case, the output is as follows:

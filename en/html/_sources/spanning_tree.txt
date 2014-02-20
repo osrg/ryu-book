@@ -96,11 +96,11 @@ Specifically, this is achieved by the following procedure:
 
 .. NOTE::
 
-    The cost to reach the root bridge is compared as follows based on the settng value of the BPDU packet received by each port.
+    The cost to reach the root bridge is compared as follows based on the setting value of the BPDU packet received by each port.
 
         Priority 1: Compares by the root path cost value.
 
-            When each bridge transfers a BPDU packet, the path cost value set for the output port is added to the root path cost value of the BPDU packet. Because of this, the rooth path cost value is the total value of the path cost value of each link passed through to reach the root bridge. 
+            When each bridge transfers a BPDU packet, the path cost value set for the output port is added to the root path cost value of the BPDU packet. Because of this, the root path cost value is the total value of the path cost value of each link passed through to reach the root bridge. 
 
         Priority 2: When the root path cost is the same, compares using the bridge ID of the counterpart bridges.
 
@@ -238,7 +238,7 @@ Setting the OpenFlow Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Set the OpenFlow version to 1.3.
-Input this command on xterm of switchs s1, s2, and x3.
+Input this command on xterm of switches s1, s2, and x3.
 
 
 Node: s1:
@@ -715,7 +715,7 @@ Spanning Tree by OpenFlow
 In Ryu's spanning tree application, let's look at how spanning tree is implemented using OpenFlow.
 
 OpenFlow 1.3 provides config to configure the following port operation.
-By issuing a Port Modification message to the OpenFlow switch, it is possible to control operations such as availaility of port frame transfer.
+By issuing a Port Modification message to the OpenFlow switch, it is possible to control operations such as availability of port frame transfer.
 
 =================== ============================================================
 Value               Explanation
@@ -734,7 +734,7 @@ The controller controls sending/receiving of BPDU packets depending on the port 
 
 
 ======= ================== ============================================
-Status  Port configration  Flow entry
+Status  Port configuration Flow entry
 ======= ================== ============================================
 DISABLE NO_RECV/NO_FWD     No setting
 BLOCK   NO_FWD             BPDU Packet-In, drop packets other than BPDU
@@ -763,8 +763,8 @@ The spanning tree source code is in the Ryu's source tree.
     ryu/app/simple_switch_stp.py
 
 
-stplib.py is a library that provides spanning three functions such as BPDU packet exchange and management of rules, and the status of ech port.
-The simple_switch_stp.py is an application program in which the spanning tree function is added to the swiching hub application using the spanning tree library.
+stplib.py is a library that provides spanning tree functions such as BPDU packet exchange and management of rules, and the status of each port.
+The simple_switch_stp.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.
 
 .. ATTENTION::
 
@@ -801,7 +801,7 @@ When the STP library (Stp class instance) detects connection of an OpenFlow swit
 
 * Notification of the OpenFlow message reception from the Stp class instance
 * STP calculation of the Bridge class instance (loot bridge selection and selection of the role of each port)
-* Status change of the port of the Port class instance and send/receiv of BPDU packets
+* Status change of the port of the Port class instance and send/receive of BPDU packets
 
 work together to achieve the spanning tree function.
 
@@ -973,7 +973,7 @@ Link down is detected by the PortStatus event handler of the Stp class and is no
 Timeout of BPDU packet receive waiting is detected by the BPDU packet receive waiting thread (``Port.wait_bpdu_thread``) of the Port class. When BPDU packets from the root bridge cannot be received for the maximum age (default: 20 seconds), an indirect failure is determined and is notified to the Bridge class instance.
 
 For update of the BPDU receive waiting timer and detection of timeout, ``hub.Event`` and ``hub.Timeout`` of the hub module (ryu.lib.hub) are used. ``hub.Event`` enters wait status by ``hub.Event.wait()`` and the thread is suspended until ``hub.Event.set()`` is executed. ``hub.Timeout`` issues an ``hub.Timeout`` exception if processing of the ``try`` clause is not completed within the specified timeout time.
-When ``hub.Event`` enters wait status and ``hub.Event.set()`` is not executed withint the timeout time specified in ``hub.Timeout``, timeout of BPDU packet receive waiting is determined and STP re-calculation processing of the Bridge class is called.
+When ``hub.Event`` enters wait status and ``hub.Event.set()`` is not executed within the timeout time specified in ``hub.Timeout``, timeout of BPDU packet receive waiting is determined and STP re-calculation processing of the Bridge class is called.
 
 
 .. rst-class:: sourcecode
@@ -1158,7 +1158,7 @@ On the other hand, if the root port is not found (own bridge information is the 
 Port Status Change
 """"""""""""""""""
 
-Status change processing of ports is executed by the status change control thread (``Port.state_machine``) of the Port class. It uses ``Port._get_timer()`` to get the timer to change to the next status and after the timer elapses, uses ``Port._get_next_state()`` to get the next status to change the status. Also, the status is changed when ``Port._change_status()`` is executed in case that when STP re-calculation occurs and the status is changed to BLOCK status, regardless of the previous port status. Tis processing is achieved using ``hub.Event`` and ``hub.Timeout`` of the hub module, as with "`Detecting Failures`_".
+Status change processing of ports is executed by the status change control thread (``Port.state_machine``) of the Port class. It uses ``Port._get_timer()`` to get the timer to change to the next status and after the timer elapses, uses ``Port._get_next_state()`` to get the next status to change the status. Also, the status is changed when ``Port._change_status()`` is executed in case that when STP re-calculation occurs and the status is changed to BLOCK status, regardless of the previous port status. This processing is achieved using ``hub.Event`` and ``hub.Timeout`` of the hub module, as with "`Detecting Failures`_".
 
 
 .. rst-class:: sourcecode
@@ -1364,7 +1364,7 @@ The change notification event (``stplib.EventPortStateChange``) of the port stat
 
 
 
-As explained above, by using the libary that provides the spanning tree function and the application that uses the library, a switching hub application having a spanning tree function is achieved.
+As explained above, by using the library that provides the spanning tree function and the application that uses the library, a switching hub application having a spanning tree function is achieved.
 
 
 

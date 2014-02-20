@@ -121,11 +121,11 @@ These ports suppress frame transfer.</p>
 <a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 408.0px; height: 293.5px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>The cost to reach the root bridge is compared as follows based on the settng value of the BPDU packet received by each port.</p>
+<p>The cost to reach the root bridge is compared as follows based on the setting value of the BPDU packet received by each port.</p>
 <blockquote class="last">
 <div><p>Priority 1: Compares by the root path cost value.</p>
 <blockquote>
-<div>When each bridge transfers a BPDU packet, the path cost value set for the output port is added to the root path cost value of the BPDU packet. Because of this, the rooth path cost value is the total value of the path cost value of each link passed through to reach the root bridge.</div></blockquote>
+<div>When each bridge transfers a BPDU packet, the path cost value set for the output port is added to the root path cost value of the BPDU packet. Because of this, the root path cost value is the total value of the path cost value of each link passed through to reach the root bridge.</div></blockquote>
 <p>Priority 2: When the root path cost is the same, compares using the bridge ID of the counterpart bridges.</p>
 <p>Priority 3: When the bridge ID of the counterpart bridges are the same (in cases in which each port is connected to the same bridge), compare using the port ID of the counterpart ports.</p>
 <blockquote>
@@ -404,7 +404,7 @@ h3 h3-eth0:s3-eth1
 <div class="section" id="setting-the-openflow-version">
 <h3>Setting the OpenFlow Version<a class="headerlink" href="#setting-the-openflow-version" title="Permalink to this headline">¶</a></h3>
 <p>Set the OpenFlow version to 1.3.
-Input this command on xterm of switchs s1, s2, and x3.</p>
+Input this command on xterm of switches s1, s2, and x3.</p>
 <p>Node: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 </pre></div>
@@ -715,7 +715,7 @@ In the state in which STP calculation has been completed after each OpenFlow swi
 <h2>Spanning Tree by OpenFlow<a class="headerlink" href="#spanning-tree-by-openflow" title="Permalink to this headline">¶</a></h2>
 <p>In Ryu&#8217;s spanning tree application, let&#8217;s look at how spanning tree is implemented using OpenFlow.</p>
 <p>OpenFlow 1.3 provides config to configure the following port operation.
-By issuing a Port Modification message to the OpenFlow switch, it is possible to control operations such as availaility of port frame transfer.</p>
+By issuing a Port Modification message to the OpenFlow switch, it is possible to control operations such as availability of port frame transfer.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -751,7 +751,7 @@ By issuing a Port Modification message to the OpenFlow switch, it is possible to
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Status</th>
-<th class="head">Port configration</th>
+<th class="head">Port configuration</th>
 <th class="head">Flow entry</th>
 </tr>
 </thead>
@@ -792,8 +792,8 @@ The spanning tree source code is in the Ryu&#8217;s source tree.</p>
 <div><p>ryu/lib/stplib.py</p>
 <p>ryu/app/simple_switch_stp.py</p>
 </div></blockquote>
-<p>stplib.py is a library that provides spanning three functions such as BPDU packet exchange and management of rules, and the status of ech port.
-The simple_switch_stp.py is an application program in which the spanning tree function is added to the swiching hub application using the spanning tree library.</p>
+<p>stplib.py is a library that provides spanning tree functions such as BPDU packet exchange and management of rules, and the status of each port.
+The simple_switch_stp.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.</p>
 <div class="admonition attention">
 <p class="first admonition-title">Attention</p>
 <p class="last">simple_switch_stp.py is an application dedicated to OpenFlow 1.0; this section describes details of the application based on simple_switch_stp_13.py, which supports OpenFlow 1.3, indicated in &#8220;<a class="reference internal" href="#executing-the-ryu-application">Executing the Ryu Application</a> &#8221;.</p>
@@ -807,7 +807,7 @@ The simple_switch_stp.py is an application program in which the spanning tree fu
 <ul class="simple">
 <li>Notification of the OpenFlow message reception from the Stp class instance</li>
 <li>STP calculation of the Bridge class instance (loot bridge selection and selection of the role of each port)</li>
-<li>Status change of the port of the Port class instance and send/receiv of BPDU packets</li>
+<li>Status change of the port of the Port class instance and send/receive of BPDU packets</li>
 </ul>
 <p>work together to achieve the spanning tree function.</p>
 </div>
@@ -998,7 +998,7 @@ For implementation of the event handler, refer to &#8220;<a class="reference int
 <p>Link down is detected by the PortStatus event handler of the Stp class and is notified to the Bridge class instance.</p>
 <p>Timeout of BPDU packet receive waiting is detected by the BPDU packet receive waiting thread (<tt class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></tt>) of the Port class. When BPDU packets from the root bridge cannot be received for the maximum age (default: 20 seconds), an indirect failure is determined and is notified to the Bridge class instance.</p>
 <p>For update of the BPDU receive waiting timer and detection of timeout, <tt class="docutils literal"><span class="pre">hub.Event</span></tt> and <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> of the hub module (ryu.lib.hub) are used. <tt class="docutils literal"><span class="pre">hub.Event</span></tt> enters wait status by <tt class="docutils literal"><span class="pre">hub.Event.wait()</span></tt> and the thread is suspended until <tt class="docutils literal"><span class="pre">hub.Event.set()</span></tt> is executed. <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> issues an <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> exception if processing of the <tt class="docutils literal"><span class="pre">try</span></tt> clause is not completed within the specified timeout time.
-When <tt class="docutils literal"><span class="pre">hub.Event</span></tt> enters wait status and <tt class="docutils literal"><span class="pre">hub.Event.set()</span></tt> is not executed withint the timeout time specified in <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>, timeout of BPDU packet receive waiting is determined and STP re-calculation processing of the Bridge class is called.</p>
+When <tt class="docutils literal"><span class="pre">hub.Event</span></tt> enters wait status and <tt class="docutils literal"><span class="pre">hub.Event.set()</span></tt> is not executed within the timeout time specified in <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt>, timeout of BPDU packet receive waiting is determined and STP re-calculation processing of the Bridge class is called.</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
@@ -1152,7 +1152,7 @@ When <tt class="docutils literal"><span class="pre">hub.Event</span></tt> enters
 </div>
 <div class="section" id="port-status-change">
 <h4>Port Status Change<a class="headerlink" href="#port-status-change" title="Permalink to this headline">¶</a></h4>
-<p>Status change processing of ports is executed by the status change control thread (<tt class="docutils literal"><span class="pre">Port.state_machine</span></tt>) of the Port class. It uses <tt class="docutils literal"><span class="pre">Port._get_timer()</span></tt> to get the timer to change to the next status and after the timer elapses, uses <tt class="docutils literal"><span class="pre">Port._get_next_state()</span></tt> to get the next status to change the status. Also, the status is changed when <tt class="docutils literal"><span class="pre">Port._change_status()</span></tt> is executed in case that when STP re-calculation occurs and the status is changed to BLOCK status, regardless of the previous port status. Tis processing is achieved using <tt class="docutils literal"><span class="pre">hub.Event</span></tt> and <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> of the hub module, as with &#8220;<a class="reference internal" href="#detecting-failures">Detecting Failures</a>&#8221;.</p>
+<p>Status change processing of ports is executed by the status change control thread (<tt class="docutils literal"><span class="pre">Port.state_machine</span></tt>) of the Port class. It uses <tt class="docutils literal"><span class="pre">Port._get_timer()</span></tt> to get the timer to change to the next status and after the timer elapses, uses <tt class="docutils literal"><span class="pre">Port._get_next_state()</span></tt> to get the next status to change the status. Also, the status is changed when <tt class="docutils literal"><span class="pre">Port._change_status()</span></tt> is executed in case that when STP re-calculation occurs and the status is changed to BLOCK status, regardless of the previous port status. This processing is achieved using <tt class="docutils literal"><span class="pre">hub.Event</span></tt> and <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> of the hub module, as with &#8220;<a class="reference internal" href="#detecting-failures">Detecting Failures</a>&#8221;.</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1341,7 +1341,7 @@ Here, the following values are set as a sample.</p>
 </pre></div>
 </div>
 </div></blockquote>
-<p>As explained above, by using the libary that provides the spanning tree function and the application that uses the library, a switching hub application having a spanning tree function is achieved.</p>
+<p>As explained above, by using the library that provides the spanning tree function and the application that uses the library, a switching hub application having a spanning tree function is achieved.</p>
 </div>
 </div>
 </div>
