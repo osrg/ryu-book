@@ -187,6 +187,37 @@ latex_elements = {
 'preamble': r"""
 \makeatletter
 
+\renewcommand{\maketitle}{
+ \begin{titlepage}
+  \begingroup
+   \setlength{\unitlength}{1truemm}
+   \begin{picture}(210,234)(25,38)
+    \begingroup
+     \makeatletter
+     \ifx\svgwidth\undefined
+      \setlength{\unitlength}{595.27558594bp}
+      \ifx\svgscale\undefined
+       \relax
+      \else
+       \setlength{\unitlength}{\unitlength * \real{\svgscale}}
+      \fi
+     \else
+      \setlength{\unitlength}{\svgwidth}
+     \fi
+     \global\let\svgwidth\undefined
+     \global\let\svgscale\undefined
+     \begin{picture}(1,1.4142857)
+      \put(0,0){\includegraphics[width=\unitlength]{cover.eps}}
+     \end{picture}
+     \makeatother
+    \endgroup
+   \end{picture}
+  \endgroup
+  \@thanks
+ \end{titlepage}
+ \let\thanks\relax\let\maketitle\relax
+}
+
 % ---- Code block
 \usepackage{listings}
 \lstset{
@@ -293,6 +324,8 @@ latex_documents = [
 
 #latex_docclass = {'manual': 'sbook'}
 
+latex_additional_files = ['images/cover.eps']
+
 
 # -- Options for manual page output ---------------------------------------
 
@@ -363,7 +396,7 @@ epub_copyright = u'2014, RYU project team'
 #epub_uid = ''
 
 # A tuple containing the cover image and cover page html template filenames.
-#epub_cover = ()
+epub_cover = ('_static/cover.png', '')
 
 # A sequence of (type, uri, title) tuples for the guide element of content.opf.
 #epub_guide = ()
