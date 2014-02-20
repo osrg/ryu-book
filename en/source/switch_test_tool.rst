@@ -109,7 +109,7 @@ A test pattern file is a text file that has a ".json" extension. It is described
             "prerequisite": [
                 {
                     "OFPFlowMod": {...}  # Flow entry to register
-                },                       # (Descrobe OFPFlowMod of Ryu in json format)
+                },                       # (Describe OFPFlowMod of Ryu in json format)
                 {...},                   #  In case of packet transfer (actions=output),
                 {...}                    #  specify "2" as the output port number.
             ],

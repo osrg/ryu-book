@@ -304,7 +304,7 @@ An empty match is generated to match all packets. Match is expressed in the ``OF
 Next, an instance of the OUTPUT action class (``OFPActionOutput``) is generated to transfer to the controller port.
 The controller is specified as the output destination and ``OFPCML_NO_BUFFER`` is specified to max_len in order to send all packets to the controller.
 
-Finall, 0 (lowest) is specified for priority and the ``add_flow()`` method is executed to send the Flow Mod message. The content of the add_flow() method is explained in a later section.
+Finally, 0 (lowest) is specified for priority and the ``add_flow()`` method is executed to send the Flow Mod message. The content of the add_flow() method is explained in a later section.
 
 
 
@@ -525,7 +525,7 @@ out_port (0)
 
 out_group (0)
 
-    As wtih out_port, filters by the output group.
+    As with out_port, filters by the output group.
 
     To disable, specify ``OFPG_ANY``.
 
