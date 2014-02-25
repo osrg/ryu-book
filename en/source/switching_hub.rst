@@ -57,7 +57,6 @@ The following explains the above operation in a step-by-step way using figures.
     .. only:: not latex
 
        .. image:: images/switching_hub/fig1.png
-          :scale: 80 %
 
 
 2. Host A -> Host B
@@ -72,7 +71,6 @@ The following explains the above operation in a step-by-step way using figures.
     .. only:: not latex
 
        .. image:: images/switching_hub/fig2.png
-          :scale: 80 %
 
     Packet-In::
 
@@ -97,7 +95,6 @@ The following explains the above operation in a step-by-step way using figures.
     .. only:: not latex
 
        .. image:: images/switching_hub/fig3.png
-          :scale: 80 %
 
 
     Packet-In::
@@ -123,7 +120,6 @@ The following explains the above operation in a step-by-step way using figures.
     .. only:: not latex
 
        .. image:: images/switching_hub/fig4.png
-          :scale: 80 %
 
 
     Packet-In::

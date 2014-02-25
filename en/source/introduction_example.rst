@@ -36,7 +36,6 @@ SmartSDN Controller is an SDN controller that provides centralized control funct
 .. only:: epub
 
     .. image:: images/introduction_example/fig1.png
-        :scale: 150 %
         :align: center
 
 .. only:: not latex and not epub
