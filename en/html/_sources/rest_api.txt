@@ -189,7 +189,7 @@ The content specified by the decorator is as follows:
 * Second argument
 
     Specify URL.
-    Make URL to be http://<server IP>:8080/simpleswitch/mactable/<data path ID>.
+    Make URL to be ``http://<server IP>:8080/simpleswitch/mactable/<data path ID>``.
 
 * Third argument
 
