@@ -433,7 +433,7 @@ The following is the procedure to run the test tool by creating an original test
 The following is an example of creating a test tool that checks if it has a function to process the match/actions required for OpenFlow switch to implement the router function.
 
 
-1. Creating the test pattern file
+1 Creating the test pattern file
 
     It will test the following flow entry, which has a function for the router to forward packets according to the routing table, and check if it is working correctly.
 
@@ -547,12 +547,12 @@ File name: ``sample_test_pattern.json``
     ]
 
 
-2. Building a test environment
+2 Building a test environment
 
     Build a test environment using a test environment build script. Please refer to the execution procedure in `Procedure for Executing Sample Test Pattern`_.
 
 
-3. Executing the test tool
+3 Executing the test tool
 
     Execute the test tool from Xterm from the controller by specifying the original test pattern you just created.
     For --test-switch-dir option, you can also directly specify a file as well as a directory. In order to confirm the contents of packets sent and received, the --verbose option is also specified.
