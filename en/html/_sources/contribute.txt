@@ -63,7 +63,7 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
 
 The following is the procedure.
 
-1. Check out the source code
+1 Check out the source code
 
  First, check out the Ryu source code.
  You may also create a working repository for yourself by forking the source code on GitHub, but the example uses the exact original for the sake of simplicity.
@@ -71,14 +71,14 @@ The following is the procedure.
    ``$ git clone https://github.com/osrg/ryu.git``
    ``$ cd ryu/``
 
-2. Make changes to the source code
+2 Make changes to the source code
 
  Make the necessary changes to the Ryu source code. 
  Let's commit the changes at the break of work.
 
    ``$ git commit -a``
 
-3. Creating a patch
+3 Creating a patch
 
  Create a patch of the difference between the changes. 
  Please do not forget to include a Signed-off-by: line in the patch. 
@@ -86,14 +86,14 @@ The following is the procedure.
 
    ``$ git format-patch origin -s``
 
-4. Sending the patch
+4 Sending the patch
 
  After confirming that the content of the completed patch is correct, send it to the mailing list. 
  You can send directly by a mailer, but you can also handle interactively by using git-send-email(1).
 
    ``$ git send-email 0001-sample.patch``
 
-5. Wait for a response
+5 Wait for a response
 
  Wait for a response to the patch.
  It may be taken as it is, but if issues are pointed out you'll need to correct the contents and send it again.

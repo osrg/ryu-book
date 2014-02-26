@@ -256,7 +256,7 @@ The following shows the procedure of using sample test pattern (ryu/tests/switch
 In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to ":ref:`ch_switching_hub` " for environment settings and the login method for usage of the VM image.
 
 
-1. Building the test environment
+1 Building the test environment
 
     Log in to the VM environment and run the test environment build script.
 
@@ -280,7 +280,7 @@ In this procedure, the test environment is constructed using the test environmen
 
 
 
-2. Execution of the test tool
+2 Execution of the test tool
 
     For execution of test tool, open xterm of controller.
 

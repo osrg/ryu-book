@@ -38,7 +38,7 @@ With STP, Bridge Protocol Data Unit (BPDU) packets are exchanged between bridges
 
 Specifically, this is achieved by the following procedure:
 
-1. Selecting the root bridge
+1 Selecting the root bridge
 
     The bridge having the smallest bridge ID is selected as the root bridge through BPDU packet exchange between bridges. After that, only the root bridge sends the original BPDU packet and other bridges transfer BPDU packets received from the root bridge.
 
@@ -54,7 +54,7 @@ Specifically, this is achieved by the following procedure:
         Bridge priority  MAC address
         ================ ==============
 
-2. Deciding the role of ports
+2 Deciding the role of ports
 
     Based on the cost of each port to reach the root bridge, decide the role of the ports.
 
@@ -115,7 +115,7 @@ Specifically, this is achieved by the following procedure:
             ============== ================
 
 
-3. Port state change
+3 Port state change
 
     After the port role is decided (STP calculation is completed), each port becomes LISTEN state. After that, the state changes as shown below and according to the role of each port, it eventually becomes FORWARD state or BLOCK state. Ports set as disabled ports in the configuration become DISABLE state and after that the change of state does not take place.
 
