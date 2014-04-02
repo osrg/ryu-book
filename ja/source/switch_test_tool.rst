@@ -11,21 +11,24 @@ OpenFlowスイッチテストツール
 ------------------
 
 本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに
-対してフローエントリ登録／パケット印加を実施し、OpenFlowスイッチのパケット
-書き換えや転送(または破棄)の処理結果と、テストパターンファイルに記述された
-「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様
-への対応状況を検証するテストツールです。
+対してフローエントリやメーターエントリの登録／パケット印加を実施し、
+OpenFlowスイッチのパケット書き換えや転送(または破棄)の処理結果と、
+テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、
+OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。
 
-ツールは、OpenFlowバージョン1.3のFlowModメッセージの試験に対応しています。
+ツールは、OpenFlowバージョン1.3のFlowModメッセージおよびMeterModメッセージの
+試験に対応しています。
 
 
-============================= ================================
-試験対象メッセージ            対応パラメータ
-============================= ================================
-OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
+============================== ================================
+試験対象メッセージ             対応パラメータ
+============================== ================================
+OpenFlow1.3 FlowModメッセージ  match (IN_PHY_PORTを除く)
 
-                              actions (SET_QUEUE、GROUPを除く)
-============================= ================================
+                               actions (SET_QUEUE、GROUPを除く)
+
+OpenFlow1.3 MeterModメッセージ すべて
+============================== ================================
 
 
 印加するパケットの生成やパケット書き換え結果の確認などに「 :ref:`ch_packet_lib` 」を利用しています。
@@ -38,9 +41,9 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 """"""""""""""""
 
 テストツールを実行した際の動作イメージを示します。テストパターンファイル
-には、「登録するフローエントリ」「印加パケット」「期待する処理結果」
-が記述されます。また、ツール実行のための環境設定については後述
-( `ツール実行環境`_ を参照)します。
+には、「登録するフローエントリもしくはメーターエントリ」「印加パケット」
+「期待する処理結果」が記述されます。また、ツール実行のための環境設定に
+ついては後述( `ツール実行環境`_ を参照)します。
 
 
 .. only:: latex
@@ -65,6 +68,7 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 
 指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果
 (OK／ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。
+また、試験全体でのOK／ERROR数および発生したERRORの内訳も出力します。
 
 
 .. rst-class:: console
@@ -92,7 +96,14 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 
     ---  Test end  ---
 
+    --- Test report ---
+    Received incorrect packet-in(4)
+        match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)-->'icmpv6_type=128,actions=output:2'
+        match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)-->'icmpv6_type=128,actions=output:CONTROLLER'
+        match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)-->'icmpv6_code=0,actions=output:2'
+        match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)-->'icmpv6_code=0,actions=output:CONTROLLER'
 
+    OK(6) / ERROR(4)
 
 
 使用方法
@@ -121,21 +132,39 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
             "description": "xxxxxxxxxx", # 試験内容の説明
             "prerequisite": [
                 {
-                    "OFPFlowMod": {...}  # 登録するフローエントリ
-                },                       # (RyuのOFPFlowModをjson形式で記述)
-                {...},                   #  パケット転送(actions=output)の場合は
+                    "OFPFlowMod": {...}  # 登録するフローエントリもしくはメーターエントリ
+                },                       # (RyuのOFPFlowModもしくはOFPMeterModを
+                {                        #  json形式で記述)
+                    "OFPMeterMod": {...} #  期待する処理結果が
+                },                       #  パケット転送(actions=output)の場合は
                 {...}                    #  出力ポート番号に「2」を指定してください
             ],
             "tests": [
                 {
-                    "ingress": [         # 印加するパケット
+                    # 印加パケット
+                    # 1回だけ印加するのか一定時間連続して印加し続けるのかに応じて
+                    # (A)(B)のいずれかを記述
+                    #  (A) 1回だけ印加
+                    "ingress": [
                         "ethernet(...)", # (Ryuパケットライブラリのコンストラクタの形式で記述)
                         "ipv4(...)",
                         "tcp(...)"
                     ],
+                    #  (B) 一定時間連続して印加
+                    "ingress": {
+                        "packets":{
+                            "data":[
+                                "ethernet(...)", # (A)と同じ
+                                "ipv4(...)",
+                                "tcp(...)"
+                            ],
+                            "pktps": 1000,       # 毎秒印加するパケット数を指定
+                            "duration_time": 30  # 連続印加時間を秒単位で指定
+                        }
+                    },
 
                     # 期待する処理結果
-                    # 処理結果の種別に応じて(a)(b)(c)のいずれかを記述
+                    # 処理結果の種別に応じて(a)(b)(c)(d)のいずれかを記述
                     #  (a) パケット転送(actions=output:X)の確認試験
                     "egress": [          # 期待する転送パケット
                         "ethernet(...)",
@@ -152,6 +181,19 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
                     "table-miss": [      # table-missとなることを期待するフローテーブルID
                         0
                     ]
+                    #  (d) パケット転送(actions=output:X)時スループットの確認試験
+                    "egress":[
+                        "throughput":[
+                            {
+                                "OFPMatch":{   # スループット計測用に
+                                  ...          # 補助SWに登録される
+                                },             # フローエントリのMatch条件
+                                "kbps":1000    # 期待するスループットをKbps単位で指定
+                            },
+                            {...},
+                            {...}
+                        ]
+                    ]
                 },
                 {...},
                 {...}
@@ -161,12 +203,17 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
         {...}                            # 試験3
     ]
 
+印加パケットとして「(B) 一定時間連続して印加」を、
+期待する処理結果として「(d) パケット転送(actions=output:X)時スループットの確認試験」を
+それぞれ記述することにより、試験対象SWのスループットを計測することができます。
+
 
 .. NOTE::
 
     Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowMod
-    メッセージのmatch／actionsに指定できる各パラメータがそれぞれ正常に動作
-    するかを確認するテストパターンファイルが用意されています。
+    メッセージのmatch／actionsに指定できる各パラメータ、ならびにMeterMod
+    メッセージの各パラメータがそれぞれ正常に動作するかを確認する
+    テストパターンファイルが用意されています。
 
         ryu/tests/switch/of13
 
@@ -197,6 +244,8 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。
 
 * actions=CONTROLLERのフローエントリ登録
+
+* スループット計測用のフローエントリ登録
 
 * actions=CONTROLLERのフローエントリによるPacket-Inメッセージ送信
 
@@ -273,7 +322,8 @@ OpenFlow1.3 FlowModメッセージ match (IN_PHY_PORTを除く)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、
-FlowModメッセージのmatch／actionsの一通りの動作確認を行う手順を示します。
+FlowModメッセージのmatch／actionsの一通りの動作確認ならびにMeterModメッセージ
+の動作確認を行う手順を示します。
 
 本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)
 を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。
@@ -398,7 +448,9 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
         match／actionsの各設定項目に対応するフローエントリを登録し、
         フローエントリにmatchする(またはmatchしない)複数パターンのパケット
-        を印加するテストパターンが用意されています。
+        を印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは
+        優先度変更を行うメーターエントリを登録し、メーターエントリにmatch
+        するパケットを連続的に印加するテストパターンが用意されています。
 
 
     .. rst-class:: console
@@ -457,6 +509,13 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
         12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
 
+        ryu/tests/switch/of13/meter:
+        01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
+        01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
+        01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
+        01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
+        01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
+        01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
 
 
 オリジナルテストパターンの実行手順
@@ -665,26 +724,42 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 本ツールで出力されるエラーメッセージの一覧を示します。
 
-========================================================== ==============================================================================
-エラーメッセージ                                           説明
-========================================================== ==============================================================================
-Failed to initialize flow tables: barrier request timeout. 前回試験のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
-Failed to initialize flow tables: [err_msg]                前回試験のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
-Failed to add flows: barrier request timeout.              フローエントリ登録に失敗(Barrier Requestのタイムアウト)
-Failed to add flows: [err_msg]                             フローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
-Added incorrect flows: [flows]                             フローエントリ登録確認エラー(想定外のフローエントリが登録された)
-Failed to add flows: flow stats request timeout.           フローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
-Failed to add flows: [err_msg]                             フローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from target: request timeout. 試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from target: [err_msg]        試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from tester: request timeout. 補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from tester: [err_msg]        補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Received incorrect [packet]                                期待した出力パケットの受信エラー(異なるパケットを受信)
-Receiving timeout: [detail]                                期待した出力パケットの受信に失敗(タイムアウト)
-Faild to send packet: barrier request timeout.             パケット印加に失敗(Barrier Requestのタイムアウト)
-Faild to send packet: [err_msg]                            パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)
-Table-miss error: increment in matched_count.              table-miss確認エラー(フローにmatchしている)
-Table-miss error: no change in lookup_count.               table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)
-Failed to request table stats: request timeout.            table-missの確認に失敗(TableStats Requestのタイムアウト)
-Failed to request table stats: [err_msg]                   table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
-========================================================== ==============================================================================
+======================================================================== ============================================================================================================
+エラーメッセージ                                                         説明
+======================================================================== ============================================================================================================
+Failed to initialize flow tables: barrier request timeout.               前回試験の試験対象SW上のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
+Failed to initialize flow tables: [err_msg]                              前回試験の試験対象SW上のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
+Failed to initialize flow tables of tester_sw: barrier request timeout.  前回試験の補助SW上のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
+Failed to initialize flow tables of tester_sw: [err_msg]                 前回試験の補助SW上のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
+Failed to add flows: barrier request timeout.                            試験対象SWに対するフローエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add flows: [err_msg]                                           試験対象SWに対するフローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
+Failed to add flows to tester_sw: barrier request timeout.               補助SWに対するフローエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
+Failed to add meters: barrier request timeout.                           試験対象SWに対するメーターエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録に失敗(MeterModに対するErrorメッセージ受信)
+Added incorrect flows: [flows]                                           試験対象SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
+Failed to add flows: flow stats request timeout.                         試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to add flows: [err_msg]                                           試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
+Added incorrect meters: [meters]                                         試験対象SWに対するメーターエントリ登録確認エラー(想定外のメーターエントリが登録された)
+Failed to add meters: meter config stats request timeout.                試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestのタイムアウト)
+Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from target: request timeout.               試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from target: [err_msg]                      試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Failed to request port stats from tester: request timeout.               補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
+Failed to request port stats from tester: [err_msg]                      補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
+Received incorrect [packet]                                              期待した出力パケットの受信エラー(異なるパケットを受信)
+Receiving timeout: [detail]                                              期待した出力パケットの受信に失敗(タイムアウト)
+Faild to send packet: barrier request timeout.                           パケット印加に失敗(Barrier Requestのタイムアウト)
+Faild to send packet: [err_msg]                                          パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)
+Table-miss error: increment in matched_count.                            table-miss確認エラー(フローにmatchしている)
+Table-miss error: no change in lookup_count.                             table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)
+Failed to request table stats: request timeout.                          table-missの確認に失敗(TableStats Requestのタイムアウト)
+Failed to request table stats: [err_msg]                                 table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
+Added incorrect flows to tester_sw: [flows]                              補助SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
+Failed to add flows to tester_sw: flow stats request timeout.            補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
+Failed to request flow stats: request timeout.                           スループット確認時、補助SWに対するフローエントリ録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to request flow stats: [err_msg]                                  スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
+Received unexpected throughput: [detail]                                 想定するスループットからかけ離れたスループットを計測
+Disconnected from switch                                                 試験対象SWもしくは補助SWからのリンク断発生
+======================================================================== ============================================================================================================
