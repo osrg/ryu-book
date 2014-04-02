@@ -758,7 +758,7 @@ Failed to request table stats: [err_msg]                                 table-m
 Added incorrect flows to tester_sw: [flows]                              補助SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
 Failed to add flows to tester_sw: flow stats request timeout.            補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
 Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Failed to request flow stats: request timeout.                           スループット確認時、補助SWに対するフローエントリ録確認に失敗(FlowStats Requestのタイムアウト)
+Failed to request flow stats: request timeout.                           スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
 Failed to request flow stats: [err_msg]                                  スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
 Received unexpected throughput: [detail]                                 想定するスループットからかけ離れたスループットを計測
 Disconnected from switch                                                 試験対象SWもしくは補助SWからのリンク断発生
