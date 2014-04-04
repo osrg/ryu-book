@@ -10,7 +10,7 @@ from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from ryu.lib import dpid as dpid_lib
 
 simple_switch_instance_name = 'simple_switch_api_app'
-url = '/v1/simpleswitch/mactable/{dpid}'
+url = '/simpleswitch/mactable/{dpid}'
 
 class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
 
