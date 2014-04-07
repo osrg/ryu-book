@@ -1,0 +1,1389 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IGMPスヌーピング &mdash; Ryubook 1.0 ドキュメント</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 ドキュメント" href="index.html" />
+    <link rel="next" title="OpenFlowプロトコル" href="openflow_protocol.html" />
+    <link rel="prev" title="スパニングツリー" href="spanning_tree.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlowプロトコル"
+             accesskey="N">次へ</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="スパニングツリー"
+             accesskey="P">前へ</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="igmp">
+<span id="ch-igmp-snooping"></span><h1>IGMPスヌーピング<a class="headerlink" href="#igmp" title="このヘッドラインへのパーマリンク">¶</a></h1>
+<p>本章では、Ryuを用いたIGMPスヌーピング機能の実装方法を解説していきます。</p>
+<div class="section" id="id1">
+<h2>IGMPスヌーピング<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id2">
+<h3>IGMPについて<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>IGMP(Internet Group Management Protocol)は、サブネット間においてマルチキャストパケットの宛先を管理するためのプロトコルです。</p>
+<p>マルチキャストルータは、そのルータが接続している全サブネットに対し、マルチキャストグループ参加ホストが存在するかどうかを定期的に問い合わせます（IGMP Query Message）。マルチキャストグループに参加しているホストがとあるサブネット内に存在した場合、そのホストはどのマルチキャストグループに参加しているのかをマルチキャストルータに報告します（IGMP Report Message）。マルチキャストルータは受信した報告がどのサブネットから送られたのかを記憶し、「どのマルチキャストグループ宛のパケットをどのサブネットに向けて転送するか」を決定します。問い合わせに対する報告がなかったり、あるいは特定のマルチキャストグループから脱退するというメッセージ（IGMP Leave Message）をホストから受信した場合、マルチキャストルータはそのサブネットに対し、すべての、もしくは指定されたマルチキャストグループ宛のパケットを転送しなくなります。</p>
+<p>この仕組みにより、マルチキャストグループ参加ホストが存在しないサブネットに対してマルチキャストパケットが送信されることはなくなり、不要なトラフィックを削減することができます。</p>
+<a class="reference internal image-reference" href="_images/fig12.png"><img alt="_images/fig12.png" class="align-center" src="_images/fig12.png" style="width: 348.8px; height: 459.6px;" /></a>
+</div>
+<div class="section" id="id3">
+<h3>サブネット内の課題とIGMPスヌーピングについて<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>IGMPを使用することでサブネット単位での不要なトラフィックを削減することができましたが、サブネット内においてはまだ不要なトラフィックが発生する可能性があります。</p>
+<p>マルチキャストパケットの宛先MACアドレスは特殊な値であるため、L2スイッチのMACアドレステーブルで学習されることはなく、常にブロードキャスト対象となります。そのため、たとえばあるひとつのポートにのみマルチキャストグループ参加ホストが接続されていたとしても、L2スイッチは受信したマルチキャストパケットを全ポートに転送してしまいます。</p>
+<a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" style="width: 428.4px; height: 331.2px;" /></a>
+<p>IGMPスヌーピングは、マルチキャストグループ参加ホストからマルチキャストルータに送信されるIGMP Report MessageをL2スイッチが覗き見る（snoop）ことでマルチキャストパケットの転送先ポートを学習する、という手法です。この手法により、サブネット内においてもマルチキャストグループ参加ホストが存在しないポートに対してマルチキャストパケットが送信されることはなくなり、不要なトラフィックを削減することができます。</p>
+<a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" style="width: 394.8px; height: 707.2px;" /></a>
+<p>IGMPスヌーピングを行うL2スイッチは、複数のホストから同一のマルチキャストグループに参加しているというIGMP Report Messageを受信しても、クエリアには1回しかIGMP Report Messageを転送しません。また、あるホストからIGMP Leave Messageを受信しても、他に同一のマルチキャストグループに参加しているホストが存在する間は、クエリアにIGMP Leave Messageを転送しません。これにより、クエリアにはあたかも単一のホストとIGMPメッセージの交換を行っているかのように見せることができ、また不要なIGMPメッセージの転送を抑制することができます。</p>
+</div>
+</div>
+<div class="section" id="ryu">
+<h2>Ryuアプリケーションの実行<a class="headerlink" href="#ryu" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>IGMPスヌーピングの機能をOpenFlowを用いて実現した、RyuのIGMPスヌーピングアプリケーションを実行してみます。</p>
+<p>Ryuのソースツリーに用意されているsimple_switch_igmp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_igmp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」にIGMPスヌーピング機能を追加したアプリケーションです。なおこのプログラムでは、dpid=0000000000000001のスイッチをマルチキャストルータとして扱い、そのポート2に接続されているホストをマルチキャストサーバとして扱うよう設定されています。</p>
+<p>ソース名：<tt class="docutils literal"><span class="pre">simple_switch_igmp_13.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">igmplib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.dpid</span> <span class="kn">import</span> <span class="n">str_to_dpid</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleSwitchIgmp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;igmplib&#39;</span><span class="p">:</span> <span class="n">igmplib</span><span class="o">.</span><span class="n">IgmpLib</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchIgmp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;igmplib&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span><span class="o">.</span><span class="n">set_querier_mode</span><span class="p">(</span>
+            <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">server_port</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c"># install table-miss flow entry</span>
+        <span class="c">#</span>
+        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c"># correctly.</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+
+        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
+
+        <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+
+        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventMulticastGroupStateChanged</span><span class="p">,</span>
+                <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_status_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_ADDED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Added&#39;</span><span class="p">,</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_MEMBER_CHANGED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Member Changed&#39;</span><span class="p">,</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_REMOVED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Removed&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: [</span><span class="si">%s</span><span class="s">] querier:[</span><span class="si">%s</span><span class="s">] hosts:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                         <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">reason</span><span class="p">),</span> <span class="n">ev</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                         <span class="n">ev</span><span class="o">.</span><span class="n">dsts</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">以降の例では、マルチキャストパケットの送受信にVLC(<a class="reference external" href="http://www.videolan.org/vlc/">http://www.videolan.org/vlc/</a>)を使用します。VLCのインストール、ならびにストリーム配信用の動画の入手に関しては本稿では解説しません。</p>
+</div>
+<div class="section" id="id4">
+<h3>実験環境の構築<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>IGMPスヌーピングアプリケーションの動作確認を行う実験環境を構築します。</p>
+<p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
+<p>最初にMininetを利用して下図のようなトポロジを作成します。</p>
+<a class="reference internal image-reference" href="_images/fig4.png"><img alt="_images/fig4.png" class="align-center" src="_images/fig4.png" style="width: 405.6px; height: 376.4px;" /></a>
+<p><tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">パラメータ</th>
+<th class="head">値</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,2,3</td>
+<td><p class="first">2台のスイッチが直列に接続されているトポロジ</p>
+<p class="last">(各スイッチに3台のホストが接続される)</p>
+</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>なし</td>
+<td>自動的にホストのMACアドレスをセットする</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>Open vSwitchを使用する</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>OpenFlowコントローラは外部のものを利用する</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>なし</td>
+<td>xtermを起動する</td>
+</tr>
+</tbody>
+</table>
+<p>実行例は以下のようになります。</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,2,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1s1 h1s2 h2s1 h2s2 h3s1 h3s2
+*** Adding switches:
+s1 s2
+*** Adding links:
+(h1s1, s1) (h1s2, s2) (h2s1, s1) (h2s2, s2) (h3s1, s1) (h3s2, s2) (s1, s2)
+*** Configuring hosts
+h1s1 h1s2 h2s1 h2s2 h3s1 h3s2
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 2 switches
+s1 s2
+
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>netコマンドの実行結果は以下のとおりです。</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
+h1s1 h1s1-eth0:s1-eth1
+h1s2 h1s2-eth0:s2-eth1
+h2s1 h2s1-eth0:s1-eth2
+h2s2 h2s2-eth0:s2-eth2
+h3s1 h3s1-eth0:s1-eth3
+h3s2 h3s2-eth0:s2-eth3
+s1 lo:  s1-eth1:h1s1-eth0 s1-eth2:h2s1-eth0 s1-eth3:h3s1-eth0 s1-eth4:s2-eth4
+s2 lo:  s2-eth1:h1s2-eth0 s2-eth2:h2s2-eth0 s2-eth3:h3s2-eth0 s2-eth4:s1-eth4
+c0
+mininet&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>IGMPバージョンの設定<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>RyuのIGMPスヌーピングアプリケーションはIGMP v1/v2のみサポートしています。各ホストがIGMP v3を使用しないように設定します。このコマンド入力は、各ホストのxterm上で行ってください。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h1s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h1s2-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h2s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h2s2-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h3s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h3s2-eth0/force_igmp_version
+</pre></div>
+</div>
+</div>
+<div class="section" id="ip">
+<h3>IPアドレスの設定<a class="headerlink" href="#ip" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Mininetによって自動的に割り当てられたIPアドレスでは、すべてのホストが同じサブネットに所属しています。異なるサブネットを構築するため、各ホストでIPアドレスを割り当て直します。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.1/24 dev h1s2-eth0
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h2s1-eth0
+root@ryu-vm:~# ip addr add 172.16.20.20/24 dev h2s1-eth0
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.2/24 dev h2s2-eth0
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h3s1-eth0
+root@ryu-vm:~# ip addr add 172.16.30.30/24 dev h3s1-eth0
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h3s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.3/24 dev h3s2-eth0
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>デフォルトゲートウェイの設定<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>各ホストからのIGMPパケットが正常に送信できるよう、デフォルトゲートウェイを設定します。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.254
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.254
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.30.254
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+</div>
+<div class="section" id="openflow">
+<h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1、s2のxterm上で行ってください。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>スイッチングハブの実行<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>準備が整ったので、冒頭で作成したRyuアプリケーションを実行します。このコマンド入力は、コントローラc0のxterm上で行ってください。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ./simple_switch_igmp_13.py
+loading app ./simple_switch_igmp_13.py
+loading app ryu.controller.ofp_handler
+loading app ryu.controller.ofp_handler
+instantiating app None of IgmpLib
+creating context igmplib
+instantiating app ./simple_switch_igmp_13.py of SimpleSwitchIgmp13
+instantiating app ryu.controller.ofp_handler of OFPHandler
+...
+</pre></div>
+</div>
+<p>起動後すぐにスイッチs1がマルチキャストルータ（IGMP Query Messageを送信するため、クエリアと呼ばれる）として動作し始めたことを表すログが出力されます。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[querier][INFO] started a querier.
+...
+</pre></div>
+</div>
+<p>クエリアは60秒に1回IGMP Query Messageを全ポートに送信し、IGMP Report Messageが返ってきたポートに対してマルチキャストサーバからのマルチキャストパケットを転送するフローエントリを登録します。</p>
+<p>同時に、クエリア以外のスイッチ上でIGMPパケットのスヌーピングが開始されます。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=4 IGMP received. [QUERY]
+...
+</pre></div>
+</div>
+<p>上記のログは、クエリアであるスイッチs1から送信されたIGMP Query Messageをスイッチs2がポート4で受信したことを表します。スイッチs2は受信したIGMP Query Messageをブロードキャストします。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">スヌーピングの準備ができる前にクエリアからの最初のIGMP Query Messageが送信されてしまうことがあります。その場合は60秒後に送信される次のIGMP Query Messageをお待ちください。</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>マルチキャストグループの追加<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>続いて各ホストをマルチキャストグループに参加させます。VLCで特定のマルチキャストアドレス宛のストリームを再生しようとしたとき、VLCはIGMP Report Messageを送信します。</p>
+<div class="section" id="h1s2225-0-0-1">
+<h4>ホストh1s2を225.0.0.1グループに参加させる<a class="headerlink" href="#h1s2225-0-0-1" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>まずはホストh1s2において、マルチキャストアドレス「225.0.0.1」宛のストリームを再生するよう設定します。VLCはホストh1s2からIGMP Report Messageを送信します。</p>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>スイッチs2はホストh1s2からのIGMP Report Messageをポート1で受信し、マルチキャストアドレス「225.0.0.1」を受信するグループがポート1の先に存在することを認識します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+Multicast Group Added: [225.0.0.1] querier:[4] hosts:[]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[1]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>上記のログは、スイッチs2にとって</p>
+<ul class="simple">
+<li>IGMP Report Messageをポート1で受信したこと</li>
+<li>マルチキャストアドレス「225.0.0.1」を受信するマルチキャストグループの存在を認識したこと（クエリアがポート4の先に存在すること）</li>
+<li>マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがポート1の先に存在すること</li>
+</ul>
+<p>を表しています。VLCは起動時にIGMP Report Messageを3回送信するため、ログもそのようになっています。</p>
+<p>この後、クエリアは60秒に1回IGMP Query Messageを送信し続け、メッセージを受信したマルチキャストグループ参加ホストh1s2はその都度IGMP Report Messageを送信します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=4 IGMP received. [QUERY]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=827.211s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=827.211s, table=0, n_packets=14, n_bytes=644, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=843.887s, table=0, n_packets=1, n_bytes=46, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアには</p>
+<ul class="simple">
+<li>ポート2（マルチキャストサーバ）から225.0.0.1宛のパケットを受信した場合にはポート4（スイッチs2）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の3つのフローエントリが登録されています。</p>
+<p>また、スイッチs2に登録されているフローエントリも確認してみます。</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1463.549s, table=0, n_packets=26, n_bytes=1196, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=1463.548s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1
+ cookie=0x0, duration=1480.221s, table=0, n_packets=26, n_bytes=1096, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>スイッチs2には</p>
+<ul class="simple">
+<li>ポート1（ホストh1s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.1宛のパケットを受信した場合にはポート1（ホストh1s2）に転送する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の3つのフローエントリが登録されています。</p>
+</div>
+<div class="section" id="h3s2225-0-0-1">
+<h4>ホストh3s2を225.0.0.1グループに参加させる<a class="headerlink" href="#h3s2225-0-0-1" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>続いてホストh3s2でもマルチキャストアドレス「225.0.0.1」宛のストリームを再生するよう設定します。VLCはホストh3s2からIGMP Report Messageを送信します。</p>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>スイッチs2はホストh3s2からのIGMP Report Messageをポート3で受信し、マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがポート1の他にポート3の先にも存在することを認識します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[1, 3]
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1854.016s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=1854.016s, table=0, n_packets=31, n_bytes=1426, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=1870.692s, table=0, n_packets=1, n_bytes=46, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアに登録されているフローエントリには特に変更はありません。</p>
+<p>また、スイッチs2に登録されているフローエントリも確認してみます。</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1910.703s, table=0, n_packets=34, n_bytes=1564, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=162.606s, table=0, n_packets=5, n_bytes=230, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=162.606s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1,output:3
+ cookie=0x0, duration=1927.375s, table=0, n_packets=35, n_bytes=1478, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>スイッチs2には</p>
+<ul class="simple">
+<li>ポート1（ホストh1s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート3（ホストh3s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.1宛のパケットを受信した場合にはポート1（ホストh1s2）およびポート3（ホストh3s2）に転送する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の4つのフローエントリが登録されています。</p>
+</div>
+<div class="section" id="h2s2225-0-0-2">
+<h4>ホストh2s2を225.0.0.2グループに参加させる<a class="headerlink" href="#h2s2225-0-0-2" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>次に、ホストh2s2では他のホストとは異なるマルチキャストアドレス「225.0.0.2」宛のストリームを再生するよう設定します。VLCはホストh2s2からIGMP Report Messageを送信します。</p>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.2
+</pre></div>
+</div>
+<p>スイッチs2はホストh2s2からのIGMP Report Messageをポート2で受信し、マルチキャストアドレス「225.0.0.2」を受信するグループの参加ホストがポート2の先に存在することを認識します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+Multicast Group Added: [225.0.0.2] querier:[4] hosts:[]
+Multicast Group Member Changed: [225.0.0.2] querier:[4] hosts:[2]
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2289.168s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=108.374s, table=0, n_packets=2, n_bytes=92, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=108.375s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=2289.168s, table=0, n_packets=38, n_bytes=1748, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2305.844s, table=0, n_packets=2, n_bytes=92, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアには</p>
+<ul class="simple">
+<li>ポート2（マルチキャストサーバ）から225.0.0.1宛のパケットを受信した場合にはポート4（スイッチs2）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート2（マルチキャストサーバ）から225.0.0.2宛のパケットを受信した場合にはポート4（スイッチs2）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の5つのフローエントリが登録されています。</p>
+<p>また、スイッチs2に登録されているフローエントリも確認してみます。</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2379.973s, table=0, n_packets=41, n_bytes=1886, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=199.178s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=631.876s, table=0, n_packets=12, n_bytes=552, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=199.178s, table=0, n_packets=5, n_bytes=230, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=631.876s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1,output:3
+ cookie=0x0, duration=2396.645s, table=0, n_packets=43, n_bytes=1818, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>スイッチs2には</p>
+<ul class="simple">
+<li>ポート1（ホストh1s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.2宛のパケットを受信した場合にはポート2（ホストh2s2）に転送する</li>
+<li>ポート3（ホストh3s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート2（ホストh2s2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.1宛のパケットを受信した場合にはポート1（ホストh1s2）およびポート3（ホストh3s2）に転送する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の6つのフローエントリが登録されています。</p>
+</div>
+<div class="section" id="h3s1225-0-0-1">
+<h4>ホストh3s1を225.0.0.1グループに参加させる<a class="headerlink" href="#h3s1225-0-0-1" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>また、ホストh3s1でもマルチキャストアドレス「225.0.0.1」宛のストリームを再生するよう設定します。VLCはホストh3s1からIGMP Report Messageを送信します。</p>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>ホストh3s1はスイッチs2とは接続していません。したがって、IGMPスヌーピング機能の対象とはならず、クエリアとの間で通常のIGMPパケットのやりとりを行います。</p>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=12.85s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
+ cookie=0x0, duration=626.33s, table=0, n_packets=10, n_bytes=460, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=12.85s, table=0, n_packets=1, n_bytes=46, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=626.331s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=2807.124s, table=0, n_packets=46, n_bytes=2116, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2823.8s, table=0, n_packets=3, n_bytes=138, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアには</p>
+<ul class="simple">
+<li>ポート2（マルチキャストサーバ）から225.0.0.1宛のパケットを受信した場合にはポート3（h3s1）およびポート4（スイッチs2）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート3（h3s1）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート2（マルチキャストサーバ）から225.0.0.2宛のパケットを受信した場合にはポート4（スイッチs2）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の6つのフローエントリが登録されています。</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>ストリーム配信の開始<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>マルチキャストサーバであるホストh2s1からストリーム配信を開始します。マルチキャストアドレスには「225.0.0.1」を使用することとします。</p>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper sample.mov --sout udp:225.0.0.1 --loop
+</pre></div>
+</div>
+<p>すると、「225.0.0.1」のマルチキャストグループに参加しているh1s2、h3s2、h1s3の各ホストで実行しているVLCに、マルチキャストサーバで配信している動画が再生されます。「225.0.0.2」に参加しているh2s2では動画は再生されません。</p>
+</div>
+<div class="section" id="id10">
+<h3>マルチキャストグループの削除<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>続いて各ホストをマルチキャストグループから離脱させます。ストリーム再生中のVLCを終了したとき、VLCはIGMP Leave Messageを送信します。</p>
+<div class="section" id="id11">
+<h4>ホストh1s2を225.0.0.1グループから離脱させる<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ホストh1s2で実行中のVLCをCtrl+Cなどで終了させます。スイッチs2はホストh1s2からのIGMP Leave Messageをポート1で受信し、マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがポート1の先に存在しなくなったことを認識します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [LEAVE]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[3]
+...
+</pre></div>
+</div>
+<p>上記のログは、スイッチs2にとって</p>
+<ul class="simple">
+<li>ポート1からIGMP Leave Messageを受信したこと</li>
+<li>マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがポート3の先に存在すること</li>
+</ul>
+<p>を表しています。IGMP Leave Message受信前まではマルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストはポート1とポート3の先に存在すると認識していましたが、IGMP Leave Message受信によりポート1が対象外となっています。</p>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1565.13s, table=0, n_packets=1047062, n_bytes=1421910196, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
+ cookie=0x0, duration=2178.61s, table=0, n_packets=36, n_bytes=1656, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=1565.13s, table=0, n_packets=27, n_bytes=1242, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2178.611s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=4359.404s, table=0, n_packets=72, n_bytes=3312, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=4376.08s, table=0, n_packets=3, n_bytes=138, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアに登録されているフローエントリには特に変更はありません。</p>
+<p>また、スイッチs2に登録されているフローエントリも確認してみます。</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2228.528s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=2661.226s, table=0, n_packets=46, n_bytes=2116, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2228.528s, table=0, n_packets=39, n_bytes=1794, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=548.063s, table=0, n_packets=486571, n_bytes=660763418, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:3
+ cookie=0x0, duration=4425.995s, table=0, n_packets=78, n_bytes=3292, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>スイッチs2には</p>
+<ul class="simple">
+<li>ポート4（クエリア）から225.0.0.2宛のパケットを受信した場合にはポート2（ホストh2s2）に転送する</li>
+<li>ポート3（ホストh3s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート2（ホストh2s2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.1宛のパケットを受信した場合にはポート3（ホストh3s2）に転送する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の5つのフローエントリが登録されています。先ほどまでと比べて、</p>
+<ul class="simple">
+<li>ポート1（ホストh1s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+</ul>
+<p>のフローエントリが削除されており、またクエリアからの225.0.0.1宛パケットの転送先からポート1（ホストh1s2）が除外されていることがわかります。</p>
+</div>
+<div class="section" id="id12">
+<h4>ホストh3s2を225.0.0.1グループから離脱させる<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>次に、ホストh3s2で実行中のVLCをCtrl+Cなどで終了させます。スイッチs2はホストh3s2からのIGMP Leave Messageをポート3で受信し、マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがポート3の先に存在しなくなったことを認識します。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [LEAVE]
+Multicast Group Removed: [225.0.0.1] querier:[4] hosts:[]
+...
+</pre></div>
+</div>
+<p>上記のログは、スイッチs2にとって</p>
+<ul class="simple">
+<li>ポート3からIGMP Leave Messageを受信したこと</li>
+<li>マルチキャストアドレス「225.0.0.1」を受信するグループの参加ホストがすべて存在しなくなったこと</li>
+</ul>
+<p>を表しています。</p>
+<p>この時点でクエリアに登録されているフローエントリを確認してみます。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=89.891s, table=0, n_packets=79023, n_bytes=107313234, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3
+ cookie=0x0, duration=3823.61s, table=0, n_packets=64, n_bytes=2944, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=3210.139s, table=0, n_packets=55, n_bytes=2530, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=3823.467s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=6021.089s, table=0, n_packets=4, n_bytes=184, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>クエリアには</p>
+<ul class="simple">
+<li>ポート2（マルチキャストサーバ）から225.0.0.1宛のパケットを受信した場合にはポート3（h3s1）に転送する</li>
+<li>ポート4（スイッチs2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート3（h3s1）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート2（マルチキャストサーバ）から225.0.0.2宛のパケットを受信した場合にはポート4（スイッチs2）に転送する</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の5つのフローエントリが登録されています。先ほどまでと比べて、</p>
+<ul class="simple">
+<li>ポート4（スイッチs2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+</ul>
+<p>のフローエントリが削除されており、またマルチキャストサーバからの225.0.0.1宛パケットの転送先からポート4（スイッチs2）が除外されていることがわかります。</p>
+<p>また、スイッチs2に登録されているフローエントリも確認してみます。</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=4704.052s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=4704.053s, table=0, n_packets=53, n_bytes=2438, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=6750.068s, table=0, n_packets=115, n_bytes=29870, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>スイッチs2には</p>
+<ul class="simple">
+<li>ポート4（クエリア）から225.0.0.2宛のパケットを受信した場合にはポート2（ホストh2s2）に転送する</li>
+<li>ポート2（ホストh2s2）から225.0.0.2宛のパケットを受信した場合にはPacket-Inする</li>
+<li>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様のTable-missフローエントリ</li>
+</ul>
+<p>の3つのフローエントリが登録されています。先ほどまでと比べて、</p>
+<ul class="simple">
+<li>ポート3（ホストh3s2）から225.0.0.1宛のパケットを受信した場合にはPacket-Inする</li>
+<li>ポート4（クエリア）から225.0.0.1宛のパケットを受信した場合にはポート3（ホストh3s2）に転送する</li>
+</ul>
+<p>のフローエントリが削除されていることがわかります。</p>
+</div>
+</div>
+</div>
+<div class="section" id="ryuigmp">
+<h2>RyuによるIGMPスヌーピング機能の実装<a class="headerlink" href="#ryuigmp" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<p>OpenFlowを用いてどのようにIGMPスヌーピング機能を実現しているかを見ていきます。</p>
+<p>IGMPスヌーピングの「IGMPパケットを覗き見る」という動作は、OpenFlowのPacket-Inメッセージを使用して実装しています。Packet-Inメッセージでコントローラに送信されたIGMPパケットの内容を、</p>
+<ul class="simple">
+<li>どのグループに関するIGMPメッセージなのか</li>
+<li>IGMP Report MessageなのかIGMP Leave Messageなのか</li>
+<li>スイッチのどのポートで受信したIGMPメッセージなのか</li>
+</ul>
+<p>という観点から分析し、それに応じた処理を行います。</p>
+<p>プログラムは、マルチキャストアドレスと、そのマルチキャストアドレス宛のパケットをどのポートに転送するかの対応表を保持します。</p>
+<p>IGMP Report Messageを受信した際、それが対応表に存在しないポートからのものであれば、そのマルチキャストアドレス宛のパケットをそのポートに転送するフローエントリを登録します。</p>
+<p>IGMP Leave Messageを受信した際、それが対応表に存在するポートからのものであれば、確認用のIGMP Query Messageを送信し、応答がなければそのマルチキャストアドレス宛のパケットをそのポートに転送するフローエントリを削除します。</p>
+<p>IGMP Leave Messageを送信せずにマルチキャストグループ参加ホストが不在となった場合を考慮し、クエリアからのIGMP Query Messageを転送する都度、各ポートからIGMP Report Messageが返ってきたかどうかを確認します。IGMP Report Messageを返信しなかったポートの先にはマルチキャストグループ参加ホストが存在しないものとみなし、マルチキャストパケットをそのポートに転送するフローエントリを削除します。</p>
+<p>あるマルチキャストグループに対するIGMP Report Messageを複数のポートで受信した場合、プログラムは最初のメッセージのみクエリアに転送します。これにより、不要なIGMP Report Messageをクエリアに転送することを抑制します。</p>
+<p>あるマルチキャストグループに対するIGMP Leave Messageを受信した場合、そのグループに参加しているホストが他のポートの先に存在するのであれば、プログラムはIGMP Leave Messageをクエリアに転送しません。そのグループに参加しているホストがひとつもなくなったときに、プログラムはIGMP Leave Messageをクエリアに転送します。これにより、不要なIGMP Leave Messageをクエリアに転送することを抑制します。</p>
+<p>また、クエリアであるマルチキャストルータが存在しないネットワークにおいてもIGMPスヌーピング機能が動作できるよう、擬似クエリア機能も実装することとします。</p>
+<p>以上の内容を、IGMPスヌーピング機能を包括的に実装するIGMPスヌーピングライブラリと、ライブラリを使用するアプリケーションに分けて実装します。</p>
+<p><strong>IGMPスヌーピングライブラリ</strong></p>
+<ul class="simple">
+<li>スヌーピング機能<ul>
+<li>IGMP Query Messageを受信したら保持している応答有無の情報を初期化し、IGMP Report Messageを待つ</li>
+<li>IGMP Report Messageを受信したら対応表を更新し、必要であればフローエントリの登録を行う。また必要であればクエリアにメッセージを転送する</li>
+<li>IGMP Leave Messageを受信したら確認用のIGMP Query Messageを送信し、応答がなければフローエントリの削除を行う。また必要であればクエリアにメッセージを転送する</li>
+<li>保持している対応表が更新された際、その旨をアプリケーションに通知するため、イベントを送信する</li>
+</ul>
+</li>
+<li>擬似クエリア機能<ul>
+<li>定期的にIGMP Query Messageをフラッディングし、IGMP Report Messageを待つ</li>
+<li>IGMP Report Messageを受信したらフローエントリの登録を行う</li>
+<li>IGMP Leave Messageを受信したらフローエントリの削除を行う</li>
+</ul>
+</li>
+</ul>
+<p><strong>アプリケーション</strong></p>
+<ul class="simple">
+<li>IGMPスヌーピングライブラリからの通知を受け、ログを出力する</li>
+<li>IGMPパケット以外のパケットは従来どおり学習・転送する</li>
+</ul>
+<p>IGMPスヌーピングライブラリおよびアプリケーションのソースコードは、Ryuのソースツリーにあります。</p>
+<blockquote>
+<div><p>ryu/lib/igmplib.py</p>
+<p>ryu/app/simple_switch_igmp.py</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">simple_switch_igmp.pyはOpenFlow 1.0専用のアプリケーションであるため、本章では「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3に対応したsimple_switch_igmp_13.pyを元にアプリケーションの詳細を説明します。</p>
+</div>
+<div class="section" id="id13">
+<h3>IGMPスヌーピングライブラリの実装<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>以降の節で、前述の機能がIGMPスヌーピングライブラリにおいてどのように実装されているかを見ていきます。なお、引用されているソースは抜粋です。全体像については実際のソースをご参照ください。</p>
+<div class="section" id="id14">
+<h4>スヌーピングクラスと擬似クエリアクラス<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ライブラリの初期化時に、スヌーピングクラスと擬似クエリアクラスをインスタンス化します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">IgmpLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;igmplib&#39;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span> <span class="o">=</span> <span class="n">IgmpQuerier</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_snooper</span> <span class="o">=</span> <span class="n">IgmpSnooper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>擬似クエリアインスタンスへの、クエリアとして動作するスイッチの設定とマルチキャストサーバの接続されているポートの設定は、ライブラリのメソッドで行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_querier_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">server_port</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;set a datapath id and server port number to the instance</span>
+<span class="sd">    of IgmpQuerier.</span>
+
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    Attribute    Description</span>
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    dpid         the datapath id that will operate as a querier.</span>
+<span class="sd">    server_port  the port number linked to the multicasting server.</span>
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">set_querier_mode</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">server_port</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>擬似クエリアインスタンスにスイッチとポート番号が指定されている場合、指定されたスイッチがアプリケーションと接続した際に擬似クエリア処理を開始します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;StateChange event handler.&quot;&quot;&quot;</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="k">assert</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">dpid</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evt</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">MAIN_DISPATCHER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">start_loop</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">evt</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">stop_loop</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="packet-in">
+<h4>Packet-In処理<a class="headerlink" href="#packet-in" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーション</em></a>」と同様に、IGMPパケットはすべてIGMPスヌーピングライブラリで処理します。IGMPパケットを受信したスイッチが擬似クエリアインスタンスに設定したスイッチである場合には擬似クエリアインスタンスに、それ以外の場合はスヌーピングインスタンスに、それぞれ処理を委ねます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was IGMP,</span>
+<span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="n">req_pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">req_igmp</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">igmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">req_igmp</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">dpid</span> <span class="o">==</span> <span class="n">dpid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">packet_in_handler</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_snooper</span><span class="o">.</span><span class="n">packet_in_handler</span><span class="p">(</span><span class="n">req_pkt</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>スヌーピングインスタンスのPacket-In処理では、受信したIGMPパケットの種別に応じて処理を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_pkt</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_QUERY</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[QUERY]&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_ipv4</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_eth</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_query</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">req_ipv4</span><span class="p">,</span> <span class="n">req_eth</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V1</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span> <span class="ow">or</span>
+          <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V2</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[REPORT]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_report</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_LEAVE</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[LEAVE]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_leave</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>擬似クエリアインスタンスのPacket-In処理でも、受信したIGMPパケットの種別に応じて処理を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V1</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span> <span class="ow">or</span>
+            <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V2</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_report</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_LEAVE</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_leave</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-query-message">
+<h4>スヌーピングインスタンスでのIGMP Query Message処理<a class="headerlink" href="#igmp-query-message" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>スヌーピングインスタンスには、スイッチごとに「クエリアと接続しているポート」「クエリアのIPアドレス」「クエリアのMACアドレス」を保持する領域があります。また各スイッチごとに「既知のマルチキャストグループ」「当該マルチキャストグループに参加しているホストが接続しているポート番号」「メッセージ受信の有無」を保持する領域があります。</p>
+<p>スヌーピングインスタンスは、IGMP Query Message受信時、メッセージを送信してきたクエリアの情報を保持します。</p>
+<p>また、各スイッチのメッセージ受信の有無を初期化し、受信したIGMP Query Messageをフラッディングした後、マルチキャストグループ参加ホストからのIGMP Report Message受信タイムアウト処理を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">iph</span><span class="p">,</span> <span class="n">eth</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># learn the querier.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_querier</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="n">in_port</span><span class="p">,</span>
+        <span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">iph</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+        <span class="s">&#39;mac&#39;</span><span class="p">:</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+    <span class="p">}</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="s">&#39;0.0.0.0&#39;</span> <span class="o">==</span> <span class="n">query</span><span class="o">.</span><span class="n">address</span><span class="p">:</span>
+        <span class="c"># general query. reset all reply status.</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">group</span><span class="p">[</span><span class="s">&#39;replied&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">group</span><span class="p">[</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="c"># ...</span>
+
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">)]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="c"># wait for REPORT messages.</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_do_timeout_for_query</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-report-message">
+<h4>スヌーピングインスタンスでのIGMP Report Message処理<a class="headerlink" href="#igmp-report-message" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>スヌーピングインスタンスは、マルチキャストグループ参加ホストからのIGMP Report Messageを受信した際、そのマルチキャストアドレスが未知のものであれば、マルチキャストグループ追加イベントを送信し、情報保持領域を更新します。</p>
+<p>また、当該マルチキャストグループへのIGMP Report Messageをそのポートで初めて受信した場合には、情報保持領域を更新し、当該マルチキャストパケットの転送先としてそのポートを追加したフローエントリを登録し、マルチキャストグループ変更イベントを送信します。</p>
+<p>当該マルチキャストグループのIGMP Report Messageをまだクエリアに転送していなければ転送を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_GROUP_ADDED</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+            <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="p">{</span><span class="s">&#39;replied&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;leave&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;ports&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">in_port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;out&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">size</span><span class="p">)],</span>
+            <span class="n">in_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;in&#39;</span><span class="p">]:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ports</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+            <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_MEMBER_CHANGED</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">ports</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c"># send a REPORT message to the querier if this message arrived</span>
+    <span class="c"># first after a QUERY message was sent.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">outport</span><span class="p">,</span> <span class="n">size</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id15">
+<h4>スヌーピングインスタンスでのIGMP Report Message受信タイムアウト処理<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>IGMP Query Message処理後、一定時間後にIGMP Report Message受信タイムアウト処理を開始します。マルチキャストグループ参加ホストが存在しているのであれば、通常はタイムアウト発生前にIGMP Report Messageを送信してくるため、IGMP Report Message処理にて情報保持領域の更新が行われます。</p>
+<p>一定時間経過した後でもまだ特定のマルチキャストグループに関するIGMP Report Messageを受信していなかった場合、当該マルチキャストグループに参加するホストがいなくなったものとみなし、マルチキャストグループ削除イベントの送信、フローエントリの削除、情報保持領域の更新を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_timeout_for_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="c"># ...</span>
+
+    <span class="n">remove_dsts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]:</span>
+            <span class="c"># if no REPORT message sent from any members of</span>
+            <span class="c"># the group, remove flow entries about the group and</span>
+            <span class="c"># send a LEAVE message if exists.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_multicast_group</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+            <span class="n">remove_dsts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">remove_dsts</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_remove_multicast_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+        <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+            <span class="n">MG_GROUP_REMOVED</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+    <span class="c">#...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-leave-message">
+<h4>スヌーピングインスタンスでのIGMP Leave Message処理<a class="headerlink" href="#igmp-leave-message" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>スヌーピングインスタンスは、マルチキャストグループ参加ホストからのIGMP Leave Messageを受信した際、情報保持領域に受信したメッセージを保存した後確認用のIGMP Query Messageを受信したポートに向けて送信し、マルチキャストグループ参加ホストからのIGMP Report Message(Leave応答)受信タイムアウト処理を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leave</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+        <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+        <span class="p">{</span><span class="s">&#39;replied&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;leave&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;ports&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;out&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+    <span class="c"># send a specific query to the host that sent this message.</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span><span class="p">)]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="c"># wait for REPORT messages.</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_do_timeout_for_leave</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span>
+              <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-report-message-leave">
+<h4>スヌーピングインスタンスでのIGMP Report Message(Leave応答)受信タイムアウト処理<a class="headerlink" href="#igmp-report-message-leave" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>IGMP Leave Message処理中でのIGMP Query Message送信後、一定時間後にIGMP Report Message受信タイムアウト処理を開始します。マルチキャストグループ参加ホストが存在しているのであれば、通常はタイムアウト発生前にIGMP Report Messageを送信してくるため、情報保持領域の更新は行われません。</p>
+<p>一定時間経過した後でもまだ特定のマルチキャストグループに関するIGMP Report Messageを受信していなかった場合、そのポートの先には当該マルチキャストグループに参加するホストがいなくなったものとみなし、マルチキャストグループ変更イベントの送信、フローエントリの更新、情報保持領域の更新を行います。</p>
+<p>そのポートを転送対象外とした結果当該マルチキャストグループに参加するホストがどのポートの先にもいなくなった場合、マルチキャストグループ削除イベントの送信、フローエントリの削除、情報保持領域の更新を行います。このとき、保持しているIGMP Leave Messageがあれば、クエリアに送信します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_timeout_for_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="c"># ...</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]:</span>
+        <span class="k">return</span>
+
+    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_MEMBER_CHANGED</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">ports</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_multicast_group</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_remove_multicast_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="n">leave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">leave</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">:</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">leave</span><span class="o">.</span><span class="n">in_port</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">leave</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">outport</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id16">
+<h4>擬似クエリアインスタンスでのIGMP Query Message定期送信処理<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>擬似クエリアインスタンスは、60秒に1回IGMP Query Messageをフラッディングします。フラッディング後、一定時間後にIGMP Report Message受信タイムアウト処理を開始します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_send_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="mi">60</span>
+    <span class="c"># ...</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">send_port</span><span class="p">,</span> <span class="n">flood</span><span class="p">)</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">QUERY_RESPONSE_INTERVAL</span><span class="p">)</span>
+        <span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id17">
+<h4>擬似クエリアインスタンスでのIGMP Report Message処理<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>擬似クエリアインスタンスは、マルチキャストグループ参加ホストならびにスヌーピングインスタンスからのIGMP Report Messageを受信した際、そのマルチキャストアドレスの転送先として受信ポートが記憶されていなければ、情報を記憶し、フローエントリを登録します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">update</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">in_port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+        <span class="n">update</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">update</span><span class="p">:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">size</span><span class="p">)],</span>
+            <span class="n">in_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id18">
+<h4>擬似クエリアインスタンスでのIGMP Report Message受信タイムアウト処理<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>IGMP Query Message定期送信後、一定時間後にIGMP Report Message受信タイムアウト処理を開始します。IGMP Report Messageが送信されなかったポートに対しては、擬似クエリアインスタンスは記憶した情報の更新とフローエントリ更新を行います。転送対象となるポートがなくなった場合、フローエントリの削除を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_send_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c"># ...</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">QUERY_RESPONSE_INTERVAL</span><span class="p">)</span>
+        <span class="c"># ...</span>
+        <span class="n">del_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">del_ports</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">status</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">[</span><span class="n">port</span><span class="p">]:</span>
+                    <span class="n">del_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_ports</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+                <span class="n">del_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_ports</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">del_ports</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">del_ports</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">status</span><span class="p">[</span><span class="n">port</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">del_groups</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id19">
+<h4>擬似クエリアインスタンスでのIGMP Leave Message処理<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>擬似クエリアインスタンスは、マルチキャストグループ参加ホストからのIGMP Leave Messageを受信した際、記憶した情報の更新とフローエントリ更新を行います。転送対象となるポートがなくなった場合、フローエントリの削除を行います。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leave</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;the process when the querier received a LEAVE message.&quot;&quot;&quot;</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="n">in_port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id20">
+<h3>アプリケーションの実装<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」に示したOpenFlow 1.3対応のIGMPスヌーピングアプリケーション (simple_switch_igmp_13.py) と、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」のスイッチングハブとの差異を順に説明していきます。</p>
+<div class="section" id="contexts">
+<h4>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_CONTEXTS」ディクショナリに他のRyuアプリケーションを設定することにより、他のアプリケーションを別スレッドで起動させることができます。ここではIGMPスヌーピングライブラリのIgmpLibクラスを「igmplib」という名前で「_CONTEXTS」に設定しています。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">igmplib</span>
+
+<span class="c"># ...</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchIgmp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;igmplib&#39;</span><span class="p">:</span> <span class="n">igmplib</span><span class="o">.</span><span class="n">IgmpLib</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsからインスタンスを取得することができます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchIgmp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;igmplib&#39;</span><span class="p">]</span>
+<span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id21">
+<h4>ライブラリの初期設定<a class="headerlink" href="#id21" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>「_CONTEXTS」に設定したIGMPスヌーピングライブラリの初期設定を行います。「<a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a>」で示したように、クエリアの動作も擬似する必要がある場合は、IGMPスヌーピングライブラリの提供するset_querier_mode()メソッドを実行します。ここでは以下の値を設定します。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="44%" />
+<col width="40%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">パラメータ</th>
+<th class="head">値</th>
+<th class="head">説明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dpid</td>
+<td>str_to_dpid(&#8216;0000000000000001&#8217;)</td>
+<td>クエリアとして動作するデータパスID</td>
+</tr>
+<tr class="row-odd"><td>server_port</td>
+<td>2</td>
+<td>マルチキャストサーバが接続しているクエリアのポート</td>
+</tr>
+</tbody>
+</table>
+<p>この設定により、データパスID「0000000000000001」のOpenFlowスイッチがクエリアとして動作し、マルチキャストパケットの送信元としてポート2を想定したフローエントリを登録するようになります。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre># ...
+    self._snoop = kwargs[&#39;igmplib&#39;]
+    self._snoop.set_querier_mode(
+        dpid=str_to_dpid(&#39;0000000000000001&#39;), server_port=2)
+# ...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id22">
+<h4>ユーザ定義イベントの受信方法<a class="headerlink" href="#id22" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>リンク・アグリゲーション</em></a>」と同様に、IGMPスヌーピングライブラリはIGMPパケットの含まれないPacket-Inメッセージを<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt>というユーザ定義イベントとして送信します。ユーザ定義イベントのイベントハンドラも、Ryuが提供するイベントハンドラと同じように<tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt>デコレータで装飾します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>また、IGMPスヌーピングライブラリはマルチキャストグループの追加/変更/削除が行われると<tt class="docutils literal"><span class="pre">EventMulticastGroupStateChanged</span></tt>イベントを送信しますので、こちらもイベントハンドラを作成しておきます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventMulticastGroupStateChanged</span><span class="p">,</span>
+            <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_status_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_ADDED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Added&#39;</span><span class="p">,</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_MEMBER_CHANGED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Member Changed&#39;</span><span class="p">,</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_REMOVED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Removed&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: [</span><span class="si">%s</span><span class="s">] querier:[</span><span class="si">%s</span><span class="s">] hosts:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">reason</span><span class="p">),</span> <span class="n">ev</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                     <span class="n">ev</span><span class="o">.</span><span class="n">dsts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>以上のように、IGMPスヌーピング機能を提供するライブラリと、ライブラリを利用するアプリケーションによって、IGMPスヌーピング機能を持つスイッチングハブのアプリケーションを実現しています。</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">目次</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">IGMPスヌーピング</a><ul>
+<li><a class="reference internal" href="#id1">IGMPスヌーピング</a><ul>
+<li><a class="reference internal" href="#id2">IGMPについて</a></li>
+<li><a class="reference internal" href="#id3">サブネット内の課題とIGMPスヌーピングについて</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ryu">Ryuアプリケーションの実行</a><ul>
+<li><a class="reference internal" href="#id4">実験環境の構築</a></li>
+<li><a class="reference internal" href="#id5">IGMPバージョンの設定</a></li>
+<li><a class="reference internal" href="#ip">IPアドレスの設定</a></li>
+<li><a class="reference internal" href="#id6">デフォルトゲートウェイの設定</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlowバージョンの設定</a></li>
+<li><a class="reference internal" href="#id7">スイッチングハブの実行</a></li>
+<li><a class="reference internal" href="#id8">マルチキャストグループの追加</a><ul>
+<li><a class="reference internal" href="#h1s2225-0-0-1">ホストh1s2を225.0.0.1グループに参加させる</a></li>
+<li><a class="reference internal" href="#h3s2225-0-0-1">ホストh3s2を225.0.0.1グループに参加させる</a></li>
+<li><a class="reference internal" href="#h2s2225-0-0-2">ホストh2s2を225.0.0.2グループに参加させる</a></li>
+<li><a class="reference internal" href="#h3s1225-0-0-1">ホストh3s1を225.0.0.1グループに参加させる</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">ストリーム配信の開始</a></li>
+<li><a class="reference internal" href="#id10">マルチキャストグループの削除</a><ul>
+<li><a class="reference internal" href="#id11">ホストh1s2を225.0.0.1グループから離脱させる</a></li>
+<li><a class="reference internal" href="#id12">ホストh3s2を225.0.0.1グループから離脱させる</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ryuigmp">RyuによるIGMPスヌーピング機能の実装</a><ul>
+<li><a class="reference internal" href="#id13">IGMPスヌーピングライブラリの実装</a><ul>
+<li><a class="reference internal" href="#id14">スヌーピングクラスと擬似クエリアクラス</a></li>
+<li><a class="reference internal" href="#packet-in">Packet-In処理</a></li>
+<li><a class="reference internal" href="#igmp-query-message">スヌーピングインスタンスでのIGMP Query Message処理</a></li>
+<li><a class="reference internal" href="#igmp-report-message">スヌーピングインスタンスでのIGMP Report Message処理</a></li>
+<li><a class="reference internal" href="#id15">スヌーピングインスタンスでのIGMP Report Message受信タイムアウト処理</a></li>
+<li><a class="reference internal" href="#igmp-leave-message">スヌーピングインスタンスでのIGMP Leave Message処理</a></li>
+<li><a class="reference internal" href="#igmp-report-message-leave">スヌーピングインスタンスでのIGMP Report Message(Leave応答)受信タイムアウト処理</a></li>
+<li><a class="reference internal" href="#id16">擬似クエリアインスタンスでのIGMP Query Message定期送信処理</a></li>
+<li><a class="reference internal" href="#id17">擬似クエリアインスタンスでのIGMP Report Message処理</a></li>
+<li><a class="reference internal" href="#id18">擬似クエリアインスタンスでのIGMP Report Message受信タイムアウト処理</a></li>
+<li><a class="reference internal" href="#id19">擬似クエリアインスタンスでのIGMP Leave Message処理</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id20">アプリケーションの実装</a><ul>
+<li><a class="reference internal" href="#contexts">「_CONTEXTS」の設定</a></li>
+<li><a class="reference internal" href="#id21">ライブラリの初期設定</a></li>
+<li><a class="reference internal" href="#id22">ユーザ定義イベントの受信方法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>前のトピックへ</h4>
+  <p class="topless"><a href="spanning_tree.html"
+                        title="前の章へ">スパニングツリー</a></p>
+  <h4>次のトピックへ</h4>
+  <p class="topless"><a href="openflow_protocol.html"
+                        title="次の章へ">OpenFlowプロトコル</a></p>
+  <h3>このページ</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/igmp_snooping.txt"
+           rel="nofollow">ソースコードを表示</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>クイック検索</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="検索" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    モジュール、クラス、または関数名を入力してください
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>ナビゲーション</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="総合索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlowプロトコル"
+             >次へ</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="スパニングツリー"
+             >前へ</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

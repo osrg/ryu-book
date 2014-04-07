@@ -15,6 +15,7 @@ RYU SDN Framework
    rest_api.rst
    link_aggregation.rst
    spanning_tree.rst
+   igmp_snooping.rst
    openflow_protocol.rst
    ofproto_lib.rst
    packet_lib.rst
