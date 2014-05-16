@@ -56,16 +56,16 @@ class RyuLaTeXWriter(LaTeXWriter):
 
 
 class RyuLaTeXTranslator(LaTeXTranslator):
-    def depart_literal_block(self, node):
-        code = self.verbatim.rstrip('\n')
+    def visit_literal_block(self, node):
+        code = node.astext().rstrip('\n')
         self.builder.info('node=%s' % node)
         envname = node.get('classes', None)
         if not envname:
-            return LaTeXTranslator.depart_literal_block(self, node)
+            return LaTeXTranslator.visit_literal_block(self, node)
         envname = envname[0]
         self.body.append('\n\\begin{%s}\n%s\n\\end{%s}\n' % 
                          (envname, code, envname))
-        self.verbatim = None
+        raise nodes.SkipNode
 
     def visit_title(self, node):
         parent = node.parent
