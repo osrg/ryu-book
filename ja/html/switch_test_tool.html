@@ -56,7 +56,7 @@
 <div class="section" id="id1">
 <h2>テストツールの概要<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに対してフローエントリやメーターエントリの登録／パケット印加を実施し、OpenFlowスイッチのパケット書き換えや転送(または破棄)の処理結果と、テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。</p>
-<p>ツールは、OpenFlowバージョン1.3のFlowModメッセージおよびMeterModメッセージの試験に対応しています。</p>
+<p>ツールは、OpenFlowバージョン1.3のFlowModメッセージ、MeterModメッセージ、およびGroupModメッセージの試験に対応しています。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="48%" />
@@ -70,10 +70,13 @@
 <tbody valign="top">
 <tr class="row-even"><td>OpenFlow1.3 FlowModメッセージ</td>
 <td><p class="first">match (IN_PHY_PORTを除く)</p>
-<p class="last">actions (SET_QUEUE、GROUPを除く)</p>
+<p class="last">actions (SET_QUEUEを除く)</p>
 </td>
 </tr>
 <tr class="row-odd"><td>OpenFlow1.3 MeterModメッセージ</td>
+<td>すべて</td>
+</tr>
+<tr class="row-even"><td>OpenFlow1.3 GroupModメッセージ</td>
 <td>すべて</td>
 </tr>
 </tbody>
@@ -136,12 +139,15 @@ OK(6) / ERROR(4)
         &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # 試験内容の説明
         &quot;prerequisite&quot;: [
             {
-                &quot;OFPFlowMod&quot;: {...}  # 登録するフローエントリもしくはメーターエントリ
-            },                       # (RyuのOFPFlowModもしくはOFPMeterModを
-            {                        #  json形式で記述)
-                &quot;OFPMeterMod&quot;: {...} #  期待する処理結果が
-            },                       #  パケット転送(actions=output)の場合は
-            {...}                    #  出力ポート番号に「2」を指定してください
+                &quot;OFPFlowMod&quot;: {...}  # 登録するフローエントリ、メーターエントリ、グループエントリ
+            },                       # (RyuのOFPFlowMod、OFPMeterMod、OFPGroupModをjson形式で記述)
+            {                        #
+                &quot;OFPMeterMod&quot;: {...} # フローエントリで期待する処理結果が
+            },                       # パケット転送(actions=output)の場合は
+            {                        # 出力ポート番号に「2」を指定してください
+                &quot;OFPGroupMod&quot;: {...} # グループエントリでパケット転送を行う場合は
+            },                       # 出力ポート番号には「2」もしくは「3」を
+            {...}                    # 指定してください
         ],
         &quot;tests&quot;: [
             {
@@ -219,7 +225,7 @@ OK(6) / ERROR(4)
 <div class="section" id="id7">
 <h3>ツール実行環境<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストツール実行のための環境は次のとおりです。</p>
-<a class="reference internal image-reference" href="_images/fig24.png"><img alt="_images/fig24.png" class="align-center" src="_images/fig24.png" style="width: 592.2px; height: 277.8px;" /></a>
+<a class="reference internal image-reference" href="_images/fig24.png"><img alt="_images/fig24.png" class="align-center" src="_images/fig24.png" style="width: 610.2px; height: 277.8px;" /></a>
 <p>補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。</p>
 <ul class="simple">
 <li>actions=CONTROLLERのフローエントリ登録</li>
@@ -308,7 +314,7 @@ OK(6) / ERROR(4)
 <p>サンプルテストパターンやオリジナルのテストパターンファイルを用いたテストツールの実行手順を紹介します。</p>
 <div class="section" id="id10">
 <h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch／actionsの一通りの動作確認ならびにMeterModメッセージの動作確認を行う手順を示します。</p>
+<p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch／actionsの一通りの動作確認、MeterModメッセージの動作確認、ならびにGroupModメッセージの動作確認を行う手順を示します。</p>
 <p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
 <ol class="arabic">
 <li><p class="first">試験環境の構築</p>
@@ -320,8 +326,8 @@ OK(6) / ERROR(4)
 <p>netコマンドの実行結果は次の通りです。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
 c0
-s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
-s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2 s1-eth3:s2-eth3
+s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 </pre></div>
 </div>
 </div></blockquote>
@@ -384,7 +390,7 @@ action: 11_COPY_TTL_OUT
 <blockquote>
 <div><p>サンプルテストパターンファイル一覧</p>
 <blockquote>
-<div>match／actionsの各設定項目に対応するフローエントリを登録し、フローエントリにmatchする(またはmatchしない)複数パターンのパケットを印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは優先度変更を行うメーターエントリを登録し、メーターエントリにmatchするパケットを連続的に印加するテストパターンが用意されています。</div></blockquote>
+<div>match／actionsの各設定項目に対応するフローエントリを登録し、フローエントリにmatchする(またはmatchしない)複数パターンのパケットを印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは優先度変更を行うメーターエントリを登録し、メーターエントリにmatchするパケットを連続的に印加するテストパターン、全ポートにFLOODINGするtype=ALLのグループエントリや振り分け条件によって出力先ポートを自動的に変更するtype=SELECTのグループエントリを登録し、グループエントリにmatchするパケットを連続的に印加するテストパターンが用意されています。</div></blockquote>
 <div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
 00_OUTPUT.json              20_POP_MPLS.json
 11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
@@ -413,6 +419,10 @@ ryu/tests/switch/of13/action/25_SET_FIELD:
 12_IPV4_DST.json       21_ARP_OP.json         36_MPLS_BOS.json
 13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
 13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
+
+ryu/tests/switch/of13/group:
+00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
 
 ryu/tests/switch/of13/match:
 00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
@@ -656,6 +666,12 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <tr class="row-odd"><td>Failed to add meters: [err_msg]</td>
 <td>試験対象SWに対するメーターエントリ登録に失敗(MeterModに対するErrorメッセージ受信)</td>
 </tr>
+<tr class="row-even"><td>Failed to add groups: barrier request timeout.</td>
+<td>試験対象SWに対するグループエントリ登録に失敗(Barrier Requestのタイムアウト)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add groups: [err_msg]</td>
+<td>試験対象SWに対するグループエントリ登録に失敗(GroupModに対するErrorメッセージ受信)</td>
+</tr>
 <tr class="row-even"><td>Added incorrect flows: [flows]</td>
 <td>試験対象SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
 </tr>
@@ -674,61 +690,70 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <tr class="row-odd"><td>Failed to add meters: [err_msg]</td>
 <td>試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>Failed to request port stats from target: request timeout.</td>
+<tr class="row-even"><td>Added incorrect groups: [groups]</td>
+<td>試験対象SWに対するグループエントリ登録確認エラー(想定外のグループエントリが登録された)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add groups: group desc stats request timeout.</td>
+<td>試験対象SWに対するグループエントリ登録確認に失敗(GroupDescStats Requestのタイムアウト)</td>
+</tr>
+<tr class="row-even"><td>Failed to add groups: [err_msg]</td>
+<td>試験対象SWに対するグループエントリ登録確認に失敗(GroupDescStats Requestに対するErrorメッセージ受信)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
 <td>試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
 </tr>
-<tr class="row-odd"><td>Failed to request port stats from target: [err_msg]</td>
+<tr class="row-even"><td>Failed to request port stats from target: [err_msg]</td>
 <td>試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>Failed to request port stats from tester: request timeout.</td>
+<tr class="row-odd"><td>Failed to request port stats from tester: request timeout.</td>
 <td>補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)</td>
 </tr>
-<tr class="row-odd"><td>Failed to request port stats from tester: [err_msg]</td>
+<tr class="row-even"><td>Failed to request port stats from tester: [err_msg]</td>
 <td>補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>Received incorrect [packet]</td>
+<tr class="row-odd"><td>Received incorrect [packet]</td>
 <td>期待した出力パケットの受信エラー(異なるパケットを受信)</td>
 </tr>
-<tr class="row-odd"><td>Receiving timeout: [detail]</td>
+<tr class="row-even"><td>Receiving timeout: [detail]</td>
 <td>期待した出力パケットの受信に失敗(タイムアウト)</td>
 </tr>
-<tr class="row-even"><td>Faild to send packet: barrier request timeout.</td>
+<tr class="row-odd"><td>Faild to send packet: barrier request timeout.</td>
 <td>パケット印加に失敗(Barrier Requestのタイムアウト)</td>
 </tr>
-<tr class="row-odd"><td>Faild to send packet: [err_msg]</td>
+<tr class="row-even"><td>Faild to send packet: [err_msg]</td>
 <td>パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>Table-miss error: increment in matched_count.</td>
+<tr class="row-odd"><td>Table-miss error: increment in matched_count.</td>
 <td>table-miss確認エラー(フローにmatchしている)</td>
 </tr>
-<tr class="row-odd"><td>Table-miss error: no change in lookup_count.</td>
+<tr class="row-even"><td>Table-miss error: no change in lookup_count.</td>
 <td>table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)</td>
 </tr>
-<tr class="row-even"><td>Failed to request table stats: request timeout.</td>
+<tr class="row-odd"><td>Failed to request table stats: request timeout.</td>
 <td>table-missの確認に失敗(TableStats Requestのタイムアウト)</td>
 </tr>
-<tr class="row-odd"><td>Failed to request table stats: [err_msg]</td>
+<tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
 <td>table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-even"><td>Added incorrect flows to tester_sw: [flows]</td>
+<tr class="row-odd"><td>Added incorrect flows to tester_sw: [flows]</td>
 <td>補助SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)</td>
 </tr>
-<tr class="row-odd"><td>Failed to add flows to tester_sw: flow stats request timeout.</td>
+<tr class="row-even"><td>Failed to add flows to tester_sw: flow stats request timeout.</td>
 <td>補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)</td>
 </tr>
-<tr class="row-even"><td>Failed to add flows to tester_sw: [err_msg]</td>
+<tr class="row-odd"><td>Failed to add flows to tester_sw: [err_msg]</td>
 <td>補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-odd"><td>Failed to request flow stats: request timeout.</td>
+<tr class="row-even"><td>Failed to request flow stats: request timeout.</td>
 <td>スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)</td>
 </tr>
-<tr class="row-even"><td>Failed to request flow stats: [err_msg]</td>
+<tr class="row-odd"><td>Failed to request flow stats: [err_msg]</td>
 <td>スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)</td>
 </tr>
-<tr class="row-odd"><td>Received unexpected throughput: [detail]</td>
+<tr class="row-even"><td>Received unexpected throughput: [detail]</td>
 <td>想定するスループットからかけ離れたスループットを計測</td>
 </tr>
-<tr class="row-even"><td>Disconnected from switch</td>
+<tr class="row-odd"><td>Disconnected from switch</td>
 <td>試験対象SWもしくは補助SWからのリンク断発生</td>
 </tr>
 </tbody>
