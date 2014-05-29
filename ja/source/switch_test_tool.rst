@@ -16,8 +16,8 @@ OpenFlowスイッチのパケット書き換えや転送(または破棄)の処�
 テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、
 OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。
 
-ツールは、OpenFlowバージョン1.3のFlowModメッセージおよびMeterModメッセージの
-試験に対応しています。
+ツールは、OpenFlowバージョン1.3のFlowModメッセージ、MeterModメッセージ、
+およびGroupModメッセージの試験に対応しています。
 
 
 ============================== ================================
@@ -25,9 +25,10 @@ OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテスト�
 ============================== ================================
 OpenFlow1.3 FlowModメッセージ  match (IN_PHY_PORTを除く)
 
-                               actions (SET_QUEUE、GROUPを除く)
+                               actions (SET_QUEUEを除く)
 
 OpenFlow1.3 MeterModメッセージ すべて
+OpenFlow1.3 GroupModメッセージ すべて
 ============================== ================================
 
 
@@ -132,12 +133,15 @@ OpenFlow1.3 MeterModメッセージ すべて
             "description": "xxxxxxxxxx", # 試験内容の説明
             "prerequisite": [
                 {
-                    "OFPFlowMod": {...}  # 登録するフローエントリもしくはメーターエントリ
-                },                       # (RyuのOFPFlowModもしくはOFPMeterModを
-                {                        #  json形式で記述)
-                    "OFPMeterMod": {...} #  期待する処理結果が
-                },                       #  パケット転送(actions=output)の場合は
-                {...}                    #  出力ポート番号に「2」を指定してください
+                    "OFPFlowMod": {...}  # 登録するフローエントリ、メーターエントリ、グループエントリ
+                },                       # (RyuのOFPFlowMod、OFPMeterMod、OFPGroupModをjson形式で記述)
+                {                        #
+                    "OFPMeterMod": {...} # フローエントリで期待する処理結果が
+                },                       # パケット転送(actions=output)の場合は
+                {                        # 出力ポート番号に「2」を指定してください
+                    "OFPGroupMod": {...} # グループエントリでパケット転送を行う場合は
+                },                       # 出力ポート番号には「2」もしくは「3」を
+                {...}                    # 指定してください
             ],
             "tests": [
                 {
@@ -322,8 +326,8 @@ OpenFlow1.3 MeterModメッセージ すべて
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、
-FlowModメッセージのmatch／actionsの一通りの動作確認ならびにMeterModメッセージ
-の動作確認を行う手順を示します。
+FlowModメッセージのmatch／actionsの一通りの動作確認、MeterModメッセージの
+動作確認、ならびにGroupModメッセージの動作確認を行う手順を示します。
 
 本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)
 を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。
@@ -351,8 +355,8 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
         mininet> net
         c0
-        s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
-        s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+        s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2 s1-eth3:s2-eth3
+        s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 
 
 
@@ -450,7 +454,10 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         フローエントリにmatchする(またはmatchしない)複数パターンのパケット
         を印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは
         優先度変更を行うメーターエントリを登録し、メーターエントリにmatch
-        するパケットを連続的に印加するテストパターンが用意されています。
+        するパケットを連続的に印加するテストパターン、全ポートにFLOODINGする
+        type=ALLのグループエントリや振り分け条件によって出力先ポートを自動的
+        に変更するtype=SELECTのグループエントリを登録し、グループエントリに
+        matchするパケットを連続的に印加するテストパターンが用意されています。
 
 
     .. rst-class:: console
@@ -485,6 +492,10 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         12_IPV4_DST.json       21_ARP_OP.json         36_MPLS_BOS.json
         13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
         13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
+
+        ryu/tests/switch/of13/group:
+        00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+        01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
 
         ryu/tests/switch/of13/match:
         00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
@@ -739,12 +750,17 @@ Failed to add flows to tester_sw: barrier request timeout.               補助S
 Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
 Failed to add meters: barrier request timeout.                           試験対象SWに対するメーターエントリ登録に失敗(Barrier Requestのタイムアウト)
 Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録に失敗(MeterModに対するErrorメッセージ受信)
+Failed to add groups: barrier request timeout.                           試験対象SWに対するグループエントリ登録に失敗(Barrier Requestのタイムアウト)
+Failed to add groups: [err_msg]                                          試験対象SWに対するグループエントリ登録に失敗(GroupModに対するErrorメッセージ受信)
 Added incorrect flows: [flows]                                           試験対象SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
 Failed to add flows: flow stats request timeout.                         試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
 Failed to add flows: [err_msg]                                           試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
 Added incorrect meters: [meters]                                         試験対象SWに対するメーターエントリ登録確認エラー(想定外のメーターエントリが登録された)
 Failed to add meters: meter config stats request timeout.                試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestのタイムアウト)
 Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestに対するErrorメッセージ受信)
+Added incorrect groups: [groups]                                         試験対象SWに対するグループエントリ登録確認エラー(想定外のグループエントリが登録された)
+Failed to add groups: group desc stats request timeout.                  試験対象SWに対するグループエントリ登録確認に失敗(GroupDescStats Requestのタイムアウト)
+Failed to add groups: [err_msg]                                          試験対象SWに対するグループエントリ登録確認に失敗(GroupDescStats Requestに対するErrorメッセージ受信)
 Failed to request port stats from target: request timeout.               試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
 Failed to request port stats from target: [err_msg]                      試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
 Failed to request port stats from tester: request timeout.               補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
