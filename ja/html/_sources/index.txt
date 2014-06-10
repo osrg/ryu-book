@@ -22,6 +22,7 @@ RYU SDN Framework
    of_config.rst
    rest_firewall.rst
    rest_router.rst
+   rest_qos.rst
    switch_test_tool.rst
    arch.rst
    contribute.rst
