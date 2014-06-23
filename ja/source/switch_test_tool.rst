@@ -16,19 +16,19 @@ OpenFlowスイッチのパケット書き換えや転送(または破棄)の処�
 テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、
 OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。
 
-ツールは、OpenFlowバージョン1.3のFlowModメッセージ、MeterModメッセージ、
-およびGroupModメッセージの試験に対応しています。
+ツールは、OpenFlowバージョン1.3ならびにバージョン1.4のFlowModメッセージ、
+MeterModメッセージ、およびGroupModメッセージの試験に対応しています。
 
 
 ============================== ================================
 試験対象メッセージ             対応パラメータ
 ============================== ================================
-OpenFlow1.3 FlowModメッセージ  match (IN_PHY_PORTを除く)
+FlowModメッセージ              match (IN_PHY_PORTを除く)
 
                                actions (SET_QUEUEを除く)
 
-OpenFlow1.3 MeterModメッセージ すべて
-OpenFlow1.3 GroupModメッセージ すべて
+MeterModメッセージ             すべて
+GroupModメッセージ             すべて
 ============================== ================================
 
 
@@ -214,12 +214,15 @@ OpenFlow1.3 GroupModメッセージ すべて
 
 .. NOTE::
 
-    Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowMod
-    メッセージのmatch／actionsに指定できる各パラメータ、ならびにMeterMod
-    メッセージの各パラメータがそれぞれ正常に動作するかを確認する
-    テストパターンファイルが用意されています。
+    Ryuのソースツリーにはサンプルテストパターンとして、FlowModメッセージの
+    match／actionsに指定できる各パラメータ、ならびにMeterModメッセージの
+    各パラメータやGroupModメッセージの各パラメータがそれぞれ正常に動作するか
+    を確認するテストパターンファイルが、OpenFlow1.3向けとOpenFlow1.4向けに
+    用意されています。
 
         ryu/tests/switch/of13
+
+        ryu/tests/switch/of14
 
 
 ツール実行環境
@@ -276,7 +279,8 @@ OpenFlow1.3 GroupModメッセージ すべて
     ソースコード                    説明
     =============================== ===============================
     ryu/tests/switch/tester.py      テストツール
-    ryu/tests/switch/of13           テストパターンファイルのサンプル
+    ryu/tests/switch/of13           テストパターンファイルのサンプル(OpenFlow1.3用)
+    ryu/tests/switch/of14           テストパターンファイルのサンプル(OpenFlow1.4用)
     ryu/tests/switch/run_mininet.py 試験環境構築スクリプト
     =============================== ===============================
 
@@ -288,18 +292,26 @@ OpenFlow1.3 GroupModメッセージ すべて
 ::
 
     $ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+     [--test-switch-target-version VERSION] [--test-switch-tester-version VERSION]
      [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
 
-..
+.. tabularcolumns:: |l|p{20zw}|l|
 
+============================ ======================================== =====================
+オプション                   説明                                     デフォルト値
+============================ ======================================== =====================
+--test-switch-target         試験対象スイッチのデータパスID           0000000000000001
+--test-switch-tester         補助スイッチのデータパスID               0000000000000002
+--test-switch-target-version 試験対象スイッチのOpenFlowバージョン     openflow13
 
-    ==================== ======================================== =====================
-    オプション           説明                                     デフォルト値
-    ==================== ======================================== =====================
-    --test-switch-target 試験対象スイッチのデータパスID           0000000000000001
-    --test-switch-tester 補助スイッチのデータパスID               0000000000000002
-    --test-switch-dir    テストパターンファイルのディレクトリパス ryu/tests/switch/of13
-    ==================== ======================================== =====================
+                             ("openflow13"、"openflow14"が指定可能)
+
+--test-switch-tester-version 補助スイッチのOpenFlowバージョン         openflow13
+
+                             ("openflow13"、"openflow14"が指定可能)
+
+--test-switch-dir            テストパターンファイルのディレクトリパス ryu/tests/switch/of13
+============================ ======================================== =====================
 
 
 .. NOTE::
@@ -312,6 +324,8 @@ OpenFlow1.3 GroupModメッセージ すべて
 
 テストツールの起動後、試験対象スイッチと補助スイッチがコントローラに
 接続されると、指定したテストパターンファイルを元に試験が開始されます。
+接続されたスイッチのOpenFlowバージョンが指定したOpenFlowバージョンと
+異なる場合はその旨メッセージが表示され、正しいバージョンでの接続を待ちます。
 
 
 
@@ -376,7 +390,10 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     サンプルテストパターンのディレクトリ(ryu/tests/switch/of13)を指定します。
     なお、mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ
     --test-switch-target／--test-switch-testerオプションのデフォルト値と
-    なっているため、オプション指定を省略しています。
+    なっているため、オプション指定を省略しています。また、試験対象スイッチと
+    補助スイッチのOpenFlowバージョンはそれぞれ--test-switch-target-version／
+    --test-switch-tester-versionオプションのデフォルト値となっているため、
+    こちらもオプション指定を省略しています。
 
     Node: c0:
 
@@ -457,7 +474,8 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         するパケットを連続的に印加するテストパターン、全ポートにFLOODINGする
         type=ALLのグループエントリや振り分け条件によって出力先ポートを自動的
         に変更するtype=SELECTのグループエントリを登録し、グループエントリに
-        matchするパケットを連続的に印加するテストパターンが用意されています。
+        matchするパケットを連続的に印加するテストパターンが、OpenFlow1.3用と
+        OpenFlow1.4用にそれぞれ用意されています。
 
 
     .. rst-class:: console
@@ -498,29 +516,100 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
 
         ryu/tests/switch/of13/match:
-        00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
-        02_METADATA.json       13_TCP_SRC_IPv6.json   25_ARP_THA_Mask.json
-        02_METADATA_Mask.json  14_TCP_DST_IPv4.json   26_IPV6_SRC.json
-        03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC_Mask.json
-        03_ETH_DST_Mask.json   15_UDP_SRC_IPv4.json   27_IPV6_DST.json
-        04_ETH_SRC.json        15_UDP_SRC_IPv6.json   27_IPV6_DST_Mask.json
-        04_ETH_SRC_Mask.json   16_UDP_DST_IPv4.json   28_IPV6_FLABEL.json
-        05_ETH_TYPE.json       16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
-        06_VLAN_VID.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
-        06_VLAN_VID_Mask.json  17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
-        07_VLAN_PCP.json       18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
-        08_IP_DSCP_IPv4.json   18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
-        08_IP_DSCP_IPv6.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
-        09_IP_ECN_IPv4.json    20_ICMPV4_CODE.json    35_MPLS_TC.json
-        09_IP_ECN_IPv6.json    21_ARP_OP.json         36_MPLS_BOS.json
-        10_IP_PROTO_IPv4.json  22_ARP_SPA.json        37_PBB_ISID.json
-        10_IP_PROTO_IPv6.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
-        11_IPV4_SRC.json       23_ARP_TPA.json        38_TUNNEL_ID.json
-        11_IPV4_SRC_Mask.json  23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
-        12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
-        12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+        00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
+        02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
+        02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
+        03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
+        03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+        04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
+        04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+        05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+        06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+        06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+        07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+        08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+        08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
+        09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
+        09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
+        10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
+        10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
+        11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
+        11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
+        12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+        12_IPV4_DST_Mask.json  25_ARP_THA.json
+        13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
 
         ryu/tests/switch/of13/meter:
+        01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
+        01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
+        01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
+        01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
+        01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
+        01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+
+    .. rst-class:: console
+
+    ::
+
+        ryu/tests/switch/of14/action:
+        00_OUTPUT.json              20_POP_MPLS.json
+        11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
+        12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
+        15_SET_MPLS_TTL.json        24_DEC_NW_TTL_IPv4.json
+        16_DEC_MPLS_TTL.json        24_DEC_NW_TTL_IPv6.json
+        17_PUSH_VLAN.json           25_SET_FIELD
+        17_PUSH_VLAN_multiple.json  26_PUSH_PBB.json
+        18_POP_VLAN.json            26_PUSH_PBB_multiple.json
+        19_PUSH_MPLS.json           27_POP_PBB.json
+        19_PUSH_MPLS_multiple.json
+
+        ryu/tests/switch/of14/action/25_SET_FIELD:
+        03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC.json
+        04_ETH_SRC.json        15_UDP_SRC_IPv4.json   27_IPV6_DST.json
+        05_ETH_TYPE.json       15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+        06_VLAN_VID.json       16_UDP_DST_IPv4.json   29_ICMPV6_TYPE.json
+        07_VLAN_PCP.json       16_UDP_DST_IPv6.json   30_ICMPV6_CODE.json
+        08_IP_DSCP_IPv4.json   17_SCTP_SRC_IPv4.json  31_IPV6_ND_TARGET.json
+        08_IP_DSCP_IPv6.json   17_SCTP_SRC_IPv6.json  32_IPV6_ND_SLL.json
+        09_IP_ECN_IPv4.json    18_SCTP_DST_IPv4.json  33_IPV6_ND_TLL.json
+        09_IP_ECN_IPv6.json    18_SCTP_DST_IPv6.json  34_MPLS_LABEL.json
+        10_IP_PROTO_IPv4.json  19_ICMPV4_TYPE.json    35_MPLS_TC.json
+        10_IP_PROTO_IPv6.json  20_ICMPV4_CODE.json    36_MPLS_BOS.json
+        11_IPV4_SRC.json       21_ARP_OP.json         37_PBB_ISID.json
+        12_IPV4_DST.json       22_ARP_SPA.json        38_TUNNEL_ID.json
+        13_TCP_SRC_IPv4.json   23_ARP_TPA.json        41_PBB_UCA.json
+        13_TCP_SRC_IPv6.json   24_ARP_SHA.json
+        14_TCP_DST_IPv4.json   25_ARP_THA.json
+
+        ryu/tests/switch/of14/group:
+        00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+        01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
+
+        ryu/tests/switch/of14/match:
+        00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
+        02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
+        02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
+        03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
+        03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+        04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
+        04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+        05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+        06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+        06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+        07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+        08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+        08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
+        09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
+        09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
+        10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
+        10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
+        11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
+        11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
+        12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+        12_IPV4_DST_Mask.json  25_ARP_THA.json        41_PBB_UCA.json
+        13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
+
+        ryu/tests/switch/of14/meter:
         01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
         01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
         01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
