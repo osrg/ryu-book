@@ -34,13 +34,7 @@ if '__main__' == __name__:
     s2.start([c0])
     s3.start([c0])
 
-    net.terms.append(makeTerm(c0))
-    net.terms.append(makeTerm(s1))
-    net.terms.append(makeTerm(s2))
-    net.terms.append(makeTerm(s3))
-    net.terms.append(makeTerm(h1))
-    net.terms.append(makeTerm(h2))
-    net.terms.append(makeTerm(h3))
+    net.startTerms()
 
     CLI(net)
 
