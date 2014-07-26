@@ -1,41 +1,41 @@
-OF-Configライブラリ
-===================
+OF-Config 라이브러리
+====================
 
-本章では、Ryuに付属しているOF-Configのクライアントライブラリについて
-紹介します。
+이 장에서는 Ryu에 포함 된 OF-Config 클라이언트 라이브러리에 대해
+소개합니다. 
 
-OF-Configプロトコル
--------------------
+OF-Config 프로토콜
+------------------
 
-OF-ConfigはOpenFlowスイッチの管理のための
-プロトコルです。
-NETCONF(RFC 6241)のスキーマとして定義されており、
-論理スイッチ、ポート、キューなどの状態取得や設定を行なうことができます。
+OF-Config는 OpenFlow 스위치의 관리를위한
+프로토콜입니다.
+NETCONF (RFC 6241) 스키마로 정의되며,
+논리 스위치, 포트, 큐 등의 상태 취득이나 설정을 할 수 있습니다.
 
-OpenFlowと同じONFが策定したもので、以下のサイトから仕様が入手できます。
+OpenFlow와 같은 ONF가 개발 한 것으로, 다음 사이트에서 사양이 사용할 수 있습니다. 
 
 https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config
 
-本ライブラリはOF-Config 1.1.1に準拠しています。
+이 라이브러리는 OF-Config 1.1.1을 준수하고 있습니다. 
 
 .. NOTE::
-    現在Open vSwitchはOF-Configをサポートしていませんが、
-    同じ目的のためにOVSDBというサービスを提供しています。
-    OF-Configは比較的新しい規格で、Open vSwitchがOVSDBを
-    実装したときにはまだ存在していませんでした。
+    현재 Open vSwitch는 OF-Config를 지원하지 않지만
+    같은 목적을 위해 OVSDB하는 서비스를 제공하고 있습니다.
+    OF-Config 비교적 새로운 표준으로 Open vSwitch가 OVSDB을
+    구현했을 때 아직 존재하지 않았습니다.
 
-    OVSDBプロトコルはRFC 7047として仕様が公開されていますが、
-    事実上Open vSwitch専用のプロトコルとなっています。
-    OF-Configはまだ登場から日が浅いですが、将来的に
-    多くのOpenFlowスイッチで実装されることが期待されます。
+    OVSDB 프로토콜은 RFC 7047으로 사양이 공개되어 있습니다 만,
+    사실상 Open vSwitch 전용 프로토콜이되고 있습니다.
+    OF-Config는 아직 등장에서 일천하지만 미래에
+    많은 OpenFlow 스위치에서 구현 될 것으로 예상됩니다. 
 
-ライブラリ構成
---------------
+라이브러리 구성
+---------------
 
-ryu.lib.of_config.capable_switch.OFCapableSwitchクラス
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ryu.lib.of_config.capable_switch.OFCapableSwitch 클래스
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-NETCONFセッションを扱うためのクラスです。
+NETCONF 세션을 처리하기 위한 클래스입니다.
 
 .. rst-class:: sourcecode
 
@@ -43,16 +43,16 @@ NETCONFセッションを扱うためのクラスです。
 
         from ryu.lib.of_config.capable_switch import OFCapableSwitch
 
-ryu.lib.of_config.classesモジュール
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ryu.lib.of_config.classes 모듈
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-設定内容をpythonオブジェクトとして扱うためのクラス群を提供する
-モジュールです。
+설정 내용을 python 객체로 취급하기위한 클래스 군을 제공하는
+모듈입니다. 
 
 .. NOTE::
-    クラス名は基本的にOF-Config 1.1.1のyang specification上の
-    groupingキーワードで使われている名前と同じです。
-    例. OFPortType
+    클래스 이름은 기본적으로 OF-Config 1.1.1 yang specification에
+    grouping 키워드로 사용되는 이름과 동일합니다.
+    예. OFPortType
 
 .. rst-class:: sourcecode
 
@@ -60,15 +60,15 @@ ryu.lib.of_config.classesモジュール
 
         import ryu.lib.of_config.classes as ofc
 
-使用例
-------
+예제 
+----
 
-スイッチへの接続
-^^^^^^^^^^^^^^^^
+스위치에 연결
+^^^^^^^^^^^^^
 
-SSHトランスポートを使用してスイッチに接続します。
-unknown_host_cbには、不明なSSHホスト鍵の処理を行なうコールバック関数を
-指定しますが、ここでは無条件に接続を継続するようにしています。
+SSH 트랜스 포트를 사용하여 스위치에 연결합니다.
+unknown_host_cb에는 알 수없는 SSH 호스트 키를 처리하는 콜백 함수를
+입니다 만, 여기에서는 무조건 연결을 계속하도록하고 있습니다. 
 
 .. rst-class:: sourcecode
 
@@ -84,10 +84,10 @@ unknown_host_cbには、不明なSSHホスト鍵の処理を行なうコール�
 GET
 ^^^
 
-NETCONF GETを使用して状態を取得する例です。
-全てのポートの
-/resources/port/resource-idと
-/resources/port/current-rateを表示します。
+NETCONF GET을 사용하여 상태를 가져 오는 방법입니다.
+모든 포트
+/resources/port/resource-id와
+/resources/port/current-rate를 표시합니다. 
 
 .. rst-class:: sourcecode
 
@@ -100,16 +100,16 @@ NETCONF GETを使用して状態を取得する例です。
 GET-CONFIG
 ^^^^^^^^^^
 
-NETCONF GET-CONFIGを使用して設定を取得する例です。
+NETCONF GET-CONFIG를 사용하여 설정을 검색하는 예입니다. 
 
 .. NOTE::
-    runningというのはNETCONFのデータストアで、現在動作している設定です。
-    実装によりますが、他にもstartup(デバイスの起動時に読み込まれる設定)
-    やcandidate(候補設定)などのデータストアが利用できます。
+    unning하는 것은 NETCONF의 데이터 저장소에서 현재 운영하고있는 설정입니다.
+    구현에 따라, 그 밖에도 startup (장치를 시작할 때로드되는 기타 설정)
+    나 candidate (후보 설정) 등의 데이터 스토어를 이용할 수 있습니다. 
 
-全てのポートの
-/resources/port/resource-idと
-/resources/port/configuration/admin-stateを表示します。
+모든 포트
+/resources/port/resource-id와
+/resources/port/configuration/admin-state를 표시합니다.
 
 .. rst-class:: sourcecode
 
@@ -122,16 +122,16 @@ NETCONF GET-CONFIGを使用して設定を取得する例です。
 EDIT-CONFIG
 ^^^^^^^^^^^
 
-NETCONF EDIT-CONFIGを使用して設定を変更する例です。
-基本的に、GET-CONFIGで取得した設定を編集してEDIT-CONFIGで
-送り返す、という手順になります。
+NETCONF EDIT-CONFIG를 사용하여 설정을 변경하는 예입니다. 
+기본적으로 GET-CONFIG에서 얻은 설정을 편집하여 EDIT-CONFIG에서
+반송라는 단계입니다. 
 
 .. NOTE::
-    プロトコル上はEDIT-CONFIGで設定の部分的な編集を行なうことも
-    できますが、このような使い方が無難です。
+    프로토콜상은 EDIT-CONFIG 설정 부분적인 편집을 할 수도
+    수 있지만 이러한 방법이 무난합니다. 
 
-全てのポートの
-/resources/port/configuration/admin-stateをdownに設定します。
+모든 포트
+/resources/port/configuration/admin-state를 down으로 설정합니다.
 
 .. rst-class:: sourcecode
 

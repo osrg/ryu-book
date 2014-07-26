@@ -1,49 +1,50 @@
 .. _ch_switch_test_tool:
 
-OpenFlowスイッチテストツール
-============================
+OpenFlow 스위치 테스트 도구
+===========================
 
-本章では、OpenFlowスイッチのOpenFlow仕様への準拠の度合いを検証する、
-テストツールの使用方法を解説します。
+이 장에서는 OpenFlow 스위치 OpenFlow 사양 준수의 정도를 검증하는
+테스트 도구의 사용 방법을 설명합니다. 
 
 
-テストツールの概要
+테스트 도구의 개요 
 ------------------
 
-本ツールは、テストパターンファイルに従って試験対象のOpenFlowスイッチに
-対してフローエントリやメーターエントリの登録／パケット印加を実施し、
-OpenFlowスイッチのパケット書き換えや転送(または破棄)の処理結果と、
-テストパターンファイルに記述された「期待する処理結果」の比較を行うことにより、
-OpenFlowスイッチのOpenFlow仕様への対応状況を検証するテストツールです。
 
-ツールは、OpenFlowバージョン1.3のFlowModメッセージおよびMeterModメッセージの
-試験に対応しています。
+본 도구는 테스트 패턴에 따라 시험 할 OpenFlow 스위치
+대해 흐름 항목 및 측정기 항목의 등록 / 패킷인가를 실시하고,
+OpenFlow 스위치의 패킷 재 작성 및 전송 (또는 삭제)의 처리 결과와
+테스트 패턴 파일에 포함 된 「기대하는 처리 결과」의 비교를 실시하는 것으로,
+OpenFlow 스위치 OpenFlow 사양에의 대응 상황을 확인하는 테스트 도구입니다.
+
+도구는 OpenFlow 버전 1.3 FlowMod 메시지 및 MeterMod 메시지
+시험에 대응하고 있습니다. 
 
 
 ============================== ================================
-試験対象メッセージ             対応パラメータ
+시험 대상 메시지               대응 매개변수
 ============================== ================================
-OpenFlow1.3 FlowModメッセージ  match (IN_PHY_PORTを除く)
+OpenFlow1.3 FlowMod 메시지     match (IN_PHY_PORT 제외)
 
-                               actions (SET_QUEUE、GROUPを除く)
+                               actions (SET_QUEUE、GROUP 제외)
 
-OpenFlow1.3 MeterModメッセージ すべて
+OpenFlow1.3 MeterMod 메시지    모두
 ============================== ================================
 
 
-印加するパケットの生成やパケット書き換え結果の確認などに「 :ref:`ch_packet_lib` 」を利用しています。
+인가하는 패킷의 생성과 패킷 재 작성 결과의 확인 등에 「 : ref :`ch_packet_lib` 」 를 사용하고 있습니다. 
 
 
-動作概要
-^^^^^^^^
+동작 개요
+^^^^^^^^^
 
-試験実行イメージ
+시험 실행 이미지 
 """"""""""""""""
 
-テストツールを実行した際の動作イメージを示します。テストパターンファイル
-には、「登録するフローエントリもしくはメーターエントリ」「印加パケット」
-「期待する処理結果」が記述されます。また、ツール実行のための環境設定に
-ついては後述( `ツール実行環境`_ を参照)します。
+테스트 도구를 실행했을 때의 동작 이미지를 보여줍니다. 테스트 패턴 파일
+에는 「등록 흐름 항목 또는 미터 항목」 「인가 패킷」
+「기대하는 처리 결과」가 설명됩니다. 또한 도구 실행을위한 환경 설정
+내용은 뒤에 서술 (`도구 실행 환경`_ 참조)합니다. 
 
 
 .. only:: latex
@@ -63,12 +64,12 @@ OpenFlow1.3 MeterModメッセージ すべて
         :align: center
 
 
-試験結果の出力イメージ
-""""""""""""""""""""""
+시험 결과의 출력 이미지 
+"""""""""""""""""""""""
 
-指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果
-(OK／ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。
-また、試験全体でのOK／ERROR数および発生したERRORの内訳も出力します。
+지정된 테스트 패턴 테스트 항목을 순서대로 수행하고 시험 결과
+(OK/ERROR)를 출력합니다. 시험 결과가 ERROR의 경우 오류 정보를 함께 출력합니다.
+또한 시험 전체의 OK/ERROR 수 및 발생한 ERROR 내역도 출력합니다. 
 
 
 .. rst-class:: console
@@ -106,20 +107,20 @@ OpenFlow1.3 MeterModメッセージ すべて
     OK(6) / ERROR(4)
 
 
-使用方法
---------
+사용 방법 
+---------
 
-テストツールの使用方法を解説します。
+테스트 도구의 사용 방법을 설명합니다. 
 
 
-テストパターンファイル
-^^^^^^^^^^^^^^^^^^^^^^
+테스트 패턴 
+^^^^^^^^^^^
 
-試験したいテストパターンに応じたテストパターンファイルを作成する必要が
-あります。
+시험하려는 테스트 패턴에 따라 적절히 테스트 패턴 파일을 만들어야
+있습니다.
 
-テストパターンファイルは拡張子を「.json」としたテキストファイルです。
-以下の形式で記述します。
+테스트 패턴 파일 확장자를 「. json」고 말했다 텍스트 파일입니다.
+다음의 형식으로 작성합니다. 
 
 
 .. rst-class:: sourcecode
@@ -127,68 +128,68 @@ OpenFlow1.3 MeterModメッセージ すべて
 ::
 
     [
-        "xxxxxxxxxx",                    # 試験項目名
+        "xxxxxxxxxx",                    # 시험 항목 이름 
         {
-            "description": "xxxxxxxxxx", # 試験内容の説明
+            "description": "xxxxxxxxxx", # 시험 내용 설명 
             "prerequisite": [
                 {
-                    "OFPFlowMod": {...}  # 登録するフローエントリもしくはメーターエントリ
-                },                       # (RyuのOFPFlowModもしくはOFPMeterModを
-                {                        #  json形式で記述)
-                    "OFPMeterMod": {...} #  期待する処理結果が
-                },                       #  パケット転送(actions=output)の場合は
-                {...}                    #  出力ポート番号に「2」を指定してください
+                    "OFPFlowMod": {...}  # 등록하는 흐름 항목 또는 미터 항목 
+                },                       # (Ryu의 OFPFlowMod 또는 OFPMeterMod을 
+                {                        #  json 형식으로 작성) 
+                    "OFPMeterMod": {...} #  기대할 처리 결과가 
+                },                       #  패킷 전송 (actions = output)의 경우 
+                {...}                    #  출력 포트 번호에 「2」를 지정하십시오
             ],
             "tests": [
                 {
-                    # 印加パケット
-                    # 1回だけ印加するのか一定時間連続して印加し続けるのかに応じて
-                    # (A)(B)のいずれかを記述
-                    #  (A) 1回だけ印加
+                    # 인가 패킷
+                    # 1 번만 적용할지 일정 시간 연속하여인가 계속 여부에 따라 
+                    # (A)(B) 중 하나를 설명
+                    #  (A) 1번 인가
                     "ingress": [
-                        "ethernet(...)", # (Ryuパケットライブラリのコンストラクタの形式で記述)
+                        "ethernet(...)", # (Ryu 패킷 라이브러리 생성자의 형식으로 작성) 
                         "ipv4(...)",
                         "tcp(...)"
                     ],
-                    #  (B) 一定時間連続して印加
+                    #  (B) 일정 시간 연속 인가
                     "ingress": {
                         "packets":{
                             "data":[
-                                "ethernet(...)", # (A)と同じ
+                                "ethernet(...)", # (A)와 동일
                                 "ipv4(...)",
                                 "tcp(...)"
                             ],
-                            "pktps": 1000,       # 毎秒印加するパケット数を指定
-                            "duration_time": 30  # 連続印加時間を秒単位で指定
+                            "pktps": 1000,       # 초당 인가하는 패킷 수를 지정 
+                            "duration_time": 30  # 연속 인가 시간을 초 단위로 지정 
                         }
                     },
 
-                    # 期待する処理結果
-                    # 処理結果の種別に応じて(a)(b)(c)(d)のいずれかを記述
-                    #  (a) パケット転送(actions=output:X)の確認試験
-                    "egress": [          # 期待する転送パケット
+                    # 기대할 처리 결과
+                    # 처리 결과의 종별에 따라 (a) (b) (c) (d) 중 하나를 설명 
+                    # (a) 패킷 전송 (actions = output : X)의 확인 시험 
+                    "egress": [          # 기대할 전송 패킷 
                         "ethernet(...)",
                         "ipv4(...)",
                         "tcp(...)"
                     ]
-                    #  (b) パケットイン(actions=CONTROLLER)の確認試験
-                    "PACKET_IN": [       # 期待するPacket-Inデータ
+                    #  (b) 패킷 인 (actions = CONTROLLER)의 확인 시험 
+                    "PACKET_IN": [       # 기대할 Packet-In 데이터 
                         "ethernet(...)",
                         "ipv4(...)",
                         "tcp(...)"
                     ]
-                    #  (c) table-missの確認試験
-                    "table-miss": [      # table-missとなることを期待するフローテーブルID
+                    #  (c) table-miss 확인 시험
+                    "table-miss": [      # table-miss이되는 것을 기대하는 흐름 테이블 ID
                         0
                     ]
-                    #  (d) パケット転送(actions=output:X)時スループットの確認試験
+                    #  (d) 패킷 전송 (actions = output : X) 때 처리량의 확인 시험
                     "egress":[
                         "throughput":[
                             {
-                                "OFPMatch":{   # スループット計測用に
-                                  ...          # 補助SWに登録される
-                                },             # フローエントリのMatch条件
-                                "kbps":1000    # 期待するスループットをKbps単位で指定
+                                "OFPMatch":{   # 처리량 측정에 
+                                  ...          # 보조 SW에 등록 된 
+                                },             # 흐름 항목 Match 조건 
+                                "kbps":1000    # 예상 처리량을 Kbps 단위로 지정 
                             },
                             {...},
                             {...}
@@ -198,30 +199,30 @@ OpenFlow1.3 MeterModメッセージ すべて
                 {...},
                 {...}
             ]
-        },                               # 試験1
-        {...},                           # 試験2
-        {...}                            # 試験3
+        },                               # 시험1
+        {...},                           # 시험2
+        {...}                            # 시험3
     ]
 
-印加パケットとして「(B) 一定時間連続して印加」を、
-期待する処理結果として「(d) パケット転送(actions=output:X)時スループットの確認試験」を
-それぞれ記述することにより、試験対象SWのスループットを計測することができます。
+인가 패킷으로 「(B) 일정 시간 연속하여인가」를,
+기대하는 처리 결과로 「(d) 패킷 전송 (actions = output : X) 때 처리량의 확인 시험」을
+각각 작성하여 시험 대상 SW의 처리량을 측정 할 수 있습니다. 
 
 
 .. NOTE::
 
-    Ryuのソースツリーにはサンプルテストパターンとして、OpenFlow1.3 FlowMod
-    メッセージのmatch／actionsに指定できる各パラメータ、ならびにMeterMod
-    メッセージの各パラメータがそれぞれ正常に動作するかを確認する
-    テストパターンファイルが用意されています。
+    Ryu 소스 트리에는 샘플 테스트 패턴으로 OpenFlow1.3 FlowMod
+    메시지 match / actions 지정할 수있는 매개 변수 및 MeterMod
+    메시지 매개 변수가 각각 정상적으로 작동하는지 확인
+    테스트 패턴 파일이 포함되어 있습니다. 
 
         ryu/tests/switch/of13
 
 
-ツール実行環境
+도구 실행 환경
 ^^^^^^^^^^^^^^
 
-テストツール実行のための環境は次のとおりです。
+테스트 도구 실행을위한 환경은 다음과 같습니다. 
 
 
 .. only:: latex
@@ -241,43 +242,43 @@ OpenFlow1.3 MeterModメッセージ すべて
         :align: center
 
 
-補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。
+보조 스위치로 다음 동작을 완료 할 수있다 OpenFlow 스위치가 필요합니다. 
 
-* actions=CONTROLLERのフローエントリ登録
+* actions=CONTROLLER의 흐름 항목 등록 
 
-* スループット計測用のフローエントリ登録
+* 처리량 측정을위한 흐름 항목 등록 
 
-* actions=CONTROLLERのフローエントリによるPacket-Inメッセージ送信
+* actions=CONTROLLER의 흐름 항목에 의한 Packet-In 메시지 보내기 
 
-* Packet-Outメッセージ受信によるパケット送信
+* Packet-Out 메시지 수신에 의한 패킷 전송 
 
 
 .. NOTE::
 
-    Open vSwitchを試験対象スイッチとしたツール実行環境をmininet上で実現する
-    環境構築スクリプトが、Ryuのソースツリーに用意されています。
+    Open vSwitch를 시험 대상 스위치 한 도구 실행 환경을 mininet에서 실현
+    환경 구축 스크립트가 Ryu 소스 트리에 포함되어 있습니다. 
 
         ryu/tests/switch/run_mininet.py
 
-    スクリプトの使用例を「 `テストツール使用例`_ 」に記載しています。
+    스크립트 예제를 「 `테스트 도구 사용 예`_ 」에 기재되어 있습니다. 
 
 
 
-テストツールの実行方法
-^^^^^^^^^^^^^^^^^^^^^^
+테스트 도구 실행 방법
+^^^^^^^^^^^^^^^^^^^^^
 
-テストツールはRyuのソースツリー上で公開されています。
+테스트 도구 Ryu 소스 트리에 게시되어 있습니다. 
 
     =============================== ===============================
-    ソースコード                    説明
+    소스 코드                       설명
     =============================== ===============================
-    ryu/tests/switch/tester.py      テストツール
-    ryu/tests/switch/of13           テストパターンファイルのサンプル
-    ryu/tests/switch/run_mininet.py 試験環境構築スクリプト
+    ryu/tests/switch/tester.py      테스트 도구
+    ryu/tests/switch/of13           테스트 패턴 샘플
+    ryu/tests/switch/run_mininet.py 시험 환경 구축 스크립트
     =============================== ===============================
 
 
-テストツールは次のコマンドで実行します。
+테스트 도구는 다음 명령을 실행합니다. 
 
 .. rst-class:: console
 
@@ -290,51 +291,51 @@ OpenFlow1.3 MeterModメッセージ すべて
 
 
     ==================== ======================================== =====================
-    オプション           説明                                     デフォルト値
+    옵션                 설명                                     기본값
     ==================== ======================================== =====================
-    --test-switch-target 試験対象スイッチのデータパスID           0000000000000001
-    --test-switch-tester 補助スイッチのデータパスID               0000000000000002
-    --test-switch-dir    テストパターンファイルのディレクトリパス ryu/tests/switch/of13
+    --test-switch-target 시험되는 스위치의 데이터 경로 ID         0000000000000001
+    --test-switch-tester 보조 스위치의 데이터 경로 ID             0000000000000002
+    --test-switch-dir    테스트 패턴 파일의 디렉토리 경로         ryu/tests/switch/of13
     ==================== ======================================== =====================
 
 
 .. NOTE::
 
-    テストツールはRyuアプリケーションとしてryu.base.app_manager.RyuAppを
-    継承して作成されているため、他のRyuアプリケーションと同様に--verbose
-    オプションによるデバッグ情報出力等にも対応しています。
+    테스트 도구 Ryu 응용 프로그램으로 ryu.base.app_manager.RyuApp을
+    상속 만들어 있기 때문에, 다른 Ryu 응용 프로그램과 마찬가지로 --verbose
+    옵션으로 디버깅 정보 출력 등에도 대응하고 있습니다. 
 
 
 
-テストツールの起動後、試験対象スイッチと補助スイッチがコントローラに
-接続されると、指定したテストパターンファイルを元に試験が開始されます。
+테스트 도구를 시작한 후 시험 대상 스위치와 보조 스위치 컨트롤러
+연결되면 지정된 테스트 패턴을 바탕으로 시험이 시작됩니다. 
 
 
 
-テストツール使用例
-------------------
+테스트 도구 사용 예 
+-------------------
 
-サンプルテストパターンやオリジナルのテストパターンファイルを用いた
-テストツールの実行手順を紹介します。
-
-
-サンプルテストパターンの実行手順
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、
-FlowModメッセージのmatch／actionsの一通りの動作確認ならびにMeterModメッセージ
-の動作確認を行う手順を示します。
-
-本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)
-を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。
-VMイメージ利用のための環境設定やログイン方法等は「 :ref:`ch_switching_hub` 」
-を参照してください。
+샘플 테스트 패턴과 원본 테스트 패턴을 이용한
+테스트 도구의 실행 단계를 소개합니다.
 
 
+샘플 테스트 패턴의 실행 단계
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. 試験環境の構築
+Ryu 소스 트리의 샘플 테스트 패턴 (ryu/tests/switch/of13)을 이용하여
+FlowMod 메시지 match / actions의 대충의 동작 확인 및 MeterMod 메시지
+동작 확인하는 절차를 보여줍니다.
 
-    VM環境にログインし、試験環境構築スクリプトを実行します。
+이 단계에서는 시험 환경 시험 환경 구축 스크립트 (ryu/tests/switch/run_mininet.py)
+를 이용하여 구축하기로합니다. 따라서 시험되는 스위치는 Open vSwitch입니다.
+VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:`ch_switching_hub` 」
+을 참조하십시오.
+
+
+
+1. 시험 환경 구축
+
+    VM 환경에 로그인하고 시험 환경 구축 스크립트를 실행합니다.
 
     .. rst-class:: console
 
@@ -343,7 +344,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
 
 
-    netコマンドの実行結果は次の通りです。
+    net 명령의 실행 결과는 다음과 같습니다.
 
     .. rst-class:: console
 
@@ -356,9 +357,9 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 
 
-2. テストツール実行
+2. 테스트 도구 실행
 
-    テストツール実行のため、コントローラのxtermを開きます。
+    테스트 도구 실행을위한 컨트롤러의 xterm을 엽니다.
 
     .. rst-class:: console
 
@@ -367,12 +368,12 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         mininet> xterm c0
 
 
-    「Node: c0 (root)」のxtermから、テストツールを実行します。
-    この際、テストパターンファイルのディレクトリとして、
-    サンプルテストパターンのディレクトリ(ryu/tests/switch/of13)を指定します。
-    なお、mininet環境の試験対象スイッチと補助スイッチのデータパスIDはそれぞれ
-    --test-switch-target／--test-switch-testerオプションのデフォルト値と
-    なっているため、オプション指定を省略しています。
+    「Node: c0 (root)」의 xterm에서 테스트 도구를 실행합니다.
+    이때 테스트 패턴 파일 디렉터리로
+    샘플 테스트 패턴의 디렉토리 (ryu/tests/switch/of13)을 지정합니다.
+    또한 mininet 환경 시험 대상 스위치와 보조 스위치의 데이터 경로 ID는 각각
+    --test-switch-target/--test-switch-tester 옵션 기본값과
+    되어 있기 때문에 옵션을 생략합니다.
 
     Node: c0:
 
@@ -383,8 +384,8 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
 
 
-    ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチが
-    コントローラに接続されるまで待機します。
+    도구를 실행하면 다음과 같이 표시되고 시험되는 스위치와 보조 스위치가
+    컨트롤러에 연결될 때까지 기다립니다.
 
 
     .. rst-class:: console
@@ -405,8 +406,8 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 
 
-    試験対象スイッチと補助スイッチがコントローラに接続されると、
-    試験が開始されます。
+    시험 대상 스위치와 보조 스위치가 컨트롤러에 연결되면
+    시험이 시작됩니다.
 
 
     .. rst-class:: console
@@ -437,20 +438,20 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         ...
 
 
-    ryu/tests/switch/of13配下の全てのサンプルテストパターンファイルの試験
-    が完了すると、テストツールは終了します。
+    ryu/tests/switch/of13 부하의 모든 샘플 테스트 패턴의 시험
+    가 완료되면 테스트 도구는 종료됩니다.
 
 
-<参考>
+<참고>
 """"""
 
-    サンプルテストパターンファイル一覧
+    샘플 테스트 패턴 파일 목록
 
-        match／actionsの各設定項目に対応するフローエントリを登録し、
-        フローエントリにmatchする(またはmatchしない)複数パターンのパケット
-        を印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは
-        優先度変更を行うメーターエントリを登録し、メーターエントリにmatch
-        するパケットを連続的に印加するテストパターンが用意されています。
+        match／actions의 각 설정 항목에 해당하는 흐름 항목을 등록하고
+        흐름 항목에 match (또는 match하지 않는) 여러 패턴의 패킷
+        을 인가하는 테스트 패턴과 일정 빈도 이상인가에 대해 삭제 또는
+        우선 순위 변경할 미터 항목을 등록하고 계량 항목에 match
+        패킷을 연속적으로인가하는 테스트 패턴이 준비되어 있습니다.
 
 
     .. rst-class:: console
@@ -518,38 +519,38 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
 
 
-オリジナルテストパターンの実行手順
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+기존 테스트 패턴의 실행 단계
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-次に、オリジナルのテストパターンを作成してテストツールを実行する手順を示します。
+이제 원본의 테스트 패턴을 만들고 테스트 도구를 실행하는 방법을 설명합니다.
 
-例として、OpenFlowスイッチがルータ機能を実現するために必要なmatch／actionsを
-処理する機能を備えているかを確認するテストパターンを作成します。
+예를 들어, OpenFlow 스위치가 라우터 기능을 실현하기 위해 필요한 match / actions을
+처리하는 기능을 가지고 있는지 확인하는 테스트 패턴을 만듭니다.
 
 
-1．テストパターンファイル作成
+1．테스트 패턴 생성
 
-    ルータがルーティングテーブルに従ってパケットを転送する機能を実現する
-    以下のフローエントリが正しく動作するかを試験します。
+    라우터가 라우팅 테이블에 따라 패킷을 전송하는 기능을 제공하는
+    다음 흐름 항목이 제대로 작동하는지 시험합니다.
 
 
     =================================== ==================================================
     match                               actions
     =================================== ==================================================
-    宛先IPアドレス帯「192.168.30.0/24」 送信元MACアドレスを「aa:aa:aa:aa:aa:aa」に書き換え
+    대상IP주소 범위 「192.168.30.0/24」 원본 MAC주소를 「aa:aa:aa:aa:aa:aa」로 수정
 
-                                        宛先MACアドレスを「bb:bb:bb:bb:bb:bb」に書き換え
+                                        대상 MAC주소를 「bb:bb:bb:bb:bb:bb」로 수정
 
-                                        TTL減算
+                                        TTL 빼기
 
-                                        パケット転送
+                                        패킷 전송
     =================================== ==================================================
 
 
-    このテストパターンを実行するテストパターンファイルを作成します。
+    이 테스트 패턴을 실행하는 테스트 패턴 파일을 만듭니다.
 
 
-ファイル名： ``sample_test_pattern.json``
+파일 이름： ``sample_test_pattern.json``
 
 .. rst-class:: sourcecode
 
@@ -642,19 +643,19 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
     ]
 
 
-2．試験環境構築
+2．시험 환경 구축
 
-    試験環境構築スクリプトを用いて試験環境を構築します。手順は
-    `サンプルテストパターンの実行手順`_ を参照してください。
+    시험 환경 구축 스크립트를 사용하여 시험 환경을 구축합니다. 절차는
+    `샘플 테스트 패턴의 실행 단계`_ 을 참조하십시오.
 
 
-3．テストツール実行
+3．테스트 도구 실행
 
-    コントローラのxtermから、先ほど作成したオリジナルのテストパターンファイル
-    を指定してテストツールを実行します。
-    なお、--test-switch-dirオプションはディレクトリだけでなくファイルを直接
-    指定することも可能です。また、送受信パケットの内容を確認するため
-    --verboseオプションを指定しています。
+    컨트롤러 xterm에서 방금 만든 원래의 테스트 패턴 파일
+    를 지정하여 테스트 도구를 실행합니다.
+    또한, --test-switch-dir 옵션은 디렉토리뿐만 아니라 파일을 직접
+    지정할 수 있습니다. 또한 송수신 패킷의 내용을 확인하기 위해
+    --verbose 옵션을 지정합니다.
 
 
     Node: c0:
@@ -666,13 +667,13 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 
 
-    試験対象スイッチと補助スイッチがコントローラに接続されると、試験が
-    開始されます。
+    시험 대상 스위치와 보조 스위치가 컨트롤러에 연결되면 시험이
+    시작됩니다.
 
-    「dpid=0000000000000002 : receive_packet...」のログ出力から、テスト
-    パターンファイルのegressパケットとして設定した、期待する出力パケット
-    が送信されたことが分かります。
-    なお、ここではテストツールが出力したログのみを抜粋しています。
+    「dpid=0000000000000002 : receive_packet...」로깅에서 테스트
+    패턴 파일 egress 패킷으로 설정 한 예상 출력 패킷
+    가 전송 된 것을 알 수 있습니다.
+    또한, 여기에서는 테스트 도구가 출력 한 로그만을 발췌하고 있습니다.
 
     .. rst-class:: console
 
@@ -703,9 +704,9 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
         ---  Test end  ---
 
 
-    実際にOpenFlowスイッチに登録されたフローエントリは以下の通りです。
-    テストツールによって印加されたパケットがフローエントリにmatchし、
-    n_packetsがカウントアップされていることが分かります。
+    실제로 OpenFlow 스위치에 등록 된 흐름 항목은 다음과 같습니다.
+    테스트 도구에 의해 인가 된 패킷 흐름 항목에 match하고
+    n_packets가 올라 가게되는 것을 알 수 있습니다.
 
 
     Node: s1:
@@ -719,47 +720,47 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
          cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa->eth_src,set_field:bb:bb:bb:bb:bb:bb->eth_dst,dec_ttl,output:2
 
 
-エラーメッセージ一覧
-^^^^^^^^^^^^^^^^^^^^
+오류 메시지 목록
+^^^^^^^^^^^^^^^^
 
-本ツールで出力されるエラーメッセージの一覧を示します。
+이 도구에서 출력되는 오류 메시지 목록을 보여줍니다.
 
 ======================================================================== ============================================================================================================
-エラーメッセージ                                                         説明
+오류 메시지                                                              설명
 ======================================================================== ============================================================================================================
-Failed to initialize flow tables: barrier request timeout.               前回試験の試験対象SW上のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
-Failed to initialize flow tables: [err_msg]                              前回試験の試験対象SW上のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
-Failed to initialize flow tables of tester_sw: barrier request timeout.  前回試験の補助SW上のフローエントリ削除に失敗(Barrier Requestのタイムアウト)
-Failed to initialize flow tables of tester_sw: [err_msg]                 前回試験の補助SW上のフローエントリ削除に失敗(FlowModに対するErrorメッセージ受信)
-Failed to add flows: barrier request timeout.                            試験対象SWに対するフローエントリ登録に失敗(Barrier Requestのタイムアウト)
-Failed to add flows: [err_msg]                                           試験対象SWに対するフローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
-Failed to add flows to tester_sw: barrier request timeout.               補助SWに対するフローエントリ登録に失敗(Barrier Requestのタイムアウト)
-Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録に失敗(FlowModに対するErrorメッセージ受信)
-Failed to add meters: barrier request timeout.                           試験対象SWに対するメーターエントリ登録に失敗(Barrier Requestのタイムアウト)
-Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録に失敗(MeterModに対するErrorメッセージ受信)
-Added incorrect flows: [flows]                                           試験対象SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
-Failed to add flows: flow stats request timeout.                         試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
-Failed to add flows: [err_msg]                                           試験対象SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Added incorrect meters: [meters]                                         試験対象SWに対するメーターエントリ登録確認エラー(想定外のメーターエントリが登録された)
-Failed to add meters: meter config stats request timeout.                試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestのタイムアウト)
-Failed to add meters: [err_msg]                                          試験対象SWに対するメーターエントリ登録確認に失敗(MeterConfigStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from target: request timeout.               試験対象SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from target: [err_msg]                      試験対象SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Failed to request port stats from tester: request timeout.               補助SWのPortStats取得に失敗(PortStats Requestのタイムアウト)
-Failed to request port stats from tester: [err_msg]                      補助SWのPortStats取得に失敗(PortStats Requestに対するErrorメッセージ受信)
-Received incorrect [packet]                                              期待した出力パケットの受信エラー(異なるパケットを受信)
-Receiving timeout: [detail]                                              期待した出力パケットの受信に失敗(タイムアウト)
-Faild to send packet: barrier request timeout.                           パケット印加に失敗(Barrier Requestのタイムアウト)
-Faild to send packet: [err_msg]                                          パケット印加に失敗(Packet-Outに対するErrorメッセージ受信)
-Table-miss error: increment in matched_count.                            table-miss確認エラー(フローにmatchしている)
-Table-miss error: no change in lookup_count.                             table-miss確認エラー(パケットが確認対象のフローテーブルで処理されていない)
-Failed to request table stats: request timeout.                          table-missの確認に失敗(TableStats Requestのタイムアウト)
-Failed to request table stats: [err_msg]                                 table-missの確認に失敗(TableStats Requestに対するErrorメッセージ受信)
-Added incorrect flows to tester_sw: [flows]                              補助SWに対するフローエントリ登録確認エラー(想定外のフローエントリが登録された)
-Failed to add flows to tester_sw: flow stats request timeout.            補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
-Failed to add flows to tester_sw: [err_msg]                              補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Failed to request flow stats: request timeout.                           スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestのタイムアウト)
-Failed to request flow stats: [err_msg]                                  スループット確認時、補助SWに対するフローエントリ登録確認に失敗(FlowStats Requestに対するErrorメッセージ受信)
-Received unexpected throughput: [detail]                                 想定するスループットからかけ離れたスループットを計測
-Disconnected from switch                                                 試験対象SWもしくは補助SWからのリンク断発生
+Failed to initialize flow tables: barrier request timeout.               지난번 시험 시험 대상 SW의 흐름 항목 삭제에 실패 (Barrier Request 시간 제한)
+Failed to initialize flow tables: [err_msg]                              마지막 시험 시험 대상 SW의 흐름 항목 삭제에 실패 (FlowMod 대한 Error 메시지 수신)
+Failed to initialize flow tables of tester_sw: barrier request timeout.  지난번 시험의 보조 SW의 흐름 항목 삭제에 실패 (Barrier Request 시간 제한)
+Failed to initialize flow tables of tester_sw: [err_msg]                 마지막 시험 보조 SW의 흐름 항목 삭제에 실패 (FlowMod 대한 Error 메시지 수신)
+Failed to add flows: barrier request timeout.                            시험 대상 SW에 대한 흐름 항목 등록에 실패 (Barrier Request 시간 제한)
+Failed to add flows: [err_msg]                                           시험 대상 SW에 대한 흐름 항목 등록에 실패 (FlowMod 대한 Error 메시지 수신)
+Failed to add flows to tester_sw: barrier request timeout.               보조 SW에 대한 흐름 항목 등록에 실패 (Barrier Request 시간 제한)
+Failed to add flows to tester_sw: [err_msg]                              보조 SW에 대한 흐름 항목 등록에 실패 (FlowMod 대한 Error 메시지 수신)
+Failed to add meters: barrier request timeout.                           시험 대상 SW에 대한 미터 항목 등록에 실패 (Barrier Request 시간 제한)
+Failed to add meters: [err_msg]                                          시험 대상 SW에 대한 미터 항목 등록에 실패 (MeterMod 대한 Error 메시지 수신)
+Added incorrect flows: [flows]                                           시험 대상 SW에 대한 흐름 항목 등록 확인 오류 (예기치 않은 흐름 항목이 등록 된)
+Failed to add flows: flow stats request timeout.                         시험 대상 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request 시간 제한)
+Failed to add flows: [err_msg]                                           시험 대상 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request에 대한 Error 메시지 수신)
+Added incorrect meters: [meters]                                         시험 대상 SW에 대한 미터 항목 등록 확인 오류 (예기치 못한 미터 항목이 등록 된)
+Failed to add meters: meter config stats request timeout.                시험 대상 SW에 대한 미터 항목 등록 확인에 실패 (MeterConfigStats Request 시간 제한)
+Failed to add meters: [err_msg]                                          시험 대상 SW에 대한 미터 항목 등록 확인에 실패 (MeterConfigStats Request에 대한 Error 메시지 수신)
+Failed to request port stats from target: request timeout.               시험 대상 SW의 PortStats 가져 오지 (PortStats Request 시간 제한)
+Failed to request port stats from target: [err_msg]                      시험 대상 SW의 PortStats 가져 오지 (PortStats Request에 대한 Error 메시지 수신)
+Failed to request port stats from tester: request timeout.               보조 SW의 PortStats 가져 오지 (PortStats Request 시간 제한)
+Failed to request port stats from tester: [err_msg]                      보조 SW의 PortStats 가져 오지 (PortStats Request에 대한 Error 메시지 수신)
+Received incorrect [packet]                                              기대 한 출력 패킷의 수신 오류 (잘못된 패킷을 수신)
+Receiving timeout: [detail]                                              기대 한 출력 패킷 수신에 실패 (시간 초과)
+Faild to send packet: barrier request timeout.                           패킷인가 실패 (Barrier Request 시간 제한)
+Faild to send packet: [err_msg]                                          패킷인가 실패 (Packet-Out 대한 Error 메시지 수신)
+Table-miss error: increment in matched_count.                            table-miss 확인 오류 (흐름에 match하고있다)
+Table-miss error: no change in lookup_count.                             table-miss 확인 오류 (패킷이 대상의 흐름 테이블에서 처리되지 않은)
+Failed to request table stats: request timeout.                          table-miss 확인에 실패 (TableStats Request 시간 제한)
+Failed to request table stats: [err_msg]                                 table-miss 확인에 실패 (TableStats Request에 대한 Error 메시지 수신)
+Added incorrect flows to tester_sw: [flows]                              보조 SW에 대한 흐름 항목 등록 확인 오류 (예기치 않은 흐름 항목이 등록 된)
+Failed to add flows to tester_sw: flow stats request timeout.            보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request 시간 제한)
+Failed to add flows to tester_sw: [err_msg]                              보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request에 대한 Error 메시지 수신)
+Failed to request flow stats: request timeout.                           처리량 확인시 보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request 시간 제한)
+Failed to request flow stats: [err_msg]                                  처리량 확인시 보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request에 대한 Error 메시지 수신)
+Received unexpected throughput: [detail]                                 상정 처리량에서 동떨어진 처리량을 측정
+Disconnected from switch                                                 시험 대상 SW 또는 보조 SW에서 링크 단선 발생
 ======================================================================== ============================================================================================================
