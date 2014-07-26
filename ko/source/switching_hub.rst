@@ -1,59 +1,58 @@
 .. _ch_switching_hub:
 
-スイッチングハブ
-================
+스위칭 허브
+===========
 
-本章では、簡単なスイッチングハブの実装を題材として、Ryuによるアプリケーションの
-実装方法を解説していきます。
+이 장에서는 간단한 스위칭 허브 구현을 소재로 Ryu하여 응용 프로그램 
+구현 방법을 설명하고 있습니다. 
 
-
-スイッチングハブ
+스위칭 허브
 ----------------
 
-世の中には様々な機能を持つスイッチングハブがありますが、ここでは
-次のような単純な機能を持ったスイッチングハブの実装を見てみます。
+세상에는 다양한 기능을 가진 스위칭 허브가 있습니다만, 여기에서는
+다음과 같은 간단한 기능을 가진 스위칭 허브의 구현을 보고 있습니다.
 
-* ポートに接続されているホストのMACアドレスを学習し、MACアドレステーブル
-  に保持する
-* 学習済みのホスト宛のパケットを受信したら、ホストの接続されているポートに転送する
-* 未知のホスト宛のパケットを受信したら、フラッディングする
+* 포트에 연결되어있는 호스트의 MAC 주소를 학습하고 MAC 주소 테이블
+  을 유지하기
+* 학습된 호스트에게 패킷을 수신하면 호스트 연결되는 포트로 전송
+* 알 수없는 호스트에게 패킷을 수신하면, Flooding
 
-このようなスイッチをRyuを使って実現してみましょう。
-
-
-OpenFlowによるスイッチングハブ
-------------------------------
-
-OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示を受けて、
-次のようなことを行えます。
-
-* 受信したパケットのアドレスを書き換えたり、指定のポートから転送
-* 受信したパケットをコントローラへ転送(Packet-In)
-* コントローラから転送されたパケットを指定のポートから転送(Packet-Out)
-
-これらの機能を組み合わせ、スイッチングハブを実現することが出来ます。
-
-まずは、Packet-Inの機能を利用したMACアドレスの学習です。
-コントローラは、Packet-Inの機能を利用し、スイッチからパケットを受け取る事が出来ます。
-受け取ったパケットを解析し、ホストのMACアドレスや接続されている
-ポートの情報を学習することが出来ます。
-
-学習の後は受信したパケットの転送です。
-パケットの宛先MACアドレスが学習済みのホストのものか検索します。
-検索結果によって次の処理を実行します。
-
-* 学習済みのホストの場合…Packet-Outの機能で、接続先のポートからパケットを転送
-* 未知のホストの場合…Packet-Outの機能でパケットをフラッディング
-
-これらの動作を順を追って図とともに説明します。
+이러한 스위치를 Ryu를 사용하여 구현해 봅시다.
 
 
-1. 初期状態
+OpenFlow 의한 스위칭 허브 
+-------------------------
 
-    フローテーブルが空の初期状態です。
+OpenFlow 스위치는 Ryu 같은 OpenFlow 컨트롤러의 지시를 받고,
+다음과 같은 것을 할 수 있습니다.
 
-    ポート1にホストA、ポート4にホストB、ポート3にホストCが接続されているもの
-    とします。
+* 수신 된 패킷의 주소를 다시하거나 지정된 포트에서 전송
+* 받은 패킷을 컨트롤러에 전송 (Packet-In)
+* 컨트롤러에서 전송 된 패킷을 특정 포트에서 전송 (Packet-Out)
+
+이러한 기능을 조합 스위칭 허브를 실현 할 수 있습니다.
+
+우선, Packet-In 기능을 이용한 MAC 주소 학습입니다.
+컨트롤러는 Packet-In 기능을 이용하여 스위치에서 패킷을 받을 수가 있습니다.
+받은 패킷을 분석하고 호스트의 MAC 주소와 연결되어있다
+포트 정보를 학습 할 수 있습니다.
+
+학습 후에는받은 패킷의 전송입니다.
+패킷의 목적지 MAC 주소가 학습 된 호스트의 것을 찾습니다.
+검색 결과는 다음 작업을 수행합니다.
+
+* 학습된 호스트의 경우 ... Packet-Out 기능으로 연결할 포트에서 패킷을 전송
+* 알 수 없는 호스트의 경우 ... Packet-Out 기능으로 패킷을 플러딩
+
+이러한 동작을 단계별로 그림과 함께 설명합니다. 
+
+
+1. 초기 상태
+
+     흐름 테이블이 비어 초기 상태입니다.
+
+     포트 1에 호스트 A, 포트 4에 호스트 B 포트 3 호스트 C가 연결되어있는 것
+     합니다. 
 
     .. only:: latex
 
@@ -67,12 +66,12 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
           :align: center
 
 
-2. ホストA→ホストB
+2. 호스트 A → 호스트 B
 
-    ホストAからホストBへのパケットが送信されると、Packet-Inメッセージが送られ、
-    ホストAのMACアドレスがポート1に学習されます。ホストBのポートはまだ分かって
-    いないため、パケットはフラッディングされ、パケットはホストBとホストCで受信
-    されます。
+     호스트 A에서 호스트 B로 패킷이 전송되면 Packet-In 메시지가 보내져
+     호스트 A의 MAC 주소를 포트 1에 학습됩니다. 호스트 B의 포트는 아직 알고
+     없기 때문에 패킷은 홍수 패킷은 호스트 B와 호스트 C에서 수신
+     됩니다. 
 
     .. only:: latex
 
@@ -88,19 +87,19 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
     Packet-In::
 
         in-port: 1
-        eth-dst: ホストB
-        eth-src: ホストA
+        eth-dst: 호스트B
+        eth-src: 호스트A
 
     Packet-Out::
 
-        action: OUTPUT:フラッディング
+        action: OUTPUT:Flooding
 
 
-3. ホストB→ホストA
+3. 호스트B→호스트A
 
-    ホストBからホストAにパケットが返されると、フローテーブルにエントリを追加し、
-    またパケットはポート1に転送されます。そのため、このパケットはホストCでは
-    受信されません。
+     호스트 B에서 호스트 A로 패킷이 반환되면 흐름 테이블에 항목을 추가하고
+     또한 패킷은 포트 1에 전송됩니다. 따라서이 패킷은 호스트 C는
+     수신되지 않습니다. 
 
     .. only:: latex
 
@@ -117,18 +116,18 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
     Packet-In::
 
         in-port: 4
-        eth-dst: ホストA
-        eth-src: ホストB
+        eth-dst: 호스트A
+        eth-src: 호스트B
 
     Packet-Out::
 
-        action: OUTPUT:ポート1
+        action: OUTPUT:포트1
 
 
-4. ホストA→ホストB
+4. 호스트A→호스트B
 
-    再度、ホストAからホストBへのパケットが送信されると、フローテーブルに
-    エントリを追加し、またパケットはポート4に転送されます。
+     또한, 호스트 A에서 호스트 B로 패킷이 전송되면 흐름 테이블에
+     항목을 추가하고 또한 패킷은 포트 4에 전송됩니다. 
 
     .. only:: latex
 
@@ -145,51 +144,51 @@ OpenFlowスイッチは、Ryuの様なOpenFlowコントローラからの指示�
     Packet-In::
 
         in-port: 1
-        eth-dst: ホストB
-        eth-src: ホストA
+        eth-dst: 호스트B
+        eth-src: 호스트A
 
     Packet-Out::
 
-        action: OUTPUT:ポート4
+        action: OUTPUT:호스트4
 
 
-次に、実際にRyuを使って実装されたスイッチングハブのソースコードを見ていきます。
+이제 실제로 Ryu를 사용하여 구현된 스위칭 허브 소스 코드를 살펴 보겠습니다. 
 
 
-Ryuによるスイッチングハブの実装
--------------------------------
+Ryu에 의한 스위칭 허브 구현 
+---------------------------
 
-スイッチングハブのソースコードは、Ryuのソースツリーにあります。
+스위칭 허브 소스 코드는 Ryu 소스 트리에 있습니다. 
 
     ryu/app/simple_switch_13.py
 
-OpenFlowのバージョンに応じて、他にもsimple_switch.py(OpenFlow 1.0)、
-simple_switch_12.py(OpenFlow 1.2)がありますが、ここではOpenFlow 1.3に対応した
-実装を見ていきます。
+OpenFlow 버전에 따라 그 밖에도 simple_switch.py (OpenFlow 1.0), 
+simple_switch_12.py (OpenFlow 1.2)이 있지만, 여기에서는 OpenFlow 1.3에 대응 한
+구현을 살펴 보겠습니다. 
 
-短いソースコードなので、全体をここに掲載します。
+짧은 소스 코드이므로 전체를 여기에 게재합니다.
 
 .. rst-class:: sourcecode
 
 .. literalinclude:: sources/simple_switch_13.py
 
 
-それでは、それぞれの実装内容について見ていきます。
+그러면, 각각의 구현 내용 알아 보겠습니다. 
 
 
-クラスの定義と初期化
-^^^^^^^^^^^^^^^^^^^^
+클래스의 정의 및 초기화
+^^^^^^^^^^^^^^^^^^^^^^^
 
-Ryuアプリケーションとして実装するため、ryu.base.app_manager.RyuAppを
-継承します。また、OpenFlow 1.3を使用するため、 ``OFP_VERSIONS`` に
-OpenFlow 1.3のバージョンを指定しています。
+Ryu 응용 프로그램으로 구현하기 위해 ryu.base.app_manager.RyuApp을
+상속합니다. 또한 OpenFlow 1.3을 사용하기 때문에 ``OFP_VERSIONS``
+에 OpenFlow 1.3 버전을 지정합니다. 
 
-また、MACアドレステーブル mac_to_port を定義しています。
+또한 MAC 주소 테이블 mac_to_port을 정의합니다.
 
-OpenFlowプロトコルでは、OpenFlowスイッチとコントローラが通信を行うために
-必要となるハンドシェイクなどのいくつかの手順が決められていますが、Ryuの
-フレームワークが処理してくれるため、Ryuアプリケーションでは意識する必要は
-ありません。
+OpenFlow 프로토콜은 OpenFlow 스위치와 컨트롤러가 통신을 위해
+필요한 핸드 셰이크 등의 몇 가지 단계가 정해져 있습니다 만, Ryu의
+프레임 워크가 처리주기 위해, Ryu 응용 프로그램은 의식 할 필요는
+없습니다. 
 
 
 .. rst-class:: sourcecode
@@ -206,45 +205,45 @@ OpenFlowプロトコルでは、OpenFlowスイッチとコントローラが通�
         # ...
 
 
-イベントハンドラ
-^^^^^^^^^^^^^^^^
+이벤트 처리기 
+^^^^^^^^^^^^^
 
-Ryuでは、OpenFlowメッセージを受信するとメッセージに対応したイベントが発生
-します。Ryuアプリケーションは、受け取りたいメッセージに対応したイベント
-ハンドラを実装します。
+Ryu는 OpenFlow 메시지를 받으면 메시지에 대응하는 이벤트가 발생
+합니다. Ryu 응용 프로그램은 수신하려는 메시지에 대응하는 이벤트
+처리기를 구현합니다. 
 
-イベントハンドラは、引数にイベントオブジェクトを持つ関数を定義し、
-``ryu.controller.handler.set_ev_cls`` デコレータで修飾します。
+이벤트 처리기는 인수에 이벤트 객체의 함수를 정의하고
+``ryu.controller.handler.set_ev_cls`` 장식으로 한정합니다. 
 
-set_ev_clsは、引数に受け取るメッセージに対応したイベントクラスとOpenFlow
-スイッチのステートを指定します。
+set_ev_cls 인수받는 메시지에 대응하는 이벤트 클래스와 OpenFlow
+스위치의 상태를 지정합니다. 
 
-イベントクラス名は、 ``ryu.controller.ofp_event.EventOFP`` + <OpenFlow
-メッセージ名>となっています。例えば、Packet-Inメッセージの場合は、
-``EventOFPPacketIn`` になります。
-詳しくは、Ryuのドキュメント `APIリファレンス <http://ryu.readthedocs.org/en/latest/>`_ を参照してください。
-ステートには、以下のいずれか、またはリストを指定します。
+이벤트 클래스 이름은 ``ryu.controller.ofp_event.EventOFP`` + <OpenFlow
+메시지 이름>이 있습니다. 예를 들어, Packet-In 메시지의 경우
+``EventOFPPacketIn`` 입니다.
+자세한 내용은 Ryu 문서`API 참조 <http://ryu.readthedocs.org/en/latest/>`_을 참조하십시오.
+상태는 다음 중 하나 또는 목록을 지정합니다. 
 
 .. tabularcolumns:: |l|L|
 
 =========================================== ==================================
-定義                                        説明
+정의                                        설명
 =========================================== ==================================
-ryu.controller.handler.HANDSHAKE_DISPATCHER HELLOメッセージの交換
-ryu.controller.handler.CONFIG_DISPATCHER    SwitchFeaturesメッセージの受信待ち
-ryu.controller.handler.MAIN_DISPATCHER      通常状態
-ryu.controller.handler.DEAD_DISPATCHER      コネクションの切断
+ryu.controller.handler.HANDSHAKE_DISPATCHER HELLO 메시지 교환
+ryu.controller.handler.CONFIG_DISPATCHER    SwitchFeatures 메시지의 수신
+ryu.controller.handler.MAIN_DISPATCHER      표준 상태
+ryu.controller.handler.DEAD_DISPATCHER      연결 절단
 =========================================== ==================================
 
 
-Table-missフローエントリの追加
-""""""""""""""""""""""""""""""
+Table-miss 흐름 항목 추가
+"""""""""""""""""""""""""
 
-OpenFlowスイッチとのハンドシェイク完了後にTable-missフローエントリを
-フローテーブルに追加し、Packet-Inメッセージを受信する準備を行います。
+OpenFlow 스위치와 핸드 셰이크 완료 후 Table-miss 흐름 항목
+흐름 테이블에 추가하고 Packet-In 메시지를 수신 할 준비를합니다.
 
-具体的には、Switch Features(Features Reply)メッセージを受け取り、そこで
-Table-missフローエントリの追加を行います。
+구체적으로는 Switch Features (Features Reply) 메시지를 수신하고 그래서
+Table-miss 흐름 항목을 추가합니다. 
 
 .. rst-class:: sourcecode
 
@@ -258,26 +257,26 @@ Table-missフローエントリの追加を行います。
 
         # ...
 
-``ev.msg`` には、イベントに対応するOpenFlowメッセージクラスのインスタンスが
-格納されています。この場合は、
-``ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures`` になります。
+``ev.msg`` 이벤트에 해당하는 OpenFlow 메시지 클래스의 인스턴스가
+저장되어 있습니다. 이 경우 
+``ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures`` 됩니다.
 
-``msg.datapath`` には、このメッセージを発行したOpenFlowスイッチに対応する
-``ryu.controller.controller.Datapath`` クラスのインスタンスが格納されています。
+``msg.datapath`` 이 메시지를 발행 한 OpenFlow 스위치에 해당하는 
+``ryu.controller.controller.Datapath`` 클래스의 인스턴스가 포함되어 있습니다. 
 
-Datapathクラスは、OpenFlowスイッチとの実際の通信処理や受信メッセージに対応
-したイベントの発行などの重要な処理を行っています。
+Datapath 클래스는 OpenFlow 스위치와의 실제 통신 처리 및 수신 메시지에 대응
+이벤트의 발행 등의 중요한 작업을 실시하고 있습니다. 
 
-Ryuアプリケーションで利用する主な属性は以下のものです。
+Ryu 응용 프로그램에서 사용되는 주요 특성은 다음과 같습니다. 
 
 .. tabularcolumns:: |l|L|
 
 ============== ==============================================================
-属性名         説明
+속성이름       설명
 ============== ==============================================================
-id             接続しているOpenFlowスイッチのID(データパスID)です。
-ofproto        使用しているOpenFlowバージョンに対応したofprotoモジュールを
-               示します。現時点では、以下のいずれかになります。
+id             연결된 OpenFlow 스위치 ID (데이터 경로 ID)입니다. 
+ofproto        사용하는 OpenFlow 버전에 대응 한 ofproto 모듈을 
+               보여줍니다. 현재 다음 중 하나입니다. 
 
                ``ryu.ofproto.ofproto_v1_0``
 
@@ -287,8 +286,8 @@ ofproto        使用しているOpenFlowバージョンに対応したofproto�
 
                ``ryu.ofproto.ofproto_v1_4``
 
-ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示します。
-               現時点では、以下のいずれかになります。
+ofproto_parser ofproto와 마찬가지로 ofproto_parser 모듈을 보여줍니다. 
+               현재 다음 중 하나입니다. 
 
                ``ryu.ofproto.ofproto_v1_0_parser``
 
@@ -299,18 +298,18 @@ ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示しま�
                ``ryu.ofproto.ofproto_v1_4_parser``
 ============== ==============================================================
 
-Ryuアプリケーションで利用するDatapathクラスの主なメソッドは以下のものです。
+Ryu 응용 프로그램에서 사용할 Datapath 클래스의 주요 메서드는 다음과 같습니다. 
 
 send_msg(msg)
 
-    OpenFlowメッセージを送信します。
-    msgは、送信OpenFlowメッセージに対応した
-    ``ryu.ofproto.ofproto_parser.MsgBase`` のサブクラスです。
+    OpenFlow 메시지를 보냅니다.
+    msg는 보낼 OpenFlow 메시지에 대응하는
+    ``ryu.ofproto.ofproto_parser.MsgBase`` 의 서브 클래스입니다. 
 
 
-スイッチングハブでは、受信したSwitch Featuresメッセージ自体は特に
-使いません。Table-missフローエントリを追加するタイミングを得るための
-イベントとして扱っています。
+스위칭 허브는받은 Switch Features 메시지 자체는 특히
+사용하지 않습니다. Table-miss 흐름 항목을 추가하는 타이밍을위한
+이벤트로 다루고 있습니다. 
 
 .. rst-class:: sourcecode
 
@@ -331,43 +330,43 @@ send_msg(msg)
                                           ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
 
-Table-missフローエントリは、優先度が最低(0)で、すべてのパケットにマッチ
-するエントリです。このエントリのインストラクションにコントローラポート
-への出力アクションを指定することで、受信パケットが、すべての通常のフロー
-エントリにマッチしなかった場合、Packet-Inを発行するようになります。
+Table-miss 흐름 항목은 우선 순위가 최저 (0)에서 모든 패킷에 매치
+항목입니다. 이 항목의 지침에 컨트롤러 포트
+의 출력 작업을 지정하여 들어오는 패킷이 모든 정상 흐름
+항목과 일치하지 않으면, Packet-In을 게시 할 수 있습니다. 
 
 .. NOTE::
 
-    2014年1月現在のOpen vSwitchは、OpenFlow 1.3への対応が不完全であり、
-    OpenFlow 1.3以前と同様にデフォルトでPacket-Inが発行されます。また、
-    Table-missフローエントリにも現時点では未対応で、通常のフローエントリ
-    として扱われます。
+    2014 년 1 월 현재 Open vSwitch는 OpenFlow 1.3의 지원이 불완전이며,
+    OpenFlow 1.3 이전과 마찬가지로 기본적으로 Packet-In이 발행됩니다. 또한
+    Table-miss 흐름 항목도 현재는 미 대응에서 정상 흐름 항목
+    로 취급됩니다. 
 
-すべてのパケットにマッチさせるため、空のマッチを生成します。マッチは
-``OFPMatch`` クラスで表されます。
+모든 패킷에 매치시키기 위해 빈 Match을 생성합니다. Match은
+``OFPMatch`` 클래스로 표현됩니다. 
 
-次に、コントローラポートへ転送するためのOUTPUTアクションクラス(
-``OFPActionOutput``)のインスタンスを生成します。
-出力先にコントローラ、パケット全体をコントローラに送信するためにmax_lenには
-``OFPCML_NO_BUFFER`` を指定しています。
+그런 다음 컨트롤러 포트에 전송하는 OUTPUT 액션 클래스 (
+``OFPActionOutput``)의 인스턴스를 생성합니다.
+대상 컨트롤러 전체 패킷을 컨트롤러에 보내 max_len에는
+``OFPCML_NO_BUFFER`` 을 지정합니다. 
 
 .. NOTE::
 
-    コントローラにはパケットの先頭部分(Ethernetヘッダー分)だけを送信
-    させ、残りはスイッチにバッファーさせた方が効率の点では望ましいの
-    ですが、Open vSwitchのバグ(2014年1月現在)を回避するために、ここでは
-    パケット全体を送信させます。
+    컨트롤러는 패킷의 시작 부분 (Ethernet 헤더 분)만을 전송
+    하고 나머지는 스위치 버퍼시킨 것이 효율성 측면에서 바람직
+    하지만 Open vSwitch 버그 (2014 년 1 월 현재)을 해결하기 위해 여기에
+    전체 패킷을 전송합니다. 
 
-最後に、優先度に0(最低)を指定して ``add_flow()`` メソッドを実行してFlow Mod
-メッセージを送信します。add_flow()メソッドの内容については後述します。
-
-
+마지막으로, 우선 순위 0 (가장 낮음)을 지정하여 ``add_flow ()`` 메소드를 실행 Flow Mod
+메시지를 보냅니다. add_flow () 메서드의 내용에 대해서는 뒤에서 설명하고자 합니다.
 
 
-Packet-inメッセージ
-"""""""""""""""""""
 
-未知の宛先の受信パケットを受け付けるため、Packet-Inイベントのハンドラを作成します。
+
+Packet-in 메시지
+""""""""""""""""
+
+알 수없는 목적지 들어오는 패킷을 받아들이므로 Packet-In 이벤트 처리기를 만듭니다.
 
 .. rst-class:: sourcecode
 
@@ -383,25 +382,25 @@ Packet-inメッセージ
         # ...
 
 
-OFPPacketInクラスのよく使われる属性には以下のようなものがあります。
+OFPPacketIn 클래스의 자주 사용되는 속성은 다음과 같은 것이 있습니다.
 
 .. tabularcolumns:: |l|L|
 
 ========= ===================================================================
-属性名    説明
+속성이름  설명
 ========= ===================================================================
-match     ``ryu.ofproto.ofproto_v1_3_parser.OFPMatch`` クラスのインスタンス
-          で、受信パケットのメタ情報が設定されています。
-data      受信パケット自体を示すバイナリデータです。
-total_len 受信パケットのデータ長です。
-buffer_id 受信パケットがOpenFlowスイッチ上でバッファされている場合、
-          そのIDが示されます。バッファされていない場合は、
-          ``ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER`` がセットされます。
+match     ``ryu.ofproto.ofproto_v1_3_parser.OFPMatch`` 클래스의 인스턴스 
+          에서 들어오는 패킷의 메타 정보가 설정되어 있습니다. 
+data      수신 패킷 자체를 나타내는 이진 데이터입니다.
+total_len 수신 패킷의 데이터 길이입니다. 
+buffer_id 수신 패킷이 OpenFlow 스위치에서 버퍼되는 경우 
+          ID가 표시됩니다. 버퍼되지 않는 경우 
+          ``ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER`` 가 설정됩니다.
 ========= ===================================================================
 
 
-MACアドレステーブルの更新
-"""""""""""""""""""""""""
+MAC 주소 테이블 업데이트
+""""""""""""""""""""""""
 
 .. rst-class:: sourcecode
 
@@ -428,23 +427,23 @@ MACアドレステーブルの更新
 
         # ...
 
-OFPPacketInクラスのmatchから、受信ポート(``in_port``)を取得します。
-宛先MACアドレスと送信元MACアドレスは、Ryuのパケットライブラリを使って、
-受信パケットのEthernetヘッダから取得しています。
+OFPPacketIn 클래스의 match에서 수신 포트 (``in_port``)를 가져옵니다.
+대상 MAC 주소와 소스 MAC 주소는 Ryu 패킷 라이브러리를 사용하여
+수신 패킷의 Ethernet 헤더에서 검색합니다.
 
-取得した送信元MACアドレスと受信ポート番号で、MACアドレステーブルを更新します。
+가져온 소스 MAC 주소와 수신 포트 번호에서 MAC 주소 테이블을 업데이트합니다.
 
-複数のOpenFlowスイッチとの接続に対応するため、MACアドレステーブルはOpenFlow
-スイッチ毎に管理するようになっています。OpenFlowスイッチの識別にはデータパスID
-を用いています。
+여러 OpenFlow 스위치와의 연결에 대응하기 위해 MAC 주소 테이블은 OpenFlow
+스위치마다 관리하도록되어 있습니다. OpenFlow 스위치를 식별하는 데이터 경로 ID
+를 이용하고 있습니다. 
 
 
-転送先ポートの判定
-""""""""""""""""""
+대상 포트 판정
+""""""""""""""
 
-宛先MACアドレスが、MACアドレステーブルに存在する場合は対応するポート番号を、
-見つからなかった場合はフラッディング(``OFPP_FLOOD``)を出力ポートに指定した
-OUTPUTアクションクラスのインスタンスを生成します。
+대상 MAC 주소를 MAC 주소 테이블에 존재하는 경우 해당 포트 번호를
+발견되지 않았던 경우는 플러딩 (``OFPP_FLOOD``)를 출력 포트에 지정된
+OUTPUT 액션 클래스의 인스턴스를 생성합니다. 
 
 .. rst-class:: sourcecode
 
@@ -468,41 +467,41 @@ OUTPUTアクションクラスのインスタンスを生成します。
         # ...
 
 
-宛先MACアドレスが見つかった場合は、OpenFlowスイッチのフローテーブルに
-エントリを追加します。
+목적지 MAC 주소가 있으면, OpenFlow 스위치의 흐름 테이블에
+항목을 추가합니다.
 
-Table-missフローエントリの追加と同様に、マッチとアクションを指定して
-add_flow()を実行し、フローエントリを追加します。
+Table-miss 흐름 항목의 추가와 마찬가지로 경기와 액션을 지정하고
+add_flow ()를 실행하고 흐름 항목을 추가합니다.
 
-Table-missフローエントリとは違って、今回はマッチに条件を設定します。
-今回のスイッチングハブの実装では、受信ポート(in_port)と宛先MACアドレス
-(eth_dst)を指定しています。例えば、「ポート1で受信したホストB宛」のパケット
-が対象となります。
+Table-miss 흐름 항목과는 달리 이번에는 경기 조건을 설정합니다.
+이번 스위칭 허브의 구현은 수신 포트 (in_port)와 대상 MAC 주소
+(eth_dst)을 지정합니다. 예를 들어, "포트 1에서받은 호스트 B에게"패킷
+가 대상이됩니다.
 
-今回のフローエントリでは、優先度に1を指定しています。値が大きい
-ほど優先度が高くなるので、ここで追加するフローエントリは、Table-missフロー
-エントリより先に評価されるようになります。
+이번 흐름 항목은 우선 순위에 1을 지정합니다. 값이 큰
+수록 우선 순위가 높아 지므로 여기에 추가하는 흐름 항목은 Table-miss 흐름
+항목보다 먼저 평가되게됩니다.
 
-前述のアクションを含めてまとめると、以下のようなエントリをフローテーブル
-に追加します。
+위의 작업을 포함하여 정리하면 다음과 유사한 항목을 플로우 테이블
+에 추가합니다. 
 
-    ポート1で受信した、ホストB宛(宛先MACアドレスがB)のパケットを、
-    ポート4に転送する
+    포트 1에서 받은 호스트 B에게 (대상 MAC 주소가 B) 패킷을 
+    포트 4에 전송하기
 
 .. HINT::
 
-    OpenFlowでは、NORMALポートという論理的な出力ポートがオプションで規定
-    されており、出力ポートにNORMALを指定すると、スイッチのL2/L3機能を使っ
-    てパケットを処理するようになります。つまり、すべてのパケットをNORMAL
-    ポートに出力するように指示するだけで、スイッチングハブとして動作する
-    ようにできますが、ここでは各々の処理をOpenFlowを使って実現するものとします。
+    OpenFlow는 NORMAL 포트는 논리적 인 출력 포트가 옵션으로 규정
+    되고 출력 포트에 NORMAL을 지정하면 스위치의 L2/L3 기능을 사용
+    라고 패킷을 처리 할 수 있습니다. 즉, 모든 패킷을 NORMAL
+    포트에 출력하도록 지시하는 것만으로, 스위칭 허브 역할을하는
+    같이 할 수 있지만, 여기에서는 각각의 처리를 OpenFlow를 사용하여 수행하는 것으로합니다.
 
 
-フローエントリの追加処理
-""""""""""""""""""""""""
+흐름 항목의 추가 처리
+"""""""""""""""""""""
 
-Packet-Inハンドラの処理がまだ終わっていませんが、ここで一旦フローエントリ
-を追加するメソッドの方を見ていきます。
+Packet-In 처리기의 처리가 아직 끝나지 않지만 여기서 일단 흐름 항목
+추가 메서드 쪽을 살펴 보겠습니다. 
 
 .. rst-class:: sourcecode
 
@@ -517,14 +516,14 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
 
         # ...
 
-フローエントリには、対象となるパケットの条件を示すマッチと、そのパケット
-に対する操作を示すインストラクション、エントリの優先度、有効時間などを
-設定します。
+흐름 항목에는 대상 패킷의 조건을 나타내는 매치와 패킷
+대한 작업을 나타내는 지침 항목의 우선 순위 유효 시간 등을
+설정합니다.
 
-スイッチングハブの実装では、インストラクションにApply Actionsを使用して、
-指定したアクションを直ちに適用するように設定しています。
+스위칭 허브의 구현은 지침에 Apply Actions를 사용하여
+지정된 조치를 즉시 적용하도록 설정합니다.
 
-最後に、Flow Modメッセージを発行してフローテーブルにエントリを追加します。
+마지막으로, Flow Mod 메시지를 발행하고 흐름 테이블에 항목을 추가합니다. 
 
 .. rst-class:: sourcecode
 
@@ -537,131 +536,131 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
                                 match=match, instructions=inst)
         datapath.send_msg(mod)
 
-Flow Modメッセージに対応するクラスは ``OFPFlowMod`` クラスです。OFPFlowMod
-クラスのインスタンスを生成して、Datapath.send_msg() メソッドでOpenFlow
-スイッチにメッセージを送信します。
+Flow Mod 메시지에 대응하는 클래스는 ``OFPFlowMod`` 클래스입니다. OFPFlowMod
+클래스의 인스턴스를 생성하여 Datapath.send_msg () 메서드 OpenFlow
+스위치에 메시지를 보냅니다.
 
-OFPFlowModクラスのコンストラクタには多くの引数がありますが、多くのものは
-大抵の場合、デフォルト値のままで済みます。かっこ内はデフォルト値です。
+OFPFlowMod 클래스의 생성자에는 많은 인수가 있습니다 만, 많은 것은
+대부분의 경우 기본값을 그대로하면됩니다. 괄호 안은 기본값입니다. 
 
 datapath
 
-    フローテーブルを操作する対象となるOpenFlowスイッチに対応するDatapath
-    クラスのインスタンスです。通常は、Packet-Inメッセージなどのハンドラ
-    に渡されるイベントから取得したものを指定します。
+    흐름 테이블을 조작하는 대상 OpenFlow 스위치에 해당하는 Datapath
+    클래스의 인스턴스입니다. 일반적으로 Packet-In 메시지 등의 처리기
+    에 전달되는 이벤트에서 가져온 것입니다. 
 
 cookie (0)
 
-    コントローラが指定する任意の値で、エントリの更新または削除を行う際の
-    フィルタ条件として使用できます。パケットの処理では使用されません。
+    컨트롤러가 지정하는 임의의 값으로 항목의 업데이트 또는 삭제할 때
+    필터 조건으로 사용할 수 있습니다. 패킷의 처리는 사용되지 않습니다. 
 
 cookie_mask (0)
 
-    エントリの更新または削除の場合に、0以外の値を指定すると、エントリの
-    cookie値による操作対象エントリのフィルタとして使用されます。
+    항목의 업데이트 또는 삭제의 경우 0이 아닌 값을 지정하면 항목
+    cookie 값에 의한 조작 대상 항목의 필터로 사용됩니다. 
 
 table_id (0)
 
-    操作対象のフローテーブルのテーブルIDを指定します。
+    조작 대상의 흐름 테이블의 테이블 ID를 지정합니다. 
 
 command (ofproto_v1_3.OFPFC_ADD)
 
-    どのような操作を行うかを指定します。
+    어떤 작업을 할 것인지를 지정합니다. 
 
     ==================== ========================================
-    値                   説明
+    값                   설명
     ==================== ========================================
-    OFPFC_ADD            新しいフローエントリを追加します
-    OFPFC_MODIFY         フローエントリを更新します
-    OFPFC_MODIFY_STRICT  厳格に一致するフローエントリを更新します
-    OFPFC_DELETE         フローエントリを削除します
-    OFPFC_DELETE_STRICT  厳格に一致するフローエントリを削除します
+    OFPFC_ADD            새로운 흐름 항목을 추가합니다 
+    OFPFC_MODIFY         흐름 항목을 업데이트합니다 
+    OFPFC_MODIFY_STRICT  엄격하게 일치하는 흐름 항목을 업데이트합니다 
+    OFPFC_DELETE         흐름 항목을 삭제합니다 
+    OFPFC_DELETE_STRICT  엄격하게 일치하는 흐름 항목을 삭제합니다 
     ==================== ========================================
 
 idle_timeout (0)
 
-    このエントリの有効期限を秒単位で指定します。エントリが参照されずに
-    idle_timeoutで指定した時間を過ぎた場合、そのエントリは削除されます。
-    エントリが参照されると経過時間はリセットされます。
+    이 항목의 유효 기간을 초 단위로 지정합니다. 항목이 참조되지 않고
+    idle_timeout에서 지정된 시간을 초과하면 항목이 제거됩니다.
+    항목이 참조 될 때 경과 시간은 리셋됩니다.
 
-    エントリが削除されるとFlow Removedメッセージがコントローラに通知され
-    ます。
+    항목이 삭제되면 Flow Removed 메시지가 컨트롤러에 알려
+    있습니다. 
 
 hard_timeout (0)
 
-    このエントリの有効期限を秒単位で指定します。idle_timeoutと違って、
-    hard_timeoutでは、エントリが参照されても経過時間はリセットされません。
-    つまり、エントリの参照の有無に関わらず、指定された時間が経過すると
-    エントリが削除されます。
+    이 항목의 유효 기간을 초 단위로 지정합니다. idle_timeout과 달리,
+    hard_timeout는 항목이 참조 될 수 경과 시간은 리셋되지 않습니다.
+    즉, 항목의 참조의 유무에 관계없이 지정된 시간이 경과하면
+    항목이 삭제됩니다.
 
-    idle_timeoutと同様に、エントリが削除されるとFlow Removedメッセージが
-    通知されます。
+    idle_timeout과 마찬가지로 항목이 삭제되면 Flow Removed 메시지가
+    통지됩니다. 
 
 priority (0)
 
-    このエントリの優先度を指定します。
-    値が大きいほど、優先度も高くなります。
+    이 항목의 우선 순위를 지정합니다.
+    값이 클수록 우선 순위가 높습니다. 
 
 buffer_id (ofproto_v1_3.OFP_NO_BUFFER)
 
-    OpenFlowスイッチ上でバッファされたパケットのバッファIDを指定します。
-    バッファIDはPacket-Inメッセージで通知されたものであり、指定すると
-    OFPP_TABLEを出力ポートに指定したPacket-OutメッセージとFlow Modメッセージ
-    の2つのメッセージを送ったのと同じように処理されます。
-    commandがOFPFC_DELETEまたはOFPFC_DELETE_STRICTの場合は無視されます。
+    OpenFlow 스위치에서 버퍼 된 패킷 버퍼 ID를 지정합니다.
+    버퍼 ID는 Packet-In 메시지로 통지 된 것이며, 지정하면
+    OFPP_TABLE을 출력 포트에 지정된 Packet-Out 메시지와 Flow Mod 메시지
+    두 메시지를 보낸 것처럼 처리됩니다.
+    command가 OFPFC_DELETE 또는 OFPFC_DELETE_STRICT의 경우는 무시됩니다.
 
-    バッファIDを指定しない場合は、 ``OFP_NO_BUFFER`` をセットします。
+    버퍼 ID를 지정하지 않으면, ``OFP_NO_BUFFER`` 을 설정합니다. 
 
 out_port (0)
 
-    OFPFC_DELETEまたはOFPFC_DELETE_STRICTの場合に、対象となるエントリを
-    出力ポートでフィルタします。OFPFC_ADD、OFPFC_MODIFY、OFPFC_MODIFY_STRICT
-    の場合は無視されます。
+    OFPFC_DELETE 또는 OFPFC_DELETE_STRICT의 경우 대상 항목을
+    출력 포트 필터링합니다. OFPFC_ADD, OFPFC_MODIFY, OFPFC_MODIFY_STRICT
+    의 경우는 무시됩니다.
 
-    出力ポートでのフィルタを無効にするには、 ``OFPP_ANY`` を指定します。
+    출력 포트의 필터를 해제하려면 ``OFPP_ANY`` 을 지정합니다. 
 
 out_group (0)
 
-    out_portと同様に、出力グループでフィルタします。
+    out_port와 마찬가지로 출력 그룹에서 필터링합니다.
 
-    無効にするには、 ``OFPG_ANY`` を指定します。
+    해제하려면 ``OFPG_ANY`` 을 지정합니다. 
 
 flags (0)
 
-    以下のフラグの組み合わせを指定することができます。
+    다음 플래그의 조합을 지정할 수 있습니다. 
 
     .. tabularcolumns:: |l|L|
 
     ===================== ===================================================
-    値                    説明
+    값                    설명
     ===================== ===================================================
-    OFPFF_SEND_FLOW_REM   このエントリが削除された時に、コントローラにFlow
-                          Removedメッセージを発行します。
-    OFPFF_CHECK_OVERLAP   OFPFC_ADDの場合に、重複するエントリのチェックを行い
-                          ます。重複するエントリがあった場合にはFlow Modは失
-                          敗し、エラーが返されます。
-    OFPFF_RESET_COUNTS    該当エントリのパケットカウンタとバイトカウンタを
-                          リセットします。
-    OFPFF_NO_PKT_COUNTS   このエントリのパケットカウンタを無効にします。
-    OFPFF_NO_BYT_COUNTS   このエントリのバイトカウンタを無効にします。
+    OFPFF_SEND_FLOW_REM   FLOW_REM이 항목이 삭제 된 때 컨트롤러에 Flow
+                          Removed 메시지를 발행합니다. 
+    OFPFF_CHECK_OVERLAP   OFPFC_ADD의 경우 중복 항목의 검사를 수행
+                          있습니다. 중복 된 항목이있는 경우에는 Flow Mod가 손실
+                          패하고 오류가 반환됩니다. 
+    OFPFF_RESET_COUNTS    해당 항목의 패킷과 바이트 카운터를
+                          재설정합니다. 
+    OFPFF_NO_PKT_COUNTS   이 항목의 패킷 카운터를 해제합니다.
+    OFPFF_NO_BYT_COUNTS   이 항목에 대한 바이트 카운터를 해제합니다.
     ===================== ===================================================
 
 match (None)
 
-    マッチを指定します。
+    Match를 지정합니다.
 
 instructions ([])
 
-    インストラクションのリストを指定します。
+    명령어의 목록을 지정합니다.
 
 
-パケットの転送
-""""""""""""""
+패킷 전송
+"""""""""
 
-Packet-Inハンドラに戻り、最後の処理の説明です。
+Packet-In 처리기로 돌아가 마지막 처리의 설명입니다. 
 
-宛先MACアドレスがMACアドレステーブルから見つかったかどうかに関わらず、最終的
-にはPacket-Outメッセージを発行して、受信パケットを転送します。
+대상 MAC 주소를 MAC 주소 테이블에서 발견 여부에 관계없이 최종
+에는 Packet-Out 메시지를 발행하여 수신 패킷을 전송합니다. 
 
 .. rst-class:: sourcecode
 
@@ -678,78 +677,78 @@ Packet-Inハンドラに戻り、最後の処理の説明です。
                                   in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
-Packet-Outメッセージに対応するクラスは ``OFPPacketOut`` クラスです。
+Packet-Out 메시지에 대응하는 클래스는 ``OFPPacketOut`` 클래스입니다. 
 
-OFPPacketOutのコンストラクタの引数は以下のようになっています。
+OFPPacketOut 생성자의 인수는 다음과 같이되어 있습니다. 
 
 datapath
 
-    OpenFlowスイッチに対応するDatapathクラスのインスタンスを指定します。
+    OpenFlow 스위치에 해당하는 Datapath 클래스의 인스턴스를 지정합니다. 
 
 buffer_id
 
-    OpenFlowスイッチ上でバッファされたパケットのバッファIDを指定します。
-    バッファを使用しない場合は、 ``OFP_NO_BUFFER`` を指定します。
+    OpenFlow 스위치에서 버퍼 된 패킷 버퍼 ID를 지정합니다. 
+    버퍼를 사용하지 않으면, ``OFP_NO_BUFFER`` 을 지정합니다. 
 
 in_port
 
-    パケットを受信したポートを指定します。受信パケットでない場合は、
-    ``OFPP_CONTROLLER`` を指定します。
+    패킷을 수신 한 포트를 지정합니다. 수신 패킷이 아닌 경우 
+    ``OFPP_CONTROLLER`` 를 지정합니다.
 
 actions
 
-    アクションのリストを指定します。
+    작업 목록을 지정합니다.
 
 data
 
-    パケットのバイナリデータを指定します。buffer_idに ``OFP_NO_BUFFER``
-    が指定された場合に使用されます。OpenFlowスイッチのバッファを利用す
-    る場合は省略します。
+    패킷의 이진 데이터를 지정합니다. buffer_id에 ``OFP_NO_BUFFER``
+    가 지정된 경우에 사용됩니다. OpenFlow 스위치 버퍼를 사용하는 경
+    우 생략합니다. 
 
 
-スイッチングハブの実装では、buffer_idにPacket-Inメッセージのbuffer_idを
-指定しています。Packet-Inメッセージのbuffer_idが無効だった場合は、
-Packet-Inの受信パケットをdataに指定して、パケットを送信しています。
+스위칭 허브의 구현은 buffer_id에 Packet-In 메시지 buffer_id을
+지정합니다. Packet-In 메시지 buffer_id가 무효 인 경우,
+Packet-In 들어오는 패킷을 data로 지정하여 패킷을 전송합니다.
 
 
-これで、スイッチングハブのソースコードの説明は終わりです。
-次は、このスイッチングハブを実行して、実際の動作を確認します。
+이제 스위칭 허브 소스 코드의 설명은 끝입니다.
+다음으로 스위칭 허브를 실행하여 실제 동작을 확인합니다. 
 
 
-Ryuアプリケーションの実行
--------------------------
+Ryu 응용 프로그램 실행
+----------------------
 
-スイッチングハブの実行のため、OpenFlowスイッチにはOpen vSwitch、実行
-環境としてmininetを使います。
+스위칭 허브의 실행을 위해 OpenFlow 스위치는 Open vSwitch 실행
+환경으로 mininet를 사용합니다.
 
-Ryu用のOpenFlow Tutorial VMイメージが用意されているので、このVMイメージ
-を利用すると実験環境を簡単に準備することができます。
+Ryu의 OpenFlow Tutorial VM 이미지가 포함되어 있으므로,이 VM 이미지
+를 이용하면 실험 환경을 쉽게 준비 할 수 있습니다. 
 
-VMイメージ
+VM 이미지
 
     http://sourceforge.net/projects/ryu/files/vmimages/OpenFlowTutorial/
 
-    OpenFlow_Tutorial_Ryu3.2.ova (約1.4GB)
+    OpenFlow_Tutorial_Ryu3.2.ova (약1.4GB)
 
-関連ドキュメント(Wikiページ)
+관련 문서 (Wiki 페이지) 
 
     https://github.com/osrg/ryu/wiki/OpenFlow_Tutorial
 
-ドキュメントにあるVMイメージは、Open vSwitchとRyuのバージョンが古いため
-ご注意ください。
+문서에있는 VM 이미지는 Open vSwitch와 Ryu의 버전이 오래 되었기 때문에
+주의하시기 바랍니다. 
 
 
-このVMイメージを使わず、自分で環境を構築することも当然できます。VMイメージ
-で使用している各ソフトウェアのバージョンは以下の通りですので、自身で構築
-する場合は参考にしてください。
+이 VM 이미지를 사용하지 않고, 스스로 환경을 구축하는 것도 당연히 가능합니다.
+VM 이미지에서 사용하는 각 소프트웨어 버전은 다음과 같으므로, 스스로 구축
+하는 경우 추천합니다. 
 
-Mininet VM バージョン2.0.0
+Mininet VM 버전 2.0.0
   http://mininet.org/download/
 
-Open vSwitch バージョン1.11.0
+Open vSwitch 버전 1.11.0
   http://openvswitch.org/download/
 
-Ryu バージョン3.2
+Ryu 버전 3.2
   https://github.com/osrg/ryu/
 
     .. rst-class:: console
@@ -759,40 +758,41 @@ Ryu バージョン3.2
         $ sudo pip install ryu
 
 
-ここでは、Ryu用OpenFlow TutorialのVMイメージを利用します。
+여기에서는 Ryu 용 OpenFlow Tutorial의 VM 이미지를 사용합니다. 
 
-Mininetの実行
-^^^^^^^^^^^^^
+Mininet 실행
+^^^^^^^^^^^^
 
-mininetからxtermを起動するため、Xが使える環境が必要です。
 
-ここでは、OpenFlow TutorialのVMを利用しているため、
-sshでX11 Forwardingを有効にしてログインします。
+mininet에서 xterm을 시작하기 위해 X를 사용할 수있는 환경이 필요합니다. 
+
+여기에서는 OpenFlow Tutorial VM을 이용하고 있기 때문에,
+ssh에서 X11 Forwarding을 사용하여 로그인합니다. 
 
     ::
 
-        $ ssh -X ryu@<VMのアドレス>
+        $ ssh -X ryu@<VM 주소>
 
-ユーザー名は ``ryu`` 、パスワードも ``ryu`` です。
+사용자 이름은 ``ryu`` , 암호도 ``ryu`` 입니다.
 
 
-ログインできたら、 ``mn`` コマンドによりMininet環境を起動します。
+로그인 후 ``mn`` 명령으로 Mininet 환경을 시작합니다.
 
-構築する環境は、ホスト3台、スイッチ1台のシンプルな構成です。
+구축 환경은 호스트 3 대, 스위치 하나의 간단한 구성입니다.
 
-mnコマンドのパラメータは、以下のようになります。
+mn 명령의 매개 변수는 다음과 같습니다. 
 
 ============ ========== ===========================================
-パラメータ   値         説明
+매개변수     값         설명
 ============ ========== ===========================================
-topo         single,3   スイッチが1台、ホストが3台のトポロジ
-mac          なし       自動的にホストのMACアドレスをセットする
-switch       ovsk       Open vSwitchを使用する
-controller   remote     OpenFlowコントローラは外部のものを利用する
-x            なし       xtermを起動する
+topo         single,3   스위치 1 개, 호스트가 3 개의 토폴로지 
+mac          없음       자동으로 호스트의 MAC 주소를 설정한다 
+switch       ovsk       Open vSwitch를 사용
+controller   remote     OpenFlow 컨트롤러는 외부의 것을 이용하기
+x            없음       xterm을 시작
 ============ ========== ===========================================
 
-実行例は以下のようになります。
+실행 예는 다음과 같습니다.
 
 .. rst-class:: console
 
@@ -817,14 +817,14 @@ x            なし       xtermを起動する
     *** Starting CLI:
     mininet>
 
-実行するとデスクトップPC上でxtermが5つ起動します。
-それぞれ、ホスト1～3、スイッチ、コントローラに対応します。
+실행하면 데스크탑 PC에서 xterm을 5 개 시작합니다.
+각 호스트 1 ~ 3 스위치 컨트롤러에 대응합니다.
 
-スイッチのxtermからコマンドを実行して、使用するOpenFlowのバージョンを
-セットします。ウインドウタイトルが「switch: s1 (root)」となっている
-ものがスイッチ用のxtermです。
+스위치 xterm에서 명령을 실행하여 사용하는 OpenFlow 버전을
+세트합니다. 윈도우 제목이 「switch : s1 (root)」이다
+무슨 스위치 용 xterm입니다.
 
-まずはOpen vSwitchの状態を見てみます。
+우선 Open vSwitch의 상태를보고합니다. 
 
 switch: s1:
 
@@ -859,10 +859,10 @@ switch: s1:
             port 4: s1-eth3
     root@ryu-vm:~#
 
-スイッチ(ブリッジ) *s1* ができていて、ホストに対応するポートが
-3つ追加されています。
+스위치 (브리지) *s1* 수 있고, 호스트에 해당 포트가
+3 개의 추가되어 있습니다.
 
-次にOpenFlowのバージョンとして1.3を設定します。
+다음 OpenFlow 버전으로 1.3을 설정합니다. 
 
 switch: s1:
 
@@ -873,7 +873,7 @@ switch: s1:
     root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
     root@ryu-vm:~#
 
-空のフローテーブルを確認してみます。
+빈 흐름 테이블을 확인하여보십시오. 
 
 switch: s1:
 
@@ -885,17 +885,17 @@ switch: s1:
     OFPST_FLOW reply (OF1.3) (xid=0x2):
     root@ryu-vm:~#
 
-ovs-ofctlコマンドには、オプションで使用するOpenFlowのバージョンを
-指定する必要があります。デフォルトは *OpenFlow10* です。
+ovs-ofctl 명령에는 선택적으로 사용할 OpenFlow 버전을
+지정해야합니다. 기본값은 *OpenFlow10* 입니다. 
 
 
-スイッチングハブの実行
-^^^^^^^^^^^^^^^^^^^^^^
+스위칭 허브의 실행
+^^^^^^^^^^^^^^^^^^
 
-準備が整ったので、Ryuアプリケーションを実行します。
+준비 하였으므로 Ryu 응용 프로그램을 실행합니다.
 
-ウインドウタイトルが「controller: c0 (root)」となっているxtermから
-次のコマンドを実行します。
+윈도우 제목이 「controller : c0 (root)」이다 xterm에서
+다음 명령을 실행합니다. 
 
 controller: c0:
 
@@ -926,7 +926,7 @@ controller: c0:
     switch features ev version: 0x4 msg_type 0x6 xid 0xff9ad15b OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
-OVSとの接続に時間がかかる場合がありますが、少し待つと上のように
+OVS와의 연결에 시간이 걸리는 경우가 있습니다만, 조금 기다리면 위와 같이
 
 .. rst-class:: console
 
@@ -937,12 +937,12 @@ OVSとの接続に時間がかかる場合がありますが、少し待つと�
     ...
     move onto main mode
 
-と表示されます。
+로 표시됩니다. 
 
-これで、OVSと接続し、ハンドシェイクが行われ、Table-missフローエントリが
-追加され、Packet-Inを待っている状態になっています。
+이제 OVS와 연결 핸드 셰이크가 행해져 Table-miss 흐름 항목이
+추가 된 Packet-In을 기다리고있는 상태가되어 있습니다.
 
-Table-missフローエントリが追加されていることを確認します。
+Table-miss 흐름 항목이 추가되어 있는지 확인합니다. 
 
 switch: s1:
 
@@ -955,39 +955,39 @@ switch: s1:
      cookie=0x0, duration=105.975s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:65535
     root@ryu-vm:~#
 
-優先度が0で、マッチがなく、アクションにCONTROLLER、送信データサイズ65535
-(0xffff = OFPCML_NO_BUFFER)が指定されています。
+우선 순위가 0에 매치가없고, 액션에 CONTROLLER 전송 데이터 크기 65535
+(0xffff = OFPCML_NO_BUFFER)이 지정되어 있습니다. 
 
 
-動作の確認
-^^^^^^^^^^
+동작 확인
+^^^^^^^^^
 
-ホスト1からホスト2へpingを実行します。
+호스트 1에서 호스트 2로 ping을 실행합니다. 
 
 1. ARP request
 
-    この時点では、ホスト1はホスト2のMACアドレスを知らないので、ICMP echo
-    requestに先んじてARP requestをブロードキャストするはずです。
-    このブロードキャストパケットはホスト2とホスト3で受信されます。
+    이 시점에서 호스트 1 호스트 2의 MAC 주소를 모르기 때문에 ICMP echo
+    request 앞서서 ARP request를 브로드 캐스팅하는 것입니다.
+    이 브로드 캐스트 패킷은 호스트 2 및 호스트 3에서 수신됩니다. 
 
 2. ARP reply
 
-    ホスト2がARPに応答して、ホスト1にARP replyを返します。
+    호스트 2가 ARP 응답하여 호스트 1에 ARP reply를 반환합니다. 
 
 3. ICMP echo request
 
-    これでホスト1はホスト2のMACアドレスを知ることができたので、echo request
-    をホスト2に送信します。
+    이제 호스트 1 호스트 2의 MAC 주소를 알 수 있었으므로, echo request 
+    호스트 2에 보냅니다. 
 
 4. ICMP echo reply
 
-    ホスト2はホスト1のMACアドレスを既に知っているので、echo replyをホスト1
-    に返します。
+    호스트 2는 호스트 1의 MAC 주소를 이미 알고 있기 때문에, echo reply를 
+    호스트 1에 반환합니다. 
 
-このような通信が行われるはずです。
+이러한 통신이 이루어지는 것입니다.
 
-pingコマンドを実行する前に、各ホストでどのようなパケットを受信したかを確認
-できるようにtcpdumpコマンドを実行しておきます。
+ping 명령을 실행하기 전에 각 호스트에 어떤 패킷을 수신했는지 확인
+수 있도록 tcpdump 명령을 실행해야합니다. 
 
 host: h1:
 
@@ -1020,8 +1020,8 @@ host: h3:
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
 
-それでは、最初にmnコマンドを実行したコンソールで、次のコマンドを実行して
-ホスト1からホスト2へpingを発行します。
+그럼 먼저 mn 명령을 실행 한 콘솔에서 다음 명령을 실행
+호스트 1에서 호스트 2로 ping을 실행합니다. 
 
 .. rst-class:: console
 
@@ -1037,9 +1037,9 @@ host: h3:
     mininet>
 
 
-ICMP echo replyは正常に返ってきました。
+ICMP echo reply 정상으로 돌아 왔습니다.
 
-まずはフローテーブルを確認してみましょう。
+우선 흐름 테이블을 확인합니다.
 
 switch: s1:
 
@@ -1054,22 +1054,22 @@ switch: s1:
      cookie=0x0, duration=48.402s, table=0, n_packets=1, n_bytes=42, priority=1,in_port=1,dl_dst=00:00:00:00:00:02 actions=output:2
     root@ryu-vm:~#
 
-Table-missフローエントリ以外に、優先度が1のフローエントリが2つ登録されて
-います。
+Table-miss 흐름 항목 이외에 우선 순위가 1 흐름 항목이 2 개 등록되어
+있습니다.
 
-(1) 受信ポート(in_port):2, 宛先MACアドレス(dl_dst):ホスト1 →
-    動作(actions):ポート1に転送
-(2) 受信ポート(in_port):1, 宛先MACアドレス(dl_dst):ホスト2 →
-    動作(actions):ポート2に転送
+(1) 수신 포트 (in_port):2, MAC 수신 주소(dl_dst):호스트 1 →
+    동작(actions):포트1로 전송
+(2) 수신 포트 (in_port):1, MAC 수신 주소(dl_dst):호스트 2 →
+    동작(actions):포트2로 전송
 
-(1)のエントリは2回参照され(n_packets)、(2)のエントリは1回参照されています。
-(1)はホスト2からホスト1宛の通信なので、ARP replyとICMP echo replyの2つが
-マッチしたものでしょう。
-(2)はホスト1からホスト2宛の通信で、ARP requestはブロードキャストされるので、
-これはICMP echo requestによるもののはずです。
+(1) 항목은 2 번 참조됩니다 (n_packets), (2) 항목은 1 번 참조됩니다.
+(1)는 호스트 2에서 호스트 1에게 통신이므로 ARP reply 및 ICMP echo reply 두 가지
+일치하는 것이지요.
+(2)는 호스트 1에서 호스트 2에게 통신에서 ARP request는 브로드 캐스트되므로
+이것은 ICMP echo request에 의한 것 일 것입니다.
 
 
-それでは、simple_switch_13のログ出力を見てみます。
+그럼 simple_switch_13 로깅을보고 있습니다. 
 
 controller: c0:
 
@@ -1085,20 +1085,20 @@ controller: c0:
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
 
 
-1つ目のPacket-Inは、ホスト1が発行したARP requestで、ブロードキャストなので
-フローエントリは登録されず、Packet-Outのみが発行されます。
+첫 번째 Packet-In 호스트 1이 발행 한 ARP request에서 방송이므로
+흐름 항목이 등록되지 않고 Packet-Out 만 발행됩니다.
 
-2つ目は、ホスト2から返されたARP replyで、宛先MACアドレスがホスト1となって
-いるので前述のフローエントリ(1)が登録されます。
+두 번째는 호스트 2에서 반환 된 ARP reply에서 목적지 MAC 주소가 호스트 1이되고
+그래서 위의 흐름 항목 (1)이 등록됩니다.
 
-3つ目は、ホスト1からホスト2へ送信されたICMP echo requestで、フローエントリ
-(2)が登録されます。
+세 번째는 호스트 1에서 호스트 2로 전송 된 ICMP echo request에서 흐름 항목
+(2)이 등록됩니다.
 
-ホスト2からホスト1に返されたICMP echo replyは、登録済みのフローエントリ(1)
-にマッチするため、Packet-Inは発行されずにホスト1へ転送されます。
+호스트 2에서 호스트 1에 반환 된 ICMP echo reply는 등록 된 흐름 항목 (1)
+일치하기 때문에 Packet-In은 발행되지 않고 호스트 1에 전송됩니다.
 
 
-最後に各ホストで実行したtcpdumpの出力を見てみます。
+마지막으로 각 호스트에서 실행 한 tcpdump의 출력을보고 있습니다. 
 
 host: h1:
 
@@ -1115,10 +1115,10 @@ host: h1:
     20:38:04.722973 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
 
 
-ホスト1では、最初にARP requestがブロードキャストされていて、続いてホスト2から
-返されたARP replyを受信しています。
-次にホスト1が発行したICMP echo request、ホスト2から返されたICMP echo replyが
-受信されています。
+호스트 1에서 먼저 ARP request가 방송되고있어, 계속 호스트 2에서
+반환 된 ARP reply를 받고 있습니다.
+그런 다음 호스트 1이 발행 한 ICMP echo request 호스트 2에서 반환 된 ICMP echo reply가
+수신되어 있습니다. 
 
 host: h2:
 
@@ -1135,9 +1135,9 @@ host: h2:
     20:38:04.722747 00:00:00:00:00:02 > 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 > 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
 
 
-ホスト2では、ホスト1が発行したARP requestを受信し、ホスト1にARP replyを
-返しています。続いて、ホスト1からのICMP echo requestを受信し、ホスト1に
-echo replyを返しています。
+호스트 2에서 호스트 1이 발행 한 ARP request를 수신 호스트 1에 ARP reply를
+반환합니다. 그런 다음 호스트 1에서 ICMP echo request를 수신 호스트 1
+echo reply를 반환합니다. 
 
 host: h3:
 
@@ -1151,15 +1151,15 @@ host: h3:
     20:38:04.637954 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
 
 
-ホスト3では、最初にホスト1がブロードキャストしたARP requestのみを受信
-しています。
+호스트 3은 먼저 호스트 1의 브로드 캐스팅 된 ARP request 만 수신
+하고 있습니다. 
 
 
 
-まとめ
-------
+정리
+----
 
-本章では、簡単なスイッチングハブの実装を題材に、Ryuアプリケーションの実装
-の基本的な手順と、OpenFlowによるOpenFlowスイッチの簡単な制御方法について
-説明しました。
+이 장에서는 간단한 스위칭 허브 구현을 주제로 Ryu 응용 프로그램 구현
+기본적인 절차와 OpenFlow에 따르면 OpenFlow 스위치의 간단한 제어 방법
+설명했습니다.
 

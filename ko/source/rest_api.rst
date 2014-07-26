@@ -1,60 +1,60 @@
 .. _ch_rest_api:
 
-REST連携
+REST연계
 ========
 
-本章では、「 :ref:`ch_switching_hub` 」で説明したスイッチングハブに、
-REST連携の機能を追加します。
+이 장에서는 「 :ref:`ch_switching_hub` 」에서 설명한 스위칭 허브에
+REST 연계 기능을 추가합니다.
 
 
-REST APIの組み込み
-------------------
+REST API의 기본
+---------------
 
-RyuにはWSGIに対応したWebサーバの機能があります。
-この機能を利用することで、他のシステムやブラウザなどとの連携をする際に役に立つ、
-REST APIを作成することができます。
+Ryu에는 WSGI에 대응 한 Web 서버의 기능이 있습니다.
+이 기능을 이용하여 다른 시스템이나 브라우저 등과의 연계를 할 때 유용한,
+REST API를 만들 수 있습니다.
 
 .. NOTE::
 
-    WSGIとは、Pythonにおいて、WebアプリケーションとWebサーバをつなぐための
-    統一されたフレームワークのことを指します。
+    WSGI는 Python에서 Web 어플리케이션과 Web 서버 연결을위한
+    통일 된 프레임 워크를 의미합니다.
 
 
-REST API付きスイッチングハブの実装
-----------------------
-「 :ref:`ch_switching_hub` 」で説明したスイッチングハブに、次の二つのREST APIを追加してみましょう。
+REST API된 스위칭 허브 구현
+---------------------------
+「 :ref:`ch_switching_hub` 」에서 설명한 스위칭 허브에 다음 두 REST API를 추가하여 봅시다.
 
-1. MACアドレステーブル取得API
+1. MAC 주소 테이블 취득 API
 
-    スイッチングハブが保持しているMACアドレステーブルの内容を返却します。
-    MACアドレスおよびポート番号の組をJSON形式で返却します。
+    스위칭 허브가 보유하고있는 MAC 주소 테이블의 내용을 반환합니다.
+    MAC 주소와 포트 번호 쌍을 JSON 형식으로 반환합니다.
 
-2. MACアドレステーブル登録API
+2. MAC 주소 테이블 등록 API
 
-    MACアドレスとポート番号の組をMACアドレステーブルに
-    登録し、スイッチへフローエントリの追加を行います。
+    MAC 주소와 포트 번호 쌍을 MAC 주소 테이블에
+    등록하고 스위치 흐름 항목의 추가를합니다.
 
 
-それではソースコードを見てみましょう。
+그러면 소스 코드를 살펴 봅시다.
 
 .. rst-class:: sourcecode
 
 .. literalinclude:: sources/simple_switch_rest_13.py
 
-simple_switch_rest_13.pyでは、二つのクラスを定義しています。
+simple_switch_rest_13.py에서는 두 클래스를 정의하고 있습니다.
 
-一つ目は、
-HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス ``SimpleSwitchController`` です。
+첫째,
+HTTP 요청을받는 URL과 해당 메서드를 정의하는 컨트롤러 ``SimpleSwitchController`` 입니다.
 
-二つ目は「 :ref:`ch_switching_hub` 」を拡張し、MACアドレステーブルの更新を
-行えるようにしたクラス ``SimpleSwitchRest13`` です。
+두 번째는 「 :ref:`ch_switching_hub` 」를 확장하고 MAC 주소 테이블 업데이트를
+할 수 있도록 한 클래스 ``SimpleSwitchRest13`` 입니다.
 
-``SimpleSwitchRest13`` では、スイッチにフローエントリを追加するため、
-FeaturesReplyメソッドをオーバライドし、datapathオブジェクトを
-保持しています。
+``SimpleSwitchRest13`` 는 스위치에 흐름 항목을 추가하기 위해
+FeaturesReply 메서드를 오버라이드하고 datapath 개체를
+보유하고 있습니다.
 
-SimpleSwitchRest13クラスの実装
-----------------------
+SimpleSwitchRest13 클래스의 구현
+--------------------------------
 .. rst-class:: sourcecode
 
 ::
@@ -64,8 +64,8 @@ SimpleSwitchRest13クラスの実装
         _CONTEXTS = { 'wsgi': WSGIApplication }
     ...
 
-クラス変数 ``_CONTEXT`` で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、
-``wsgi`` というキーで、WSGIのWebサーバインスタンスが取得できます。
+클래스 변수 ``_CONTEXT`` 에서 Ryu의 WSGI 대응 Web 서버의 클래스를 지정합니다. 그러면
+``wsgi`` 라는 키에서 WSGI의 Web 서버 인스턴스가 얻을 수 있습니다.
 
 .. rst-class:: sourcecode
 
@@ -78,11 +78,11 @@ SimpleSwitchRest13クラスの実装
         wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
     ...
 
-コンストラクタでは、後述するコントローラクラスを登録するために、
-``WSGIApplication`` のインスタンスを取得しています。登録には、 ``register`` メソッドを使用します。
-``register`` メソッド実行の際、コントローラのコンストラクタで ``SimpleSwitchRest13`` クラスのインスタンスに
-アクセスできるように、 ``simple_switch_api_app`` というキー名で
-ディクショナリオブジェクトを渡しています。
+생성자는 후술하는 컨트롤러 클래스를 등록하기 위하여,
+``WSGIApplication`` 의 인스턴스를 취득하고 있습니다. 등록은 ``register`` 메서드를 사용합니다.
+``register`` 메소드 실행시 컨트롤러의 생성자에서 ``SimpleSwitchRest13`` 클래스의 인스턴스에
+액세스 할 수 있도록 ``simple_switch_api_app`` 라는 키 이름
+사전 개체를 전달합니다.
 
 .. rst-class:: sourcecode
 
@@ -96,11 +96,11 @@ SimpleSwitchRest13クラスの実装
         self.mac_to_port.setdefault(datapath.id, {})
     ...
 
-親クラスの ``switch_features_handler`` をオーバライドしています。
-このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、
-イベントオブジェクト ``ev`` に格納された ``datapath`` オブジェクトを取得し、
-インスタンス変数 ``switches`` に保持しています。
-また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。
+부모 클래스의 ``switch_features_handler`` 을 무시하고 있습니다.
+이 메서드는 SwitchFeatures 이벤트가 발생한 시간에
+이벤트 객체 ``ev`` 에 포함 된 ``datapath`` 개체를 가져옵니다,
+인스턴스 변수 ``switches`` 보유하고 있습니다.
+또한이시기에 MAC 주소 테이블에 기본값으로 빈 사전을 설정하고 있습니다.
 
 
 .. rst-class:: sourcecode
@@ -134,35 +134,35 @@ SimpleSwitchRest13クラスの実装
         return mac_table
     ...
 
-指定のスイッチにMACアドレスとポートを登録するメソッドです。
-REST APIがPUTメソッドで呼ばれると実行されます。
+지정된 스위치에 MAC 주소와 포트를 등록하는 메서드입니다.
+REST API가 PUT 방식으로 불리는이 실행됩니다.
 
-引数　``entry`` には、登録をしたいMACアドレスと接続ポートのペアが格納されています。
+인수 ``entry`` 에는 등록을하려는 MAC 주소와 연결 포트 쌍이 포함되어 있습니다.
 
-MACアドレステーブル ``self.mac_to_port`` の情報を参照しながら、
-スイッチに登録するフローエントリを求めていきます。
+MAC 주소 테이블 ``self.mac_to_port`` 의 정보를 참조하여
+스위치에 등록하는 흐름 항목을 찾아갑니다.
 
-例えば、MACアドレステーブルに、次のMACアドレスと接続ポートのペアが登録されていて、
+예를 들어, MAC 주소 테이블에 다음의 MAC 주소와 연결 포트 쌍이 등록되어 있고,
 
 * 00:00:00:00:00:01, 1
 
-引数 ``entry`` で渡されたMACアドレスとポートのペアが、
+인수 ``entry`` 에 전달 된 MAC 주소와 포트 쌍이
 
 * 00:00:00:00:00:02, 2
 
-の場合、スイッチに登録する必要のあるフローエントリは次の通りです。
+해당 스위치에 등록해야하는 흐름 항목은 다음과 같습니다.
 
-* マッチング条件：in_port = 1, dst_mac = 00:00:00:00:00:02  アクション：output=2
-* マッチング条件：in_port = 2, dst_mac = 00:00:00:00:00:01  アクション：output=1
+* 매칭 조건 : in_port = 1, dst_mac = 00:00:00:00:00:02 조치 : output = 2
+* 매칭 조건 : in_port = 2, dst_mac = 00:00:00:00:00:01 조치 : output = 1
 
-フローエントリの登録は親クラスの ``add_flow`` メソッドを利用しています。最後に、
-引数 ``entry`` で渡された情報をMACアドレステーブルに格納しています。
+흐름 항목의 등록은 부모 클래스의 ``add_flow`` 메소드를 이용하고 있습니다. 마지막으로,
+인수 ``entry`` 에서 전달 된 정보를 MAC 주소 테이블에 저장합니다.
 
 
-SimpleSwitchControllerクラスの実装
-----------------------
-次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。
-クラス名は ``SimpleSwitchController`` です。
+SimpleSwitchController 클래스의 구현
+------------------------------------
+다음은 REST API에 대한 HTTP 요청을 수락 컨트롤러 클래스입니다.
+클래스 이름은 ``SimpleSwitchController`` 입니다.
 
 .. rst-class:: sourcecode
 
@@ -174,7 +174,7 @@ SimpleSwitchControllerクラスの実装
             self.simpl_switch_spp = data[simple_switch_instance_name]
     ...
 
-コンストラクタで、 ``SimpleSwitchRest13`` クラスのインスタンスを取得します。
+생성자에서 ``SimpleSwitchRest13`` 클래스의 인스턴스를 가져옵니다.
 
 .. rst-class:: sourcecode
 
@@ -194,38 +194,38 @@ SimpleSwitchControllerクラスの実装
         return Response(content_type='application/json', body=body)
     ...
 
-REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけに
-Ryuで定義された ``route`` デコレータを用いています。
+REST API URL과 해당 프로세스를 구현하는 부분입니다. 이 방법과 URL와의 바인딩이
+Ryu에서 정의 된 ``route`` 장식을 이용하고 있습니다.
 
-デコレータで指定する内容は、次の通りです。
+장식으로 지정하는 내용은 다음과 같습니다.
 
-* 第1引数
+* 제1인수
 
-    任意の名前
+    모든 이름
 
-* 第2引数
+* 제2인수
 
-    URLを指定します。
-    URLがhttp://<サーバIP>:8080/simpleswitch/mactable/<データパスID>
-    となるようにします。
+    URL을 지정합니다.
+    URL이 http://<서버 IP>:8080/simpleswitch/mactable/<데이터 경로ID>
+    가 되도록 합니다.
 
-* 第3引数
+* 제3인수
 
-    HTTPメソッドを指定します。
-    GETメソッドを指定しています。
+    HTTP 메서드를 지정합니다.
+    GET 메서드를 지정합니다.
 
-* 第4引数
+* 제4인수
 
-    指定箇所の形式を指定します。
-    URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、
-    ryu/lib/dpid.pyの ``DPID_PATTERN`` で定義された16桁の16進数値の表現に合致することを条件としています。
+    지정 위치의 형식을 지정합니다.
+    URL(/simpleswitch/mactable/{dpid})의 {dpid} 부분이
+    ryu/lib/dpid.py의 ``DPID_PATTERN`` 에서 정의 된 16 자리의 16 진수 표현에 따르는 것을 조건으로하고 있습니다.
 
-第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、
-``list_mac_table`` メソッドが呼ばれます。
-このメソッドは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、
-JSON形式に変換し呼び出し元に返却しています。
+제 2 인수로 지정된 URL에서 REST API가 불려 그 때의 HTTP 메소드가 GET 인 경우
+``list_mac_table`` 메소드를 호출합니다.
+이 메소드는, {dpid} 부분에서 지정된 데이터 경로 ID에 해당하는 MAC 주소 테이블을 검색하고
+JSON으로 변환 호출자에게 반환합니다.
 
-なお、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。
+또한, Ryu에 연결하지 않은 미지의 스위치의 데이터 경로 ID를 지정하면 응답 코드 404을 반환합니다.
 
 .. rst-class:: sourcecode
 
@@ -249,22 +249,22 @@ JSON形式に変換し呼び出し元に返却しています。
             return Response(status=500)
     ...
 
-次は、MACアドレステーブルを登録するREST APIです。
+다음은 MAC 주소 테이블을 등록하는 REST API입니다.
 
-URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合に
-``put_mac_table`` メソッドが呼ばれます。
-このメソッドでは、内部でスイッチングハブインスタンスの ``set_mac_to_port`` メソッドを呼び出しています。
-なお、 ``put_mac_table`` メソッド内で例外が発生した場合、レスポンスコード500を返却します。
-また、 ``list_mac_table`` メソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定すると
-レスポンスコード404を返します。
+URL은 MAC 주소 테이블 취득시의 API와 동일하지만 HTTP 메서드가 PUT의 경우
+``put_mac_table`` 메소드를 호출합니다.
+이 메서드는 내부적으로 스위칭 허브 인스턴스의 ``set_mac_to_port`` 메서드를 호출합니다.
+또한 ``put_mac_table`` 메소드 내에서 예외가 발생하면 응답 코드 500을 반환합니다.
+또한 ``list_mac_table`` 메소드뿐만 아니라 Ryu에 연결하지 않은 미지의 스위치의 데이터 경로 ID를 지정하면
+응답 코드 404을 반환합니다.
 
-REST API搭載スイッチングハブの実行
---------------------------
-REST APIを追加したスイッチングハブを実行してみましょう。
+REST API 탑재 스위칭 허브의 실행
+--------------------------------
+REST API를 추가 한 스위칭 허브를 실행하자.
 
-最初に「 :ref:`ch_switching_hub` 」と同様にMininetを実行します。ここでも
-スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。
-続いて、REST APIを追加したスイッチングハブを起動します。
+먼저 「 :ref:`ch_switching_hub` 」와 같이 Mininet를 실행합니다. 여기서도
+스위치 OpenFlow 버전에 OpenFlow13을 설정하는 것을 잊지 마십시오.
+이어 REST API를 추가 한 스위칭 허브를 시작합니다.
 
 .. rst-class:: console
 
@@ -297,10 +297,10 @@ REST APIを追加したスイッチングハブを実行してみましょう。
     switch features ev version: 0x4 msg_type 0x6 xid 0x78dd7a72 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
-起動時のメッセージの中に、「(31135) wsgi starting up on http://0.0.0.0:8080/」という行がありますが、
-これは、Webサーバがポート番号8080で起動したことを表しています。
+시작 메시지에 "(31135) wsgi starting up on http://0.0.0.0:8080/"줄이 있습니다 만,
+이것은 Web 서버가 포트 번호 8080으로 시작했음을 나타냅니다.
 
-次にmininetのシェル上で、h1からh2へpingを発行します。
+다음 mininet 쉘에서 h1에서 h2로 ping을 실행합니다.
 
 .. rst-class:: console
 
@@ -315,7 +315,7 @@ REST APIを追加したスイッチングハブを実行してみましょう。
     rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms
 
 
-この時、RyuへのPacket-Inは3回発生しています。
+이때 Ryu의 Packet-In은 3 회 발생하고 있습니다.
 
 .. rst-class:: console
 
@@ -328,8 +328,8 @@ REST APIを追加したスイッチングハブを実行してみましょう。
     EVENT ofp_event->SimpleSwitchRest13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
 
-ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。
-今回は、REST APIの呼び出しにcurlコマンドを使用します。
+여기서, 스위칭 허브의 MAC 테이블을 검색하는 REST API를 실행하자.
+이번에는 REST API 호출에 curl 명령을 사용합니다.
 
 .. rst-class:: console
 
@@ -338,12 +338,12 @@ REST APIを追加したスイッチングハブを実行してみましょう。
     ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
-h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。
+h1과 h2 두 호스트가 MAC 주소 테이블에서 학습 된 것을 알 수 있습니다.
 
-今度は、h1,h2の2台のホストをあらかじめMACアドレステーブルに格納し、
-pingを実行してみます。いったんスイッチングハブとMininetを停止します。
-次に、再度Mininetを起動し、OpenFlowバージョンをOpenFlow13に設定後、
-スイッチングハブを起動します。
+이번에는 h1, h2의 두 호스트를 미리 MAC 주소 테이블에 저장하고
+ping을 실행 해 봅니다. 일단 스위칭 허브와 Mininet을 중지합니다.
+그런 다음 다시 Mininet를 시작하고 OpenFlow 버전을 OpenFlow13로 설정 후
+스위칭 허브를 시작합니다.
 
 .. rst-class:: console
 
@@ -359,8 +359,8 @@ pingを実行してみます。いったんスイッチングハブとMininetを
     switch_features_handler inside sub class
     move onto main mode
 
-次に、MACアドレステーブル更新用のREST APIを1ホストごとに呼び出します。
-REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "port" : 接続ポート番号}となるようにします。
+그런 다음 MAC 주소 테이블 업데이트를위한 REST API를 1 호스트마다 호출합니다.
+REST API를 호출 할 때 데이터 형식은 { "mac": "MAC 주소", "port": 연결 포트 번호}가되도록합니다.
 
 .. rst-class:: console
 
@@ -371,9 +371,9 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
     ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
-これらのコマンドを実行すると、h1,h2に対応したフローエントリがスイッチに登録されます。
+이 명령을 실행하면 h1, h2에 대응 한 흐름 항목이 스위치에 등록됩니다.
 
-続いて、h1からh2へpingを実行します。
+이어 h1에서 h2로 ping을 실행합니다.
 
 .. rst-class:: console
 
@@ -399,13 +399,13 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
     EVENT ofp_event->SimpleSwitchRest13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
 
-この時、スイッチにはすでにフローエントリが存在するため、Packet-Inはh1からh2へのARPリクエストの
-時だけ発生し、それ以降のパケットのやりとりでは発生していません。
+이때 스위치는 이미 흐름 항목이 존재하기 때문에 Packet-In은 h1에서 h2의 ARP 요청
+때만 발생 이후의 패킷 교환에서는 발생하지 않습니다.
 
-まとめ
-------
+정리
+----
 
-本章では、MACアドレステーブルの参照や更新をする機能を題材として、
-REST APIの追加方法について説明しました。その他の応用として、スイッチに任意のフローエントリを追加できる
-ようなREST APIを作成し、ブラウザから操作できるようにするのもよいのではないでしょうか。
+이 장에서는 MAC 주소 테이블 참조하거나 업데이트하는 기능을 소재로
+REST API를 추가하는 방법에 대해 설명했습니다. 기타 응용으로서 스위치에 어떤 흐름 항목을 추가 할 수
+같은 REST API를 만들고 브라우저에서 사용할 수 있도록하는 것도 좋은 것이 아닐까요.
 

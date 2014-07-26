@@ -41,7 +41,7 @@ help:
 	@echo "  epub       to make an epub"
 	@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
-	@echo "  latexpdfja to make LaTeX files and run them through platex and dvipdfmx"
+	@echo "  latexpdfko to make LaTeX files and run them through platex and dvipdfmx"
 	@echo "  text       to make text files"
 	@echo "  man        to make manual pages"
 	@echo "  texinfo    to make Texinfo files"
@@ -123,16 +123,16 @@ latexpdf: $(IMG_EPS)
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
-latexpdfja: $(IMG_EPS)
+latexpdfko: $(IMG_EPS)
 	$(SPHINXBUILD) -b ryulatex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through platex and dvipdfmx..."
-	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ja
+	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ko
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 extrapdf: $(IMG_EPS)
 	$(SPHINXBUILD) -b ryulatex -c source/extra $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through platex and dvipdfmx..."
-	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ja
+	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ko
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 text:
