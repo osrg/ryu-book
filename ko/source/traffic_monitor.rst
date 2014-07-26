@@ -3,7 +3,7 @@
 트래픽 모니터
 =============
 
-이 장에서는 「: ref :`ch_switching_hub` 」에서 설명한 스위칭 허브에 OpenFlow 스위치
+이 장에서는 「 :ref:`ch_switching_hub` 」에서 설명한 스위칭 허브에 OpenFlow 스위치
 통계를 모니터하는 기능을 추가합니다. 
 
 
@@ -342,7 +342,7 @@ PortStats
 
 그럼 실제로이 트래픽 모니터를 실행 해 봅니다.
 
-먼저 「 : ref :`ch_switching_hub` 」와 같이 Mininet를 실행합니다. 여기서
+먼저 「 :ref:`ch_switching_hub` 」와 같이 Mininet를 실행합니다. 여기서
 스위치 OpenFlow 버전에 OpenFlow13을 설정하는 것을 잊지 마십시오.
 
 다음 드디어 트래픽 모니터 실행합니다. 

@@ -9,13 +9,13 @@ Ryu 아키텍처 를 소개 합니다.
 
 Ryu 응용 프로그램 프로그래밍 모델을 설명합니다.
 
-.. only :: latex
+.. only:: latex
 
-    .. image :: images/arch/fig1.eps
+    .. image:: images/arch/fig1.eps
 
-.. only :: not latex
+.. only:: not latex
 
-    .. image :: images/arch/fig1.png
+    .. image:: images/arch/fig1.png
 
 응용 프로그램
 ^^^^^^^^^^^^^
@@ -71,7 +71,7 @@ eventlet 기능을 애플리케이션 에서 직접 사용될 수 있지만 ,
 이벤트 처리기 는 지정된 형식 의 이벤트 가 발생했을 때
 응용 프로그램 이벤트 루프 에서 호출됩니다.
 
-.. XXX CONTEXTS
-.. XXX 이벤트 유형
-.. XXX openflow message
-.. XXX ryu-manager 등 의 설명 은 어떤 장??
+..  XXX CONTEXTS
+..  XXX 이벤트 유형
+..  XXX openflow message
+..  XXX ryu-manager 등 의 설명 은 어떤 장??
