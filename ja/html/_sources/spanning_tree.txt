@@ -202,7 +202,41 @@ simple_switch_stp_13.pyを作成することとします。このプログラム
 .. literalinclude:: sources/simple_switch_stp_13.py
 
 
+.. NOTE::
 
+    使用するスイッチがOpen vSwitchの場合、バージョンや設定によっては
+    BPDUが転送されず、本アプリが正常に動作しないことがあります。
+    Open vSwitchではスイッチ自身の機能としてSTPを実装していますが、
+    この機能を無効(デフォルト設定)にしている場合、
+    IEEE 802.1Dで規定されるスパニングツリーのマルチキャストMACアドレス
+    "01:80:c2:00:00:00"を宛先とするパケットを転送しないためです。
+    本アプリを動作させる際は、下記のようなソース修正を行うことで、
+    この制約を回避できます。
+
+    ryu/ryu/lib/packet/bpdu.py:
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        # BPDU destination
+        #BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:00'
+        BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:0e'
+
+    なお、ソース修正後は変更を反映させるため、下記のコマンドを実行してください。
+
+    .. rst-class:: console
+
+    ::
+
+        $ cd ryu
+        $ sudo python setup.py install
+        running install
+        ...
+        ...
+        running install_scripts
+        Installing ryu-manager script to /usr/local/bin
+        Installing ryu script to /usr/local/bin
 
 
 実験環境の構築

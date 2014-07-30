@@ -316,6 +316,27 @@
                           <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>使用するスイッチがOpen vSwitchの場合、バージョンや設定によってはBPDUが転送されず、本アプリが正常に動作しないことがあります。Open vSwitchではスイッチ自身の機能としてSTPを実装していますが、この機能を無効(デフォルト設定)にしている場合、IEEE 802.1Dで規定されるスパニングツリーのマルチキャストMACアドレス&#8221;01:80:c2:00:00:00&#8221;を宛先とするパケットを転送しないためです。本アプリを動作させる際は、下記のようなソース修正を行うことで、この制約を回避できます。</p>
+<p>ryu/ryu/lib/packet/bpdu.py:</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># BPDU destination</span>
+<span class="c">#BRIDGE_GROUP_ADDRESS = &#39;01:80:c2:00:00:00&#39;</span>
+<span class="n">BRIDGE_GROUP_ADDRESS</span> <span class="o">=</span> <span class="s">&#39;01:80:c2:00:00:0e&#39;</span>
+</pre></div>
+</div>
+<p>なお、ソース修正後は変更を反映させるため、下記のコマンドを実行してください。</p>
+<div class="console last highlight-python"><div class="highlight"><pre>$ cd ryu
+$ sudo python setup.py install
+running install
+...
+...
+running install_scripts
+Installing ryu-manager script to /usr/local/bin
+Installing ryu script to /usr/local/bin
+</pre></div>
+</div>
+</div>
 <div class="section" id="id3">
 <h3>実験環境の構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>スパニングツリーアプリケーションの動作確認を行う実験環境を構築します。</p>
