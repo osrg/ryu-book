@@ -172,7 +172,40 @@ Source name: ``simple_switch_stp_13.py``
 .. literalinclude:: sources/simple_switch_stp_13.py
 
 
+.. NOTE::
 
+    If using the Open vSwitch, this application dose not wrok well depending
+    on the Open vSwitch's settings or version.
+    Open vSwitch has the STP implementation, but if this option is disabled
+    (by default), Open vSwitch drops the STP (BPDU) packets with the dest mac
+    address "01:80:c2:00:00:00" specified in IEEE 802.1D.
+    For only executing this application, you can avoid this constraint by
+    modifying the source code as follows.
+
+    ryu/ryu/lib/packet/bpdu.py:
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        # BPDU destination
+        #BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:00'
+        BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:0e'
+
+    Then, execute the following commands to affect the modification.
+
+    .. rst-class:: console
+
+    ::
+
+        $ cd ryu
+        $ sudo python setup.py install
+        running install
+        ...
+        ...
+        running install_scripts
+        Installing ryu-manager script to /usr/local/bin
+        Installing ryu script to /usr/local/bin
 
 
 Configuring the Experimental Environment

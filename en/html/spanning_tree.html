@@ -319,6 +319,33 @@ These ports suppress frame transfer.</p>
                           <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If using the Open vSwitch, this application dose not wrok well depending
+on the Open vSwitch&#8217;s settings or version.
+Open vSwitch has the STP implementation, but if this option is disabled
+(by default), Open vSwitch drops the STP (BPDU) packets with the dest mac
+address &#8220;01:80:c2:00:00:00&#8221; specified in IEEE 802.1D.
+For only executing this application, you can avoid this constraint by
+modifying the source code as follows.</p>
+<p>ryu/ryu/lib/packet/bpdu.py:</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># BPDU destination</span>
+<span class="c">#BRIDGE_GROUP_ADDRESS = &#39;01:80:c2:00:00:00&#39;</span>
+<span class="n">BRIDGE_GROUP_ADDRESS</span> <span class="o">=</span> <span class="s">&#39;01:80:c2:00:00:0e&#39;</span>
+</pre></div>
+</div>
+<p>Then, execute the following commands to affect the modification.</p>
+<div class="console last highlight-python"><div class="highlight"><pre>$ cd ryu
+$ sudo python setup.py install
+running install
+...
+...
+running install_scripts
+Installing ryu-manager script to /usr/local/bin
+Installing ryu script to /usr/local/bin
+</pre></div>
+</div>
+</div>
 <div class="section" id="configuring-the-experimental-environment">
 <h3>Configuring the Experimental Environment<a class="headerlink" href="#configuring-the-experimental-environment" title="Permalink to this headline">¶</a></h3>
 <p>Let&#8217;s configure an experimental environment to confirm operation of the spanning tree application.</p>
