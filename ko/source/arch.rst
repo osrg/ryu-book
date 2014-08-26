@@ -2,7 +2,7 @@
 ========
 
 Ryu 아키텍처 를 소개 합니다.
-각 클래스의 사용법 등은 'API 참조 <http://ryu.readthedocs.org/en/latest/>'를 참조하십시오.
+각 클래스의 사용법 등은 `API 레퍼런스 <http://ryu.readthedocs.org/en/latest/>`_ 를 참조하십시오.
 
 응용 프로그래밍 모델
 --------------------
