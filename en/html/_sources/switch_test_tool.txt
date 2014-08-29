@@ -224,13 +224,13 @@ The test tool is executed by the following command.
 ..
 
 
-    ===================== ==================================== =====================
-    Option                Explanation                          Default value
-    ===================== ==================================== =====================
-    --test-switch-target  Data path ID of test target switch   0000000000000001
-    --test-switch-tester  Data path ID of auxiliary switch     0000000000000002
-    --test-switch-dir     Directory path of test pattern file  ryu/tests/switch/of13
-    ===================== ==================================== =====================
+    ========================= ==================================== =====================
+    Option                    Explanation                          Default value
+    ========================= ==================================== =====================
+    ``--test-switch-target``  Data path ID of test target switch   0000000000000001
+    ``--test-switch-tester``  Data path ID of auxiliary switch     0000000000000002
+    ``--test-switch-dir``     Directory path of test pattern file  ryu/tests/switch/of13
+    ========================= ==================================== =====================
 
 
 .. NOTE::
