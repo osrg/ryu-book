@@ -9,9 +9,9 @@ This section explains how to use the test tool to verify the degree of complianc
 Overview of Test Tool
 ---------------------
 
-This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.
+This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry and a meter entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.
 
-This tool is compatible with FlowMod message test of OpenFlow version 1.3.
+This tool is compatible with FlowMod message and MeterMod message test of OpenFlow version 1.3.
 
 
 ============================= ===================================
@@ -19,6 +19,7 @@ Test subject message          Corresponding parameters
 ============================= ===================================
 OpenFlow1.3 FlowMod message   match (Excludes IN_PHY_PORT)
                               actions (Excludes SET_QUEUE, GROUP)
+OpenFlow1.3 MeterMod message  All
 ============================= ===================================
 
 
@@ -30,7 +31,7 @@ Operation Overview
 Test execution image
 """"""""""""""""""""
 
-The following shows an image of operation when you run the test tool. "flow entry to be registered, "application packet" and "expected processing result to" are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to `Tool execution environment`_)
+The following shows an image of operation when you run the test tool. "flow entry or meter entry to be registered", "application packet" and "expected processing result to" are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to `Tool execution environment`_)
 
 
 .. only:: latex
@@ -54,6 +55,7 @@ Output image of test results
 """"""""""""""""""""""""""""
 
 The specified test items of the test pattern file are run in order and test results (OK / ERROR) are output. If a test result is ERROR, details of the error are also output.
+In addition, the test report of the number of OK / ERROR and the breakdown of ERRORs through the whole test are output.
 
 
 .. rst-class:: console
@@ -81,6 +83,14 @@ The specified test items of the test pattern file are run in order and test resu
 
     ---  Test end  ---
 
+    --- Test report ---
+    Received incorrect packet-in(4)
+        match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)-->'icmpv6_type=128,actions=output:2'
+        match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)-->'icmpv6_type=128,actions=output:CONTROLLER'
+        match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)-->'icmpv6_code=0,actions=output:2'
+        match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)-->'icmpv6_code=0,actions=output:CONTROLLER'
+
+    OK(6) / ERROR(4)
 
 
 
@@ -108,21 +118,40 @@ A test pattern file is a text file that has a ".json" extension. It is described
             "description": "xxxxxxxxxx", # Description of the test content
             "prerequisite": [
                 {
-                    "OFPFlowMod": {...}  # Flow entry to register
-                },                       # (Describe OFPFlowMod of Ryu in json format)
-                {...},                   #  In case of packet transfer (actions=output),
-                {...}                    #  specify "2" as the output port number.
+                    "OFPFlowMod": {...}  # Flow entry or Meter entry to register
+                },                       # (Describe OFPFlowMod or OFPMeterMod of Ryu
+                {                        #  in json format)
+                    "OFPMeterMod": {...} # If the expected processing result is
+                },                       # packet transfer (actions=output),
+                {...}                    # specify "2" as the output port number.
             ],
             "tests": [
                 {
-                    "ingress": [         # Packet to be applied
+                    # Packet to be applied
+                    # Depending on the packets are applied just once or continuously,
+                    # describe either (A) or (B)
+                    #  (A) Apply a paket
+                    "ingress": [
                         "ethernet(...)", # (Describe in format of Ryu packet library constructor)
                         "ipv4(...)",
                         "tcp(...)"
                     ],
+                    #  (B) Apply pakets continuously during some period
+                    "ingress": {
+                        "packets":{
+                            "data":[
+                                "ethernet(...)", # the same as (A)
+                                "ipv4(...)",
+                                "tcp(...)"
+                            ],
+                            "pktps": 1000,       # The number of the applied packets per second
+                            "duration_time": 30  # The time of packets application (seconds)
+                        }
+                    },
 
                     # Expected processing results
-                    # Depending on the type of processing results, describe either (a)(b)(c)
+                    # Depending on the type of processing results,
+                    # describe either (a), (b), (c) or (d)
                     #  (a) Confirmation test of packet transfer (actions=output:X)
                     "egress": [          # Expected transfer packet
                         "ethernet(...)",
@@ -139,6 +168,19 @@ A test pattern file is a text file that has a ".json" extension. It is described
                     "table-miss": [      # flow table ID that is expected to be table-miss
                         0
                     ]
+                    #  (d) Confirmation test of packet transfer throughput (actions=output:X)
+                    "egress":[
+                        "throughput":[
+                            {
+                                "OFPMatch":{   # Match to measure throughput
+                                  ...          # registered in flow entry of
+                                },             # auxiliary switch
+                                "kbps":1000    # (Describe in KBPS)
+                            },
+                            {...},
+                            {...}
+                        ]
+                    ]
                 },
                 {...},
                 {...}
@@ -148,10 +190,11 @@ A test pattern file is a text file that has a ".json" extension. It is described
         {...}                            # Test 3
     ]
 
+By description of "(B) Apply pakets continuously during some period" as packet to be applied and "(d) Confirmation test of packet transfer throughput (actions=output:X)" as expected processing results, you can measure the throughput of the test target switch.
 
 .. NOTE::
 
-    As a sample test pattern, the source tree of Ryu offers a test pattern file to check if each parameter that can be specified in the match/actions of OpenFlow1.3 FlowMod message works properly or not.
+    As a sample test pattern, the source tree of Ryu offers a test pattern file to check if each parameter that can be specified in the match/actions of OpenFlow1.3 FlowMod message and each parameter that can be specified in OpenFlow1.3 MeterMod messages works properly or not.
 
         ryu/tests/switch/of13
 
@@ -182,6 +225,8 @@ The environment for test execution tools is described below.
 As an auxiliary switch, an OpenFlow switch that can be used to perform following the operation successfully is required.
 
 * Flow entry registration of actions=CONTROLLER
+
+* Flow entry registration of measuring throughput
 
 * Packet-In message transmission by flow entry of actions=CONTROLLER
 
@@ -251,7 +296,7 @@ The following is the procedure to execute the test tool using a sample test patt
 Procedure for Executing Sample Test Pattern
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages.
+The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages and MeterMod messages.
 
 In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to ":ref:`ch_switching_hub` " for environment settings and the login method for usage of the VM image.
 
@@ -364,7 +409,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     Sample test pattern file list
 
-        Offers a test pattern that registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries.
+        Offers a test pattern that registers flow entries corresponding to each setting in the match/actions, applies multiple patterns of packets that match (or do not match) flow entries, registers meter entries to drop or remark priority depending on band rate and applies packets continuously that match meter entries.
 
 
     .. rst-class:: console
@@ -423,6 +468,13 @@ In this procedure, the test environment is constructed using the test environmen
         12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
         12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
 
+        ryu/tests/switch/of13/meter:
+        01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
+        01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
+        01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
+        01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
+        01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
+        01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
 
 
 Procedure for Executing Original Test Pattern
@@ -621,26 +673,42 @@ List of Error Messages
 
 The following is a list of error messages that can be output with this tool.
 
-========================================================== ==============================================================================
-Error message                                              Description
-========================================================== ==============================================================================
-Failed to initialize flow tables: barrier request timeout. Failed to delete the flow entry of the previous test (time-out of Barrier Request)
-Failed to initialize flow tables: [err_msg]                Failed to delete the flow entry of the previous test (error message received for FlowMod)
-Failed to add flows: barrier request timeout.              Failed to register the flow entry (time-out of Barrier Request)
-Failed to add flows: [err_msg]                             Failed to register flow entry (error message is received for FlowMod)
-Added incorrect flows: [flows]                             Flow entry registration confirmation error (unexpected flow entry is registered)
-Failed to add flows: flow stats request timeout.           Flow entry registration confirmation failure (time-out of FlowStats Request)
-Failed to add flows: [err_msg]                             Flow entry registration confirmation failure (error message received for FlowStats Request)
-Failed to request port stats from target: request timeout. Failed to acquire PortStats of the tested SW (time-out of PortStats Request)
-Failed to request port stats from target: [err_msg]        Failed to acquire PortStats of the tested SW (error message received for PortStats Request)
-Failed to request port stats from tester: request timeout. Failed to acquire PortStats of Auxiliary SW (time-out of PortStats Request)
-Failed to request port stats from tester: [err_msg]        Failed to acquire PortStats of Auxiliary SW (error message received for PortStats Request)
-Received incorrect [packet]                                Reception error of output expected packets (received different packets)
-Receiving timeout: [detail]                                Reception error of expected output packets (time-out)
-Faild to send packet: barrier request timeout.             Failed to apply packet (time-out of Barrier Request)
-Faild to send packet: [err_msg]                            Failed to apply packet (error message received for Packet-Out)
-Table-miss error: increment in matched_count.              table-miss check error (matches the flow)
-Table-miss error: no change in lookup_count.               table-miss check error (packet has not been processed by the flow table being checked)
-Failed to request table stats: request timeout.            Failed to check table-miss (time-out of TableStats Request)
-Failed to request table stats: [err_msg]                   Failed to check table-miss (error message received for TableStats Request)
-========================================================== ==============================================================================
+======================================================================== ==============================================================================
+Error message                                                            Description
+======================================================================== ==============================================================================
+Failed to initialize flow tables: barrier request timeout.               Failed to delete the flow entry of the previous test (time-out of Barrier Request)
+Failed to initialize flow tables: [err_msg]                              Failed to delete the flow entry of the previous test (error message received for FlowMod)
+Failed to initialize flow tables of tester_sw: barrier request timeout.  Failed to delete the flow entry of the previous test at Auxiliary SW (time-out of Barrier Request)
+Failed to initialize flow tables of tester_sw: [err_msg]                 Failed to delete the flow entry of the previous test at Auxiliary SW (error message received for FlowMod)
+Failed to add flows: barrier request timeout.                            Failed to register the flow entry (time-out of Barrier Request)
+Failed to add flows: [err_msg]                                           Failed to register flow entry (error message is received for FlowMod)
+Failed to add flows to tester_sw: barrier request timeout.               Failed to register the flow entry of Auxiliary SW (time-out of Barrier Request)
+Failed to add flows to tester_sw: [err_msg]                              Failed to register the flow entry of Auxiliary SW (error message is received for FlowMod)
+Failed to add meters: barrier request timeout.                           Failed to register the meter entry (time-out of Barrier Request)
+Failed to add meters: [err_msg]                                          Failed to register the meter entry (error message is received for MeterMod)
+Added incorrect flows: [flows]                                           Flow entry registration confirmation error (unexpected flow entry is registered)
+Failed to add flows: flow stats request timeout.                         Flow entry registration confirmation failure (time-out of FlowStats Request)
+Failed to add flows: [err_msg]                                           Flow entry registration confirmation failure (error message received for FlowStats Request)
+Added incorrect meters: [meters]                                         Meter entry registration confirmation error (unexpected meter entry is registered)
+Failed to add meters: meter config stats request timeout.                Meter entry registration confirmation failure (time-out of MeterConfigStats Request)
+Failed to add meters: [err_msg]                                          Meter entry registration confirmation failure (error message received for MeterConfigStats Request)
+Failed to request port stats from target: request timeout.               Failed to acquire PortStats of the tested SW (time-out of PortStats Request)
+Failed to request port stats from target: [err_msg]                      Failed to acquire PortStats of the tested SW (error message received for PortStats Request)
+Failed to request port stats from tester: request timeout.               Failed to acquire PortStats of Auxiliary SW (time-out of PortStats Request)
+Failed to request port stats from tester: [err_msg]                      Failed to acquire PortStats of Auxiliary SW (error message received for PortStats Request)
+Received incorrect [packet]                                              Reception error of output expected packets (received different packets)
+Receiving timeout: [detail]                                              Reception error of expected output packets (time-out)
+Faild to send packet: barrier request timeout.                           Failed to apply packet (time-out of Barrier Request)
+Faild to send packet: [err_msg]                                          Failed to apply packet (error message received for Packet-Out)
+Table-miss error: increment in matched_count.                            table-miss check error (matches the flow)
+Table-miss error: no change in lookup_count.                             table-miss check error (packet has not been processed by the flow table being checked)
+Failed to request table stats: request timeout.                          Failed to check table-miss (time-out of TableStats Request)
+Failed to request table stats: [err_msg]                                 Failed to check table-miss (error message received for TableStats Request)
+Added incorrect flows to tester_sw: [flows]                              Flow entry registration confirmation error at Auxiliary SW (unexpected flow entry is registered)
+Failed to add flows to tester_sw: flow stats request timeout.            Flow entry registration confirmation failure at Auxiliary SW (time-out of FlowStats Request)
+Failed to add flows to tester_sw: [err_msg]                              Flow entry registration confirmation failure at Auxiliary SW (error message received for FlowStats Request)
+Failed to request flow stats: request timeout.                           Flow entry registration confirmation failure at Auxiliary SW when measuring throughput (time-out of FlowStats Request)
+Failed to request flow stats: [err_msg]                                  Flow entry registration confirmation failure at Auxiliary SW when measuring throughput (error message received for FlowStats Request)
+Received unexpected throughput: [detail]                                 Received result of measuring throughput far from expected
+Disconnected from switch                                                 Disconnected from the tested SW or Auxiliary SW
+======================================================================== ==============================================================================
