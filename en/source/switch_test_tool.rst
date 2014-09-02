@@ -11,15 +11,16 @@ Overview of Test Tool
 
 This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry and a meter entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.
 
-This tool is compatible with FlowMod message and MeterMod message test of OpenFlow version 1.3.
+This tool is compatible with FlowMod message, MeterMod message and GroupMod message test of OpenFlow version 1.3.
 
 
 ============================= ===================================
 Test subject message          Corresponding parameters
 ============================= ===================================
 OpenFlow1.3 FlowMod message   match (Excludes IN_PHY_PORT)
-                              actions (Excludes SET_QUEUE, GROUP)
+                              actions (Excludes SET_QUEUE)
 OpenFlow1.3 MeterMod message  All
+OpenFlow1.3 GroupMod message  All
 ============================= ===================================
 
 
@@ -118,12 +119,15 @@ A test pattern file is a text file that has a ".json" extension. It is described
             "description": "xxxxxxxxxx", # Description of the test content
             "prerequisite": [
                 {
-                    "OFPFlowMod": {...}  # Flow entry or Meter entry to register
-                },                       # (Describe OFPFlowMod or OFPMeterMod of Ryu
-                {                        #  in json format)
+                    "OFPFlowMod": {...}  # Flow entry, Meter entry or Group entry to register
+                },                       # (Describe OFPFlowMod, OFPMeterMod or OFPGroupMod
+                {                        #  of Ryu in json format)
                     "OFPMeterMod": {...} # If the expected processing result is
                 },                       # packet transfer (actions=output),
-                {...}                    # specify "2" as the output port number.
+                {                        # specify "2" as the output port number.
+                    "OFPGroupMod": {...} # If the expected processing result is
+                },                       # packet transfer (actions=output) in Group entry,
+                {...}                    # specify "2" or "3" as the output port number.
             ],
             "tests": [
                 {
@@ -296,7 +300,7 @@ The following is the procedure to execute the test tool using a sample test patt
 Procedure for Executing Sample Test Pattern
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages and MeterMod messages.
+The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages, MeterMod messages and GroupMod messages.
 
 In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to ":ref:`ch_switching_hub` " for environment settings and the login method for usage of the VM image.
 
@@ -320,8 +324,8 @@ In this procedure, the test environment is constructed using the test environmen
 
         mininet> net
         c0
-        s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
-        s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+        s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2 s1-eth3:s2-eth3
+        s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 
 
 
@@ -409,7 +413,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     Sample test pattern file list
 
-        Offers a test pattern that registers flow entries corresponding to each setting in the match/actions, applies multiple patterns of packets that match (or do not match) flow entries, registers meter entries to drop or remark priority depending on band rate and applies packets continuously that match meter entries.
+        Offers a test pattern that registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries, registers meter entries to drop or remark priority depending on band rate and applies packets continuously that match meter entries, registers group entries for flooding (type=ALL) or selecting output port automatically by a selection algorithm (type=SELECT) and applies packets continuously that match group entries.
 
 
     .. rst-class:: console
@@ -444,6 +448,10 @@ In this procedure, the test environment is constructed using the test environmen
         12_IPV4_DST.json       21_ARP_OP.json         36_MPLS_BOS.json
         13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
         13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
+
+        ryu/tests/switch/of13/group:
+        00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+        01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
 
         ryu/tests/switch/of13/match:
         00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
@@ -686,12 +694,17 @@ Failed to add flows to tester_sw: barrier request timeout.               Failed 
 Failed to add flows to tester_sw: [err_msg]                              Failed to register the flow entry of Auxiliary SW (error message is received for FlowMod)
 Failed to add meters: barrier request timeout.                           Failed to register the meter entry (time-out of Barrier Request)
 Failed to add meters: [err_msg]                                          Failed to register the meter entry (error message is received for MeterMod)
+Failed to add groups: barrier request timeout.                           Failed to register the group entry (time-out of Barrier Request)
+Failed to add groups: [err_msg]                                          Failed to register the group entry (error message is received for GroupMod)
 Added incorrect flows: [flows]                                           Flow entry registration confirmation error (unexpected flow entry is registered)
 Failed to add flows: flow stats request timeout.                         Flow entry registration confirmation failure (time-out of FlowStats Request)
 Failed to add flows: [err_msg]                                           Flow entry registration confirmation failure (error message received for FlowStats Request)
 Added incorrect meters: [meters]                                         Meter entry registration confirmation error (unexpected meter entry is registered)
 Failed to add meters: meter config stats request timeout.                Meter entry registration confirmation failure (time-out of MeterConfigStats Request)
 Failed to add meters: [err_msg]                                          Meter entry registration confirmation failure (error message received for MeterConfigStats Request)
+Added incorrect groups: [groups]                                         Group entry registration confirmation error (unexpected group entry is registered)
+Failed to add groups: group desc stats request timeout.                  Group entry registration confirmation failure (time-out of GroupDescStats Request)
+Failed to add groups: [err_msg]                                          Group entry registration confirmation failure (error message received for GroupDescStats Request)
 Failed to request port stats from target: request timeout.               Failed to acquire PortStats of the tested SW (time-out of PortStats Request)
 Failed to request port stats from target: [err_msg]                      Failed to acquire PortStats of the tested SW (error message received for PortStats Request)
 Failed to request port stats from tester: request timeout.               Failed to acquire PortStats of Auxiliary SW (time-out of PortStats Request)
