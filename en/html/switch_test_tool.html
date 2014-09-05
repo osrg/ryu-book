@@ -54,8 +54,8 @@
 <p>This section explains how to use the test tool to verify the degree of compliance of an OpenFlow switch with the OpenFlow specifications.</p>
 <div class="section" id="overview-of-test-tool">
 <h2>Overview of Test Tool<a class="headerlink" href="#overview-of-test-tool" title="Permalink to this headline">¶</a></h2>
-<p>This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.</p>
-<p>This tool is compatible with FlowMod message test of OpenFlow version 1.3.</p>
+<p>This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry and a meter entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.</p>
+<p>This tool is compatible with FlowMod message, MeterMod message and GroupMod message test of OpenFlow version 1.3 and OpenFlow version 1.4.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="45%" />
@@ -67,9 +67,15 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>OpenFlow1.3 FlowMod message</td>
-<td>match (Excludes IN_PHY_PORT)
-actions (Excludes SET_QUEUE, GROUP)</td>
+<tr class="row-even"><td>FlowMod message</td>
+<td>match (Excludes IN_PHY_PORT),
+actions (Excludes SET_QUEUE)</td>
+</tr>
+<tr class="row-odd"><td>MeterMod message</td>
+<td>All</td>
+</tr>
+<tr class="row-even"><td>GroupMod message</td>
+<td>All</td>
 </tr>
 </tbody>
 </table>
@@ -78,12 +84,13 @@ actions (Excludes SET_QUEUE, GROUP)</td>
 <h3>Operation Overview<a class="headerlink" href="#operation-overview" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="test-execution-image">
 <h4>Test execution image<a class="headerlink" href="#test-execution-image" title="Permalink to this headline">¶</a></h4>
-<p>The following shows an image of operation when you run the test tool. &#8220;flow entry to be registered, &#8220;application packet&#8221; and &#8220;expected processing result to&#8221; are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to <a class="reference internal" href="#tool-execution-environment">Tool execution environment</a>)</p>
+<p>The following shows an image of operation when you run the test tool. &#8220;flow entry or meter entry to be registered&#8221;, &#8220;application packet&#8221; and &#8220;expected processing result to&#8221; are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to <a class="reference internal" href="#tool-execution-environment">Tool execution environment</a>)</p>
 <a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" style="width: 657.0px; height: 246.6px;" /></a>
 </div>
 <div class="section" id="output-image-of-test-results">
 <h4>Output image of test results<a class="headerlink" href="#output-image-of-test-results" title="Permalink to this headline">¶</a></h4>
-<p>The specified test items of the test pattern file are run in order and test results (OK / ERROR) are output. If a test result is ERROR, details of the error are also output.</p>
+<p>The specified test items of the test pattern file are run in order and test results (OK / ERROR) are output. If a test result is ERROR, details of the error are also output.
+In addition, the test report of the number of OK / ERROR and the breakdown of ERRORs through the whole test are output.</p>
 <div class="console highlight-python"><div class="highlight"><pre>--- Test start ---
 
 match: 29_ICMPV6_TYPE
@@ -104,6 +111,15 @@ match: 30_ICMPV6_CODE
         Received incorrect packet-in: ethernet(ethertype=34525)
 
 ---  Test end  ---
+
+--- Test report ---
+Received incorrect packet-in(4)
+    match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;
+    match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;
+    match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;
+    match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;
+
+OK(6) / ERROR(4)
 </pre></div>
 </div>
 </div>
@@ -122,21 +138,43 @@ match: 30_ICMPV6_CODE
         &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # Description of the test content
         &quot;prerequisite&quot;: [
             {
-                &quot;OFPFlowMod&quot;: {...}  # Flow entry to register
-            },                       # (Describe OFPFlowMod of Ryu in json format)
-            {...},                   #  In case of packet transfer (actions=output),
-            {...}                    #  specify &quot;2&quot; as the output port number.
+                &quot;OFPFlowMod&quot;: {...}  # Flow entry, Meter entry or Group entry to register
+            },                       # (Describe OFPFlowMod, OFPMeterMod or OFPGroupMod
+            {                        #  of Ryu in json format)
+                &quot;OFPMeterMod&quot;: {...} # If the expected processing result is
+            },                       # packet transfer (actions=output),
+            {                        # specify &quot;2&quot; as the output port number.
+                &quot;OFPGroupMod&quot;: {...} # If the expected processing result is
+            },                       # packet transfer (actions=output) in Group entry,
+            {...}                    # specify &quot;2&quot; or &quot;3&quot; as the output port number.
         ],
         &quot;tests&quot;: [
             {
-                &quot;ingress&quot;: [         # Packet to be applied
+                # Packet to be applied
+                # Depending on the packets are applied just once or continuously,
+                # describe either (A) or (B)
+                #  (A) Apply a paket
+                &quot;ingress&quot;: [
                     &quot;ethernet(...)&quot;, # (Describe in format of Ryu packet library constructor)
                     &quot;ipv4(...)&quot;,
                     &quot;tcp(...)&quot;
                 ],
+                #  (B) Apply pakets continuously during some period
+                &quot;ingress&quot;: {
+                    &quot;packets&quot;:{
+                        &quot;data&quot;:[
+                            &quot;ethernet(...)&quot;, # the same as (A)
+                            &quot;ipv4(...)&quot;,
+                            &quot;tcp(...)&quot;
+                        ],
+                        &quot;pktps&quot;: 1000,       # The number of the applied packets per second
+                        &quot;duration_time&quot;: 30  # The time of packets application (seconds)
+                    }
+                },
 
                 # Expected processing results
-                # Depending on the type of processing results, describe either (a)(b)(c)
+                # Depending on the type of processing results,
+                # describe either (a), (b), (c) or (d)
                 #  (a) Confirmation test of packet transfer (actions=output:X)
                 &quot;egress&quot;: [          # Expected transfer packet
                     &quot;ethernet(...)&quot;,
@@ -153,6 +191,19 @@ match: 30_ICMPV6_CODE
                 &quot;table-miss&quot;: [      # flow table ID that is expected to be table-miss
                     0
                 ]
+                #  (d) Confirmation test of packet transfer throughput (actions=output:X)
+                &quot;egress&quot;:[
+                    &quot;throughput&quot;:[
+                        {
+                            &quot;OFPMatch&quot;:{   # Match to measure throughput
+                              ...          # registered in flow entry of
+                            },             # auxiliary switch
+                            &quot;kbps&quot;:1000    # (Describe in KBPS)
+                        },
+                        {...},
+                        {...}
+                    ]
+                ]
             },
             {...},
             {...}
@@ -163,11 +214,14 @@ match: 30_ICMPV6_CODE
 ]
 </pre></div>
 </div>
+<p>By description of &#8220;(B) Apply pakets continuously during some period&#8221; as packet to be applied and &#8220;(d) Confirmation test of packet transfer throughput (actions=output:X)&#8221; as expected processing results, you can measure the throughput of the test target switch.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>As a sample test pattern, the source tree of Ryu offers a test pattern file to check if each parameter that can be specified in the match/actions of OpenFlow1.3 FlowMod message works properly or not.</p>
+<p>As a sample test pattern, the source tree of Ryu offers a test pattern file for OpenFlow 1.3 and OpenFlow 1.4 to check if each parameter that can be specified in the match/actions of FlowMod message, each parameter that in MeterMod messages and each parameter that in GroupMod messages works properly or not.</p>
 <blockquote class="last">
-<div>ryu/tests/switch/of13</div></blockquote>
+<div><p>ryu/tests/switch/of13</p>
+<p>ryu/tests/switch/of14</p>
+</div></blockquote>
 </div>
 </div>
 <div class="section" id="tool-execution-environment">
@@ -177,6 +231,7 @@ match: 30_ICMPV6_CODE
 <p>As an auxiliary switch, an OpenFlow switch that can be used to perform following the operation successfully is required.</p>
 <ul class="simple">
 <li>Flow entry registration of actions=CONTROLLER</li>
+<li>Flow entry registration of measuring throughput</li>
 <li>Packet-In message transmission by flow entry of actions=CONTROLLER</li>
 <li>Packet transmission by Packet-Out message reception</li>
 </ul>
@@ -194,8 +249,8 @@ match: 30_ICMPV6_CODE
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="50%" />
-<col width="50%" />
+<col width="40%" />
+<col width="60%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Source code</th>
@@ -207,9 +262,12 @@ match: 30_ICMPV6_CODE
 <td>Test tool</td>
 </tr>
 <tr class="row-odd"><td>ryu/tests/switch/of13</td>
-<td>Sample of test pattern file</td>
+<td>Sample of test pattern file (For OpenFlow 1.3)</td>
 </tr>
-<tr class="row-even"><td>ryu/tests/switch/run_mininet.py</td>
+<tr class="row-even"><td>ryu/tests/switch/of14</td>
+<td>Sample of test pattern file (For OpenFlow 1.4)</td>
+</tr>
+<tr class="row-odd"><td>ryu/tests/switch/run_mininet.py</td>
 <td>Test environment build script</td>
 </tr>
 </tbody>
@@ -217,15 +275,15 @@ match: 30_ICMPV6_CODE
 </div></blockquote>
 <p>The test tool is executed by the following command.</p>
 <div class="console highlight-python"><div class="highlight"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+ [--test-switch-target-version VERSION] [--test-switch-tester-version VERSION]
  [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
 </pre></div>
 </div>
-<blockquote>
-<div><table border="1" class="docutils">
+<table border="1" class="docutils">
 <colgroup>
-<col width="30%" />
-<col width="44%" />
-<col width="26%" />
+<col width="32%" />
+<col width="47%" />
+<col width="21%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Option</th>
@@ -242,18 +300,28 @@ match: 30_ICMPV6_CODE
 <td>Data path ID of auxiliary switch</td>
 <td>0000000000000002</td>
 </tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target-version</span></tt></td>
+<td>OpenFlow version of test target switch
+(&#8220;openflow13&#8221; or &#8220;openflow14&#8221; can be specified)</td>
+<td>openflow13</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester-version</span></tt></td>
+<td>OpenFlow version of auxiliary switch
+(&#8220;openflow13&#8221; or &#8220;openflow14&#8221; can be specified)</td>
+<td>openflow13</td>
+</tr>
 <tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-dir</span></tt></td>
 <td>Directory path of test pattern file</td>
 <td>ryu/tests/switch/of13</td>
 </tr>
 </tbody>
 </table>
-</div></blockquote>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Since the test tool is created as a Ryu application and inherits ryu.base.app_manager.RyuApp, it supports output of debugging information by the &#8211;verbose option, as with other Ryu applications.</p>
 </div>
-<p>After starting the test tool, when the auxiliary switch and test target switch are connected to the controller, the test starts based on the test pattern file that you specify.</p>
+<p>After starting the test tool, when the auxiliary switch and test target switch are connected to the controller, the test starts based on the test pattern file that you specify.
+if the specified OpenFlow version is different from the OpenFlow version of connected switch, the test tool outputs the error messages and wait for a connection to be established with the specified version.</p>
 </div>
 </div>
 <div class="section" id="test-tool-usage-example">
@@ -261,7 +329,7 @@ match: 30_ICMPV6_CODE
 <p>The following is the procedure to execute the test tool using a sample test pattern and original test pattern file.</p>
 <div class="section" id="procedure-for-executing-sample-test-pattern">
 <h3>Procedure for Executing Sample Test Pattern<a class="headerlink" href="#procedure-for-executing-sample-test-pattern" title="Permalink to this headline">¶</a></h3>
-<p>The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages.</p>
+<p>The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages, MeterMod messages and GroupMod messages.</p>
 <p>In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a> &#8221; for environment settings and the login method for usage of the VM image.</p>
 <p>1 Building the test environment</p>
 <blockquote>
@@ -272,8 +340,8 @@ match: 30_ICMPV6_CODE
 <p>Execution result of the net command is as follows.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
 c0
-s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2
-s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
+s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2 s1-eth3:s2-eth3
+s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 </pre></div>
 </div>
 </div></blockquote>
@@ -285,7 +353,8 @@ s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2
 </div>
 <p>Execute test tool from xterm of &#8220;Node: c0 (root)&#8221;
 At this time, as the directory for the test pattern file, specify the directory of the sample test pattern (ryu/tests/switch/of13).
-Since the data path ID of the test target switch and auxiliary switch in the mininet environment has the default value of each option of &#8211;test-switch-target / &#8211;test-switch-tester, it the option specification is omitted.</p>
+Since the data path ID of the test target switch and auxiliary switch in the mininet environment has the default value of each option of &#8211;test-switch-target / &#8211;test-switch-tester, the option specification is omitted.
+Also, the OpenFlow version of the test target switch and auxiliary switch is set with the default value of each option of &#8211;test-switch-target-version / &#8211;test-switch-tester-version, this option specification is omitted too.</p>
 <p>Node: c0:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
 </pre></div>
@@ -334,8 +403,12 @@ action: 11_COPY_TTL_OUT
 <h4>&lt;Reference&gt;<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><p>Sample test pattern file list</p>
-<blockquote>
-<div>Offers a test pattern that registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries.</div></blockquote>
+<p>Offers the following test patterns for each version of OpenFlow 1.3 / OpenFlow 1.4.</p>
+<ol class="arabic simple">
+<li>registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries.</li>
+<li>registers meter entries to drop or remark priority depending on band rate and applies packets continuously that match meter entries.</li>
+<li>registers group entries for flooding (type=ALL) or selecting output port automatically by a selection algorithm (type=SELECT) and applies packets continuously that match group entries.</li>
+</ol>
 <div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
 00_OUTPUT.json              20_POP_MPLS.json
 11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
@@ -365,28 +438,108 @@ ryu/tests/switch/of13/action/25_SET_FIELD:
 13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
 13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
 
+ryu/tests/switch/of13/group:
+00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
+
 ryu/tests/switch/of13/match:
-00_IN_PORT.json        13_TCP_SRC_IPv4.json   25_ARP_THA.json
-02_METADATA.json       13_TCP_SRC_IPv6.json   25_ARP_THA_Mask.json
-02_METADATA_Mask.json  14_TCP_DST_IPv4.json   26_IPV6_SRC.json
-03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC_Mask.json
-03_ETH_DST_Mask.json   15_UDP_SRC_IPv4.json   27_IPV6_DST.json
-04_ETH_SRC.json        15_UDP_SRC_IPv6.json   27_IPV6_DST_Mask.json
-04_ETH_SRC_Mask.json   16_UDP_DST_IPv4.json   28_IPV6_FLABEL.json
-05_ETH_TYPE.json       16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
-06_VLAN_VID.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
-06_VLAN_VID_Mask.json  17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
-07_VLAN_PCP.json       18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
-08_IP_DSCP_IPv4.json   18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
-08_IP_DSCP_IPv6.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
-09_IP_ECN_IPv4.json    20_ICMPV4_CODE.json    35_MPLS_TC.json
-09_IP_ECN_IPv6.json    21_ARP_OP.json         36_MPLS_BOS.json
-10_IP_PROTO_IPv4.json  22_ARP_SPA.json        37_PBB_ISID.json
-10_IP_PROTO_IPv6.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
-11_IPV4_SRC.json       23_ARP_TPA.json        38_TUNNEL_ID.json
-11_IPV4_SRC_Mask.json  23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
-12_IPV4_DST.json       24_ARP_SHA.json        39_IPV6_EXTHDR.json
-12_IPV4_DST_Mask.json  24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
+02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
+02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
+03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
+03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
+04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
+09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
+09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
+10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
+10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
+11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
+11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
+12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+12_IPV4_DST_Mask.json  25_ARP_THA.json
+13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
+
+ryu/tests/switch/of13/meter:
+01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
+01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
+01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
+01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
+01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
+01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+</pre></div>
+</div>
+<div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of14/action:
+00_OUTPUT.json              20_POP_MPLS.json
+11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
+12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
+15_SET_MPLS_TTL.json        24_DEC_NW_TTL_IPv4.json
+16_DEC_MPLS_TTL.json        24_DEC_NW_TTL_IPv6.json
+17_PUSH_VLAN.json           25_SET_FIELD
+17_PUSH_VLAN_multiple.json  26_PUSH_PBB.json
+18_POP_VLAN.json            26_PUSH_PBB_multiple.json
+19_PUSH_MPLS.json           27_POP_PBB.json
+19_PUSH_MPLS_multiple.json
+
+ryu/tests/switch/of14/action/25_SET_FIELD:
+03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC.json
+04_ETH_SRC.json        15_UDP_SRC_IPv4.json   27_IPV6_DST.json
+05_ETH_TYPE.json       15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+06_VLAN_VID.json       16_UDP_DST_IPv4.json   29_ICMPV6_TYPE.json
+07_VLAN_PCP.json       16_UDP_DST_IPv6.json   30_ICMPV6_CODE.json
+08_IP_DSCP_IPv4.json   17_SCTP_SRC_IPv4.json  31_IPV6_ND_TARGET.json
+08_IP_DSCP_IPv6.json   17_SCTP_SRC_IPv6.json  32_IPV6_ND_SLL.json
+09_IP_ECN_IPv4.json    18_SCTP_DST_IPv4.json  33_IPV6_ND_TLL.json
+09_IP_ECN_IPv6.json    18_SCTP_DST_IPv6.json  34_MPLS_LABEL.json
+10_IP_PROTO_IPv4.json  19_ICMPV4_TYPE.json    35_MPLS_TC.json
+10_IP_PROTO_IPv6.json  20_ICMPV4_CODE.json    36_MPLS_BOS.json
+11_IPV4_SRC.json       21_ARP_OP.json         37_PBB_ISID.json
+12_IPV4_DST.json       22_ARP_SPA.json        38_TUNNEL_ID.json
+13_TCP_SRC_IPv4.json   23_ARP_TPA.json        41_PBB_UCA.json
+13_TCP_SRC_IPv6.json   24_ARP_SHA.json
+14_TCP_DST_IPv4.json   25_ARP_THA.json
+
+ryu/tests/switch/of14/group:
+00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
+01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
+
+ryu/tests/switch/of14/match:
+00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
+02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
+02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
+03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
+03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
+04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
+04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
+05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
+06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
+06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
+07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
+08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
+08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
+09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
+09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
+10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
+10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
+11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
+11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
+12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
+12_IPV4_DST_Mask.json  25_ARP_THA.json        41_PBB_UCA.json
+13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
+
+ryu/tests/switch/of14/meter:
+01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
+01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
+01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
+01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
+01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
+01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
 </pre></div>
 </div>
 </div></blockquote>
@@ -563,8 +716,8 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <p>The following is a list of error messages that can be output with this tool.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="39%" />
-<col width="61%" />
+<col width="35%" />
+<col width="65%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Error message</th>
@@ -573,25 +726,67 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Failed to initialize flow tables: barrier request timeout.</td>
-<td>Failed to delete the flow entry of the previous test (time-out of Barrier Request)</td>
+<td>Failed to delete the flow entry of the previous test at the tested SW (time-out of Barrier Request)</td>
 </tr>
 <tr class="row-odd"><td>Failed to initialize flow tables: [err_msg]</td>
-<td>Failed to delete the flow entry of the previous test (error message received for FlowMod)</td>
+<td>Failed to delete the flow entry of the previous test at the tested SW (error message received for FlowMod)</td>
+</tr>
+<tr class="row-even"><td>Failed to initialize flow tables of tester_sw: barrier request timeout.</td>
+<td>Failed to delete the flow entry of the previous test at Auxiliary SW (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to initialize flow tables of tester_sw: [err_msg]</td>
+<td>Failed to delete the flow entry of the previous test at Auxiliary SW (error message received for FlowMod)</td>
 </tr>
 <tr class="row-even"><td>Failed to add flows: barrier request timeout.</td>
-<td>Failed to register the flow entry (time-out of Barrier Request)</td>
+<td>Failed to register the flow entry of the tested SW (time-out of Barrier Request)</td>
 </tr>
 <tr class="row-odd"><td>Failed to add flows: [err_msg]</td>
-<td>Failed to register flow entry (error message is received for FlowMod)</td>
+<td>Failed to register the flow entry of the tested SW (error message is received for FlowMod)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows to tester_sw: barrier request timeout.</td>
+<td>Failed to register the flow entry of Auxiliary SW (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows to tester_sw: [err_msg]</td>
+<td>Failed to register the flow entry of Auxiliary SW (error message is received for FlowMod)</td>
+</tr>
+<tr class="row-even"><td>Failed to add meters: barrier request timeout.</td>
+<td>Failed to register the meter entry of the tested SW (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add meters: [err_msg]</td>
+<td>Failed to register the meter entry of the tested SW (error message is received for MeterMod)</td>
+</tr>
+<tr class="row-even"><td>Failed to add groups: barrier request timeout.</td>
+<td>Failed to register the group entry of the tested SW (time-out of Barrier Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add groups: [err_msg]</td>
+<td>Failed to register the group entry of the tested SW (error message is received for GroupMod)</td>
 </tr>
 <tr class="row-even"><td>Added incorrect flows: [flows]</td>
-<td>Flow entry registration confirmation error (unexpected flow entry is registered)</td>
+<td>Flow entry registration confirmation error at the tested SW (unexpected flow entry is registered)</td>
 </tr>
 <tr class="row-odd"><td>Failed to add flows: flow stats request timeout.</td>
-<td>Flow entry registration confirmation failure (time-out of FlowStats Request)</td>
+<td>Flow entry registration confirmation failure at the tested SW (time-out of FlowStats Request)</td>
 </tr>
 <tr class="row-even"><td>Failed to add flows: [err_msg]</td>
-<td>Flow entry registration confirmation failure (error message received for FlowStats Request)</td>
+<td>Flow entry registration confirmation failure at the tested SW (error message received for FlowStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Added incorrect meters: [meters]</td>
+<td>Meter entry registration confirmation error at the tested SW (unexpected meter entry is registered)</td>
+</tr>
+<tr class="row-even"><td>Failed to add meters: meter config stats request timeout.</td>
+<td>Meter entry registration confirmation failure at the tested SW (time-out of MeterConfigStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add meters: [err_msg]</td>
+<td>Meter entry registration confirmation failure at the tested SW (error message received for MeterConfigStats Request)</td>
+</tr>
+<tr class="row-even"><td>Added incorrect groups: [groups]</td>
+<td>Group entry registration confirmation error at the tested SW (unexpected group entry is registered)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add groups: group desc stats request timeout.</td>
+<td>Group entry registration confirmation failure at the tested SW (time-out of GroupDescStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to add groups: [err_msg]</td>
+<td>Group entry registration confirmation failure at the tested SW (error message received for GroupDescStats Request)</td>
 </tr>
 <tr class="row-odd"><td>Failed to request port stats from target: request timeout.</td>
 <td>Failed to acquire PortStats of the tested SW (time-out of PortStats Request)</td>
@@ -628,6 +823,27 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tr>
 <tr class="row-even"><td>Failed to request table stats: [err_msg]</td>
 <td>Failed to check table-miss (error message received for TableStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Added incorrect flows to tester_sw: [flows]</td>
+<td>Flow entry registration confirmation error at Auxiliary SW (unexpected flow entry is registered)</td>
+</tr>
+<tr class="row-even"><td>Failed to add flows to tester_sw: flow stats request timeout.</td>
+<td>Flow entry registration confirmation failure at Auxiliary SW (time-out of FlowStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to add flows to tester_sw: [err_msg]</td>
+<td>Flow entry registration confirmation failure at Auxiliary SW (error message received for FlowStats Request)</td>
+</tr>
+<tr class="row-even"><td>Failed to request flow stats: request timeout.</td>
+<td>Flow entry registration confirmation failure at Auxiliary SW when measuring throughput (time-out of FlowStats Request)</td>
+</tr>
+<tr class="row-odd"><td>Failed to request flow stats: [err_msg]</td>
+<td>Flow entry registration confirmation failure at Auxiliary SW when measuring throughput (error message received for FlowStats Request)</td>
+</tr>
+<tr class="row-even"><td>Received unexpected throughput: [detail]</td>
+<td>Received result of measuring throughput far from expected</td>
+</tr>
+<tr class="row-odd"><td>Disconnected from switch</td>
+<td>Disconnected from the tested SW or Auxiliary SW</td>
 </tr>
 </tbody>
 </table>
