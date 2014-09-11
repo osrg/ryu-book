@@ -1,0 +1,1057 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>防火牆（ Firewall ） &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="路由器（ Router ）" href="rest_router.html" />
+    <link rel="prev" title="OF-Config 函式庫" href="of_config.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="rest_router.html" title="路由器（ Router ）"
+             accesskey="N">下一頁</a> |</li>
+        <li class="right" >
+          <a href="of_config.html" title="OF-Config 函式庫"
+             accesskey="P">上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="firewall">
+<span id="ch-rest-firewall"></span><h1>防火牆（ Firewall ）<a class="headerlink" href="#firewall" title="Permalink to this headline">¶</a></h1>
+<p>本章將說明如何利用 REST 的方式使用防火牆。</p>
+<div class="section" id="single-tenant">
+<h2>Single tenant 操作範例<a class="headerlink" href="#single-tenant" title="Permalink to this headline">¶</a></h2>
+<p>以下說明如何建立一個如下所示的拓璞，並且對交換器 s1 進行路由的增加和刪除。</p>
+<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" /></a>
+<div class="section" id="id1">
+<h3>環境構築<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>首先在 Mininet 上建構環境。所要輸入的指令跟 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」 是一樣的。</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3
+*** Adding switches:
+s1
+*** Adding links:
+(h1, s1) (h2, s1) (h3, s1)
+*** Configuring hosts
+h1 h2 h3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 1 switches
+s1
+
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>接著建立一個新的 xterm 用來操作 Controller。</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>將 OpenFlow 的版本設定為 1.3。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>最後在控制 Controller 的 xterm 上啟動 rest_firewall。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+loading app ryu.app.rest_firewall
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_firewall of RestFirewallAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2210) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu 和交換器中間的連線已經完成後，會出現下面的訊息。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>改變初始狀態<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>防火牆啟動後，在初始狀態下全部的網路都會處於無法連線的狀態。
+接下來我們要下指令使其生效，並開放網路的連線。</p>
+<div class="admonition note">
+<p class="first admonition-title">註解</p>
+<p class="last">接下來的說明會使用到 REST API，若需要詳細的解釋請參考本章結尾的「 <a class="reference internal" href="#rest-api">REST API 列表</a> 」。</p>
+</div>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: {
+        &quot;result&quot;: &quot;success&quot;,
+        &quot;details&quot;: &quot;firewall running.&quot;
+      }
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+  [
+    {
+      &quot;status&quot;: &quot;enable&quot;,
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">註解</p>
+<p class="last">REST 命令執行的結果已經被格式為較為容易理解的格式。</p>
+</div>
+<p>確認可以從 h1 向 h2 執行 ping 指令。
+但是存取的權限規則並沒有被設定，所以目前是處於無法連通的狀態。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+^C
+--- 10.0.0.2 ping statistics ---
+20 packets transmitted, 0 received, 100% packet loss, time 19003ms
+</pre></div>
+</div>
+<p>封包被阻擋的過程被寫進記錄擋（ log ）中。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:02&#39;,ethertype=2048,src=&#39;00:00:00:00:00:01&#39;), ipv4(csum=9895,dst=&#39;10.0.0.2&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.1&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=55644,data=echo(data=&#39;K\x8e\xaeR\x00\x00\x00\x00=\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=6952,seq=1),type=8)
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>新增規則<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>增加 h1 和 h2 之間允許 ping 發送的規則。不論是從哪個方向都需要加入。</p>
+<p>接下來新增規則，規則的編號會自動編碼。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="31%" />
+<col width="18%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">來源</th>
+<th class="head">目的</th>
+<th class="head">通訊協定</th>
+<th class="head">連線狀態</th>
+<th class="head">規則 ID</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>10.0.0.1/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>通過</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>10.0.0.2/32</td>
+<td>10.0.0.1/32</td>
+<td>ICMP</td>
+<td>通過</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>新增加的規則做為 Flow Entry 被註冊到交換器中。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=823.705s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+ cookie=0x0, duration=542.472s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+ cookie=0x1, duration=145.05s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+ cookie=0x2, duration=118.265s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+</pre></div>
+</div>
+<p>接著 h2 和 h3 之間，新增加規則允許包含 ping 的所有 ipv4 封包通過。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="31%" />
+<col width="18%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">來源</th>
+<th class="head">目的</th>
+<th class="head">通訊協定</th>
+<th class="head">連線狀態</th>
+<th class="head">規則ID</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>any</td>
+<td>通過</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>any</td>
+<td>通過</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=3&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=4&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>新增的規則作為 Flow Entry 被註冊到交換器當中。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x3, duration=12.724s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
+ cookie=0x4, duration=3.668s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
+ cookie=0x0, duration=1040.802s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+ cookie=0x0, duration=759.569s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+ cookie=0x1, duration=362.147s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+ cookie=0x2, duration=335.362s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+</pre></div>
+</div>
+<p>可以設定規則的優先權。</p>
+<p>新增阻斷 h2 和 h3 之間的 ping（ ICMP ）封包規則。
+優先權的預設值設定為大於 1 的值。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="16%" />
+<col width="16%" />
+<col width="27%" />
+<col width="11%" />
+<col width="15%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">優先權</th>
+<th class="head">來源</th>
+<th class="head">目的</th>
+<th class="head">通訊協定</th>
+<th class="head">連線狀態</th>
+<th class="head">規則ID</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>10</td>
+<td>10.0.0.2/32</td>
+<td>10.0.0.3/32</td>
+<td>ICMP</td>
+<td>中斷</td>
+<td>5</td>
+</tr>
+<tr class="row-odd"><td>10</td>
+<td>10.0.0.3/32</td>
+<td>10.0.0.2/32</td>
+<td>ICMP</td>
+<td>中斷</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=5&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=6&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>新增的規則做為 Flow Entry 註冊到交換器當中。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x3, duration=242.155s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
+ cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
+ cookie=0x0, duration=1270.233s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
+ cookie=0x0, duration=989s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
+ cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=CONTROLLER:128
+ cookie=0x1, duration=591.578s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
+ cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=CONTROLLER:128
+ cookie=0x2, duration=564.793s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>確認規則<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>確認已經設定完成的規則。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;access_control_list&quot;: [
+        {
+          &quot;rules&quot;: [
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.3&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
+              &quot;rule_id&quot;: 3,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            },
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.3&quot;,
+              &quot;rule_id&quot;: 4,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            },
+            {
+              &quot;priority&quot;: 10,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.3&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
+              &quot;rule_id&quot;: 5,
+              &quot;actions&quot;: &quot;DENY&quot;
+            },
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.1&quot;,
+              &quot;rule_id&quot;: 1,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            },
+            {
+              &quot;priority&quot;: 10,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.3&quot;,
+              &quot;rule_id&quot;: 6,
+              &quot;actions&quot;: &quot;DENY&quot;
+            },
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.1&quot;,
+              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
+              &quot;rule_id&quot;: 2,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>設定完成的規則如下。</p>
+<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" /></a>
+<p>從 h1 向 h2 執行 ping 。如果允許的規則有被正確設定的話，ping 就可以正常連線。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.419 ms
+64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.047 ms
+64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.060 ms
+64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.033 ms
+...
+</pre></div>
+</div>
+<p>從 h1 發送到 h2 非 ping 的封包會被防火牆所阻擋。例如從 h1 發送到 h2 的 wget 指令就會被阻擋下來並記錄在記錄檔（ log ）中。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# wget http://10.0.0.2
+--2013-12-16 15:00:38--  http://10.0.0.2/
+Connecting to 10.0.0.2:80... ^C
+</pre></div>
+</div>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:02&#39;,ethertype=2048,src=&#39;00:00:00:00:00:01&#39;), ipv4(csum=4812,dst=&#39;10.0.0.2&#39;,flags=2,header_length=5,identification=5102,offset=0,option=None,proto=6,src=&#39;10.0.0.1&#39;,tos=0,total_length=60,ttl=64,version=4), tcp(ack=0,bits=2,csum=45753,dst_port=80,offset=10,option=&#39;\x02\x04\x05\xb4\x04\x02\x08\n\x00H:\x99\x00\x00\x00\x00\x01\x03\x03\t&#39;,seq=1021913463,src_port=42664,urgent=0,window_size=14600)
+...
+</pre></div>
+</div>
+<p>h2 和 h3 之間除了 ping 以外的封包則允許被通過。例如從 h2 向 h3 發送 ssh 指令，記錄檔（ log ）中並不會出現封包被阻擋的記錄（ 如果 ssh 是發送到 h3 以外的地點，則 ssh 的連線將會失敗 ）。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ssh 10.0.0.3
+ssh: connect to host 10.0.0.3 port 22: Connection refused
+</pre></div>
+</div>
+<p>從 h2 向 h3 發送 ping 指令，封包將會被防火牆所阻擋，並出現在記錄檔（ log ）中。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.3
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+^C
+--- 10.0.0.3 ping statistics ---
+8 packets transmitted, 0 received, 100% packet loss, time 7055ms
+</pre></div>
+</div>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:03&#39;,ethertype=2048,src=&#39;00:00:00:00:00:02&#39;), ipv4(csum=9893,dst=&#39;10.0.0.3&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.2&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=35642,data=echo(data=&#39;\r\x12\xcaR\x00\x00\x00\x00\xab\x8b\t\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=8705,seq=1),type=8)
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>刪除規則<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>刪除 &#8220;rule_id:5&#8221; 和 &#8220;rule_id:6&#8221; 的規則。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule deleted. : ruleID=5&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule deleted. : ruleID=6&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>現在的規則如下圖所示。</p>
+<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" /></a>
+<p>經實際確認。h2 和 h3 之間的 ping（ ICMP ）阻擋連線的規則刪除後， ping 指令現在可以被正常執行並進行通訊。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.3
+PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
+64 bytes from 10.0.0.3: icmp_req=1 ttl=64 time=0.841 ms
+64 bytes from 10.0.0.3: icmp_req=2 ttl=64 time=0.036 ms
+64 bytes from 10.0.0.3: icmp_req=3 ttl=64 time=0.026 ms
+64 bytes from 10.0.0.3: icmp_req=4 ttl=64 time=0.033 ms
+...
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="multi-tenant">
+<h2>Multi tenant 操作範例<a class="headerlink" href="#multi-tenant" title="Permalink to this headline">¶</a></h2>
+<p>接下來這個例子將建立拓璞並使用 VLAN 來對 tenants 進行處理，還有像是路由或是位址對於交換器 s1 對的新增或刪除，以及每一個連接埠之間的連通做驗證。</p>
+<a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" /></a>
+<div class="section" id="id6">
+<h3>環境構築<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>下面的例子使用 Single-tenant ，在 Mininet 上進行環境的建置，另外開啟一個 xterm 做為控制 Controller 的方法，請注意與之前相比這邊需要多一台 host。</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3 h4
+*** Adding switches:
+s1
+*** Adding links:
+(h1, s1) (h2, s1) (h3, s1) (h4, s1)
+*** Configuring hosts
+h1 h2 h3 h4
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 1 switches
+s1
+
+*** Starting CLI:
+mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>接下來到每一個 host 的界面中設定 VLAN ID。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 10.0.0.1/8 dev h1-eth0.2
+root@ryu-vm:~# ip link set dev h1-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
+root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 10.0.0.2/8 dev h2-eth0.2
+root@ryu-vm:~# ip link set dev h2-eth0.2 up
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
+root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 10.0.0.3/8 dev h3-eth0.110
+root@ryu-vm:~# ip link set dev h3-eth0.110 up
+</pre></div>
+</div>
+<p>host: h4:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h4-eth0
+root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 10.0.0.4/8 dev h4-eth0.110
+root@ryu-vm:~# ip link set dev h4-eth0.110 up
+</pre></div>
+</div>
+<p>接著將使用的 OpenFlow 版本設定為 1.3。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>最後，從 controller 的 xterm 畫面中啟動 rest_firewall 。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+loading app ryu.app.rest_firewall
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_firewall of RestFirewallAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(13419) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu 和交換器之間的連線已經成功的話，就會出現接下來的訊息。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>變更初始狀態<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>啟動防火牆。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: {
+        &quot;result&quot;: &quot;success&quot;,
+        &quot;details&quot;: &quot;firewall running.&quot;
+      }
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+  [
+    {
+      &quot;status&quot;: &quot;enable&quot;,
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>新增規則<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>新增允許使用 VLAN_ID = 2 向 10.0.0.0/8 發送 ping 訊息（ ICMP封包 ）的規則到交換器中，
+設定雙向的規則是必要的。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="8%" />
+<col width="13%" />
+<col width="13%" />
+<col width="26%" />
+<col width="13%" />
+<col width="15%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">優先權</th>
+<th class="head">VLAN ID</th>
+<th class="head">來源</th>
+<th class="head">目的</th>
+<th class="head">通訊協定</th>
+<th class="head">連線狀態</th>
+<th class="head">規則ID</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>2</td>
+<td>10.0.0.0/8</td>
+<td>any</td>
+<td>ICMP</td>
+<td>通過</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>2</td>
+<td>any</td>
+<td>10.0.0.0/8</td>
+<td>ICMP</td>
+<td>通過</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>規則確認<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>確認已經設定的規則。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+  [
+    {
+      &quot;access_control_list&quot;: [
+        {
+          &quot;rules&quot;: [
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;dl_vlan&quot;: 2,
+              &quot;nw_src&quot;: &quot;10.0.0.0/8&quot;,
+              &quot;rule_id&quot;: 1,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            },
+            {
+              &quot;priority&quot;: 1,
+              &quot;dl_type&quot;: &quot;IPv4&quot;,
+              &quot;nw_proto&quot;: &quot;ICMP&quot;,
+              &quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;,
+              &quot;dl_vlan&quot;: 2,
+              &quot;rule_id&quot;: 2,
+              &quot;actions&quot;: &quot;ALLOW&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>讓我們確認一下實際狀況。在 VLAN_ID = 2 的情況下，從 h1 發送的 ping 在 h2 也同樣是 VLAN_ID = 2 的情況下，你會發現他是連通的，因為我們剛才已經把規則加入。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.893 ms
+64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.098 ms
+64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.122 ms
+64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.047 ms
+...
+</pre></div>
+</div>
+<p>VLAN_ID = 110 的情況下 h3 和 h4 之間，由於規則沒有被加入，所以 ping 封包被阻擋。</p>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.4
+PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
+^C
+--- 10.0.0.4 ping statistics ---
+6 packets transmitted, 0 received, 100% packet loss, time 4999ms
+</pre></div>
+</div>
+<p>封包被阻斷的時候會被記錄在記錄檔（ log ）之中。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:04&#39;,ethertype=33024,src=&#39;00:00:00:00:00:03&#39;), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=9891,dst=&#39;10.0.0.4&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.3&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=58104,data=echo(data=&#39;\xb8\xa9\xaeR\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=7760,seq=4),type=8)
+...
+</pre></div>
+</div>
+<p>本章中，透過具體的例子說明學到如何使用防火牆。</p>
+</div>
+</div>
+<div class="section" id="rest-api">
+<h2>REST API 列表<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h2>
+<p>本章說明中所提到的 rest_firewall REST API 一覽。</p>
+<div class="section" id="id10">
+<h3>取得交換器的防火牆狀態<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>GET</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/firewall/module/status</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id11">
+<h3>變更交換器的防火牆狀態<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>PUT</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/firewall/module/{ <strong>op</strong> }/{ <strong>switch</strong> }</p>
+<p>&#8211; <strong>op</strong> : [ &#8220;enable&#8221; | &#8220;disable&#8221; ]</p>
+<p class="last">&#8211; <strong>switch</strong> : [ &#8220;all&#8221; | <em>交換器ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>備註</strong></td>
+<td>交換器的初始狀態均為 &#8220;disable&#8221;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id12">
+<h3>取得全部規則<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>GET</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/firewall/rules/{ <strong>switch</strong> }[/{ <strong>vlan</strong> }]</p>
+<p>&#8211; <strong>switch</strong> : [ &#8220;all&#8221; | <em>交換器ID</em> ]</p>
+<p class="last">&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>備註</strong></td>
+<td>VLAN ID的指定可選擇加或不加。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id13">
+<h3>新增規則<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="81%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/firewall/rules/{ <strong>switch</strong> }[/{ <strong>vlan</strong> }]</p>
+<p>&#8211; <strong>switch</strong> : [ &#8220;all&#8221; | <em>交換器ID</em> ]</p>
+<p class="last">&#8211; <strong>vlan</strong> : [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>資料</strong></td>
+<td><p class="first"><strong>priority</strong> :[ 0 - 65535 ]</p>
+<p><strong>in_port</strong> :[ 0 - 65535 ]</p>
+<p><strong>dl_src</strong> :&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
+<p><strong>dl_dst</strong> :&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
+<p><strong>dl_type</strong> :[ &#8220;ARP&#8221; | &#8220;IPv4&#8221; ]</p>
+<p><strong>nw_src</strong> :&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</p>
+<p><strong>nw_dst</strong> :&#8221;&lt;xxx.xxx.xxx.xxx/xx&#8221;&gt;</p>
+<p><strong>nw_proto</strong> &#8221;:[ &#8220;TCP&#8221; | &#8220;UDP&#8221; | &#8220;ICMP&#8221; ]</p>
+<p><strong>tp_src</strong> :[ 0 - 65535 ]</p>
+<p><strong>tp_dst</strong> :[ 0 - 65535 ]</p>
+<p class="last"><strong>actions</strong> : [ &#8220;ALLOW&#8221; | &#8220;DENY&#8221; ]</p>
+</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td><p class="first">註冊成功的規則會自動產生規則 ID，並註明在回應的訊息中。</p>
+<p class="last">指定 VLAN ID 為可附加之選項。</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id14">
+<h3>刪除規則<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>DELETE</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/firewall/rules/{ <strong>switch</strong> }[/{ <strong>vlan</strong> }]</p>
+<p>&#8211; <strong>switch</strong> : [ &#8220;all&#8221; | <em>交換器ID</em> ]</p>
+<p class="last">&#8211; <strong>vlan</strong> : [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>資料</strong></td>
+<td><strong>rule_id</strong> : [ &#8220;all&#8221; | 1 - ... ]</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可附加之選項。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id15">
+<h3>取得交換器的記錄檔<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="63%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>GET</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/firewall/log/status</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id16">
+<h3>變更交換器記錄檔的狀態<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>PUT</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/firewall/log/{ <strong>op</strong> }/{ <strong>switch</strong> }</p>
+<p>&#8211; <strong>op</strong>: [ &#8220;enable&#8221; | &#8220;disable&#8221; ]</p>
+<p class="last">&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>備註</strong></td>
+<td>設定每一個交換器的初始狀態為”啟用”</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">內容目錄</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">防火牆（ Firewall ）</a><ul>
+<li><a class="reference internal" href="#single-tenant">Single tenant 操作範例</a><ul>
+<li><a class="reference internal" href="#id1">環境構築</a></li>
+<li><a class="reference internal" href="#id2">改變初始狀態</a></li>
+<li><a class="reference internal" href="#id3">新增規則</a></li>
+<li><a class="reference internal" href="#id4">確認規則</a></li>
+<li><a class="reference internal" href="#id5">刪除規則</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multi-tenant">Multi tenant 操作範例</a><ul>
+<li><a class="reference internal" href="#id6">環境構築</a></li>
+<li><a class="reference internal" href="#id7">變更初始狀態</a></li>
+<li><a class="reference internal" href="#id8">新增規則</a></li>
+<li><a class="reference internal" href="#id9">規則確認</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rest-api">REST API 列表</a><ul>
+<li><a class="reference internal" href="#id10">取得交換器的防火牆狀態</a></li>
+<li><a class="reference internal" href="#id11">變更交換器的防火牆狀態</a></li>
+<li><a class="reference internal" href="#id12">取得全部規則</a></li>
+<li><a class="reference internal" href="#id13">新增規則</a></li>
+<li><a class="reference internal" href="#id14">刪除規則</a></li>
+<li><a class="reference internal" href="#id15">取得交換器的記錄檔</a></li>
+<li><a class="reference internal" href="#id16">變更交換器記錄檔的狀態</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>上一個主題</h4>
+  <p class="topless"><a href="of_config.html"
+                        title="上一章">OF-Config 函式庫</a></p>
+  <h4>下一個主題</h4>
+  <p class="topless"><a href="rest_router.html"
+                        title="下一章">路由器（ Router ）</a></p>
+  <h3>本頁</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rest_firewall.txt"
+           rel="nofollow">顯示原始碼</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>快速搜尋</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="rest_router.html" title="路由器（ Router ）"
+             >下一頁</a> |</li>
+        <li class="right" >
+          <a href="of_config.html" title="OF-Config 函式庫"
+             >上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

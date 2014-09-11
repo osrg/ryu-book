@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>組織架構 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="協助專案開發" href="contribute.html" />
+    <link rel="prev" title="OpenFlow 交換器測試工具" href="switch_test_tool.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="協助專案開發"
+             accesskey="N">下一頁</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 交換器測試工具"
+             accesskey="P">上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>組織架構<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>本章介紹 Ryu 的架構。
+關於每一個 Class 請參照 <a class="reference external" href="http://ryu.readthedocs.org/en/latest/">API 參考資料</a> 來得到更細節的資料。</p>
+<div class="section" id="application-programming-model">
+<h2>應用程式開發模型（ Application programming model ）<a class="headerlink" href="#application-programming-model" title="Permalink to this headline">¶</a></h2>
+<p>以下是 Ryu 應用程式的開發模型</p>
+<img alt="_images/fig1.png" src="_images/fig1.png" />
+<div class="section" id="application">
+<h3>應用程式（ Application ）<a class="headerlink" href="#application" title="Permalink to this headline">¶</a></h3>
+<p>應用程式是繼承 <tt class="docutils literal"><span class="pre">ryu.base.app_manager.RyuApp</span></tt> 而來。User logic 被視作是一個應用程式。</p>
+</div>
+<div class="section" id="event">
+<h3>事件（ Event ）<a class="headerlink" href="#event" title="Permalink to this headline">¶</a></h3>
+<p>事件是繼承 <tt class="docutils literal"><span class="pre">ryu.controller.event.EventBase</span></tt> 而來，並藉由 Transmitting 和 receiving event 來相互溝通訊息。</p>
+</div>
+<div class="section" id="event-queue">
+<h3>事件佇列（ Event queue ）<a class="headerlink" href="#event-queue" title="Permalink to this headline">¶</a></h3>
+<p>每個應用程式都有一個自己的佇列用來接受事件訊息。</p>
+</div>
+<div class="section" id="thread">
+<h3>執行緒（ Thread ）<a class="headerlink" href="#thread" title="Permalink to this headline">¶</a></h3>
+<p>Ryu 採用 eventlet 來實現多執行緒。因為執行緒是不可插斷的（ non-preemptive ），因此在使用上要特別注意長時間運行所帶來的風險。</p>
+<div class="section" id="event-loop">
+<h4>事件迴圈（ Event loop ）<a class="headerlink" href="#event-loop" title="Permalink to this headline">¶</a></h4>
+<p>當應用程式執行時，將會有一個執行緒自動被產生用來執行該應用程式。
+該執行緒將會做為事件迴圈的模式來執行。如果在事件佇列中發現有事件存在，該事件迴圈將會讀取該事件並且呼叫相對應的事件處理器來處理它。</p>
+</div>
+<div class="section" id="additional-thread">
+<h4>額外的執行緒（ Additional thread ）<a class="headerlink" href="#additional-thread" title="Permalink to this headline">¶</a></h4>
+<p>如果需要的話，你可以使用 hub.spawn 產生額外的執行緒用來執行特殊的應用程式功能。</p>
+</div>
+<div class="section" id="eventlet">
+<h4>eventlet<a class="headerlink" href="#eventlet" title="Permalink to this headline">¶</a></h4>
+<p>雖然你可以直接使用 eventlet 所提供的所有功能，但不建議你這麼做。
+請使用 hub module 所包裝過的功能取代直接使用 eventlet。</p>
+</div>
+</div>
+<div class="section" id="event-handler">
+<h3>事件處理器（ Event handler ）<a class="headerlink" href="#event-handler" title="Permalink to this headline">¶</a></h3>
+<p>藉由使用 <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt> 裝飾器類別來定義自己的事件管理器。當定義的事件發生時，應用程式中的事件迴圈將會偵測到並呼叫對應的事件管理器。</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">內容目錄</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">組織架構</a><ul>
+<li><a class="reference internal" href="#application-programming-model">應用程式開發模型（ Application programming model ）</a><ul>
+<li><a class="reference internal" href="#application">應用程式（ Application ）</a></li>
+<li><a class="reference internal" href="#event">事件（ Event ）</a></li>
+<li><a class="reference internal" href="#event-queue">事件佇列（ Event queue ）</a></li>
+<li><a class="reference internal" href="#thread">執行緒（ Thread ）</a><ul>
+<li><a class="reference internal" href="#event-loop">事件迴圈（ Event loop ）</a></li>
+<li><a class="reference internal" href="#additional-thread">額外的執行緒（ Additional thread ）</a></li>
+<li><a class="reference internal" href="#eventlet">eventlet</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#event-handler">事件處理器（ Event handler ）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>上一個主題</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="上一章">OpenFlow 交換器測試工具</a></p>
+  <h4>下一個主題</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="下一章">協助專案開發</a></p>
+  <h3>本頁</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/arch.txt"
+           rel="nofollow">顯示原始碼</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>快速搜尋</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="協助專案開發"
+             >下一頁</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 交換器測試工具"
+             >上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

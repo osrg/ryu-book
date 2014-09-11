@@ -1,0 +1,1629 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>路由器（ Router ） &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="OpenFlow 交換器測試工具" href="switch_test_tool.html" />
+    <link rel="prev" title="防火牆（ Firewall ）" href="rest_firewall.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             accesskey="I">索引</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 交換器測試工具"
+             accesskey="N">下一頁</a> |</li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="防火牆（ Firewall ）"
+             accesskey="P">上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="router">
+<span id="ch-rest-router"></span><h1>路由器（ Router ）<a class="headerlink" href="#router" title="Permalink to this headline">¶</a></h1>
+<p>本章將說明如何使用 REST 來設定一個路由器。</p>
+<div class="section" id="single-tenant">
+<h2>Single Tenant 的操作範例<a class="headerlink" href="#single-tenant" title="Permalink to this headline">¶</a></h2>
+<p>下面的例子介紹如何建立拓璞，每個交換器（ 路由器 ）的位址新增或刪除，及確認 host 之間的連線狀況確認。</p>
+<a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" /></a>
+<div class="section" id="id1">
+<h3>環境建置<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>首先要在 Mininet 上建置環境。<tt class="docutils literal"><span class="pre">mn</span></tt> 的命令及參數如下。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="13%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">名稱</th>
+<th class="head">設定值</th>
+<th class="head">說明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,3</td>
+<td>3 台交換器直接連結的網路拓璞</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>無</td>
+<td>自動設定各 host 的 MAC 位址</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>使用 Open vSwitch</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>使用外部的 Controller 做為 OpenFlow controller</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>無</td>
+<td>啟動 xterm</td>
+</tr>
+</tbody>
+</table>
+<p>執行的動作如下：</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3
+*** Adding switches:
+s1 s2 s3
+*** Adding links:
+(h1, s1) (h2, s2) (h3, s3) (s1, s2) (s2, s3)
+*** Configuring hosts
+h1 h2 h3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 3 switches
+s1 s2 s3
+
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>接著，開啟 Controller 所使用的 xterm。</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>然後設定每個路由器的 OpenFlow 版本為 1.3。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s3 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>接著每一個 host 刪除原先自動配置的 IP 位址，並設定新的 IP 位址。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
+root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h3-eth0
+</pre></div>
+</div>
+<p>最後在操作 Controller 的 xterm 上啟動 rest_router。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
+loading app ryu.app.rest_router
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_router of RestRouterAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2212) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>若 Ryu 和交換器之間的連接成功，接下來的訊息將會被顯示。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
+[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
+[RT][INFO] switch_id=0000000000000003: Join as router.
+...
+</pre></div>
+</div>
+<p>上述的 log 表示 3 台交換器已經準備完成。</p>
+</div>
+<div class="section" id="ip">
+<h3>設定 IP 位址<a class="headerlink" href="#ip" title="Permalink to this headline">¶</a></h3>
+<p>設定每一個路由器的 IP 位址。</p>
+<p>首先，設定交換器 s1 的 IP 位址為「172.16.20.1/24」和「172.16.30.30/24」。</p>
+<div class="admonition note">
+<p class="first admonition-title">註解</p>
+<p class="last">接下來的說明中所使用的 REST API 請參考本章結尾的「 <a class="reference internal" href="#rest-api">REST API 列表</a> 」以取得更詳細的資料。</p>
+</div>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">註解</p>
+<p class="last">REST 命令的執行結果已經被整理為較好閱讀的格式。</p>
+</div>
+<p>接著，設定交換器 s2 的 IP 位址為「172.16.10.1/24」、「172.16.30.1/24」和「192.168.10.1/24」。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=3]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>接著設定交換器 s3 的 IP 位址為「192.168.30.1/24」和「192.168.10.20/24」。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>交換器的 IP 位址已經被設定完成，接著對每一個 host 新增預設的閘道。</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h3>設定預設路由<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>設定每一個路由器的預設路由。</p>
+<p>首先，設定路由器 s1 的路由為路由器 s2 。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>設定路由器 s2 的預設路由為路由器 s1。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>設定路由器 s3 的預設路由為路由器 s2。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>設定靜態路由<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>為了路由器 s2，設定路由器 s3 的靜態路由為（ 192.168.30.0/24 ）。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>IP 位址及路由的設定狀態如下。</p>
+<a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" /></a>
+</div>
+<div class="section" id="id4">
+<h3>確認設定的內容<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>確認每一個路由器的內容。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.30/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.30&quot;
+            },
+            {
+              &quot;route_id&quot;: 2,
+              &quot;destination&quot;: &quot;192.168.30.0/24&quot;,
+              &quot;gateway&quot;: &quot;192.168.10.20&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 3,
+              &quot;address&quot;: &quot;192.168.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;192.168.10.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;192.168.10.20/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>在這樣的狀態下，執行 ping 來確認相互間的連接狀態。首先執行從 h2 向 h3 執行 ping。
+確認正常連通的狀態。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
+PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
+64 bytes from 192.168.30.10: icmp_req=1 ttl=62 time=48.8 ms
+64 bytes from 192.168.30.10: icmp_req=2 ttl=62 time=0.402 ms
+64 bytes from 192.168.30.10: icmp_req=3 ttl=62 time=0.089 ms
+64 bytes from 192.168.30.10: icmp_req=4 ttl=62 time=0.065 ms
+...
+</pre></div>
+</div>
+<p>接著，從 h2 向 h1 執行 ping 。確認這邊也是正常的連接狀態。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+64 bytes from 172.16.20.10: icmp_req=1 ttl=62 time=43.2 ms
+64 bytes from 172.16.20.10: icmp_req=2 ttl=62 time=0.306 ms
+64 bytes from 172.16.20.10: icmp_req=3 ttl=62 time=0.057 ms
+64 bytes from 172.16.20.10: icmp_req=4 ttl=62 time=0.048 ms
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>刪除靜態路由<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>刪除路由器 s2 上指向路由器 s3 的靜態路由。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Delete route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>確認路由器 s2 的設定。這邊可以看到原先指向路由器 s3 的靜態路由已經被刪除了。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.30&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 3,
+              &quot;address&quot;: &quot;192.168.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>在這個狀態下，使用 ping 來確認連結狀態。從 h2 向 h3 執行 ping 會發現無法通過連接測試，這是因為我們已經刪除了路由的關係。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
+PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
+^C
+--- 192.168.30.10 ping statistics ---
+12 packets transmitted, 0 received, 100% packet loss, time 11088ms
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>刪除 IP 位址<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>刪除已經設定在路由器 s1 上的 IP 位址「172.16.20.1/24」。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Delete address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>確認路由器 s1 的設定狀態。這邊可以看到路由器 s1 中原先被設定的「172.16.20.1/24」已經被刪除。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.30/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>在這個狀態下，使用 ping 指令來確認連通的狀況。從 h2 向 h1 執行，這時可以發現由於 h1 的子網路相關設定及路由已經被刪除的關係，是無法連通的。</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+^C
+--- 172.16.20.10 ping statistics ---
+19 packets transmitted, 0 received, 100% packet loss, time 18004ms
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="multi-tenant">
+<h2>Multi-tenant 的操作範例<a class="headerlink" href="#multi-tenant" title="Permalink to this headline">¶</a></h2>
+<p>接下來的例子將建立一個網路拓璞，使用 VLAN 來分割 tenant 的使用。對各個交換器（ 路由器 ）的位址或路由進行新增和刪除，並確認每一個 host 之間的連通狀況。</p>
+<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" class="align-center" src="_images/fig5.png" /></a>
+<div class="section" id="id7">
+<h3>環境建置<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>首先是在 Mininet 上進行環境的建置。<tt class="docutils literal"><span class="pre">mn</span></tt> 命令的參數如下。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="69%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">參數</th>
+<th class="head">參數值</th>
+<th class="head">說明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,3,2</td>
+<td>3台交換器直接連結的網路拓璞
+（ 每個交換器連接兩台host ）</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>無</td>
+<td>自動設定每一個 host 的 MAC 位址</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>使用 Open vSwitch</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>使用外部的 OpenFlow Controller</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>無</td>
+<td>啟動 xterm</td>
+</tr>
+</tbody>
+</table>
+<p>執行的範例如下。</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1s1 h1s2 h1s3 h2s1 h2s2 h2s3
+*** Adding switches:
+s1 s2 s3
+*** Adding links:
+(h1s1, s1) (h1s2, s2) (h1s3, s3) (h2s1, s1) (h2s2, s2) (h2s3, s3) (s1, s2) (s2, s3)
+*** Configuring hosts
+h1s1 h1s2 h1s3 h2s1 h2s2 h2s3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 3 switches
+s1 s2 s3
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>接著啟動 Controller 用的 xterm。</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>然後，將每一台路由器所使用的 OpenFlow 版本設定為 1.3。</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s3 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>之後設定每一個 host 的 VLAN ID 和 IP 位址。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
+root@ryu-vm:~# ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0.2
+root@ryu-vm:~# ip link set dev h1s1-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s1-eth0
+root@ryu-vm:~# ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 172.16.10.11/24 dev h2s1-eth0.110
+root@ryu-vm:~# ip link set dev h2s1-eth0.110 up
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
+root@ryu-vm:~# ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h1s2-eth0.2
+root@ryu-vm:~# ip link set dev h1s2-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h2s2-eth0
+root@ryu-vm:~# ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 192.168.30.11/24 dev h2s2-eth0.110
+root@ryu-vm:~# ip link set dev h2s2-eth0.110 up
+</pre></div>
+</div>
+<p>host: h1s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h1s3-eth0
+root@ryu-vm:~# ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1s3-eth0.2
+root@ryu-vm:~# ip link set dev h1s3-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h2s3-eth0
+root@ryu-vm:~# ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 172.16.20.11/24 dev h2s3-eth0.110
+root@ryu-vm:~# ip link set dev h2s3-eth0.110 up
+</pre></div>
+</div>
+<p>最後在連線 Controller 的 xterm 上啟動 rest_router。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
+loading app ryu.app.rest_router
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_router of RestRouterAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2447) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu 和路由器之間的聯結完成的話會出現下面的訊息。</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
+[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
+[RT][INFO] switch_id=0000000000000003: Join as router.
+...
+</pre></div>
+</div>
+<p>上面的記錄表示三台路由器的準備已經完成。</p>
+</div>
+<div class="section" id="id8">
+<h3>設定 IP 位址<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>設定每一台路由器的 IP 位址。</p>
+<p>首先，設定路由器 s1 的 IP 位址為「172.16.20.1/24」和「10.10.10.1/24」，接著 VLAN ID 的設定也是必要的。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>接下來，設定路由器 s2 的 IP 位址為「192.168.30.1/24」和「10.10.10.2/24」。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>然後設定路由器 s3 的 IP 位址為「172.16.20.1/24」和「10.10.10.3/24」。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>路由器的 IP 位址已經設定好，接著設定每一個 host 的預設閘道器。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+<p>host: h1s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>host: h2s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>IP 位址被設定如下。</p>
+<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" /></a>
+</div>
+<div class="section" id="id9">
+<h3>設定預設靜態路由<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>設定每一台路由器的預設靜態路由。</p>
+<p>首先，設定路由器 s1 的預設路由為路由器 s2。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>路由器 s2 的預設路由設定為路由器 s1。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>路由器 s3 的預設路由設定為路由器 s2。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>接著為了路由器 s2，將路由器 s3 的靜態路由指向 host（ 172.16.20.0/24 ），但僅只有在 VLAN ID = 2的情況下。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id10">
+<h3>確認設定的內容<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>確認每一台路由器的設定內容。</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/all/all
+  [
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    },
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 2,
+              &quot;destination&quot;: &quot;172.16.20.0/24&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.3&quot;
+            },
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.1&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.2/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.1&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.2/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    },
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.3/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.3/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>每一台路由器的設定內容將會如下所示。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="12%" />
+<col width="21%" />
+<col width="24%" />
+<col width="30%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">路由器</th>
+<th class="head">VLAN ID</th>
+<th class="head">IP 位址</th>
+<th class="head">預設路由</th>
+<th class="head">靜態路由</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>s1</td>
+<td>2</td>
+<td>172.16.10.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.1/24</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s1</td>
+<td>110</td>
+<td>172.16.10.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.1/24</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s2</td>
+<td>2</td>
+<td>192.168.30.1/24</td>
+<td>10.10.10.1(s1)</td>
+<td>目的:172.16.20.0/24</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.2/24</td>
+<td>&nbsp;</td>
+<td>, 閘道:10.10.10.3(s3)&#8221;</td>
+</tr>
+<tr class="row-even"><td>s2</td>
+<td>110</td>
+<td>192.168.30.1/24</td>
+<td>10.10.10.1(s1)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.2/24</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s3</td>
+<td>2</td>
+<td>172.16.20.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.3/24</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s3</td>
+<td>110</td>
+<td>172.16.20.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td></td>
+<td>, 10.10.10.3/24</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>從 h1s1 向 h1s3 發送 ping 訊息。因為是處於相同的 vlan_id = 2 的相同 host ，且已經設置了指向 s3 的靜態路由在 s2 上，因此應該是可以正常連線的。</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+64 bytes from 172.16.20.10: icmp_req=1 ttl=61 time=45.9 ms
+64 bytes from 172.16.20.10: icmp_req=2 ttl=61 time=0.257 ms
+64 bytes from 172.16.20.10: icmp_req=3 ttl=61 time=0.059 ms
+64 bytes from 172.16.20.10: icmp_req=4 ttl=61 time=0.182 ms
+</pre></div>
+</div>
+<p>從 h2s1 向 h2s3 發送 ping 封包，雖然他們處於相同的 vlani_id = 110 的 host ，但是路由器 s2 上並沒有設置指向路由器 s3 的靜態路由，因此無法成功連線。</p>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.11
+PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
+^C
+--- 172.16.20.11 ping statistics ---
+8 packets transmitted, 0 received, 100% packet loss, time 7009ms
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" /></a>
+<p>在本章中，使用一個具體的例子來說明路由器的使用方法。</p>
+</div>
+</div>
+<div class="section" id="rest-api">
+<h2>REST API 列表<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h2>
+<p>本章所介紹的 rest_router 的 REST API 列表。</p>
+<div class="section" id="id11">
+<h3>取得設定內容<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>GET</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id12">
+<h3>設定位址<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>內容</strong></td>
+<td><strong>address</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td>在設定路由之前要先設定位址</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id13">
+<h3>設定靜態路由<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>內容</strong></td>
+<td><strong>destination</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</td>
+</tr>
+<tr class="row-even"><td></td>
+<td><strong>gateway</strong>:&#8221;&lt;xxx.xxx.xxx.xxx&gt;&#8221;</td>
+</tr>
+<tr class="row-odd"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id14">
+<h3>設定預設路由<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>內容</strong></td>
+<td><strong>gateway</strong>:&#8221;&lt;xxx.xxx.xxx.xxx&gt;&#8221;</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id15">
+<h3>刪除位址<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>DELETE</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>內容</strong></td>
+<td><strong>address_id</strong>:[ 1 - ... ]</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id16">
+<h3>刪除路由<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>方法</strong></td>
+<td>DELETE</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td>/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</td>
+</tr>
+<tr class="row-odd"><td></td>
+<td>&#8211; <strong>switch</strong>: [ &#8220;all&#8221; | <em>交換器ID</em> ]</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#8211; <strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</td>
+</tr>
+<tr class="row-odd"><td><strong>內容</strong></td>
+<td><strong>route_id</strong>:[ 1 - ... ]</td>
+</tr>
+<tr class="row-even"><td><strong>備註</strong></td>
+<td>指定 VLAN ID 為可選項目。</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">內容目錄</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">路由器（ Router ）</a><ul>
+<li><a class="reference internal" href="#single-tenant">Single Tenant 的操作範例</a><ul>
+<li><a class="reference internal" href="#id1">環境建置</a></li>
+<li><a class="reference internal" href="#ip">設定 IP 位址</a></li>
+<li><a class="reference internal" href="#id2">設定預設路由</a></li>
+<li><a class="reference internal" href="#id3">設定靜態路由</a></li>
+<li><a class="reference internal" href="#id4">確認設定的內容</a></li>
+<li><a class="reference internal" href="#id5">刪除靜態路由</a></li>
+<li><a class="reference internal" href="#id6">刪除 IP 位址</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multi-tenant">Multi-tenant 的操作範例</a><ul>
+<li><a class="reference internal" href="#id7">環境建置</a></li>
+<li><a class="reference internal" href="#id8">設定 IP 位址</a></li>
+<li><a class="reference internal" href="#id9">設定預設靜態路由</a></li>
+<li><a class="reference internal" href="#id10">確認設定的內容</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rest-api">REST API 列表</a><ul>
+<li><a class="reference internal" href="#id11">取得設定內容</a></li>
+<li><a class="reference internal" href="#id12">設定位址</a></li>
+<li><a class="reference internal" href="#id13">設定靜態路由</a></li>
+<li><a class="reference internal" href="#id14">設定預設路由</a></li>
+<li><a class="reference internal" href="#id15">刪除位址</a></li>
+<li><a class="reference internal" href="#id16">刪除路由</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>上一個主題</h4>
+  <p class="topless"><a href="rest_firewall.html"
+                        title="上一章">防火牆（ Firewall ）</a></p>
+  <h4>下一個主題</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="下一章">OpenFlow 交換器測試工具</a></p>
+  <h3>本頁</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rest_router.txt"
+           rel="nofollow">顯示原始碼</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>快速搜尋</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>瀏覽</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="總索引"
+             >索引</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 交換器測試工具"
+             >下一頁</a> |</li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="防火牆（ Firewall ）"
+             >上一頁</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
