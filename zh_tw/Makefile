@@ -47,7 +47,7 @@ help:
 	@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
 	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
 	@echo "  latexpdfja to make LaTeX files and run them through platex/dvipdfmx"
-	@echo "  latexpdfzh to make LaTeX files and run them through platex and dvipdfmx for chinese"
+	@echo "  latexpdfzh to make LaTeX files and run them through platex and dvipdfmx for Chinese"
 	@echo "  text       to make text files"
 	@echo "  man        to make manual pages"
 	@echo "  texinfo    to make Texinfo files"
@@ -140,8 +140,9 @@ latexpdfja: $(IMG_EPS)
 latexpdfzh: $(IMG_EPS)
 	$(SPHINXBUILD) -b ryulatex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through platex and dvipdfmx..."
-	$(MAKE) -C $(BUILDDIR)/latex
-	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+	#$(MAKE) -C $(BUILDDIR)/latex
+	cd $(BUILDDIR)/latex ; xelatex *.tex ; xelatex *.tex
+	@echo "xelatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text

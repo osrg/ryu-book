@@ -138,7 +138,7 @@ if "%1" == "epub" (
 )
 
 if "%1" == "latex" (
-	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
+	%SPHINXBUILD% -b ryulatex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.Build finished; the LaTeX files are in %BUILDDIR%/latex.
@@ -146,7 +146,7 @@ if "%1" == "latex" (
 )
 
 if "%1" == "latexpdf" (
-	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
+	%SPHINXBUILD% -b ryulatex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
 	make all-pdf
 	cd %BUILDDIR%/..
@@ -156,7 +156,7 @@ if "%1" == "latexpdf" (
 )
 
 if "%1" == "latexpdfja" (
-	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
+	%SPHINXBUILD% -b ryulatex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
 	make all-pdf-ja
 	cd %BUILDDIR%/..

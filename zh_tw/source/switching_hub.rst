@@ -1,6 +1,6 @@
 .. _ch_switching_hub:
 
-交換器（Switching Hub）
+交換器（ Switching Hub ）
 ================================
 
 本章將會用簡單的 Switching hub 安裝做為題材，說明 Ryu 如何安裝一個應用程式。
@@ -10,8 +10,8 @@ Switching Hub
 
 在交換器中有許許多多的功能。在這邊我們將看到擁有下列簡單功能的交換器。
 
-* 學習連接到連接埠的 host 之 MAC address，並記錄在 MAC address table 當中。
-* 對於已經記錄下來的 MAC address，若是收到送往該 MAC address 的封包，則轉送該封包到相對應的連接埠。
+* 學習連接到連接埠的 host 之 MAC 位址，並記錄在 MAC 位址表當中。
+* 對於已經記錄下來的 MAC 位址，若是收到送往該 MAC 位址的封包，則轉送該封包到相對應的連接埠。
 * 對於未指定目標位址的封包，則執行 Flooding。
 
 讓我們使用 Ryu 來實現這樣一個交換器吧。
@@ -22,13 +22,13 @@ OpenFlow 實作的交換器
 OpenFlow 交換器會接受來自于 controller 的指令並達到以下功能。
 
 * 對於接收到的封包進行修改或針對指定的連接埠進行轉送。
-* 對於接收到的封包進行轉送到 Controller 的動作（Packet-In）。
-* 對於接收到來自 Controller 的封包轉送到指定的連接埠（Packet-Out）。
+* 對於接收到的封包進行轉送到 Controller 的動作（ Packet-In ）。
+* 對於接收到來自 Controller 的封包轉送到指定的連接埠（ Packet-Out ）。
 
 上述的功能所組合起來的就是一台交換器的實現。
 
-首先，利用 Packet-In 的功能來達到 MAC address 的學習。
-Controller 使用 Packet-In 接收來自交換器的封包之後進行分析，得到連接埠相關資料以及所連接的 host 之 MAC address。
+首先，利用 Packet-In 的功能來達到 MAC 位址的學習。
+Controller 使用 Packet-In 接收來自交換器的封包之後進行分析，得到連接埠相關資料以及所連接的 host 之 MAC 位址。
 
 在學習之後，對所收到的封包進行轉送。將封包的目的位址，在已經學習的 host 資料中進行檢索，根據檢索的結果會進行下列處理。
 
@@ -58,7 +58,7 @@ Controller 使用 Packet-In 接收來自交換器的封包之後進行分析，�
 
 2. host A → host B
 
-    當 host A 向 host B 發送封包。這時後會觸發 Packet-In 訊息。host A 的 MAC address 會被連接埠 1 給記錄下來。由於 host B 的 MAC address 尚未被學習，因此會進行 Flooding 並將封包往 host B 和 host C 發送。
+    當 host A 向 host B 發送封包。這時後會觸發 Packet-In 訊息。host A 的 MAC 位址會被連接埠 1 給記錄下來。由於 host B 的 MAC 位址尚未被學習，因此會進行 Flooding 並將封包往 host B 和 host C 發送。
 
 
     .. only:: latex
@@ -147,7 +147,7 @@ Ryu 的原始碼之中有提供交換器的程式原始碼。
 
     ryu/app/simple_switch_13.py
 
-OpenFlow 其他的版本也有相對應的原始碼，例如 simple_switch.py（OpenFlow 1.0）和 simple_switch_12.py（OpenFlow 1.2）。我們現在要來看的則是 OpenFlow 1.3 的版本。
+OpenFlow 其他的版本也有相對應的原始碼，例如 simple_switch.py（ OpenFlow 1.0 ）和 simple_switch_12.py（ OpenFlow 1.2 ）。我們現在要來看的則是 OpenFlow 1.3 的版本。
 
 由於原始碼不多，因此我們把全部都拿來檢視。
 
@@ -165,9 +165,9 @@ OpenFlow 其他的版本也有相對應的原始碼，例如 simple_switch.py（
 為了要實作 Ryu 應用程式，因此繼承了 ryu.base.app_manager.RyuApp。
 接著為了使用 OpenFlow 1.3 ，將 ``OFP_VERSIONS`` 指定為 OpenFlow 1.3。
 
-然後，MAC address table 的 mac_to_port 也已經被定義。
+然後，MAC 位址表的 mac_to_port 也已經被定義。
 
-OpenFlow 通訊協定中有些程序像是握手協定（handshake），是定義好讓 OpenFlow 交換器和 Controller 之間進行通訊時使用。
+OpenFlow 通訊協定中有些程序像是握手協定（ handshake ），是定義好讓 OpenFlow 交換器和 Controller 之間進行通訊時使用。
 但這些細節，對於一個 Ryu 應用程式來說是不用擔心或需要特別處理的。
 
 
@@ -185,12 +185,12 @@ OpenFlow 通訊協定中有些程序像是握手協定（handshake），是定�
         # ...
 
 
-事件管理（Event handler）
+事件管理（ Event handler ）
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 對於 Ryu 來說，接受到任何一個 OpenFlow 訊息即會產生一個相對應的事件。而 Ryu 應用程式則是必須實作事件管理以處理相對應發生的事件。
 
-事件管理（Event Handler）是一個擁有事件物件（Event Object）做為參數，並且使用``ryu.controller.handler.set_ev_cls`` 修飾（Decorator）的函數。
+事件管理（ Event Handler ）是一個擁有事件物件（ Event Object ）做為參數，並且使用``ryu.controller.handler.set_ev_cls`` 修飾（ Decorator ）的函數。
 
 set_ev_cls 則指定事件類別得以接受訊息和交換器狀態作為參數。
 
@@ -200,16 +200,16 @@ set_ev_cls 則指定事件類別得以接受訊息和交換器狀態作為參數
 對於狀態來說，請指定下面列表的其中一項。
 
 
-.. tabularcolumns:: |l|l|
+.. tabularcolumns:: |l|L|
 
-=========================================== ==================================
-定義                                        説明
-=========================================== ==================================
-ryu.controller.handler.HANDSHAKE_DISPATCHER 交換 HELLO 訊息
-ryu.controller.handler.CONFIG_DISPATCHER    接收 SwitchFeatures訊息
-ryu.controller.handler.MAIN_DISPATCHER      一般狀態
-ryu.controller.handler.DEAD_DISPATCHER      連線中斷
-=========================================== ==================================
+============================================ ==================================
+名稱                                         說明
+============================================ ==================================
+ryu.controller.handler.HANDSHAKE_DISPATCHER  交換 HELLO 訊息
+ryu.controller.handler.CONFIG_DISPATCHER     接收 SwitchFeatures訊息
+ryu.controller.handler.MAIN_DISPATCHER       一般狀態
+ryu.controller.handler.DEAD_DISPATCHER       連線中斷
+============================================ ==================================
 
 
 新增 Table-miss Flow Entry 
@@ -217,7 +217,7 @@ ryu.controller.handler.DEAD_DISPATCHER      連線中斷
 
 OpenFlow 交換器的握手協議完成之後，新增 Table-miss Flow Entry 到 Flow table 中為接收 Packet-In 訊息做準備。
 
-具體來說，接收到 Switch features（Features reply） 訊息後就會新增 Table-miss Flow Entry。
+具體來說，接收到 Switch features（ Features reply ）訊息後就會新增 Table-miss Flow Entry。
 
 
 .. rst-class:: sourcecode
@@ -245,32 +245,32 @@ Ryu 應用程式所使用的主要屬性如下：
 
 .. tabularcolumns:: |l|L|
 
-============== ==============================================================
-属性名稱       説明
-============== ==============================================================
-id             連接 OpenFlow 交換器的 ID（datapath ID）。
-ofproto        表示使用的 OpenFlow 版本所對應的 ofproto module。
-               目前的狀況會是下述的其中之一。
+=============== ==============================================================
+名稱            說明
+=============== ==============================================================
+id              連接 OpenFlow 交換器的 ID（ datapath ID ）。
+ofproto         表示使用的 OpenFlow 版本所對應的 ofproto module。
+                目前的狀況會是下述的其中之一。
 
-               ``ryu.ofproto.ofproto_v1_0``
+                ``ryu.ofproto.ofproto_v1_0``
 
-               ``ryu.ofproto.ofproto_v1_2``
+                ``ryu.ofproto.ofproto_v1_2``
 
-               ``ryu.ofproto.ofproto_v1_3``
+                ``ryu.ofproto.ofproto_v1_3``
 
-               ``ryu.ofproto.ofproto_v1_4``
+                ``ryu.ofproto.ofproto_v1_4``
 
-ofproto_parser 和 ofproto 一樣，表示 ofproto_parser module。
-               目前的狀況會是下述的其中之一。
+ofproto_parser  和 ofproto 一樣，表示 ofproto_parser module。
+                目前的狀況會是下述的其中之一。
 
-               ``ryu.ofproto.ofproto_v1_0_parser``
+                ``ryu.ofproto.ofproto_v1_0_parser``
 
-               ``ryu.ofproto.ofproto_v1_2_parser``
+                ``ryu.ofproto.ofproto_v1_2_parser``
 
-               ``ryu.ofproto.ofproto_v1_3_parser``
+                ``ryu.ofproto.ofproto_v1_3_parser``
 
-               ``ryu.ofproto.ofproto_v1_4_parser``
-============== ==============================================================
+                ``ryu.ofproto.ofproto_v1_4_parser``
+=============== ==============================================================
 
 
 Ryu 應用程式中 Datapath 類別的主要方法如下：
@@ -312,23 +312,23 @@ Table-miss Flow Entry 的優先權為 0 即最低的優先權，而且此 Entry 
 
 .. NOTE::
 
-    目前（2014年1月），市面上的 Open vSwitch 對於 OpenFlow 1.3 的支援並不完整，
+    目前（ 2014年1月 ），市面上的 Open vSwitch 對於 OpenFlow 1.3 的支援並不完整，
     而且對於 OpenFlow 1.3 以前的版本 Packet-In 是個基本的功能。
     包括 Table-miss Flow Entry 也尚未被支援，僅僅是使用一般的 Flow Entry 取代。
 
 
 空的 match 將被產生為了 match 所有的封包。match 表示於 ``OFPMatch`` 類別中。
 
-接下來，為了轉送到 Controller 連接埠， OUTPUT action 類別（``OFPActionOutput``）的實例將會被產生。Controller 會被指定為封包的目的地，``OFPCML_NO_BUFFER`` 會被設定為 max_len 以便接下來的封包傳送。
+接下來，為了轉送到 Controller 連接埠， OUTPUT action 類別（ ``OFPActionOutput`` ）的實例將會被產生。Controller 會被指定為封包的目的地，``OFPCML_NO_BUFFER`` 會被設定為 max_len 以便接下來的封包傳送。
 
 
 .. NOTE::
 
-    送往 Controller 的封包可以僅只傳送 header 部分（Ethernet header），剩下的則存在緩衝區間中以增加效率。
-    但目前（2014年1月）Open vSwitch 存在臭蟲的關係，會將所有的封包都傳送，並不會只傳送 header。
+    送往 Controller 的封包可以僅只傳送 header 部分（ Ethernet header ），剩下的則存在緩衝區間中以增加效率。
+    但目前（ 2014年1月 ）Open vSwitch 存在臭蟲的關係，會將所有的封包都傳送，並不會只傳送 header。
 
 
-最後將優先權設定為 0（最低優先權），然後執行 ``add_flow()`` 方法以發送 Flow Mod 訊息。
+最後將優先權設定為 0（ 最低優先權 ），然後執行 ``add_flow()`` 方法以發送 Flow Mod 訊息。
 add_flow() 方法的內容將會在稍後進行說明。
 
 Packet-in 訊息
@@ -356,18 +356,18 @@ OFPPacketIn 類別經常使用的屬性如下列所示。
 
 .. tabularcolumns:: |l|L|
 
-========= =======================================================================================
-屬性名稱  説明
-========= =======================================================================================
-match     ``ryu.ofproto.ofproto_v1_3_parser.OFPMatch`` 類別的實體，用來儲存接收封包的 Meta 資訊。
-data      接收封包本身的 binary 資料
-total_len 接收封包的資料長度
-buffer_id 接收封包的內容若是存在 OpenFlow 交換器上時所指定的ID
-          如果在沒有 buffer 的狀況下，則設定 ``ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER``
-========= =======================================================================================
+========== =========================================================================================
+名稱       說明
+========== =========================================================================================
+match      ``ryu.ofproto.ofproto_v1_3_parser.OFPMatch`` 類別的實體，用來儲存接收封包的 Meta 資訊。
+data       接收封包本身的 binary 資料
+total_len  接收封包的資料長度
+buffer_id  接收封包的內容若是存在 OpenFlow 交換器上時所指定的ID
+           如果在沒有 buffer 的狀況下，則設定 ``ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER``
+========== =========================================================================================
 
 
-更新 MAC address table
+更新 MAC 位址表
 """""""""""""""""""""""""
 
 
@@ -398,17 +398,17 @@ buffer_id 接收封包的內容若是存在 OpenFlow 交換器上時所指定的
         # ...
 
 
-從 OFPPacketIn 類別的 match 得到接收埠（``in_port``）的資訊。
-目的 MAC address 和來源 MAC address 使用 Ryu 的封包函式庫，從接收到封包的 Ethernet header 取得。
+從 OFPPacketIn 類別的 match 得到接收埠（ ``in_port`` ）的資訊。
+目的 MAC 位址和來源 MAC 位址使用 Ryu 的封包函式庫，從接收到封包的 Ethernet header 取得。
 
-藉由得知目的 Mac address 和來源 Mac address，更新 MAC address table。
+藉由得知目的 MAC 位址和來源 Mac 位址，更新 MAC 位址表。
 
-為了可以對應連接到多個 OpenFlow 交換器，Mac address table 和每一個交換器之間的識別，就使用 datapath ID 來進行確認。
+為了可以對應連接到多個 OpenFlow 交換器，MAC 位址表和每一個交換器之間的識別，就使用 datapath ID 來進行確認。
 
 判斷轉送封包的連接埠
 """"""""""""""""""""""""""""""""""""
 
-目的 MAC address 若存在于 MAC address table ，則判斷該連接埠的號碼為輸出。反之若不存在于 MAC address table 則 OUTPUT action 類別的實體並生成 flooding（``OFPP_FLOOD``）給目的連接埠使用。
+目的 MAC 位址若存在于 MAC 位址表，則判斷該連接埠的號碼為輸出。反之若不存在于 MAC 位址表則 OUTPUT action 類別的實體並生成 flooding（ ``OFPP_FLOOD`` ）給目的連接埠使用。
 
 
 .. rst-class:: sourcecode
@@ -434,23 +434,23 @@ buffer_id 接收封包的內容若是存在 OpenFlow 交換器上時所指定的
         # ...
 
 
-若是找到了目的 MAC address ，則在交換器的 Flow table 中新增。
+若是找到了目的 MAC 位址，則在交換器的 Flow table 中新增。
 
 Table-miss Flow Entry 包含 match 和 action，並透過 add_flow() 來新增。
 
 不同於平常的 Table-miss Flow Entry ，這次將加上設定 match 條件。
-本次交換器實作中，接收埠（in_port）和目的 MAC address （eth_dst）已指定。例如，接收到來自連接埠 1 的封包就傳送到 host B。
+本次交換器實作中，接收埠（ in_port ）和目的 MAC 位址（ eth_dst ）已指定。例如，接收到來自連接埠 1 的封包就傳送到 host B。
 
 在這邊指定 Flow Entry 優先權為 1，而優先權的值越大，表示有更高的優先權。因此，這邊新增的 Flow Entry 將會先於 Table-miss Flow Entry 而被執行。
 
 上述的內容包含 action 整理如下，這些 Entry 會被新增至 Flow Entry：
 
-    連接埠 1 接收到的封包，若是要轉送至 host B （目的 MAC address B) 的封包則轉送至連接埠 4。
+    連接埠 1 接收到的封包，若是要轉送至 host B（ 目的 MAC 位址 B) 的封包則轉送至連接埠 4。
 
 
 .. HINT::
 
-    在 OpenFlow 中，有個邏輯連接埠叫做 NORMAL 並在規範中被列為選項（也就是說可以不進行實作）。當被指定的連接埠為 NORMAL 時，傳統 L2/L3 的功能將會被啟用來處理封包。
+    在 OpenFlow 中，有個邏輯連接埠叫做 NORMAL 並在規範中被列為選項（ 也就是說可以不進行實作 ）。當被指定的連接埠為 NORMAL 時，傳統 L2/L3 的功能將會被啟用來處理封包。
     意思是當把所有輸出的埠均設定為 NORMAL 時，交換器將會視作一個普通的交換器而存在。跟一般交換器的差別在於我們是使用 OpenFlow 來達到這樣的功能。
 
 
@@ -519,15 +519,15 @@ command (ofproto_v1_3.OFPFC_ADD)
 
     指定要執行何項操作。
 
-    ==================== ========================================
-    値                   説明
-    ==================== ========================================
+    ==================== ========================
+    名稱                 說明
+    ==================== ========================
     OFPFC_ADD            Flow Entry 新增
     OFPFC_MODIFY         Flow Entry 更新
     OFPFC_MODIFY_STRICT  嚴格的 Flow Entry 更新
     OFPFC_DELETE         Flow Entry 刪除
     OFPFC_DELETE_STRICT  嚴格的 Flow Entry 刪除
-    ==================== ========================================
+    ==================== ========================
 
 idle_timeout (0)
 
@@ -576,16 +576,16 @@ flags (0)
 
     .. tabularcolumns:: |l|L|
 
-    ===================== ===============================================================
-    値                    説明
-    ===================== ===============================================================
-    OFPFF_SEND_FLOW_REM   Flow Entry 被移除的時候，對 Controller 發送 Removed 訊息。
-    OFPFF_CHECK_OVERLAP   使用 OFPFC_ADD 時，檢查是否有重複的 Flow Entry 存在。
-                          若是有則觸發 Flow Mod 失敗，並返回錯誤訊息。
-    OFPFF_RESET_COUNTS    重設該 Flow Entry 的 packet counter 和 byte counter。
-    OFPFF_NO_PKT_COUNTS   關閉該 Flow Entry 的 packet counter 功能。
-    OFPFF_NO_BYT_COUNTS   關閉該 Flow Entry 的 byte counter 功能。
-    ===================== ===============================================================
+    ==================== ===============================================================
+    名稱                 說明
+    ==================== ===============================================================
+    OFPFF_SEND_FLOW_REM  Flow Entry 被移除的時候，對 Controller 發送 Removed 訊息。
+    OFPFF_CHECK_OVERLAP  使用 OFPFC_ADD 時，檢查是否有重複的 Flow Entry 存在。
+                         若是有則觸發 Flow Mod 失敗，並返回錯誤訊息。
+    OFPFF_RESET_COUNTS   重設該 Flow Entry 的 packet counter 和 byte counter。
+    OFPFF_NO_PKT_COUNTS  關閉該 Flow Entry 的 packet counter 功能。
+    OFPFF_NO_BYT_COUNTS  關閉該 Flow Entry 的 byte counter 功能。
+    ==================== ===============================================================
 
 
 match (None)
@@ -601,7 +601,7 @@ instructions ([])
 
 回到 Packet-In handler 並說明最後的流程。
 
-在 MAC address table 中找尋目的 MAC address ，若是有找到則發送 Packet-Out 訊息，並且轉送封包。
+在 MAC 位址表中找尋目的 MAC 位址，若是有找到則發送 Packet-Out 訊息，並且轉送封包。
 
 
 .. rst-class:: sourcecode
@@ -664,9 +664,9 @@ VM 映像檔
 
     http://sourceforge.net/projects/ryu/files/vmimages/OpenFlowTutorial/
 
-    OpenFlow_Tutorial_Ryu3.2.ova（約1.4GB）
+    OpenFlow_Tutorial_Ryu3.2.ova（ 約1.4GB ）
 
-相關文件（Wiki網頁）
+相關文件（ Wiki網頁 ）
 
     https://github.com/osrg/ryu/wiki/OpenFlow_Tutorial
 
@@ -684,11 +684,11 @@ Ryu 3.2
   https://github.com/osrg/ryu/
 
 
-    .. rst-class:: console
+.. rst-class:: console
 
-    ::
+::
 
-        $ sudo pip install ryu
+    $ sudo pip install ryu
 
 
 但是在這邊我們使用 Ryu 的 OpenFlow Tutorial VM 映像檔。
@@ -715,15 +715,15 @@ Ryu 3.2
 mn 命令的參數如下：
 
 
-============ ========== ===========================================
-參數名稱       參數值      説明
-============ ========== ===========================================
+============ ========== =================================
+名稱         數值       說明
+============ ========== =================================
 topo         single,3   交換器 1 台、host 3 台的拓璞
-mac          無         自動設定 host 的 MAC address
+mac          無         自動設定 host 的 MAC 位址
 switch       ovsk       使用 Open vSwitch
 controller   remote     指定外部的 OpenFlow Controller
-x            無          啟動 xterm
-============ ========== ===========================================
+x            無         啟動 xterm
+============ ========== =================================
 
 
 執行的方法如下：
@@ -795,7 +795,7 @@ switch: s1:
     root@ryu-vm:~#
 
 
-交換器（橋接器）*s1* 被建立，並且增加 3 個連接埠分別連線到 3 個 host。
+交換器（ 橋接器 ） *s1* 被建立，並且增加 3 個連接埠分別連線到 3 個 host。
 
 接下來設定 OpenFlow 的版本為 1.3。
 
@@ -824,7 +824,7 @@ switch: s1:
     root@ryu-vm:~#
 
 
-ovs-ofctl 命令選項是用來指定 OpenFlow 版本。預設值是 *OpenFlow10*。
+ovs-ofctl 命令選項是用來指定 OpenFlow 版本。預設值是 *OpenFlow10* 。 
 
 執行交換器
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -896,7 +896,7 @@ switch: s1:
     root@ryu-vm:~#
 
 
-優先權為 0，沒有 matcth，action  為 CONTROLLER，重送的資料大小為 65535 (0xffff = OFPCML_NO_BUFFER）。
+優先權為 0，沒有 matcth，action  為 CONTROLLER，重送的資料大小為 65535 (0xffff = OFPCML_NO_BUFFER ）。
 
 確認操作
 ^^^^^^^^^^
@@ -905,7 +905,7 @@ switch: s1:
 
 1. ARP request
 
-    此時 host 1 並不知道 host 2 的 MAC address，原則上 ICMP echo request 之前的 ARP request 是用 廣播的方式發送。這樣的廣播方式會讓 host 2 和 host 3 都同樣接受到訊息。
+    此時 host 1 並不知道 host 2 的 MAC 位址，原則上 ICMP echo request 之前的 ARP request 是用 廣播的方式發送。這樣的廣播方式會讓 host 2 和 host 3 都同樣接受到訊息。
 
 2. ARP reply
 
@@ -913,11 +913,11 @@ switch: s1:
 
 3. ICMP echo request
 
-    現在 host 1 知道了 host 2 的 MAC address ，因此發送 echo request 給 host 2。
+    現在 host 1 知道了 host 2 的 MAC 位址，因此發送 echo request 給 host 2。
 
 4. ICMP echo reply
 
-    host 2 此時也知道了 host 1 的 MAC address，因此發送 echo reply 給 host 1。
+    host 2 此時也知道了 host 1 的 MAC 位址，因此發送 echo reply 給 host 1。
 
 原則上動作流程應該如同描述一般。
 
@@ -978,7 +978,7 @@ host: h3:
 
 ICMP echo reply 正常的被回覆。
 
-在繼續之前先確認 Flow table。
+繼續下去之前先確認 Flow table。
 
 switch: s1:
 
@@ -997,12 +997,12 @@ switch: s1:
 
 Table-miss Flow Entry 以外，另外加入兩個優先權為 1 的 Flow Entry。
 
-(1) 接收埠（in_port）:2, 目的 MAC address （dl_dst）:host 1 →
+(1) 接收埠（ in_port ）:2, 目的 MAC 位址（ dl_dst ）:host 1 →
     actions:host 1 轉送
-(2) 接收埠（in_port）:1, 目的 MAC address（dl_dst）:host 2 →
+(2) 接收埠（ in_port ）:1, 目的 MAC 位址（ dl_dst ）:host 2 →
     actions:host 2 轉送
 
-(1) 的 Flow Entry 會被 match 2 次（n_packets）、(2) 的 Flow Entry 則被 match 1 次。
+(1) 的 Flow Entry 會被 match 2 次（ n_packets ）、(2) 的 Flow Entry 則被 match 1 次。
 因為 (1) 用來讓 host 2 向 host 1 傳送封包用，ARP reply 和 ICMP echo reply 都會發生 match。
 (2) 是用來從 host 1 向 host 2 發送訊息，由於 ARP request 是採用廣播的方式，原則上透過 ICMP echo request 完成。
 
@@ -1025,9 +1025,9 @@ controller: c0:
 
 第一個 Packet-In 是由 host 1 發送的 ARP request ，因為透過廣播的方式所以沒有 Flow Entry 存在，故發送 Packet-Out 。
 
-第二個是從 host 2 回覆的 ARP reply，目的 MAC address 為 host 1 因此前述的 Flow Entry (1) 被新增。
+第二個是從 host 2 回覆的 ARP reply，目的 MAC 位址為 host 1 因此前述的 Flow Entry (1) 被新增。
 
-第三個是從 host 1 向 host 2 發送的 ICMP echo request，因此新增 Flow Entry (2）。
+第三個是從 host 1 向 host 2 發送的 ICMP echo request，因此新增 Flow Entry (2)。
 
 host 2 向 host 1 回覆的 ICMP echo reply 則會和 Flow Entry (1) 發生 match，故直接轉送封包至 host 1 而不需要發送 Packet-In。
 

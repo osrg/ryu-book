@@ -1,14 +1,14 @@
 .. _ch_traffic_monitor:
 
-流量監控（Traffic Monitor）
-============================
+流量監控（ Traffic Monitor ）
+========================================================
 
 本章針對 「 :ref:`ch_switching_hub` 」 提到的 OpenFlow 交換器加入流量監控的功能。
 
 定期檢查網路狀態
 --------------------------------
 
-網路已經成為許多服務或業務的基礎建設，所以維護一個穩定的網路環境是必要的。但是網路問題總是不斷的發生。
+網路已經成為許多服務或業務的基礎建設，所以維護一個穩定的網路環境是必要的。但是網路問題總是不斷地發生。
 
 網路發生異常的時候，必須快速的找到原因，並且儘速恢復原狀。
 這不需要多說，正在閱讀本書的人都知道，找出網路的錯誤、發現真正的原因需要清楚地知道網路的狀態。例如：假設網路中特定的連接埠正處於高流量的狀態，不論是因為他是一個不正常的狀態或是任何原因導致，變成一個由於沒有持續監控所發生的問題。
@@ -87,7 +87,7 @@
     # ...
 
 
-在執行緒中 ``_monitor()`` 方法確保了執行緒可以在每 10 秒的間隔中，不斷的向註冊的交換器發送要求以取得統計資訊。
+在執行緒中 ``_monitor()`` 方法確保了執行緒可以在每 10 秒的間隔中，不斷地向註冊的交換器發送要求以取得統計資訊。
 
 為了確認連線中的交換器都可以被持續監控， ``EventOFPStateChange`` 就可以用來監測交換器的連線中斷。這個事件偵測是 Ryu 框架所提供的功能，會被觸發在 Datapath 的狀態改變時。
 
@@ -157,7 +157,7 @@ FlowStats
 
 ``OPFFlowStatsReply`` 類別的屬性 ``body`` 是 ``OFPFlowStats`` 的列表，當中儲存了每一個 Flow Entry 的統計資訊，並做為 FlowStatsRequest 的回應。
 
-權限為零的 Table-miss Flow 除外的全部 Flow Entry 將會被選擇，通過並符合該 Flow Entry 的封包數和位元數統計資料將會被回傳，並以接收埠號和目的 MAC address 的方式排序。
+權限為零的 Table-miss Flow 除外的全部 Flow Entry 將會被選擇，通過並符合該 Flow Entry 的封包數和位元數統計資料將會被回傳，並以接收埠號和目的 MAC 位址的方式排序。
 
 為了持續的收集以及分析，僅有一部份的資料會被輸出到 log。因此若要進行分析，連結到外部的程式是必須的。在這樣的情況下 ``OFPFlowStatsReply`` 的內容可以被轉換成為 JSON 的格式進行輸出。
 
@@ -382,10 +382,10 @@ controller: c0:
     0000000000000001 fffffffe        0        0        0        0        0        0
 
 
-在「 :ref:`ch_switching_hub` 」中，我們使用 ryu-manager 指令來設定 SimpleSwitch13 模組名稱 （ryu.app.simple_switch_13）。
-至於這邊則自定 SimpleMonitor 的檔案名稱（./simple_monitor.py）。
+在「 :ref:`ch_switching_hub` 」中，我們使用 ryu-manager 指令來設定 SimpleSwitch13 模組名稱（ ryu.app.simple_switch_13 ）。
+至於這邊則自定 SimpleMonitor 的檔案名稱（ ./simple_monitor.py ）。
 
-在這個時候 Flow Entry 是空白的（Table-miss Flow Entry 沒有被顯示出來），每個連接埠的計數器也都為零。
+在這個時候 Flow Entry 是空白的（ Table-miss Flow Entry 沒有被顯示出來 ），每個連接埠的計數器也都為零。
 
 從 host 1 向 host 2 執行 ping 的指令。
 
@@ -429,7 +429,7 @@ controller: c0:
 
 Flow Entry 的統計資訊中，在接收埠 1 的 Flow match 流量訊息中，1 個封包，42 個位元組的資訊被記錄下來。接收埠 2 則是 2 個封包，140 個位元組。
 
-連接埠的統計資訊，連接埠 1 的封包接收（rx-pkts）數量為 3，接收位元組（rx-bytes）數量為 102 bytes，連接埠 2 也是 3個封包，182 位元組。
+連接埠的統計資訊，連接埠 1 的封包接收（ rx-pkts ）數量為 3，接收位元組（ rx-bytes ）數量為 102 bytes，連接埠 2 也是 3個封包，182 位元組。
 
 Flow Entry 的統計資訊和連接埠的統計資訊是不可以混為一談的，這是因為 Flow Entry 的統計資訊是記錄 match 的 Entry 所轉送封包的統計資料。也就是說被 Table-miss 觸發的 Packet-In 以及 Packet-Out 轉送封包都不能算在統計資料內。
 

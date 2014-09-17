@@ -17,7 +17,8 @@ OpenFlow 交換器測試工具
 ========================= ================================
 OpenFlow1.3 FlowMod 訊息  match (IN_PHY_PORT 除外)
 
-                          actions （SET_QUEUE 除外）
+                          actions（ SET_QUEUE 除外 ）
+
 OpenFlow1.3 MeterMod 訊息 全部
 OpenFlow1.3 GroupMod 訊息 全部
 
@@ -56,7 +57,7 @@ OpenFlow1.3 GroupMod 訊息 全部
 輸出測試結果
 """"""""""""""""""""""""
 
-在指定了測試樣板檔案後，樣板中的測試案例會被依序執行，最後並顯示結果（OK / ERROR）。
+在指定了測試樣板檔案後，樣板中的測試案例會被依序執行，最後並顯示結果（ OK / ERROR ）。
 在出現 ERROR 的測試結果時，錯誤訊息會同時一併出現在畫面上。
 最後的測試結果會顯示 OK / ERROR 的數量及錯誤內容。
 
@@ -232,7 +233,7 @@ OpenFlow1.3 GroupMod 訊息 全部
 
 * 流量監控用的 Flow Entry 新增
 
-* 透過 Flow Entry 發送 Packet-In 訊息到 Controller （ actions = CONTROLLER ） 。
+* 透過 Flow Entry 發送 Packet-In 訊息到 Controller（ actions = CONTROLLER ）。
 
 * 接受 Packet-Out 訊息並發送封包
 
@@ -251,13 +252,15 @@ OpenFlow1.3 GroupMod 訊息 全部
 
 測試工具已經被公開在 Ryu 的原始碼當中。
 
-    =============================== ===============================
-    原始碼                           説明
-    =============================== ===============================
-    ryu/tests/switch/tester.py      測試工具
-    ryu/tests/switch/of13           測試樣板的一些範例
-    ryu/tests/switch/run_mininet.py 建立測試環境的腳本
-    =============================== ===============================
+
+=============================== ===============================
+原始碼                          說明
+=============================== ===============================
+ryu/tests/switch/tester.py      測試工具
+ryu/tests/switch/of13           測試樣板的一些範例
+ryu/tests/switch/run_mininet.py 建立測試環境的腳本
+
+=============================== ===============================
 
 使用下面的指令來執行測試工具。
 
@@ -270,14 +273,13 @@ OpenFlow1.3 GroupMod 訊息 全部
      [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
 
 
-.. tabularcolumns:: |l|l|l|
-
 ==================== ======================================== =====================
-選項                 説明                                     預設值
+選項                 說明                                     預設值
 ==================== ======================================== =====================
 --test-switch-target 待測交換器的 datapath ID                 0000000000000001
 --test-switch-tester 輔助交換器的 datapath ID                 0000000000000002
 --test-switch-dir    測試樣板的存放路徑                       ryu/tests/switch/of13
+
 ==================== ======================================== =====================
 
 
@@ -296,7 +298,7 @@ OpenFlow1.3 GroupMod 訊息 全部
 執行測試樣板檔案的步驟
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-使用 Ryu 的原始碼中測試樣板範本 （ ryu/tests/switch/of13 ） 來檢查 FlowMod 訊息的 match / action，MeterMod 的訊息和 GroupMod 訊息。
+使用 Ryu 的原始碼中測試樣板範本（ ryu/tests/switch/of13 ）來檢查 FlowMod 訊息的 match / action，MeterMod 的訊息和 GroupMod 訊息。
 
 本程序中測試環境和測試環境的產生腳本（ ryu/tests/switch/run_mininet.py ），也因此測試目標是 Open vSwitch。使用 VM image 來打造測試環境以及登入的方法請參照「 :ref:`ch_switching_hub` 」以取得更詳細的資料。
 
@@ -338,7 +340,7 @@ OpenFlow1.3 GroupMod 訊息 全部
 
 
     在「Node: c0 (root)」的 xterm 中啟動測試工具。
-    這時候做為測試樣板檔案的位置，請指定測試樣板範例路徑 （ ryu/tests/switch/of13 ）。
+    這時候做為測試樣板檔案的位置，請指定測試樣板範例路徑（ ryu/tests/switch/of13 ）。
     接著，由於 mininet 測試環境中待測交換器和輔助交換器的 datapath ID 均有預設值，因此
     --test-switch-target / --test-switch-tester 選項可省略。
 
@@ -410,7 +412,7 @@ OpenFlow1.3 GroupMod 訊息 全部
 
     測試樣板範本檔案一覽
 
-        提供測試樣板範本檔案包括，對應 match / actions 各種設定的 Flow Entry 新增：match （或不 match ）多數 pattern 的封包改寫、對應滿足一定頻率的後變更優先權的 Meter Entry 新增：Meter Entry 中 match 的封包連續改寫、對應全連接埠的 FLOODING 的 Group Entry 新增：Group Entry 中 match 封包的連續改寫。
+        提供測試樣板範本檔案包括，對應 match / actions 各種設定的 Flow Entry 新增：match（ 或不 match ）多數 pattern 的封包改寫、對應滿足一定頻率的後變更優先權的 Meter Entry 新增：Meter Entry 中 match 的封包連續改寫、對應全連接埠的 FLOODING 的 Group Entry 新增：Group Entry 中 match 封包的連續改寫。
 
     .. rst-class:: console
 
@@ -490,30 +492,33 @@ OpenFlow1.3 GroupMod 訊息 全部
 
 1．製作測試樣板檔案
 
-    透過路由器的路由表（Routing table）實作封包的轉送功能。
+    透過路由器的路由表（ Routing table ）實作封包的轉送功能。
     下面的 Flow Entry 會確認整個動作是否正確。
 
+    .. tabularcolumns:: |p{5cm}|p{8cm}|
 
-    =================================== ==================================================
-    match                               actions
-    =================================== ==================================================
-     IP 網域「192.168.30.0/24」         | 修改發送端 MAC 位址為 「aa:aa:aa:aa:aa:aa」
-                                        | 修改目的端 MAC address 為 「bb:bb:bb:bb:bb:bb」
-                                        | 降低 TTL 值
-                                        | 封包轉送
-    =================================== ==================================================
+    =========================== ================================================
+    match                       actions
+    =========================== ================================================
+    IP 網域「192.168.30.0/24」  修改發送端 MAC 位址為 「aa:aa:aa:aa:aa:aa」    
+    \                           修改目的端 MAC 位址為 「bb:bb:bb:bb:bb:bb」
+    \                           降低 TTL 值                                    
+    \                           封包轉送                                       
+
+    =========================== ================================================
 
 
-    =============================== ===============================
+    .. tabularcolumns:: |p{5cm}|p{8cm}|
+
+    =============================== ================================================
     match                           actions
-    =============================== ===============================
-    IP 網域「192.168.30.0/24」        修改發送端 MAC address 為 「aa:aa:aa:aa:aa:aa」
+    =============================== ================================================
+    IP 網域「192.168.30.0/24」      修改發送端 MAC 位址為 「aa:aa:aa:aa:aa:aa」
     ryu/tests/switch/of13           測試樣版的一些範例
     ryu/tests/switch/run_mininet.py 建立測試環境的腳本
-    =============================== ===============================
+    =============================== ================================================
 
-
-    依照這個測試樣板產生測試樣板檔案。
+依照這個測試樣板產生測試樣板檔案。
 
 檔案名稱： ``sample_test_pattern.json``
 
@@ -609,7 +614,7 @@ OpenFlow1.3 GroupMod 訊息 全部
     ]
 
 
-2．試験環境構築
+2．建構測試環境
 
     使用測試環境建置腳本來完成測試環境。詳細的操作細節請參照 `執行測試樣板檔案的步驟`_ 。
 
@@ -686,49 +691,88 @@ OpenFlow1.3 GroupMod 訊息 全部
 下面列出所有測試工具可能會顯示的錯誤訊息。
 
 
-.. tabularcolumns:: |l|l|
+    .. tabularcolumns:: |p{8cm}|p{7cm}|
 
-===========================================================================  ============================================================================================================
-錯誤訊息                                                                     説明
-===========================================================================  ============================================================================================================
-Failed to initialize flow tables: barrier request timeout.                   初始待測交換器的 flow entry 失敗 (Barrier Request 作業逾時)
-Failed to initialize flow tables: [err_msg]                                  初始待測交換器的 flow entry 失敗 (接收到 FlowMod 錯誤訊息)
-Failed to initialize flow tables of tester_sw: barrier request timeout.      初始輔助交換器的 flow entry 失敗 (Barrier Request 作業逾時)
-Failed to initialize flow tables of tester_sw: [err_msg]                     初始輔助交換器的 flow entry 失敗 (接收到 FlowMod 錯誤訊息)
-Failed to add flows: barrier request timeout.                                待測交換器的 flow entry 新增失敗 (Barrier Request 作業逾時)
-Failed to add flows: [err_msg]                                               待測交換器的 flow entry 新增失敗 (接收到 FlowMod 錯誤訊息)
-Failed to add flows to tester_sw: barrier request timeout.                   輔助交換器的 flow entry 新增失敗 (Barrier Request 作業逾時)
-Failed to add flows to tester_sw: [err_msg]                                  輔助交換器的 flow entry 新增失敗 (接收到 FlowMod 錯誤訊息)
-Failed to add meters: barrier request timeout.                               待測交換器的 meter entry 新增失敗 (Barrier Request 作業逾時)
-Failed to add meters: [err_msg]                                              待測交換器的 meter entry 新增失敗 (接收到 MeterMod 錯誤訊息)
-Failed to add groups: barrier request timeout.                               待測交換器的 group entry 新增失敗 (Barrier Request 作業逾時)
-Failed to add groups: [err_msg]                                              待測交換器的 group entry 新增失敗 (接受到 GroupMod 錯誤訊息)
-Added incorrect flows: [flows]                                               待測交換器的 flow entry 新增失敗 (新增的 flow entry 不符合規範)
-Failed to add flows: flow stats request timeout.                             待測交換器的 flow entry 新增失敗 (FlowStats Request 作業逾時)
-Failed to add flows: [err_msg]                                               待測交換器的 flow entry 新增失敗 (接受到 FlowStats Request 的錯誤訊息)
-Added incorrect meters: [meters]                                             待測交換器的 meter entry 新增錯誤 (新增的 meter entry 不符合規範)
-Failed to add meters: meter config stats request timeout.                    待測交換器的 meter entry 新增失敗 (MeterConfigStats Request 作業逾時)
-Failed to add meters: [err_msg]                                              待測交換器的 meter entry 新增失敗 (接受到 MeterConfigStats Request 錯誤訊息)
-Added incorrect groups: [groups]                                             待測交換器的 group entry 新增錯誤 (新增的 group entry 不符合規範)
-Failed to add groups: group desc stats request timeout.                      待測交換器的 group entry 新增失敗 (GroupDescStats Request 作業逾時)
-Failed to add groups: [err_msg]                                              待測交換器的 group entry 新增失敗 (接受到 GroupDescStats Request 錯誤訊息)
-Failed to request port stats from target: request timeout.                   待測交換器的 PortStats 取得失敗 (PortStats Request 作業逾時)
-Failed to request port stats from target: [err_msg]                          待測交換器的 PortStats 取得失敗 (接受到 PortStats Request 的錯誤訊息)
-Failed to request port stats from tester: request timeout.                   輔助交換器的 PortStats 取得失敗 (PortStats Request 作業逾時)
-Failed to request port stats from tester: [err_msg]                          輔助交換器的 PortStats 取得失敗 (接受到 PortStats Request 的錯誤訊息)
-Received incorrect [packet]                                                  封包接收錯誤 (接受到錯誤的封包)
-Receiving timeout: [detail]                                                  封包接收錯誤 (作業逾時)
-Faild to send packet: barrier request timeout.                               封包傳送失敗 (Barrier Request 作業逾時)
-Faild to send packet: [err_msg]                                              封包傳送失敗 (Packet-Out 的錯誤訊息)
-Table-miss error: increment in matched_count.                                table-miss 錯誤 (match flow)
-Table-miss error: no change in lookup_count.                                 table-miss 錯誤 (封包不會被 flow table 所處理)
-Failed to request table stats: request timeout.                              table-miss 失敗 (TableStats Request 作業逾時)
-Failed to request table stats: [err_msg]                                     table-miss 失敗 (接收到 TableStats Request 的錯誤訊息)
-Added incorrect flows to tester_sw: [flows]                                  輔助交換器 flow entry 新增錯誤 (新增的 flow entry 不符合規範)
-Failed to add flows to tester_sw: flow stats request timeout.                輔助交換器 flow entry 新增失敗 (FlowStats Request 作業逾時)
-Failed to add flows to tester_sw: [err_msg]                                  輔助交換器 flow entry 新增失敗 (FlowStats Request 的錯誤訊息)
-Failed to request flow stats: request timeout.                               測試 Throughput 時，輔助交換器 flow entry request 失敗 (FlowStats Request 作業逾時)
-Failed to request flow stats: [err_msg]                                      測試 Throughput 時，輔助交換器 flow entry request 失敗 (FlowStats Request 的錯誤訊息)
-Received unexpected throughput: [detail]                                     測試 Throughput 時，得到非預期的結果
-Disconnected from switch                                                     待測交換器或輔助交換器的連結中斷
-===========================================================================  ============================================================================================================
+    =========================================================================== ==================================================
+    錯誤訊息                                                                    說明
+    =========================================================================== ==================================================
+    Failed to initialize flow tables: barrier request timeout.                  初始待測交換器的 flow entry 失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to initialize flow tables: [err_msg]                                 初始待測交換器的 flow entry 失敗
+    \                                                                           (接收到 FlowMod 錯誤訊息)
+    Failed to initialize flow tables of tester_sw: barrier request timeout.     初始輔助交換器的 flow entry 失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to initialize flow tables of tester_sw: [err_msg]                    初始輔助交換器的 flow entry 失敗
+    \                                                                           (接收到 FlowMod 錯誤訊息)
+    Failed to add flows: barrier request timeout.                               待測交換器的 flow entry 新增失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to add flows: [err_msg]                                              待測交換器的 flow entry 新增失敗
+    \                                                                           (接收到 FlowMod 錯誤訊息)
+    Failed to add flows to tester_sw: barrier request timeout.                  輔助交換器的 flow entry 新增失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to add flows to tester_sw: [err_msg]                                 輔助交換器的 flow entry 新增失敗
+    \                                                                           (接收到 FlowMod 錯誤訊息)
+    Failed to add meters: barrier request timeout.                              待測交換器的 meter entry 新增失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to add meters: [err_msg]                                             待測交換器的 meter entry 新增失敗
+    \                                                                           (接收到 MeterMod 錯誤訊息)
+    Failed to add groups: barrier request timeout.                              待測交換器的 group entry 新增失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Failed to add groups: [err_msg]                                             待測交換器的 group entry 新增失敗
+    \                                                                           (接受到 GroupMod 錯誤訊息)
+    Added incorrect flows: [flows]                                              待測交換器的 flow entry 新增失敗
+    \                                                                           (新增的 flow entry 不符合規範)
+    Failed to add flows: flow stats request timeout.                            待測交換器的 flow entry 新增失敗
+    \                                                                           (FlowStats Request 作業逾時)
+    Failed to add flows: [err_msg]                                              待測交換器的 flow entry 新增失敗
+    \                                                                           (接受到 FlowStats Request 的錯誤訊息)
+    Added incorrect meters: [meters]                                            待測交換器的 meter entry 新增錯誤
+    \                                                                           (新增的 meter entry 不符合規範)
+    Failed to add meters: meter config stats request timeout.                   待測交換器的 meter entry 新增失敗
+    \                                                                           (MeterConfigStats Request 作業逾時)
+    Failed to add meters: [err_msg]                                             待測交換器的 meter entry 新增失敗
+    \                                                                           (接受到 MeterConfigStats Request 錯誤訊息)
+    Added incorrect groups: [groups]                                            待測交換器的 group entry 新增錯誤
+    \                                                                           (新增的 group entry 不符合規範)
+    Failed to add groups: group desc stats request timeout.                     待測交換器的 group entry 新增失敗
+    \                                                                           (GroupDescStats Request 作業逾時)
+    Failed to add groups: [err_msg]                                             待測交換器的 group entry 新增失敗
+    \                                                                           (接受到 GroupDescStats Request 錯誤訊息)
+    Failed to request port stats from target: request timeout.                  待測交換器的 PortStats 取得失敗
+    \                                                                           (PortStats Request 作業逾時)
+    Failed to request port stats from target: [err_msg]                         待測交換器的 PortStats 取得失敗
+    \                                                                           (接受到 PortStats Request 的錯誤訊息)
+    Failed to request port stats from tester: request timeout.                  輔助交換器的 PortStats 取得失敗
+    \                                                                           (PortStats Request 作業逾時)
+    Failed to request port stats from tester: [err_msg]                         輔助交換器的 PortStats 取得失敗
+    \                                                                           (接受到 PortStats Request 的錯誤訊息)
+    Received incorrect [packet]                                                 封包接收錯誤
+    \                                                                           (接受到錯誤的封包)
+    Receiving timeout: [detail]                                                 封包接收錯誤
+    \                                                                           (作業逾時)
+    Faild to send packet: barrier request timeout.                              封包傳送失敗
+    \                                                                           (Barrier Request 作業逾時)
+    Faild to send packet: [err_msg]                                             封包傳送失敗
+    \                                                                           (Packet-Out 的錯誤訊息)
+    Table-miss error: increment in matched_count.                               table-miss 錯誤
+    \                                                                           (match flow)
+    Table-miss error: no change in lookup_count.                                table-miss 錯誤
+    \                                                                           (封包不會被 flow table 所處理)
+    Failed to request table stats: request timeout.                             table-miss 失敗
+    \                                                                           (TableStats Request 作業逾時)
+    Failed to request table stats: [err_msg]                                    table-miss 失敗
+    \                                                                           (接收到 TableStats Request 的錯誤訊息)
+    Added incorrect flows to tester_sw: [flows]                                 輔助交換器 flow entry 新增錯誤
+    \                                                                           (新增的 flow entry 不符合規範)
+    Failed to add flows to tester_sw: flow stats request timeout.               輔助交換器 flow entry 新增失敗
+    \                                                                           (FlowStats Request 作業逾時)
+    Failed to add flows to tester_sw: [err_msg]                                 輔助交換器 flow entry 新增失敗
+    \                                                                           (FlowStats Request 的錯誤訊息)
+    Failed to request flow stats: request timeout.                              測試 Throughput 時，輔助交換器 flow entry
+    \                                                                           request 失敗 (FlowStats Request 作業逾時)
+    Failed to request flow stats: [err_msg]                                     測試 Throughput 時，輔助交換器 flow entry
+    \                                                                           request 失敗 (FlowStats Request 的錯誤訊息)
+    Received unexpected throughput: [detail]                                    測試 Throughput 時，得到非預期的結果
+    Disconnected from switch                                                    待測交換器或輔助交換器的連結中斷
+    
+    =========================================================================== ==================================================

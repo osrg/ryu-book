@@ -31,7 +31,7 @@ Python 版本
 
 Python 3.0 以上的版本在目前尚未提供支援。但請小心撰寫程式碼以保持擴充性並隨時注意將來改版的可能。
 
-程式碼撰寫風格（Coding Style）
+程式碼撰寫風格（ Coding Style ）
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ryu 的原始碼是遵守 PEP8 的規範來開發。當你在送交程式碼時，請務必確認程式碼符合 PEP8 的規範。
@@ -45,7 +45,7 @@ https://pypi.python.org/pypi/pep8
 測試
 ^^^^^^^^^^^^^^^^
 
-Ryu 專案本身提供自動化測試的工具，最容易也是最常使用的是單元測試（Unit test），該功能也同樣包含在 Ryu 專案內。
+Ryu 專案本身提供自動化測試的工具，最容易也是最常使用的是單元測試（ Unit test ），該功能也同樣包含在 Ryu 專案內。
 在送出程式碼之前，務必確認通過所有的單元測試，確保您的修改不會對現有的程式碼造成影響。
 如果是增加的程式碼，請在單元測試及註解的地方詳細說明該功能。
 
@@ -54,8 +54,8 @@ Ryu 專案本身提供自動化測試的工具，最容易也是最常使用的�
 
 ::
 
-   $ cd ryu/
-   $ ./run_tests.sh
+    $ cd ryu/
+    $ ./run_tests.sh
 
 
 送交更新的程式碼
@@ -84,15 +84,25 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
  你可以在 Github 上 fork 一份專案到自己的帳號。
  下面的例子說明如何複製一份專案到自己的工作環境中。
 
-   ``$ git clone https://github.com/osrg/ryu.git``
-   ``$ cd ryu/``
+
+ .. rst-class:: console
+ 
+ ::
+ 
+     $ git clone https://github.com/osrg/ryu.git
+     $ cd ryu/
 
 2. 原始碼的修改及增加
 
  對 Ryu 的原始碼進行必要的修改。
  接著將變更的內容進行 Commit。
 
-   ``$ git commit -a``
+
+ .. rst-class:: console
+ 
+ ::
+
+     $ git commit -a``
 
 3. 更新檔的製作
 
@@ -100,14 +110,24 @@ http://lxr.linux.no/linux/Documentation/SubmittingPatches
  不要忘記加入 Signed-off-by: 在即將送出的更新檔中。
  這個署名是用來辨認你對開放原始碼的貢獻，以及滿足相關的授權所使用。
 
-   ``$ git format-patch origin -s``
+
+ .. rst-class:: console
+ 
+ ::
+    
+     $ git format-patch origin -s
 
 4. 送出更新檔
 
  已經完成的更新檔，在確認過沒有問題之後，請寄送到 Mailing list。
  你可以使用自己熟悉的郵件軟體或寄送方法，或者也可以使用 git 內建的寄送郵件指令。
 
-   ``$ git send-email 0001-sample.patch``
+
+ .. rst-class:: console
+    
+ ::
+    
+     $ git send-email 0001-sample.patch
 
 5. 等待回應
 

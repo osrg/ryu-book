@@ -8,7 +8,7 @@
 Stratosphere SDN Platform (Stratosphere)
 ------------------------------------------------------------------------------------------------
 
-Stratosphere SDN Platform（以下簡稱SSP） 是 Stratosphere 公司所開發的軟體。
+Stratosphere SDN Platform（ 以下簡稱SSP ）是 Stratosphere 公司所開發的軟體。
 經由 SSP 可以建構 Edge Overlay-model 的虛擬網路，它使用到的 Tunnelling 技術有：VXLAN、STT 和 MPLS。 
 
 每一種通道協定可在 VLAN 間相互轉換。
@@ -28,10 +28,10 @@ Stratosphere SDN Platform（以下簡稱SSP） 是 Stratosphere 公司所開發�
 軟體是由多個 Ryu 應用程式所組成，並透過 REST API 與其他的 SSP 元件溝通。
 將軟體透過切割功能的方式分為多個應用程式，最基本的方法就是保持良好的原始碼。
 
-SmartSDN Controller （NTT COMWARE）
+SmartSDN Controller（ NTT COMWARE ）
 ----------------------------------------------------------------------
 
-「SmartSDN Controller」 是一個提供集中管理功能（網路虛擬化/最佳化）的 SDN Controller。
+「SmartSDN Controller」 是一個提供集中管理功能（ 網路虛擬化/最佳化 ）的 SDN Controller。
 
 
 .. only:: latex
@@ -57,18 +57,18 @@ SmartSDN Controller （NTT COMWARE）
 
     在相同的實體網路中建構多個虛擬網路，可以提供一個有彈性的環境以回應使用者對於變動性的要求，設備則可以被有效的利用以降低購買成本。而且每一台裝置、交換器、路由器的設定均集中管理之後，可以清楚的知道整體網路目前的狀態。當網路發生故障或者通訊狀況發生改變時，可以做相對應的變更處置。
 
-    藉由注重使用者的客戶體驗品質（「QoE」：Quality of Experience ）、網路通訊品質（ 頻寬、延遲、封包丟失、流量變化），判斷客戶體驗品質後選擇較好的路由以達到維持穩定的服務。
+    藉由注重使用者的客戶體驗品質（ 「QoE」：Quality of Experience ）、網路通訊品質（ 頻寬、延遲、封包丟失、流量變化 ），判斷客戶體驗品質後選擇較好的路由以達到維持穩定的服務。
 
 2. 確保網路的高度彈性及可用性
 
-    為了在 Controller 發生故障的時候服務可以持續提供，備援的設定是必要的。主動產生封包並在節點間通訊，得以早期發現一般的監控無法及時發現的網路問題，並進行各種檢驗（ 路由測試、線路測試...等）。
+    為了在 Controller 發生故障的時候服務可以持續提供，備援的設定是必要的。主動產生封包並在節點間通訊，得以早期發現一般的監控無法及時發現的網路問題，並進行各種檢驗（ 路由測試、線路測試...等 ）。
 
     另外經由網路設計和狀態確認的視覺化圖形界面（ GUI ），讓即使沒有專業技能的操作人員都得以進行控制，降低網路運用的成本。
 
 因此在「SmartSDN Controller」的開發上所選定的框架必須滿足下列的條件。
 
 * 框架必須盡可能的支援 OpenFlow 規範的定義
-* 框架必須隨時更新以追上不斷更新的 OpenFlow 版本
+* 框架必須隨時更新以追上持續更新的 OpenFlow 版本
 
 在這之中 Ryu 是：
 

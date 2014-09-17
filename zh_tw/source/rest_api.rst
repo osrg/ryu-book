@@ -21,14 +21,14 @@ Ryu 本身就有提供 WSGI 對應的 Web 伺服器。透過這個機制建立�
 
 接下來讓我們實際加入兩個先前在「 :ref:`ch_switching_hub` 」說明過的API。
 
-1. MAC address table 取得 API
+1. MAC 位址表取得 API
 
-    取得 Switching hub 中儲存的 MAC address table 內容。
-    成對的 MAC address 和連接埠號將以 JSON 的資料形態回傳。
+    取得 Switching hub 中儲存的 MAC 位址表內容。
+    成對的 MAC 位址和連接埠號將以 JSON 的資料形態回傳。
 
-2. MAC address table 註冊 API
+2. MAC 位址表註冊 API
 
-    MAC address 和連接埠號成對的新增進 MAC address table，同時加到交換器的 Flow Entry 中。
+    MAC 位址和連接埠號成對的新增進 MAC 位址表，同時加到交換器的 Flow Entry 中。
 
 接下來我們來看看程式碼。
 
@@ -42,9 +42,9 @@ simple_switch_rest_13.py 是用來定義兩個類別。
 
 前者是控制器類別 ``SimpleSwitchController`` ，其中定義收到 HTTP request 時所需要回應的相對方法。
 
-後者是``SimpleSwitchRest13`` 的類別，用來擴充「 :ref:`ch_switching_hub` 」讓它得以更新  MAC address table.
+後者是``SimpleSwitchRest13`` 的類別，用來擴充「 :ref:`ch_switching_hub` 」讓它得以更新 MAC 位址表.
 
-由於在 ``SimpleSwitchRest13`` 中已經有加入 Flow Entry 的功能，因此 FeaturesReply 方法被覆寫 （overridden）並保留 datapath 物件。
+由於在 ``SimpleSwitchRest13`` 中已經有加入 Flow Entry 的功能，因此 FeaturesReply 方法被覆寫（ overridden ）並保留 datapath 物件。
 
 安裝 SimpleSwitchRest13 class
 ----------------------------------------------------------------
@@ -92,8 +92,8 @@ simple_switch_rest_13.py 是用來定義兩個類別。
     ...
 
 
-父類別 ``switch_features_handler`` 已經被覆寫（overridden）。
-這個方法會在 SwitchFeatures 事件發生時被觸發，從事件物件 ``ev`` 取得 ``datapath`` 物件後存放至``switches`` 變數中。此時 MAC address 的初始值將會設定為空白字典（empty dictionary）形態。
+父類別 ``switch_features_handler`` 已經被覆寫（ overridden ）。
+這個方法會在 SwitchFeatures 事件發生時被觸發，從事件物件 ``ev`` 取得 ``datapath`` 物件後存放至``switches`` 變數中。此時 MAC 位址的初始值將會設定為空白字典（ empty dictionary ）形態。
 
 
 .. rst-class:: sourcecode
@@ -128,17 +128,17 @@ simple_switch_rest_13.py 是用來定義兩個類別。
     ...
 
 
-本方法用來註冊 MAC address 和連接埠號至指定的交換器。當 REST API 的 PUT 方法被觸發時，本方法就會被執行。
+本方法用來註冊 MAC 位址和連接埠號至指定的交換器。當 REST API 的 PUT 方法被觸發時，本方法就會被執行。
 
-參數 ``entry`` 則是用來儲存已經註冊的 MAC address 和連結埠的資訊。
+參數 ``entry`` 則是用來儲存已經註冊的 MAC 位址和連結埠的資訊。
 
-參照 MAC address table 的 ``self.mac_to_port`` 資訊，被註冊到交換器的 Flow Entry 將被搜尋。
+參照 MAC 位址表的 ``self.mac_to_port`` 資訊，被註冊到交換器的 Flow Entry 將被搜尋。
 
-例如：一個成對的 MAC address 和連接埠號將被登錄在 MAC address table 中。
+例如：一個成對的 MAC 位址和連接埠號將被登錄在 MAC 位址表中。
 
 * 00:00:00:00:00:01, 1
 
-而且成對的 MAC address 和連接埠號將被當作參數 ``entry`` 。
+而且成對的 MAC 位址和連接埠號將被當作參數 ``entry`` 。
 
 * 00:00:00:00:00:02, 2
 
@@ -147,12 +147,12 @@ simple_switch_rest_13.py 是用來定義兩個類別。
 * match 條件：in_port = 1, dst_mac = 00:00:00:00:00:02  action：output=2
 * match 條件：in_port = 2, dst_mac = 00:00:00:00:00:01  action：output=1
 
-Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經由參數 ``entry`` 傳遞的訊息將會被儲存在 MAC address table.
+Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經由參數 ``entry`` 傳遞的訊息將會被儲存在 MAC 位址表.
 
 安裝 SimpleSwitchController Class
 --------------------------------------------------------------------------
 
-接下來是控制器類別（controller class）中 REST API 的 HTTP request 。 類別名稱是``SimpleSwitchController`` 。
+接下來是控制器類別（ controller class ）中 REST API 的 HTTP request 。 類別名稱是``SimpleSwitchController`` 。
 
 
 .. rst-class:: sourcecode
@@ -166,7 +166,7 @@ Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經�
     ...
 
 
-從建構子（constructor）中取得 ``SimpleSwitchRest13`` 的實體。
+從建構子（ constructor ）中取得 ``SimpleSwitchRest13`` 的實體。
 
 
 .. rst-class:: sourcecode
@@ -190,7 +190,7 @@ Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經�
 
 這部分是用來實作 REST API 的 URL， 還有其相對定的處理動作。為了結合 URL 和其對應的方法， ``route`` 這個裝飾器將在 Ryu 中被使用。
 
-被裝飾器（Decorator）處理的內容說明如下。
+被裝飾器（ Decorator ）處理的內容說明如下。
 
 * 第一個參數
 
@@ -211,7 +211,7 @@ Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經�
     指定 URL 的形式。
     URL(/simpleswitch/mactable/{dpid}) 中 {dpid} 的部分必須與 ryu/lib/dpid.py 中 ``DPID_PATTERN`` 16 個 16 進味的數字定義相吻合。
 
-當 REST API 被第二參數所指定的 URL 呼叫時，相對的 HTTP GET ``list_mac_table`` 方法就會被觸發。該方法將會取得 {dpid} 中儲存的 data path ID 以得到 MAC address 並轉換成 JSON 的格式進行回傳。
+當 REST API 被第二參數所指定的 URL 呼叫時，相對的 HTTP GET ``list_mac_table`` 方法就會被觸發。該方法將會取得 {dpid} 中儲存的 data path ID 以得到 MAC 位址並轉換成 JSON 的格式進行回傳。
 
 如果連結到 Ryu 的未知交換器 data path ID 被指定時，Ryu 會返回編碼為 404 的回應。
 
@@ -239,9 +239,9 @@ Flow Entry 的加入是透過父類別的 ``add_flow`` 方法達成。最後經�
     ...
 
 
-然後是註冊 MAC address table 的 REST API。
+然後是註冊 MAC 位址表的 REST API。
 
-URL 跟取得 MAC address table 時的 API 相同，但是 HTTP 在 PUT 的情況下會呼叫 ``put_mac_table`` 方法。這個方法的內部會呼叫 switching hub 實體的 ``set_mac_to_port`` 方法。
+URL 跟取得 MAC 位址表時的 API 相同，但是 HTTP 在 PUT 的情況下會呼叫 ``put_mac_table`` 方法。這個方法的內部會呼叫 switching hub 實體的 ``set_mac_to_port`` 方法。
 
 當 ``put_mac_table`` 方法產生的例外的時候，回應碼 500 將會被回傳。
 同樣的， ``list_mac_table`` 方法在 Ryu 所連接的交換器使用未知的 data path ID 的話，會回傳回應碼 404。
@@ -319,7 +319,7 @@ URL 跟取得 MAC address table 時的 API 相同，但是 HTTP 在 PUT 的情�
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
 
 
-再來執行 REST API 以便在 switching hub 中取得 MAC table。 
+再來執行 REST API 以便在 switching hub 中取得 MAC 位址表。 
 這次我們使用 curl 指令來驅動 REST API。
 
 
@@ -331,9 +331,9 @@ URL 跟取得 MAC address table 時的 API 相同，但是 HTTP 在 PUT 的情�
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 
-你會發現 h1 和 h2 的 MAC address table 已經學習並更新完畢。
+你會發現 h1 和 h2 的 MAC 位址表已經學習並更新完畢。
 
-這次 h1 和 h2 的 MAC address table 提前在執行 ping 之前被設定好。
+這次 h1 和 h2 的 MAC 位址表提前在執行 ping 之前被設定好。
 暫時停止 switching hub 和 mininet 的執行。
 然後再次啟動 mininet 並在 OpenFlow 版本設定為 OpenFlow13 之後接著啟動。
 
@@ -353,8 +353,8 @@ URL 跟取得 MAC address table 時的 API 相同，但是 HTTP 在 PUT 的情�
     move onto main mode
 
 
-接著在每個 host 上呼叫 MAC address table 更新的 REST API。 
-REST API 呼叫的形式是 {"mac" : "MAC address", "port" : 連接的連接埠號}
+接著在每個 host 上呼叫 MAC 位址表更新的 REST API。 
+REST API 呼叫的形式是 {"mac" : "MAC 位址", "port" : 連接的連接埠號}
 
 
 .. rst-class:: console
@@ -403,5 +403,5 @@ Packet-In 只會發生在當 h1 到 h2 的 ARP 出現且沒有接連發生的封
 本章總結
 -------------
 
-本章使用 MAC address table 的處理作為題材，來說明如何新增 REST API。
+本章使用 MAC 位址表的處理作為題材，來說明如何新增 REST API。
 至於其他的練習應用，如果可以做個從網頁直接加入 Flow Entry 的 REST API 將會是一個很好的想法。

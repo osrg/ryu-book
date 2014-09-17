@@ -7,9 +7,9 @@ OF-Config 通訊協定
 --------------------------------------
 
 OF-Config 是用來管理 OpenFlow 交換器的一個通訊協定。
-OF-Config 通訊協定被定義在 NETCONF（RFC 6241） 的標準中，它可以對邏輯交換器的通訊埠（Port）和佇列（Queue）進行設定以及資料擷取。
+OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可以對邏輯交換器的通訊埠（ Port ）和佇列（ Queue ）進行設定以及資料擷取。
 
-OF-Config 是被同樣制訂 OpenFlow 的 ONF （Open Network Foundation） 所研擬，請參考下列資料以取得更詳盡的資訊。
+OF-Config 是被同樣制訂 OpenFlow 的 ONF（ Open Network Foundation ）所研擬，請參考下列資料以取得更詳盡的資訊。
 
 https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config
 
@@ -31,7 +31,7 @@ Ryu 提供的函式庫完全相容于 OF-Config 1.1.1 版本
 ryu.lib.of_config.capable_switch.OFCapableSwitch Class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-本 Class 主要用來處理 NETCONF 會話（Session）。
+本 Class 主要用來處理 NETCONF 會話（ Session ）。
 
 
 .. rst-class:: sourcecode
@@ -41,7 +41,7 @@ ryu.lib.of_config.capable_switch.OFCapableSwitch Class
         from ryu.lib.of_config.capable_switch import OFCapableSwitch
 
 
-ryu.lib.of_config.classes 模組（Module）
+ryu.lib.of_config.classes 模組（ Module ）
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 本模組用來將協定相關的設定對應至 Python 物件。
@@ -68,7 +68,7 @@ ryu.lib.of_config.classes 模組（Module）
 ^^^^^^^^^^^^^^^^
 
 使用 SSH Transport 連線到交換器。
-回呼（callback）函式 unknown_host_cb 是用來對應未知的 SSH Host Key 時所被執行的函式。
+回呼（ callback ）函式 unknown_host_cb 是用來對應未知的 SSH Host Key 時所被執行的函式。
 下面的範例中我們使用無條件信任對方並繼續進行連結。
 
 
@@ -110,7 +110,7 @@ GET-CONFIG
 .. NOTE::
 
     running 用來表示現在儲存在 NETCONF 中目前的設定狀態。
-    但這跟交換器的實作有關，或者你也可以儲存相關設定在 startup （設備啟動時）或 candidate  （Candidate set） 。
+    但這跟交換器的實作有關，或者你也可以儲存相關設定在 startup（ 設備啟動時 ）或 candidate（ Candidate set ）。
 
 其結果會使用
 /resources/port/resource-id 和

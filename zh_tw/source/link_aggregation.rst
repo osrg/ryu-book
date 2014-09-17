@@ -1,14 +1,14 @@
 .. _ch_link_aggregation:
 
-網路聚合（Link Aggregation）
+網路聚合（ Link Aggregation ）
 ================================================
 
 本章會說明，Ryu 使用的網路聚合功能的實作方法。
 
-網路聚合（Link Aggregation）
+網路聚合（ Link Aggregation ）
 ------------------------------------------------------------------------
 
-網路聚合（Link Aggregation）是由 IEEE802.1AX-2008 所制定的，多條實體線路合併為一條邏輯線路。透過本功能可以讓網路中特定的裝置間通訊速度提升、同時確保備援能力、提升容錯的功能。
+網路聚合（ Link Aggregation ）是由 IEEE802.1AX-2008 所制定的，多條實體線路合併為一條邏輯線路。透過本功能可以讓網路中特定的裝置間通訊速度提升、同時確保備援能力、提升容錯的功能。
 
 
 .. only:: latex
@@ -32,7 +32,7 @@
 在使用網路聚合功能之前，個別的網路裝置上界面歸屬于特定群組的關係都必須先設定完成。
 
 起始網路聚合功能的方法是將個別的網路裝置設置完成，此為靜態方法。
-另外也可以使用 LACP（Link Aggregation Control Protocol）通訊協定，此為動態方法。
+另外也可以使用 LACP（ Link Aggregation Control Protocol ）通訊協定，此為動態方法。
 
 採用動態方法的時候，每一個網路裝置所相對應的界面會定期的進行 LACP data unit 交換以確認彼此之間的通訊狀況。當 LACP data unit 的交換無法完成，代表網路已經出現故障，使用該網路的裝置出現通訊中斷，此時封包的傳送僅能使用殘存的界面和線路完成。
 
@@ -143,9 +143,9 @@ Node: h1:
     root@ryu-vm:~# modprobe bonding
 
 
-mode = 4 是 LACP 中代表使用動態網路聚合（dynamic link aggregation），由於是預設值的關係這邊可以省略。而 LACP data unit 的交換間隔為 SLOW（30 秒），並且排序的方式是使用目的 MAC address 來進行。
+mode = 4 是 LACP 中代表使用動態網路聚合（ dynamic link aggregation ），由於是預設值的關係這邊可以省略。而 LACP data unit 的交換間隔為 SLOW（ 30 秒 ），並且排序的方式是使用目的 MAC 位址來進行。
 
-接著建立一個名為 bond0 的邏輯界面，然後設定 bond0 的 MAC address。
+接著建立一個名為 bond0 的邏輯界面，然後設定 bond0 的 MAC 位址。
 
 Node: h1:
 
@@ -158,7 +158,7 @@ Node: h1:
     root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
 
 
-把 h1-eth0 和 h1-eth1 的實體網路界面加到已經建立好的邏輯界面群組中。此時先將實體界面設定為 down，然後亂數決定該實體界面成為比較簡單的 MAC address 之後更新它。
+把 h1-eth0 和 h1-eth1 的實體網路界面加到已經建立好的邏輯界面群組中。此時先將實體界面設定為 down，然後亂數決定該實體界面成為比較簡單的 MAC 位址之後更新它。
 
 Node: h1:
 
@@ -175,7 +175,7 @@ Node: h1:
     root@ryu-vm:~# ip link set h1-eth1 master bond0
 
 
-指定邏輯界面的 IP address，這邊指定為 10.0.0.1。由於 h1-eth0 的 IP address 已經被自動指定所以我們刪除它。
+指定邏輯界面的 IP 位址，這邊指定為 10.0.0.1。由於 h1-eth0 的 IP 位址已經被自動指定所以我們刪除它。
 
 Node: h1:
 
@@ -242,7 +242,7 @@ Node: h1:
 
 
 邏輯界面 bond0 為 MASTER，實體界面 h1-eth0 和 h1-eth1 為 SLAVE。
-而且你可以看到 bond0、h1-eth0 和 h1-eth1 的 MAC address 全部都是相同的。
+而且你可以看到 bond0、h1-eth0 和 h1-eth1 的 MAC 位址全部都是相同的。
 
 確認 bonding driver 的狀態。
 
@@ -293,7 +293,7 @@ Node: h1:
     Slave queue ID: 0
 
 
-確認 LACP data unit 的交換間隔（LACP rate: slow）和排序邏輯的設定（Transmit Hash Policy: layer2 (0)）。並且確認實體界面 h1-eth0 和 h1-eth1 的 MAC address。
+確認 LACP data unit 的交換間隔（ LACP rate: slow ）和排序邏輯的設定（ Transmit Hash Policy: layer2 (0) ）。並且確認實體界面 h1-eth0 和 h1-eth1 的 MAC 位址。
 
 以上為 host h1 的事前準備。
 
@@ -370,7 +370,7 @@ Node: c0:
 
 * the timeout time has changed.
 
-    LACP data unit 的逾時時間變更（本例子中原始狀態為 0 秒，變更為 LONG_TIMEOUT_TIME 的 90 秒）
+    LACP data unit 的逾時時間變更（ 本例子中原始狀態為 0 秒，變更為 LONG_TIMEOUT_TIME 的 90 秒 ）
 
 * LACP sent.
 
@@ -378,7 +378,7 @@ Node: c0:
 
 * slave state changed ...
 
-    應用程式接收到 LACP 函式庫中 ``EventSlaveStateChanged`` 事件訊息（事件的詳細內容稍後說明）。
+    應用程式接收到 LACP 函式庫中 ``EventSlaveStateChanged`` 事件訊息（ 事件的詳細內容稍後說明 ）。
 
 交換器對於每一次從 host h1 收到的 LACP data unit 傳送回覆用的 LACP data unit 。
 
@@ -415,9 +415,9 @@ Node: s1:
 
 在交換器中
 
-* 接收到從 h1 的 h1-eth1 （接收埠為 s1-eth2 、目的 MAC address 為 00:00:00:00:00:12) 傳送 LACP data unit （ethertype 0x8809）時就發送 Packet-In 訊息。
+* 接收到從 h1 的 h1-eth1（ 接收埠為 s1-eth2 、目的 MAC 位址為 00:00:00:00:00:12) 傳送 LACP data unit（ ethertype 0x8809 ）時就發送 Packet-In 訊息。
 
-* 接收到從 h1 的 h1-eth0 （接收埠為 s1-eth1 、目的 MAC address 為 00:00:00:00:00:11) 傳送 LACP data unit （ethertype 0x8809）時就發送 Packet-In 訊息。
+* 接收到從 h1 的 h1-eth0（ 接收埠為 s1-eth1 、目的 MAC 位址為 00:00:00:00:00:11) 傳送 LACP data unit（ ethertype 0x8809 ）時就發送 Packet-In 訊息。
 
 * Table-miss Flow Entry 跟「 :ref:`ch_switching_hub` 」相同。
 
@@ -472,9 +472,9 @@ Node: s1:
 
 分別是
 
-* 若是收到來自第 3 連接埠（s1-eth3，也就是連接到 h2 的界面）向 h1 的 bond0 發送的封包就轉送到第 1 連接埠（s1-eth1）。
+* 若是收到來自第 3 連接埠（ s1-eth3，也就是連接到 h2 的界面 ）向 h1 的 bond0 發送的封包就轉送到第 1 連接埠（ s1-eth1 ）。
 
-* 若是收到來自第 1 連接埠（s1-eth1）向第 2 連接埠發送的封包，就從第 3 連接埠（s1-eth3）轉送出去。
+* 若是收到來自第 1 連接埠（ s1-eth1 ）向第 2 連接埠發送的封包，就從第 3 連接埠（ s1-eth3 ）轉送出去。
 
 接著你可以看到 h2 和 h1 之間的通訊是使用 s1-eth1 來完成。
 
@@ -521,9 +521,9 @@ Node: s1:
 
 分別是
 
-* 收到來自第 2 連接埠（s1-eth2）向 h3 發送的封包時就從第 4 連接埠（s1-eth4）轉送出去
+* 收到來自第 2 連接埠（ s1-eth2 ）向 h3 發送的封包時就從第 4 連接埠（ s1-eth4 ）轉送出去
 
-* 收到來自第 4 連接埠（s1-eth4，也就是連接到 h3 的界面）向 h1 的 bond0 發送的封包時就從第 2 連接埠（s1-eth2）轉送出去
+* 收到來自第 4 連接埠（ s1-eth4，也就是連接到 h3 的界面 ）向 h1 的 bond0 發送的封包時就從第 2 連接埠（ s1-eth2 ）轉送出去
 
 這樣可以看出 h3 和 h1 之間的通訊是使用 s1-eth2 完成。
 
@@ -603,10 +603,10 @@ Node: c0:
 
 
 「LACP exchange timeout has occurred.」表示停止通訊已經逾時，
-曾經學習過的 MAC address 和轉送封包用的 Flow Entry 將全部被刪除，
+曾經學習過的 MAC 位址和轉送封包用的 Flow Entry 將全部被刪除，
 回到如同剛開機時的初始狀態。
 
-當新的通訊發生時，新的 MAC address 將會被學習，已存在的線路連結 Flow Entry 將會再次被新增。
+當新的通訊發生時，新的 MAC 位址將會被學習，已存在的線路連結 Flow Entry 將會再次被新增。
 
 host h3 和 host h1 之間的新 Flow Entry 會被新增。
 
@@ -677,11 +677,11 @@ LACP 相關的部分和不相關的部分已經可以被明顯的區隔出來，
 
 .. NOTE::
 
-    用來交換 LACP data unit 的實體界面被分為兩種角色，主動（ACTIVE）與被動（PASSIVE）形態。
+    用來交換 LACP data unit 的實體界面被分為兩種角色，主動（ ACTIVE ）與被動（ PASSIVE ）形態。
     主動：在固定的時間會發送 LACP data unit ，以確認線路的狀態。
     被動：在收到主動狀態發送過來的 LACP data unit 時予以回覆，以確認線路的狀態。
 
-    在 Ryu 中的網路聚合應用程式是使用被動模式（PASSIVE mode）來實作。
+    在 Ryu 中的網路聚合應用程式是使用被動模式（ PASSIVE mode ）來實作。
 
 
 若是在特定的時間內沒有收到 LACP data unit ，則該實體界面視為無效。
@@ -693,18 +693,23 @@ LACP 相關的部分和不相關的部分已經可以被明顯的區隔出來，
 
 若實體界面為無效時，OpenFlow Controller 最簡單的處理為「刪除該界面所使用到的 Flow Entry」，但是這樣的條件其實是不充分的。
 
-例如：有一個邏輯界面是由三個實體界面群組化之後所產生，其排序為「依照使用界面的數量排序 MAC address」。
+例如：有一個邏輯界面是由三個實體界面群組化之後所產生，其排序為「依照使用界面的數量排序 MAC 位址」。
 
+
+.. tabularcolumns:: |p{4cm}|p{4cm}|p{4cm}|
 
 ====================  ====================  ====================
 界面1                 界面2                 界面3
 ====================  ====================  ====================
-殘存 MAC address:0    殘存 MAC address:1    殘存 MAC address:2
+剩餘 MAC 位址:0       剩餘 MAC 位址:1       剩餘 MAC 位址:2
+
 ====================  ====================  ====================
 
 
 然後每一個實體界面所使用的 Flow Entry 分別新增如下。
 
+
+.. tabularcolumns:: |p{4cm}|p{4cm}|p{4cm}|
 
 =======================  =======================  ========================
 界面1                    界面2                    界面3
@@ -712,18 +717,24 @@ LACP 相關的部分和不相關的部分已經可以被明顯的區隔出來，
 目的:00:00:00:00:00:00   目的:00:00:00:00:00:01   目的:00:00:00:00:00:02
 目的:00:00:00:00:00:03   目的:00:00:00:00:00:04   目的:00:00:00:00:00:05
 目的:00:00:00:00:00:06   目的:00:00:00:00:00:07   目的:00:00:00:00:00:08
+
 =======================  =======================  ========================
 
 
-因此如果在界面 1 為停用的狀態下，「在有效的界面中以殘存的 MAC addresss 數量為準」作為排序的標準，排序結果如下。
+因此如果在界面 1 為停用的狀態下，「在有效的界面中以剩餘 MAC 位址數量為準」作為排序的標準，排序結果如下。
 
+
+.. tabularcolumns:: |p{4cm}|p{4cm}|p{4cm}|
 
 =======================  =======================  ========================
 界面1                    界面2                    界面3
 =======================  =======================  ========================
-無效                     殘存 MAC addresss:0      殘存 MAC address:1
+無效                     剩餘 MAC 位址:0          剩餘 MAC 位址:1
+
 =======================  =======================  ========================
 
+
+.. tabularcolumns:: |p{4cm}|p{4cm}|p{4cm}|
 
 =======================  =======================  ========================
 界面1                    界面2                    界面3
@@ -733,6 +744,7 @@ LACP 相關的部分和不相關的部分已經可以被明顯的區隔出來，
 \                        目的:00:00:00:00:00:04   目的:00:00:00:00:00:05
 \                        目的:00:00:00:00:00:06   目的:00:00:00:00:00:07
 \                        目的:00:00:00:00:00:08
+
 =======================  =======================  ========================
 
 
@@ -750,13 +762,13 @@ LACP 相關的部分和不相關的部分已經可以被明顯的區隔出來，
 
 接下來實作下面的功能。
 
-**LACP 函式庫**
+**LACP 函式庫** 
 
 * 當接收到 LACP data unit 訊息後，製作回覆訊息並傳送
 * 當 LACP data unit 的接收中斷後，相對應的實體界面則變更為無效，並通知交換器
 * 當再次接收到 LACP data unit 時，相對應的實體界面則變更為有效，並通知交換器
 
-**交換器**
+**交換器** 
 
 * 接收到 LACP 函式庫的通知之後，進行初始化以及刪除必要的 Flow Entry
 * 接收到 LACP data unit 以外的封包時，像平常一樣學習並進行封包轉送
@@ -815,19 +827,19 @@ ports
     指定要被群組的連接埠編號。
 
 透過呼叫這個方法， LACP 函式庫可以指定特定 data path ID 所屬 OpenFlow 交換器連接埠成為特定的群組。 若是要組成多個群組只要重複的呼叫 add() 方法即可。
-當邏輯界面被指定為特定的 MAC address 時，OpenFlow 交換器所管理相同 MAC address 的 LOCAL 連接埠會自動的被使用。
+當邏輯界面被指定為特定的 MAC 位址時，OpenFlow 交換器所管理相同 MAC 位址的 LOCAL 連接埠會自動的被使用。
 
 
 .. TIP::
 
-    有些 OpenFlow 交換器之中，交換器本身就有提供網路聚合的功能（Open vSwitch…等）
+    有些 OpenFlow 交換器之中，交換器本身就有提供網路聚合的功能（ Open vSwitch…等 ）
     在這邊我們並不使用交換器本身的功能，而是使用 OpenFlow Controller 來實現網路聚合的功能。
 
 
 處理 Packet-In
 """"""""""""""""""""""""""
 
-在「 :ref:`ch_switching_hub` 」中，目的 MAC address 在尚未被學習的狀況下，會將接收到的封包進行 Flooding。由於 LACP data unit 僅會在相鄰的網路間進行交換，若是將該封包轉送至其他的網路時網路聚合將會出現異常。
+在「 :ref:`ch_switching_hub` 」中，目的 MAC 位址在尚未被學習的狀況下，會將接收到的封包進行 Flooding。由於 LACP data unit 僅會在相鄰的網路間進行交換，若是將該封包轉送至其他的網路時網路聚合將會出現異常。
 所以 Controller 就進行這樣的處理「若是接收到 Packet-In 來自 LACP data unit 的封包就阻止，LACP data unit 以外的封包就交給交換器繼續後續的動作」，在這樣的操作下 LACP data unit 就會不會出現在交換器上。
 
 
@@ -848,7 +860,7 @@ ports
             self.send_event_to_observers(EventPacketIn(evt.msg))
 
 
-事件管理（Event handler）跟在「 :ref:`ch_switching_hub` 」是相同的。會根據所收到的訊息是否為 LACP data unit 做為接下來處理的準則。
+事件管理（ Event handler ）跟在「 :ref:`ch_switching_hub` 」是相同的。會根據所收到的訊息是否為 LACP data unit 做為接下來處理的準則。
 
 若是包含 LACP data unit 的狀況下，就執行 LACP 函式庫中 LACP data unit 的處理機制。
 在不包含 LACP data unit 的狀況下，則呼叫 send_event_to_observers() 方法。
@@ -937,10 +949,10 @@ _set_slave_enabled() 方法是用來設定指定的交換器和指定的連接�
 
 新增 Flow Entry - 收到 LACP data unit 時發送 Packet-In
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-LACP data unit 的傳送間隔定義為 FAST （每隔 1 秒）和 SLOW （每隔 30 秒）2 種。
+LACP data unit 的傳送間隔定義為 FAST（ 每隔 1 秒 ）和 SLOW（ 每隔 30 秒 ）2 種。
 在網路聚合的規格中，傳送間隔的 3 倍時間若是無任何通訊發生時，則該界面將自該群組移除，不再使用于封包的傳送。
 
-LACP 函式庫中透過設定 Flow Entry 來達到監視通訊的狀態，即當接受到 LACP data unit 時觸發 Packet-In 並進行 Flow Entry 設定，即為 3 倍傳送間隔（SHORT_TIMEOUT_TIME 3 秒、LONG_TIMEOUT_TIME 90 秒）的 idle_timeout。
+LACP 函式庫中透過設定 Flow Entry 來達到監視通訊的狀態，即當接受到 LACP data unit 時觸發 Packet-In 並進行 Flow Entry 設定，即為 3 倍傳送間隔（ SHORT_TIMEOUT_TIME 3 秒、LONG_TIMEOUT_TIME 90 秒 ）的 idle_timeout。
 
 當傳送間隔的設定值改變時，就必須要重新設定 idle_timeout 的時間，因此實作 LACP 函式庫如下。
 
@@ -1038,7 +1050,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 其中使用 _create_lacp() 方法則是用來產生回覆用的 LACP data unit 。
 已經完成的回覆用封包則根據所接收的 LACP data unit 發送 Packet-Out。
 
-LACP data unit 中發送端（Actor）的資訊和接收端（Partner）的資訊已經被設定完成。
+LACP data unit 中發送端（ Actor ）的資訊和接收端（ Partner ）的資訊已經被設定完成。
 從接收到的 LACP data unit 可以得到發送端的資訊，因此在製作回覆用的封包時，可以設定在接收端。
 
 
@@ -1113,7 +1125,7 @@ LACP data unit 中發送端（Actor）的資訊和接收端（Partner）的資�
 應用程式的實作
 ^^^^^^^^^^^^^^^^^^^^^^
 
-現在說明「 `執行 Ryu 應用程式`_ 」中所提到的 OpenFlow 1.3  對應的網路聚合應用程式 （simple_switch_lacp_13.py）和 「 :ref:`ch_switching_hub` 」中的交換器差異點。
+現在說明「 `執行 Ryu 應用程式`_ 」中所提到的 OpenFlow 1.3 對應的網路聚合應用程式（ simple_switch_lacp_13.py ）和 「 :ref:`ch_switching_hub` 」中的交換器差異點。
 
 設定「_CONTEXTS」
 """""""""""""""""""
@@ -1159,7 +1171,7 @@ LACP data unit 中發送端（Actor）的資訊和接收端（Partner）的資�
 初始化設定在「_CONTEXTS」中的 LACP 函式庫。透過執行 LACP 函式庫提供的 add() 方法來完成初始設定。設定的內容如下：
 
 ============ ================================= ==============================
-參數         參數值                            說明
+名稱         參數值                            說明
 ============ ================================= ==============================
 dpid         str_to_dpid('0000000000000001')   data path ID
 ports        [1, 2]                            群組化的連接埠列表

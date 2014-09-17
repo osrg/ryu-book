@@ -1,18 +1,18 @@
 .. _ch_spanning_tree:
 
-生成樹（Spanning Tree）
+生成樹（ Spanning Tree ）
 ================================
 
-本章將說明與解說 Ryu 所採用的生成樹（Spanning Tree）安裝方法。
+本章將說明與解說 Ryu 所採用的生成樹（ Spanning Tree ）安裝方法。
 
 Spanning Tree
 ----------------
 
-生成樹是為了防止在網路的拓璞中出現迴圈（loop）進而產生廣播風暴（broadcast streams）的技術。而且，藉著應用原本防止迴圈的這項功能，當網路發生問題的時候，則可以達到確保網路的拓璞被重新計算的目的，如此一來就不會讓部分的問題影響整個網路的連通。
+生成樹是為了防止在網路的拓璞中出現迴圈（ loop ）進而產生廣播風暴（ broadcast streams ）的技術。而且，藉著應用原本防止迴圈的這項功能，當網路發生問題的時候，則可以達到確保網路的拓璞被重新計算的目的，如此一來就不會讓部分的問題影響整個網路的連通。
 
 生成樹有許多的種類，例如：STP、RSTP、PVST+、MSTP...等不同的種類。本章將說明最基本的 STP。
 
-STP（spanning tree protocol：IEEE 802.1D）是讓網路的拓璞在邏輯上是樹狀的結構。經由設定每一個交換器（本章節中有時候會使用橋接器稱呼）的連接埠讓訊框（frame）的傳送為可通過與不可通過，來防止迴圈的產生進而達到阻止網路風暴發生。
+STP（ spanning tree protocol：IEEE 802.1D ）是讓網路的拓璞在邏輯上是樹狀的結構。經由設定每一個交換器（ 本章節中有時候會使用橋接器稱呼 ）的連接埠讓訊框（ frame ）的傳送為可通過與不可通過，來防止迴圈的產生進而達到阻止網路風暴發生。
 
 
 .. only:: latex
@@ -32,11 +32,11 @@ STP（spanning tree protocol：IEEE 802.1D）是讓網路的拓璞在邏輯上�
         :align: center
 
 
-STP 會在橋接器之間交換 BPDU（Bridge Protocol Data Unit）封包，分析及比對橋接器之間的連接埠訊息，決定哪些連接埠可以傳送哪些不行。
+STP 會在橋接器之間交換 BPDU（ Bridge Protocol Data Unit ）封包，分析及比對橋接器之間的連接埠訊息，決定哪些連接埠可以傳送哪些不行。
 
 具體來說，會以下列的順序完成。
 
-1．Root 交換器（Root bridge）選舉
+1．Root 交換器（ Root bridge ）選舉
 
     橋接器之間的BPDU封包在交換過後，擁有最小的橋接器 ID 即為 Root 。
     接下來的 Root 橋接器會發送 original BPDU ，而其他的橋接器僅接收及轉發BPDU。
@@ -44,14 +44,14 @@ STP 會在橋接器之間交換 BPDU（Bridge Protocol Data Unit）封包，分�
 
 .. NOTE::
 
-    橋接器 ID 的計算方式是組合已經被設定的橋接器 priority 和特定埠的 MAC address 而成。
+    橋接器 ID 的計算方式是組合已經被設定的橋接器 priority 和特定埠的 MAC 位址而成。
 
         橋接器ID
 
         ================ ==================
         Upper 2byte      Lower 6byte  
         ================ ==================
-        橋接器 priority  MAC address
+        橋接器 priority  MAC 位址
         ================ ==================
 
 
@@ -102,7 +102,7 @@ STP 會在橋接器之間交換 BPDU（Bridge Protocol Data Unit）封包，分�
 
         第二優先：root path cost 相同的話，則比較橋接器 ID
 
-        第三優先：若是橋接器 ID 相同時（每一個埠都連接到相同的橋接器），則比較連接埠 ID 
+        第三優先：若是橋接器 ID 相同時（ 每一個埠都連接到相同的橋接器 ），則比較連接埠 ID 
 
             連接埠 ID 
 
@@ -115,7 +115,7 @@ STP 會在橋接器之間交換 BPDU（Bridge Protocol Data Unit）封包，分�
 
 3．連接埠的狀態變化
 
-    連接埠的角色決定了之後（STP的處理完成），每一個連接埠會處於 LISTEN 狀態。
+    連接埠的角色決定了之後（ STP的處理完成 ），每一個連接埠會處於 LISTEN 狀態。
     之後會如下圖進行狀態的轉換，最後每一個連接埠的角色會進入 FORWARD 狀態或者 BLOCK 狀態。
     若是設定為無效的連接埠之後，就會進入 DISABLE 狀態，接著不會進行任何狀態的轉移。
 
@@ -144,22 +144,23 @@ STP 會在橋接器之間交換 BPDU（Bridge Protocol Data Unit）封包，分�
     DISABLE 無效連接埠。忽略所有接收到的封包
     BLOCK   僅接受 BPDU 封包
     LISTEN  接受及傳送 BPDU 封包
-    LEARN   接受、傳送 BPDU 封包及學習 MAC
+    LEARN   接受、傳送 BPDU 封包及學習 MAC 位址
     FORWARD 接受、傳送 BPDU 封包、學習 MAC 及訊框的傳送
     ======= =============================================
 
 
 當這些程序在每一台橋接器開始執行之後，進行連接埠傳送封包或抑制封包的決定，如此一來便可以防止迴圈在網路拓璞中發生。
 
-另外，斷線或 BPDU 封包的最大時限（預設 20 秒）內未收到封包的故障偵測、新的連接埠加入導致網路拓璞改變。這些變化都會讓每一台橋接器執行上述 1, 2 和 3 程序以建立新的樹狀拓璞（STP re-calculation）。
+另外，斷線或 BPDU 封包的最大時限（ 預設 20 秒 ）內未收到封包的故障偵測、新的連接埠加入導致網路拓璞改變。
+這些變化都會讓每一台橋接器執行上述 1, 2 和 3 程序以建立新的樹狀拓璞（ STP re-calculation ）。
 
 執行 Ryu 應用程式
 -------------------------
 
 執行 Ryu 生成樹應用程式來達到 OpenFlow 實作的生成樹功能。
 
-Ryu 的原始碼中 simple_switch_stp.py 是 OpenFlow 1.0 所使用，這邊我們要使用新的 OpenFlow 1.3 對應的版本 simple_switch_stp_13.py 。這個應用程式新增加了生成樹功能到
- 「 :ref:`ch_switching_hub` 」中。
+Ryu 的原始碼中 simple_switch_stp.py 是 OpenFlow 1.0 所使用，這邊我們要使用新的 OpenFlow 1.3 對應的版本 simple_switch_stp_13.py 。
+這個應用程式新增加了生成樹功能到 「 :ref:`ch_switching_hub` 」中。
 
 原始碼檔名： ``simple_switch_stp_13.py``
 
@@ -705,7 +706,7 @@ OpenFlow 1.3 提供 config 來設定連接埠的狀態。
 
 
 ================== =========================================================
-參數值              説明
+名稱               說明
 ================== =========================================================
 OFPPC_PORT_DOWN    連接埠無效狀態
 OFPPC_NO_RECV      丟棄所有接收到的封包
@@ -716,23 +717,23 @@ OFPPC_NO_PACKET_IN table-miss 發生時，不發送 Packet-In 訊息
 
 為了控制連接埠接收 BPDU 封包和非 BPDU 封包，收到 BPDU 封包就發送 Packet-In 的 Flow Entry 和接收 BPDU 以外的封包就丟棄的 Flow Entry ，分別透過 Flow Mod 訊息新增到 OpenFlow 交換器中。
 
-Controller 對各個 OpenFlow 交換器進行下面 port 設定和 Flow Entry 的管理，以達到控制連接埠狀態對於 BPDU 的接收傳送和 MAC address 的學習（BPDU 以外則是封包的接收）和訊框的轉送（BPDU 以外則是封包的傳送）。
+Controller 對各個 OpenFlow 交換器進行下面 port 設定和 Flow Entry 的管理，以達到控制連接埠狀態對於 BPDU 的接收傳送和 MAC 位址的學習（ BPDU 以外則是封包的接收 ）和訊框的轉送（ BPDU 以外則是封包的傳送 ）。
 
 
-======= ================ ============================
-状態     連接埠設定         Flow Entry
-======= ================ ============================
-DISABLE NO_RECV／NO_FWD  無
-BLOCK   NO_FWD           BPDU Packet-In／BPDU以外drop
-LISTEN  無               BPDU Packet-In／BPDU以外drop
-LEARN   無               BPDU Packet-In／BPDU以外drop
-FORWARD 無               BPDU Packet-In
-======= ================ ============================
+============= ================ ==============================
+名稱          設定值           Flow Entry
+============= ================ ==============================
+DISABLE       NO_RECV／NO_FWD  無
+BLOCK         NO_FWD           BPDU Packet-In／BPDU以外drop
+LISTEN        無               BPDU Packet-In／BPDU以外drop
+LEARN         無               BPDU Packet-In／BPDU以外drop
+FORWARD       無               BPDU Packet-In
+============= ================ ==============================
 
 
 .. NOTE::
 
-    為了精簡化，Ryu 裡的生成樹函式庫並不處理 LEARN 狀態的 MAC address （接收 BPDU 以外的封包） 學習。
+    為了精簡化，Ryu 裡的生成樹函式庫並不處理 LEARN 狀態的 MAC 位址（ 接收 BPDU 以外的封包 ）學習。
 
 
 為了做這些設定，Controller 產生 BPDU 封包基於 OpenFlow 交換器連接時所收集的連接埠資訊和每一個 OpenFlow 交換器所接收的 BPDU 封包中所設定的 Root 橋接器資訊，來發送 Packet-Out 訊息達到交換器之間互相交換 BPDU 的效果。
@@ -782,12 +783,12 @@ simple_switch_stp.py 是一個應用程式，用來讓交換器的應用程式�
         :align: center
 
 
-STP 函式庫（STP 實體）偵測到 OpenFlow 交換器和 Controller 已經連結時， Bridge 類別的實體和 Port 類別的實體就會被產生。
+STP 函式庫（ STP 實體 ）偵測到 OpenFlow 交換器和 Controller 已經連結時， Bridge 類別的實體和 Port 類別的實體就會被產生。
 
 當每一個類別的實體產生、啟動之後。
 
 * 從 STP 類別實體接收到 OpenFlow 訊息。
-* Bridge 類別實體運算 STP（Root 橋接器的選擇，每一個連接埠的角色選擇）
+* Bridge 類別實體運算 STP（ Root 橋接器的選擇，每一個連接埠的角色選擇 ）
 * Port 類別實體的狀態變化，BPDU 封包接收及傳送
 
 以上動作完成後，即可達成生成樹的功能。
@@ -801,33 +802,38 @@ STP 函式庫（STP 實體）偵測到 OpenFlow 交換器和 Controller 已經�
 * bridge
 
 
-    ================ =================================================== ============
-    項目             説明                                                  預設值
-    ================ =================================================== ============
-     ``priority``    橋接器優先權                                           0x8000
-     ``sys_ext_id``  設定 VLAN-ID (\*目前的 STP 函式庫不支援 VLAN)            0
-     ``max_age``     BPDU 封包的傳送接收逾時                                 20[sec]
-     ``hello_time``  BPDU 封包的傳送接收間隔                                 2 [sec]
-     ``fwd_delay``   每一個連接埠停留在 LISTEN 或 LEARN 的時間                 15[sec]
-    ================ =================================================== ============
+    .. tabularcolumns:: |p{2.5cm}|p{8cm}|p{1.5cm}|
+
+    ================ =============================================== ============
+    名稱             說明                                            預設值
+    ================ =============================================== ============
+     ``priority``    橋接器優先權                                    0x8000
+     ``sys_ext_id``  設定 VLAN-ID (\*目前的 STP 函式庫不支援 VLAN)   0
+     ``max_age``     BPDU 封包的傳送接收逾時                         20[sec]
+     ``hello_time``  BPDU 封包的傳送接收間隔                         2 [sec]
+     ``fwd_delay``   每一個連接埠停留在 LISTEN 或 LEARN 的時間       15[sec]
+    ================ =============================================== ============
 
 
 * port
 
-    =============== ==================== ============================
-    項目            説明                   預設值
-    =============== ==================== ============================
-     ``priority``   連接埠優先權            0x80
+
+    .. tabularcolumns:: |p{2.5cm}|p{5cm}|p{4.5cm}|
+
+    =============== ==================== ======================
+    名稱            說明                 預設值
+    =============== ==================== ======================
+     ``priority``   連接埠優先權         0x80
      ``path_cost``  Link Cost            基於連線速度自動設定
-     ``enable``     連接埠的有效/無效        True
-    =============== ==================== ============================
+     ``enable``     連接埠的有效/無效    True
+    =============== ==================== ======================
 
 
 傳送 BPDU 封包
 """"""""""""""""
 
-傳送 BPDU 封包的動作為 BPDU 封包傳送執行緒 （ ``Port.send_bpdu_thread`` ） 所執行，
-當連接埠的角色為 designated port （``DESIGNATED_PORT`` ） 時，定期通知 Root 橋接器的 hello time （ ``Port.port_times.hello_time`` ：預設 2 秒） 封包就會被產生（ ``Port._generate_config_bpdu()``）並進行傳送（ ``Port.ofctl.send_packet_out()`` ）。
+傳送 BPDU 封包的動作為 BPDU 封包傳送執行緒（ ``Port.send_bpdu_thread`` ）所執行，
+當連接埠的角色為 designated port（ ``DESIGNATED_PORT`` ）時，定期通知 Root 橋接器的 hello time（ ``Port.port_times.hello_time`` ：預設 2 秒 ）封包就會被產生（ ``Port._generate_config_bpdu()`` ）並進行傳送（ ``Port.ofctl.send_packet_out()`` ）。
 
 
 .. rst-class:: sourcecode
@@ -905,10 +911,10 @@ STP 函式庫（STP 實體）偵測到 OpenFlow 交換器和 Controller 已經�
 接收 BPDU 封包
 """"""""""""""""
 
-接收 BPDU 封包是由 STP 類別的 Packet-In 事件管理器 （Event handler） 所發現， 經由 Bridge 類別實體通知給 Port 類別實體。事件管理器的實作請參考 「 :ref:`ch_switching_hub` 」。
+接收 BPDU 封包是由 STP 類別的 Packet-In 事件管理器（ Event handler ）所發現， 經由 Bridge 類別實體通知給 Port 類別實體。事件管理器的實作請參考 「 :ref:`ch_switching_hub` 」。
 
-接收到 BPDU 封包的連接埠會對先前接收到的 BPDU 封包以及本次接收到的封包中的橋接器 ID 進行比對 （ ``Stp.compare_bpdu_info()`` ） ，來決定 STP 是否必須重新計算路徑。
-若是相比之前的封包之下，本次收到的封包為優先封包（superior BPDU）、（``SUPERIOR`` ） 時，則代表網路的拓璞已經改變，例如「一個新的 Root 橋接器已經被加入網路」，此時則必須開始進行 STP 的重新計算。
+接收到 BPDU 封包的連接埠會對先前接收到的 BPDU 封包以及本次接收到的封包中的橋接器 ID 進行比對（ ``Stp.compare_bpdu_info()`` ），來決定 STP 是否必須重新計算路徑。
+若是相比之前的封包之下，本次收到的封包為優先封包（ superior BPDU ）、（ ``SUPERIOR`` ）時，則代表網路的拓璞已經改變，例如「一個新的 Root 橋接器已經被加入網路」，此時則必須開始進行 STP 的重新計算。
 
 
 .. rst-class:: sourcecode
@@ -954,9 +960,9 @@ STP 函式庫（STP 實體）偵測到 OpenFlow 交換器和 Controller 已經�
 斷線是由 STP 類別的 PortStatus 事件管理器所偵測，並透過 Bridge 類別的實體進行通知。
 
 BPDU 封包的接收逾時是由 Port 類別的 BPDU 封包接收執行緒（ ``Port.wait_bpdu_thread`` ）所發現。
-在 max age （預設 20 秒） 之間，如果沒有接收到 Root 橋接器發來的 BPDU 封包，就判斷為間接故障，並且對 Bridge 類別實體發送通知。
+在 max age（ 預設 20 秒 ）之間，如果沒有接收到 Root 橋接器發來的 BPDU 封包，就判斷為間接故障，並且對 Bridge 類別實體發送通知。
 
-BPDU 接收逾時的更新和逾時的偵測分別是 hub 模組（ryu.lib.hub） 的 ``hub.Event`` 和 ``hub.Timeout`` 。
+BPDU 接收逾時的更新和逾時的偵測分別是 hub 模組（ ryu.lib.hub ）的 ``hub.Event`` 和 ``hub.Timeout`` 。
 ``hub.Event`` 經由 ``hub.Event.wait()`` 進入 wait 狀態，透過 ``hub.Event.set()`` 中斷執行緒。
 ``hub.Timeout`` 指定在一定時間內若 ``try`` 無法結束執行時，則發送 ``hub.Timeout`` 的例外事件。
 當 ``hub.Event`` 進入 wait 狀態，並且 ``hub.Timeout`` 所指定的時間內尚未執行 ``hub.Event.set()`` 時，則判斷為 BPDU 封包的接收逾時，故開始進行 Bridge 類別的 STP 重新計算。
@@ -1007,8 +1013,8 @@ BPDU 接收逾時的更新和逾時的偵測分別是 hub 模組（ryu.lib.hub�
                 hub.spawn(self.wait_bpdu_timeout)
 
 
-接收的 BPDU 封包比對動作 （ ``Stp.compare_bpdu_info()`` ） 結束後發現是 ``SUPERIOR`` 或 ``REPEATED`` 時，就開始接收 Root 橋接器發送過來的封包，並且更新逾時數值（ ``Port._update_wait_bpdu_timer()`` ）。
-執行 ``hub.Event`` 中 ``Port.wait_timer_event`` 的 ``set()`` 將 ``Port.wait_timer_event`` 從 wait 狀態解除，即可讓 BPDU 封包接收執行緒 （ ``Port.wait_bpdu_thread`` ） 不要進入 ``except hub.Timeout`` 的區間並進行處理，進而重新設定計時器後繼續接收下一個 BPDU 封包。
+接收的 BPDU 封包比對動作（ ``Stp.compare_bpdu_info()`` ）結束後發現是 ``SUPERIOR`` 或 ``REPEATED`` 時，就開始接收 Root 橋接器發送過來的封包，並且更新逾時數值（ ``Port._update_wait_bpdu_timer()`` ）。
+執行 ``hub.Event`` 中 ``Port.wait_timer_event`` 的 ``set()`` 將 ``Port.wait_timer_event`` 從 wait 狀態解除，即可讓 BPDU 封包接收執行緒（ ``Port.wait_bpdu_thread`` ）不要進入 ``except hub.Timeout`` 的區間並進行處理，進而重新設定計時器後繼續接收下一個 BPDU 封包。
 
 
 .. rst-class:: sourcecode
@@ -1041,9 +1047,9 @@ BPDU 接收逾時的更新和逾時的偵測分別是 hub 模組（ryu.lib.hub�
 STP 計算
 """"""""""""""
 
-STP 計算（Root 橋接器選擇、每一個連接埠的角色選擇） 是由 Bridge 類別所執行。
+STP 計算（ Root 橋接器選擇、每一個連接埠的角色選擇 ）是由 Bridge 類別所執行。
 
-STP 重新計算開始的時候代表網路拓璞已經發生變化，此時封包的傳遞有可能會有出現迴圈，因此所有的連接埠會進入 BLOCK （ ``port.down`` ） 狀態並觸發拓璞改變事件（ ``EventTopologyChange`` ) 通知上層 APL，初始已經學習完畢的 MAC address 連接埠。
+STP 重新計算開始的時候代表網路拓璞已經發生變化，此時封包的傳遞有可能會有出現迴圈，因此所有的連接埠會進入 BLOCK（ ``port.down`` ）狀態並觸發拓璞改變事件（ ``EventTopologyChange`` ) 通知上層 APL，初始已經學習完畢的 MAC 位址連接埠。
 
 然後 ``Bridge._spanning_tree_algorithm()`` 開始動作以進行 Root 橋接器的選擇和連接埠的角色設定，所有的連接埠會從 LISTEN 狀態（ ``port.up`` ）開始狀態的變化。
 
@@ -1088,9 +1094,9 @@ STP 重新計算開始的時候代表網路拓璞已經發生變化，此時封�
 
 為了 Root 橋接器的選擇，像是橋接器 ID 之類的資訊會拿來跟每一個連接埠所接收到的 BPDU 封包進行比對（ ``Bridge._select_root_port`` ）。
 
-接著會出現這樣的結果：選出 Root 連接埠（本身的橋接器資訊和從連接埠所收到的其他橋接器資訊比對後結果較差）、其他的橋接器開始做為 Root 橋接器、或選出 designated ports （``Bridge._select_designated_port``） 和選出 non-designated ports （ Root 連接埠 / designated ports 以外的 non-designated ports 選出）。
+接著會出現這樣的結果：選出 Root 連接埠（ 本身的橋接器資訊和從連接埠所收到的其他橋接器資訊比對後結果較差 ）、其他的橋接器開始做為 Root 橋接器、或選出 designated ports（ ``Bridge._select_designated_port`` ）和選出 non-designated ports（ Root 連接埠 / designated ports 以外的 non-designated ports 選出 ）。
 
-反之 Root 橋接器如果沒有被發現（本身的橋接器所帶的資訊為最優先的情況），則自己就會轉變為  Root 橋接器並設定其所有的連接埠為 designated ports。
+反之 Root 橋接器如果沒有被發現（ 本身的橋接器所帶的資訊為最優先的情況 ），則自己就會轉變為  Root 橋接器並設定其所有的連接埠為 designated ports。
 
 
 .. rst-class:: sourcecode
@@ -1206,7 +1212,7 @@ STP 重新計算開始的時候代表網路拓璞已經發生變化，此時封�
 實作應用程式
 ^^^^^^^^^^^^^^^^^^^^^^
 
-本章說明 「 `執行 Ryu 應用程式`_ 」中 OpenFlow 1.3 所對應的生成樹應用程式（simple_switch_stp_13.py） 和 「 :ref:`ch_switching_hub` 」 的交換器之間的差異。
+本章說明 「 `執行 Ryu 應用程式`_ 」中 OpenFlow 1.3 所對應的生成樹應用程式（ simple_switch_stp_13.py ）和 「 :ref:`ch_switching_hub` 」 的交換器之間的差異。
 
 
 設定「_CONTEXTS」
@@ -1236,13 +1242,13 @@ STP 重新計算開始的時候代表網路拓璞已經發生變化，此時封�
 使用 STP 函式庫的 ``set_config()`` 方法來進行組態設定，下面是簡單的例子。
 
 
-===================== =============== ======
-OpenFlow交換器         名稱             設定値
-===================== =============== ======
-dpid=0000000000000001 bridge.priority 0x8000
-dpid=0000000000000002 bridge.priority 0x9000
-dpid=0000000000000003 bridge.priority 0xa000
-===================== =============== ======
+======================= ================ ========
+OpenFlow 交換器         名稱             設定值 
+======================= ================ ========
+dpid=0000000000000001   bridge.priority  0x8000
+dpid=0000000000000002   bridge.priority  0x9000
+dpid=0000000000000003   bridge.priority  0xa000
+======================= ================ ========
 
 
 使用這個設定時 dpid=0000000000000001 的 OpenFlow 交換器的橋接器 ID 總會是最小值，而 Root  橋接器也會選擇該交換器。
@@ -1293,7 +1299,7 @@ STP 事件處理
                 # ...
 
 
-接收網路拓璞的變動事件通知 （ ``stplib.EventTopologyChange`` ）用以初始化已經學習的 MAC address 和已經註冊的 Flow Entry 。
+接收網路拓璞的變動事件通知（ ``stplib.EventTopologyChange`` ）用以初始化已經學習的 MAC 位址和已經註冊的 Flow Entry 。
 
 
     .. rst-class:: sourcecode

@@ -185,18 +185,29 @@ htmlhelp_basename = 'Ryubookdoc'
 
 latex_elements = {
 'papersize': 'a4paper',
-'pointsize': '12pt',
+'pointsize': '11pt',
 'classoptions': ',english',
 'inputenc': '',
 'utf8extra': '',
 
 'preamble': r"""
+% use CJK
 \usepackage{xeCJK}
+% use font package
+\usepackage{fontspec}
+% indent for Chinese (disabled)
 %\usepackage{indentfirst}
-\setCJKmainfont[BoldFont=Microsoft JhengHei, ItalicFont=Microsoft JhengHei]{Microsoft JhengHei}
-\setCJKsansfont[BoldFont=Microsoft JhengHei, ItalicFont=Microsoft JhengHei]{Microsoft JhengHei}
-\setCJKmonofont[BoldFont=Microsoft JhengHei, ItalicFont=Microsoft JhengHei]{Microsoft JhengHei}
-\setCJKfamilyfont{JH}[BoldFont=Microsoft JhengHei]{Microsoft JhengHei}
+% line break style for Chinese
+\XeTeXlinebreaklocale "zh"
+% space in english and Chinese
+\XeTeXlinebreakskip = 0pt plus 1pt
+% english fonts
+\setmainfont{Apple LiGothic Medium}
+% Chinese fonts
+\setCJKmainfont{Apple LiGothic Medium}
+\setCJKmonofont{Apple LiGothic Medium}
+\setCJKsansfont{Apple LiGothic Medium}
+\setCJKfamilyfont{APPLE}{Apple LiGothic}
 \makeatletter
 
 \renewcommand{\maketitle}{

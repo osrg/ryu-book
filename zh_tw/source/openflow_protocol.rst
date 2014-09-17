@@ -8,7 +8,7 @@ OpenFlow 通訊協定
 Match
 ----------
 
-有許多種類的指定條件可以用在 Match ，隨著 OpenFlow 版本的不斷更新，數量也在持續增加中。
+有許多種類的指定條件可以用在 Match ，隨著 OpenFlow 版本的持續更新，數量也在持續增加中。
 在 OpenFlow 1.0 時僅有 12 種，OpenFlow 1.3 時數量就來到約 40 種。
 
 若想要了解每個指令的細節，請參考 OpenFlow 規格書。本章僅簡要列出 OpenFlow 1.3 的 Match 指令。
@@ -57,10 +57,11 @@ mpls_bos          MPLS Bos bit
 pbb_isid          802.1ah PBB I-SID
 tunnel_id         邏輯埠的 metadata
 ipv6_exthdr       IPv6 extension header 的 Pseudo-field
+
 ================= ==========================================================
 
 
-可以針對 MAC address 或 IP address，透過 Mask 來指定 field。
+可以針對 MAC 位址或 IP 位址，透過 Mask 來指定 field。
 
 Instruction
 -----------
@@ -71,22 +72,23 @@ Instruction 是用來定義當封包滿足所規範的 Match 條件時，需要�
 
 .. tabularcolumns:: |l|L|
 
-==================== =====================================================================
-Instruction                 説明
-==================== =====================================================================
-Goto Table(必要)     在 OpenFlow 1.1 或更新的版本中， multiple flow tables
-                     將是必需支援的項目。透過 Goto Table 的指令可以在多個 table
-                     間進行移轉，並繼續相關的比對及對應的動作。
-                     例如：「收到來自 port 1 的封包時，增加 VLAN-ID 200 的 tag
-                     ，並移動至 table 2」。
-                     而所指定的 table ID 則必須是大於目前的 table ID。
-Write Metadata(選項)  寫入 Metadata 以做為下一個 table 所需的參考資料。
-Write Actions(必要)  在目前的 action set 中寫入新的 action ，如果有相同的 action 存在時
-                     ，會進行覆蓋。
-Apply Actions(選項)   立刻執行所指定的 action 不對現有的 action set 進行修改。
-Clear Actions(選項)   清空目前存在 action set 中的資料。
-Meter(選項)           指定該封包到所定義的 meter table。
-==================== =====================================================================
+====================== =====================================================================
+Instruction            說明
+====================== =====================================================================
+Goto Table(必要)       在 OpenFlow 1.1 或更新的版本中， multiple flow tables
+                       將是必需支援的項目。透過 Goto Table 的指令可以在多個 table
+                       間進行移轉，並繼續相關的比對及對應的動作。
+                       例如：「收到來自 port 1 的封包時，增加 VLAN-ID 200 的 tag
+                       ，並移動至 table 2」。
+                       而所指定的 table ID 則必須是大於目前的 table ID。
+Write Metadata(選項)    寫入 Metadata 以做為下一個 table 所需的參考資料。
+Write Actions(必要)    在目前的 action set 中寫入新的 action ，如果有相同的 action 存在時
+                       ，會進行覆蓋。
+Apply Actions(選項)    立刻執行所指定的 action 不對現有的 action set 進行修改。
+Clear Actions(選項)    清空目前存在 action set 中的資料。
+Meter(選項)            指定該封包到所定義的 meter table。
+
+====================== =====================================================================
 
 
 以下的類別是對應各個 Instruction 的 Ryu 實作。
@@ -117,17 +119,18 @@ OFPActionOutput Class 是用來轉送指定封包，其中包含 Packet-Out 和 
 .. tabularcolumns:: |l|L|
 
 ================= ========================================================================
-値                説明
+名稱              說明
 ================= ========================================================================
 OFPP_IN_PORT      轉送到接收埠
 OFPP_TABLE        轉送到最前端的 table
 OFPP_NORMAL       使用交換器本身的 L2 / L3 功能轉送
-OFPP_FLOOD        轉送 （Flood） 到所有 VLAN 的物理連接埠，除了來源埠跟已閉鎖的埠之外
+OFPP_FLOOD        轉送（Flood）到所有 VLAN 的物理連接埠，除了來源埠跟已閉鎖的埠之外
 OFPP_ALL          轉送到除了來源埠之外的所有埠
 OFPP_CONTROLLER   轉送到 Controller 的 Packet-In 訊息
 OFPP_LOCAL        轉送到交換器本身（local port）
-OFPP_ANY          使用 Wild card 來指定 Flow Mod （delete） 或 Flow Stats Requests 訊息的埠號，
+OFPP_ANY          使用 Wild card 來指定 Flow Mod（delete）或 Flow Stats Requests 訊息的埠號，
                   主要功能並不是用來轉送封包訊息。
+
 ================= ========================================================================
 
 
