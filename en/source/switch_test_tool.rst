@@ -26,11 +26,9 @@ GroupMod message              All
 
 ":ref:`ch_packet_lib`" is used to confirm packet rewriting and results generation of packets to be applied.
 
-Operation Overview
-^^^^^^^^^^^^^^^^^^
 
 Test execution image
-""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following shows an image of operation when you run the test tool. "flow entry or meter entry to be registered", "application packet" and "expected processing result to" are described in the test pattern file. How to set up your environment for the tool execution is described later (refer to `Tool execution environment`_)
 
@@ -53,7 +51,7 @@ The following shows an image of operation when you run the test tool. "flow entr
 
 
 Output image of test results
-""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The specified test items of the test pattern file are run in order and test results (OK / ERROR) are output. If a test result is ERROR, details of the error are also output.
 In addition, the test report of the number of OK / ERROR and the breakdown of ERRORs through the whole test are output.
@@ -94,115 +92,10 @@ In addition, the test report of the number of OK / ERROR and the breakdown of ER
     OK(6) / ERROR(4)
 
 
-
 How to use
 ----------
 
 This section explains how to use the test tool.
-
-
-Test Pattern File
-^^^^^^^^^^^^^^^^^
-
-You need to create a test pattern file in accordance with the test pattern that you want to test.
-
-A test pattern file is a text file that has a ".json" extension. It is described using the following format.
-
-
-.. rst-class:: sourcecode
-
-::
-
-    [
-        "xxxxxxxxxx",                    # Test item name
-        {
-            "description": "xxxxxxxxxx", # Description of the test content
-            "prerequisite": [
-                {
-                    "OFPFlowMod": {...}  # Flow entry, Meter entry or Group entry to register
-                },                       # (Describe OFPFlowMod, OFPMeterMod or OFPGroupMod
-                {                        #  of Ryu in json format)
-                    "OFPMeterMod": {...} # If the expected processing result is
-                },                       # packet transfer (actions=output),
-                {                        # specify "2" as the output port number.
-                    "OFPGroupMod": {...} # If the expected processing result is
-                },                       # packet transfer (actions=output) in Group entry,
-                {...}                    # specify "2" or "3" as the output port number.
-            ],
-            "tests": [
-                {
-                    # Packet to be applied
-                    # Depending on the packets are applied just once or continuously,
-                    # describe either (A) or (B)
-                    #  (A) Apply a paket
-                    "ingress": [
-                        "ethernet(...)", # (Describe in format of Ryu packet library constructor)
-                        "ipv4(...)",
-                        "tcp(...)"
-                    ],
-                    #  (B) Apply pakets continuously during some period
-                    "ingress": {
-                        "packets":{
-                            "data":[
-                                "ethernet(...)", # the same as (A)
-                                "ipv4(...)",
-                                "tcp(...)"
-                            ],
-                            "pktps": 1000,       # The number of the applied packets per second
-                            "duration_time": 30  # The time of packets application (seconds)
-                        }
-                    },
-
-                    # Expected processing results
-                    # Depending on the type of processing results,
-                    # describe either (a), (b), (c) or (d)
-                    #  (a) Confirmation test of packet transfer (actions=output:X)
-                    "egress": [          # Expected transfer packet
-                        "ethernet(...)",
-                        "ipv4(...)",
-                        "tcp(...)"
-                    ]
-                    #  (b) Confirmation test of Packet-In (actions=CONTROLLER)
-                    "PACKET_IN": [       # Expected Packet-In data
-                        "ethernet(...)",
-                        "ipv4(...)",
-                        "tcp(...)"
-                    ]
-                    #  (c) Confirmation test of table-miss
-                    "table-miss": [      # flow table ID that is expected to be table-miss
-                        0
-                    ]
-                    #  (d) Confirmation test of packet transfer throughput (actions=output:X)
-                    "egress":[
-                        "throughput":[
-                            {
-                                "OFPMatch":{   # Match to measure throughput
-                                  ...          # registered in flow entry of
-                                },             # auxiliary switch
-                                "kbps":1000    # (Describe in KBPS)
-                            },
-                            {...},
-                            {...}
-                        ]
-                    ]
-                },
-                {...},
-                {...}
-            ]
-        },                               # Test 1
-        {...},                           # Test 2
-        {...}                            # Test 3
-    ]
-
-By description of "(B) Apply pakets continuously during some period" as packet to be applied and "(d) Confirmation test of packet transfer throughput (actions=output:X)" as expected processing results, you can measure the throughput of the test target switch.
-
-.. NOTE::
-
-    As a sample test pattern, the source tree of Ryu offers a test pattern file for OpenFlow 1.3 and OpenFlow 1.4 to check if each parameter that can be specified in the match/actions of FlowMod message, each parameter that in MeterMod messages and each parameter that in GroupMod messages works properly or not.
-
-        ryu/tests/switch/of13
-
-        ryu/tests/switch/of14
 
 
 Tool Execution Environment
@@ -246,7 +139,6 @@ As an auxiliary switch, an OpenFlow switch that can be used to perform following
         ryu/tests/switch/run_mininet.py
 
     A example script is described in "`Test tool usage example`_".
-
 
 
 How To Run The Test Tool
@@ -300,7 +192,6 @@ After starting the test tool, when the auxiliary switch and test target switch a
 if the specified OpenFlow version is different from the OpenFlow version of connected switch, the test tool outputs the error messages and wait for a connection to be established with the specified version.
 
 
-
 Test Tool Usage Example
 -----------------------
 
@@ -311,6 +202,16 @@ Procedure for Executing Sample Test Pattern
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following shows the procedure of using sample test pattern (ryu/tests/switch/of13) of the source tree of the Ryu to check the through operation of match/actions of FlowMod messages, MeterMod messages and GroupMod messages.
+
+
+.. NOTE::
+
+    As a sample test pattern, the source tree of Ryu offers a test pattern file for OpenFlow 1.3 and OpenFlow 1.4 to check if each parameter that can be specified in the match/actions of FlowMod message, each parameter that in MeterMod messages and each parameter that in GroupMod messages works properly or not.
+
+        ryu/tests/switch/of13
+
+        ryu/tests/switch/of14
+
 
 In this procedure, the test environment is constructed using the test environment build script (ryu / tests / switch / run_mininet.py). Please refer to ":ref:`ch_switching_hub` " for environment settings and the login method for usage of the VM image.
 
@@ -419,10 +320,9 @@ In this procedure, the test environment is constructed using the test environmen
     When all testing of the sample test pattern file under ryu/tests/switch/of13 is complete, the test tool ends.
 
 
-<Reference>
-"""""""""""
+<Reference> Sample test pattern file list
+""""""""""""""""""""""""""""""""""""""""""""
 
-    Sample test pattern file list
 
     Offers the following test patterns for each version of OpenFlow 1.3 / OpenFlow 1.4.
 
@@ -601,6 +501,12 @@ The following is an example of creating a test tool that checks if it has a func
 
     Create a test pattern file to perform this test pattern.
 
+    The example is as follows.
+
+    .. NOTE::
+
+        For more information about the test pattern file creation is described in "`How to create a test pattern file`_".
+
 
 File name: ``sample_test_pattern.json``
 
@@ -697,7 +603,7 @@ File name: ``sample_test_pattern.json``
 
 2 Building a test environment
 
-    Build a test environment using a test environment build script. Please refer to the execution procedure in `Procedure for Executing Sample Test Pattern`_.
+    Build a test environment using a test environment build script. Please refer to the execution procedure in "`Procedure for Executing Sample Test Pattern`_".
 
 
 3 Executing the test tool
@@ -763,9 +669,242 @@ File name: ``sample_test_pattern.json``
         OFPST_FLOW reply (OF1.3) (xid=0x2):
          cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa->eth_src,set_field:bb:bb:bb:bb:bb:bb->eth_dst,dec_ttl,output:2
 
+How to create a test pattern file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A test pattern file is a text file that has a ".json" extension.
+It is described using the following format.
+
+
+.. rst-class:: sourcecode
+
+::
+
+    [
+        "xxxxxxxxxx",                    # Test item name
+        {
+            "description": "xxxxxxxxxx", # Description of the test content
+            "prerequisite": [
+                {
+                    "OFPFlowMod": {...}  # Flow entry, Meter entry or Group entry to register
+                },                       # (Describe OFPFlowMod, OFPMeterMod or OFPGroupMod
+                {                        #  of Ryu in json format)
+                    "OFPMeterMod": {...} # If the expected processing result is
+                },                       # packet transfer (actions=output),
+                {                        # specify "2" as the output port number.
+                    "OFPGroupMod": {...} # If the expected processing result is
+                },                       # packet transfer (actions=output) in Group entry,
+                {...}                    # specify "2" or "3" as the output port number.
+            ],
+            "tests": [
+                {
+                    # Packet to be applied
+                    # Depending on the packets are applied just once or continuously,
+                    # describe either (A) or (B)
+                    #  (A) Apply a paket
+                    "ingress": [
+                        "ethernet(...)", # (Describe in format of Ryu packet library constructor)
+                        "ipv4(...)",
+                        "tcp(...)"
+                    ],
+                    #  (B) Apply pakets continuously during some period
+                    "ingress": {
+                        "packets":{
+                            "data":[
+                                "ethernet(...)", # the same as (A)
+                                "ipv4(...)",
+                                "tcp(...)"
+                            ],
+                            "pktps": 1000,       # The number of the applied packets per second
+                            "duration_time": 30  # The time of packets application (seconds)
+                        }
+                    },
+
+                    # Expected processing results
+                    # Depending on the type of processing results,
+                    # describe either (a), (b), (c) or (d)
+                    #  (a) Confirmation test of packet transfer (actions=output:X)
+                    "egress": [          # Expected transfer packet
+                        "ethernet(...)",
+                        "ipv4(...)",
+                        "tcp(...)"
+                    ]
+                    #  (b) Confirmation test of Packet-In (actions=CONTROLLER)
+                    "PACKET_IN": [       # Expected Packet-In data
+                        "ethernet(...)",
+                        "ipv4(...)",
+                        "tcp(...)"
+                    ]
+                    #  (c) Confirmation test of table-miss
+                    "table-miss": [      # flow table ID that is expected to be table-miss
+                        0
+                    ]
+                    #  (d) Confirmation test of packet transfer throughput (actions=output:X)
+                    "egress":[
+                        "throughput":[
+                            {
+                                "OFPMatch":{   # Match to measure throughput
+                                  ...          # registered in flow entry of
+                                },             # auxiliary switch
+                                "kbps":1000    # (Describe in KBPS)
+                            },
+                            {...},
+                            {...}
+                        ]
+                    ]
+                },
+                {...},
+                {...}
+            ]
+        },                               # Test 1
+        {...},                           # Test 2
+        {...}                            # Test 3
+    ]
+
+By description of "(B) Apply pakets continuously during some period" as packet to be applied and "(d) Confirmation test of packet transfer throughput (actions=output:X)" as expected processing results, you can measure the throughput of the test target switch.
+
+For the meaning of the number of input / output port number that you specify in the test pattern file, please refer to "`<Reference> Transfer path of the applied packet`_".
+
+
+<Reference> Transfer path of the applied packet
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Use of the port of the test target switch and auxiliary switch is described below.
+
+.. only:: latex
+
+    .. image:: images/switch_test_tool/fig3.eps
+        :align: center
+
+.. only:: epub
+
+    .. image:: images/switch_test_tool/fig3.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/switch_test_tool/fig3.png
+        :scale: 60 %
+        :align: center
+
+Transfer path of the applied packet in the case of FlowMod message / MeterMod message test is as follows.
+
+1. The auxiliary switch sends the packet from tester_sw_sending_port(Port No.1).
+
+2. The test target switch receives the packet from target_sw receiving_port(Port No.1).
+
+3. The test target switch resends the packet from target_sw_sending_port_1(Port No.2).
+
+4. The auxiliary switch receives the packet from tester_sw_receiving_port_1(Port No.2).
+
+.. only:: latex
+
+    .. image:: images/switch_test_tool/fig4.eps
+        :align: center
+
+.. only:: epub
+
+    .. image:: images/switch_test_tool/fig4.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/switch_test_tool/fig4.png
+        :scale: 60 %
+        :align: center
+
+Transfer path of the applied packet in the case of GroupMod message test is as follows.
+
+1. The auxiliary switch sends the packet from tester_sw_sending_port(Port No.1).
+
+2. The test target switch receives the packet from target_sw receiving_port(Port No.1).
+
+3. The test target switch resends the packet from target_sw_sending_port_1(Port No.2) or target_sw_sending_port_2(Port No.3).
+
+4. The auxiliary switch receives the packet from tester_sw_receiving_port_1(Port No.2) or tester_sw_receiving_port_2(Port No.3).
+
+.. only:: latex
+
+    .. image:: images/switch_test_tool/fig5.eps
+        :align: center
+
+.. only:: epub
+
+    .. image:: images/switch_test_tool/fig5.png
+        :align: center
+
+.. only:: not latex and not epub
+
+    .. image:: images/switch_test_tool/fig5.png
+        :scale: 60 %
+        :align: center
+
+As shown above, only the test of GroupMod message, the test tool is to use the tester_sw_receiving_port_2 and target_sw_sending_port_2.
+
+
+How to change the port number
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you want to use the other port number which differ from `Tool Execution Environment`_,
+you can specify the port number in the options when this tool is started.
+Option to change the port number is described below.
+
+.. tabularcolumns:: |l|p{20zw}|l|
+
+
+========================================== ============================================================ ========================
+Option                                     Explanation                                                  Default value
+========================================== ============================================================ ========================
+``--test-switch-target_recv_port``         Port number of target switch receiving port                  1
+``--test-switch-target_send_port_1``       Port number of target switch sending port 1                  2
+``--test-switch-target_send_port_2``       Port number of target switch sending port 2                  3
+``--test-switch-tester_send_port``         Port number of auxiliary switch sending port                 1
+``--test-switch-tester_recv_port_1``       Port number of auxiliary switch receiving port 1             2
+``--test-switch-tester_recv_port_2``       Port number of auxiliary switch receiving port 2             3
+========================================== ============================================================ ========================
+
+If you want to change the port number by the above options, please be aware that there is a need to change the value of the port number of the test pattern file to the test tool before starting.
+
+
+<Reference>The supplementary information on how to create a test pattern file
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    If you describe the name of an option argument
+    (e.g. "target_send_port_1") in test files,
+    the test tool sets the argument value in the port number.
+
+    For example, write a test pattern file as follows.
+
+    .. rst-class:: sourcecode
+
+    ::
+
+                                               "OFPActionOutput": {
+                                                   "port":"target_send_port_1"
+                                               }
+
+    Next, run the test tool with the option to change the port number.
+
+    .. rst-class:: console
+
+    ::
+
+            root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
+
+    Then, the test tool understands the test pattern file as follows.
+
+    .. rst-class:: sourcecode
+
+    ::
+
+                                               "OFPActionOutput": {
+                                                   "port":30
+                                               }
+
+    This makes it possible to determine the value of the port number for the test pattern file when starting the test tool.
 
 List of Error Messages
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 The following is a list of error messages that can be output with this tool.
 
