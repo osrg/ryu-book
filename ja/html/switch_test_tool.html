@@ -83,14 +83,12 @@
 </table>
 <p>印加するパケットの生成やパケット書き換え結果の確認などに「<a class="reference internal" href="packet_lib.html#ch-packet-lib"><em>パケットライブラリ</em></a>」を利用しています。</p>
 <div class="section" id="id2">
-<h3>動作概要<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<div class="section" id="id3">
-<h4>試験実行イメージ<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h4>
-<p>テストツールを実行した際の動作イメージを示します。テストパターンファイルには、「登録するフローエントリもしくはメーターエントリ」「印加パケット」「期待する処理結果」が記述されます。また、ツール実行のための環境設定については後述(<a class="reference internal" href="#id7">ツール実行環境</a>を参照)します。</p>
+<h3>試験実行イメージ<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストツールを実行した際の動作イメージを示します。テストパターンファイルには、「登録するフローエントリもしくはメーターエントリ」「印加パケット」「期待する処理結果」が記述されます。また、ツール実行のための環境設定については後述(<a class="reference internal" href="#id5">テストツールの実行環境</a>を参照)します。</p>
 <a class="reference internal image-reference" href="_images/fig18.png"><img alt="_images/fig18.png" class="align-center" src="_images/fig18.png" style="width: 726.6px; height: 247.8px;" /></a>
 </div>
-<div class="section" id="id4">
-<h4>試験結果の出力イメージ<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id3">
+<h3>試験結果の出力イメージ<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>指定されたテストパターンファイルのテスト項目を順番に実行し、試験結果(OK／ERROR)を出力します。試験結果がERRORの場合はエラー詳細を併せて出力します。また、試験全体でのOK／ERROR数および発生したERRORの内訳も出力します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>--- Test start ---
 
@@ -125,107 +123,11 @@ OK(6) / ERROR(4)
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="id5">
-<h2>使用方法<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id4">
+<h2>テストツールの使用方法<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>テストツールの使用方法を解説します。</p>
-<div class="section" id="id6">
-<h3>テストパターンファイル<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>試験したいテストパターンに応じたテストパターンファイルを作成する必要があります。</p>
-<p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>[
-    &quot;xxxxxxxxxx&quot;,                    # 試験項目名
-    {
-        &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # 試験内容の説明
-        &quot;prerequisite&quot;: [
-            {
-                &quot;OFPFlowMod&quot;: {...}  # 登録するフローエントリ、メーターエントリ、グループエントリ
-            },                       # (RyuのOFPFlowMod、OFPMeterMod、OFPGroupModをjson形式で記述)
-            {                        #
-                &quot;OFPMeterMod&quot;: {...} # フローエントリで期待する処理結果が
-            },                       # パケット転送(actions=output)の場合は
-            {                        # 出力ポート番号に「2」を指定してください
-                &quot;OFPGroupMod&quot;: {...} # グループエントリでパケット転送を行う場合は
-            },                       # 出力ポート番号には「2」もしくは「3」を
-            {...}                    # 指定してください
-        ],
-        &quot;tests&quot;: [
-            {
-                # 印加パケット
-                # 1回だけ印加するのか一定時間連続して印加し続けるのかに応じて
-                # (A)(B)のいずれかを記述
-                #  (A) 1回だけ印加
-                &quot;ingress&quot;: [
-                    &quot;ethernet(...)&quot;, # (Ryuパケットライブラリのコンストラクタの形式で記述)
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ],
-                #  (B) 一定時間連続して印加
-                &quot;ingress&quot;: {
-                    &quot;packets&quot;:{
-                        &quot;data&quot;:[
-                            &quot;ethernet(...)&quot;, # (A)と同じ
-                            &quot;ipv4(...)&quot;,
-                            &quot;tcp(...)&quot;
-                        ],
-                        &quot;pktps&quot;: 1000,       # 毎秒印加するパケット数を指定
-                        &quot;duration_time&quot;: 30  # 連続印加時間を秒単位で指定
-                    }
-                },
-
-                # 期待する処理結果
-                # 処理結果の種別に応じて(a)(b)(c)(d)のいずれかを記述
-                #  (a) パケット転送(actions=output:X)の確認試験
-                &quot;egress&quot;: [          # 期待する転送パケット
-                    &quot;ethernet(...)&quot;,
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ]
-                #  (b) パケットイン(actions=CONTROLLER)の確認試験
-                &quot;PACKET_IN&quot;: [       # 期待するPacket-Inデータ
-                    &quot;ethernet(...)&quot;,
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ]
-                #  (c) table-missの確認試験
-                &quot;table-miss&quot;: [      # table-missとなることを期待するフローテーブルID
-                    0
-                ]
-                #  (d) パケット転送(actions=output:X)時スループットの確認試験
-                &quot;egress&quot;:[
-                    &quot;throughput&quot;:[
-                        {
-                            &quot;OFPMatch&quot;:{   # スループット計測用に
-                              ...          # 補助SWに登録される
-                            },             # フローエントリのMatch条件
-                            &quot;kbps&quot;:1000    # 期待するスループットをKbps単位で指定
-                        },
-                        {...},
-                        {...}
-                    ]
-                ]
-            },
-            {...},
-            {...}
-        ]
-    },                               # 試験1
-    {...},                           # 試験2
-    {...}                            # 試験3
-]
-</pre></div>
-</div>
-<p>印加パケットとして「(B) 一定時間連続して印加」を、期待する処理結果として「(d) パケット転送(actions=output:X)時スループットの確認試験」をそれぞれ記述することにより、試験対象SWのスループットを計測することができます。</p>
-<div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p>Ryuのソースツリーにはサンプルテストパターンとして、FlowModメッセージのmatch／actionsに指定できる各パラメータ、ならびにMeterModメッセージの各パラメータやGroupModメッセージの各パラメータがそれぞれ正常に動作するかを確認するテストパターンファイルが、OpenFlow1.3向けとOpenFlow1.4向けに用意されています。</p>
-<blockquote class="last">
-<div><p>ryu/tests/switch/of13</p>
-<p>ryu/tests/switch/of14</p>
-</div></blockquote>
-</div>
-</div>
-<div class="section" id="id7">
-<h3>ツール実行環境<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id5">
+<h3>テストツールの実行環境<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストツール実行のための環境は次のとおりです。</p>
 <a class="reference internal image-reference" href="_images/fig25.png"><img alt="_images/fig25.png" class="align-center" src="_images/fig25.png" style="width: 610.2px; height: 277.8px;" /></a>
 <p>補助スイッチとして、以下の動作を正常に行うことが出来るOpenFlowスイッチが必要です。</p>
@@ -240,11 +142,11 @@ OK(6) / ERROR(4)
 <p>Open vSwitchを試験対象スイッチとしたツール実行環境をmininet上で実現する環境構築スクリプトが、Ryuのソースツリーに用意されています。</p>
 <blockquote>
 <div>ryu/tests/switch/run_mininet.py</div></blockquote>
-<p class="last">スクリプトの使用例を「<a class="reference internal" href="#id9">テストツール使用例</a>」に記載しています。</p>
+<p class="last">スクリプトの使用例を「<a class="reference internal" href="#id7">テストツール使用例</a>」に記載しています。</p>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>テストツールの実行方法<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id6">
+<h3>テストツールの実行方法<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>テストツールはRyuのソースツリー上で公開されています。</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -321,12 +223,20 @@ OK(6) / ERROR(4)
 <p>テストツールの起動後、試験対象スイッチと補助スイッチがコントローラに接続されると、指定したテストパターンファイルを元に試験が開始されます。接続されたスイッチのOpenFlowバージョンが指定したOpenFlowバージョンと異なる場合はその旨メッセージが表示され、正しいバージョンでの接続を待ちます。</p>
 </div>
 </div>
-<div class="section" id="id9">
-<h2>テストツール使用例<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h2>
+<div class="section" id="id7">
+<h2>テストツール使用例<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>サンプルテストパターンやオリジナルのテストパターンファイルを用いたテストツールの実行手順を紹介します。</p>
-<div class="section" id="id10">
-<h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いて、FlowModメッセージのmatch／actionsの一通りの動作確認、MeterModメッセージの動作確認、ならびにGroupModメッセージの動作確認を行う手順を示します。</p>
+<div class="section" id="id8">
+<h3>サンプルテストパターンの実行手順<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>Ryuのソースツリーのサンプルテストパターン(ryu/tests/switch/of13)を用いた場合のテストツールの実行手順を示します。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p>Ryuのソースツリーにはサンプルテストパターンとして、FlowModメッセージのmatch／actionsに指定できる各パラメータ、ならびにMeterModメッセージの各パラメータやGroupModメッセージの各パラメータがそれぞれ正常に動作するかを確認するテストパターンファイルが、OpenFlow1.3向けとOpenFlow1.4向けに用意されています。</p>
+<blockquote class="last">
+<div><p>ryu/tests/switch/of13</p>
+<p>ryu/tests/switch/of14</p>
+</div></blockquote>
+</div>
 <p>本手順では、試験環境を試験環境構築スクリプト(ryu/tests/switch/run_mininet.py)を用いて構築することとします。このため試験対象スイッチはOpen vSwitchとなります。VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を参照してください。</p>
 <ol class="arabic">
 <li><p class="first">試験環境の構築</p>
@@ -397,12 +307,10 @@ action: 11_COPY_TTL_OUT
 </div></blockquote>
 </li>
 </ol>
-<div class="section" id="id11">
-<h4>&lt;参考&gt;<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="id9">
+<h4>&lt;参考&gt;サンプルテストパターンファイル一覧<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <blockquote>
-<div><p>サンプルテストパターンファイル一覧</p>
-<blockquote>
-<div>match／actionsの各設定項目に対応するフローエントリを登録し、フローエントリにmatchする(またはmatchしない)複数パターンのパケットを印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは優先度変更を行うメーターエントリを登録し、メーターエントリにmatchするパケットを連続的に印加するテストパターン、全ポートにFLOODINGするtype=ALLのグループエントリや振り分け条件によって出力先ポートを自動的に変更するtype=SELECTのグループエントリを登録し、グループエントリにmatchするパケットを連続的に印加するテストパターンが、OpenFlow1.3用とOpenFlow1.4用にそれぞれ用意されています。</div></blockquote>
+<div><p>match／actionsの各設定項目に対応するフローエントリを登録し、フローエントリにmatchする(またはmatchしない)複数パターンのパケットを印加するテストパターンや、一定頻度以上の印加に対して破棄もしくは優先度変更を行うメーターエントリを登録し、メーターエントリにmatchするパケットを連続的に印加するテストパターン、全ポートにFLOODINGするtype=ALLのグループエントリや振り分け条件によって出力先ポートを自動的に変更するtype=SELECTのグループエントリを登録し、グループエントリにmatchするパケットを連続的に印加するテストパターンが、OpenFlow1.3用とOpenFlow1.4用にそれぞれ用意されています。</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
 00_OUTPUT.json              20_POP_MPLS.json
 11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
@@ -539,9 +447,9 @@ ryu/tests/switch/of14/meter:
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>オリジナルテストパターンの実行手順<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>次に、オリジナルのテストパターンを作成してテストツールを実行する手順を示します。</p>
+<div class="section" id="id10">
+<h3>オリジナルのテストパターンの実行手順<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>オリジナルのテストパターンを作成してテストツールを実行する手順を示します。</p>
 <p>例として、OpenFlowスイッチがルータ機能を実現するために必要なmatch／actionsを処理する機能を備えているかを確認するテストパターンを作成します。</p>
 <p>1．テストパターンファイル作成</p>
 <blockquote>
@@ -567,6 +475,11 @@ ryu/tests/switch/of14/meter:
 </tbody>
 </table>
 <p>このテストパターンを実行するテストパターンファイルを作成します。</p>
+<p>作成例を以下に示します。</p>
+<div class="admonition note">
+<p class="first admonition-title">ノート</p>
+<p class="last">テストパターンファイルの具体的な記述方法については「<a class="reference internal" href="#id11">テストパターンファイルの記述方法</a>」を参考ください。</p>
+</div>
 </div></blockquote>
 <p>ファイル名：<tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
@@ -658,7 +571,7 @@ ryu/tests/switch/of14/meter:
 </div>
 <p>2．試験環境構築</p>
 <blockquote>
-<div>試験環境構築スクリプトを用いて試験環境を構築します。手順は<a class="reference internal" href="#id10">サンプルテストパターンの実行手順</a>を参照してください。</div></blockquote>
+<div>試験環境構築スクリプトを用いて試験環境を構築します。手順は<a class="reference internal" href="#id8">サンプルテストパターンの実行手順</a>を参照してください。</div></blockquote>
 <p>3．テストツール実行</p>
 <blockquote>
 <div><p>コントローラのxtermから、先ほど作成したオリジナルのテストパターンファイルを指定してテストツールを実行します。なお、&#8211;test-switch-dirオプションはディレクトリだけでなくファイルを直接指定することも可能です。また、送受信パケットの内容を確認するため&#8211;verboseオプションを指定しています。</p>
@@ -702,8 +615,181 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </div>
 </div></blockquote>
 </div>
+<div class="section" id="id11">
+<h3>テストパターンファイルの記述方法<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>テストパターンファイルは拡張子を「.json」としたテキストファイルです。以下の形式で記述します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>[
+    &quot;xxxxxxxxxx&quot;,                    # 試験項目名
+    {
+        &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # 試験内容の説明
+        &quot;prerequisite&quot;: [
+            {
+                &quot;OFPFlowMod&quot;: {...}  # 登録するフローエントリ、メーターエントリ、グループエントリ
+            },                       # (RyuのOFPFlowMod、OFPMeterMod、OFPGroupModをjson形式で記述)
+            {                        #
+                &quot;OFPMeterMod&quot;: {...} # フローエントリで期待する処理結果が
+            },                       # パケット転送(actions=output)の場合は
+            {                        # 出力ポート番号に「2」を指定してください
+                &quot;OFPGroupMod&quot;: {...} # グループエントリでパケット転送を行う場合は
+            },                       # 出力ポート番号には「2」もしくは「3」を
+            {...}                    # 指定してください
+        ],
+        &quot;tests&quot;: [
+            {
+                # 印加パケット
+                # 1回だけ印加するのか一定時間連続して印加し続けるのかに応じて
+                # (A)(B)のいずれかを記述
+                #  (A) 1回だけ印加
+                &quot;ingress&quot;: [
+                    &quot;ethernet(...)&quot;, # (Ryuパケットライブラリのコンストラクタの形式で記述)
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ],
+                #  (B) 一定時間連続して印加
+                &quot;ingress&quot;: {
+                    &quot;packets&quot;:{
+                        &quot;data&quot;:[
+                            &quot;ethernet(...)&quot;, # (A)と同じ
+                            &quot;ipv4(...)&quot;,
+                            &quot;tcp(...)&quot;
+                        ],
+                        &quot;pktps&quot;: 1000,       # 毎秒印加するパケット数を指定
+                        &quot;duration_time&quot;: 30  # 連続印加時間を秒単位で指定
+                    }
+                },
+
+                # 期待する処理結果
+                # 処理結果の種別に応じて(a)(b)(c)(d)のいずれかを記述
+                #  (a) パケット転送(actions=output:X)の確認試験
+                &quot;egress&quot;: [          # 期待する転送パケット
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ]
+                #  (b) パケットイン(actions=CONTROLLER)の確認試験
+                &quot;PACKET_IN&quot;: [       # 期待するPacket-Inデータ
+                    &quot;ethernet(...)&quot;,
+                    &quot;ipv4(...)&quot;,
+                    &quot;tcp(...)&quot;
+                ]
+                #  (c) table-missの確認試験
+                &quot;table-miss&quot;: [      # table-missとなることを期待するフローテーブルID
+                    0
+                ]
+                #  (d) パケット転送(actions=output:X)時スループットの確認試験
+                &quot;egress&quot;:[
+                    &quot;throughput&quot;:[
+                        {
+                            &quot;OFPMatch&quot;:{   # スループット計測用に
+                              ...          # 補助SWに登録される
+                            },             # フローエントリのMatch条件
+                            &quot;kbps&quot;:1000    # 期待するスループットをKbps単位で指定
+                        },
+                        {...},
+                        {...}
+                    ]
+                ]
+            },
+            {...},
+            {...}
+        ]
+    },                               # 試験1
+    {...},                           # 試験2
+    {...}                            # 試験3
+]
+</pre></div>
+</div>
+<p>印加パケットとして「(B) 一定時間連続して印加」を、期待する処理結果として「(d) パケット転送(actions=output:X)時スループットの確認試験」をそれぞれ記述することにより、試験対象SWのスループットを計測することができます。</p>
+<p>テストパターンファイルで指定する入力/出力ポート番号の数値の意味については、「<a class="reference internal" href="#id12">＜参考＞印加パケットの転送イメージ</a>」を参考ください。</p>
+<div class="section" id="id12">
+<h4>＜参考＞印加パケットの転送イメージ<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>試験対象SW及び補助SWのポートは以下の用途で利用します。</p>
+<a class="reference internal image-reference" href="_images/fig35.png"><img alt="_images/fig35.png" class="align-center" src="_images/fig35.png" style="width: 583.2px; height: 273.6px;" /></a>
+<p>Flow_modメッセージ/Meter_modメッセージのテストを実施する場合の印加パケットの転送イメージは以下のとおりです。</p>
+<p>１．補助SWのパケット送信用ポート（ポート番号１）からパケットを送出</p>
+<p>２．試験対象SWのパケット受信用ポート（ポート番号１）パケットを受信</p>
+<p>３．試験対象SWのパケット送信用ポート１（ポート番号２）からパケットを送信</p>
+<p>４．補助SWのパケット受信用ポート１（ポート番号２）でパケットを受信</p>
+<a class="reference internal image-reference" href="_images/fig44.png"><img alt="_images/fig44.png" class="align-center" src="_images/fig44.png" style="width: 475.2px; height: 273.6px;" /></a>
+<p>Group_modメッセージのテストを実施する場合の印加パケットの転送イメージは以下のとおりです。</p>
+<p>１．補助SWのパケット送信用ポート（ポート番号１）からパケットを送出</p>
+<p>２．試験対象SWのパケット受信用ポート（ポート番号１）でパケットを受信</p>
+<p>３．試験対象SWのパケット送信用ポート１（ポート番号２）或いは、試験対象SWのパケット送信用ポート２（ポート番号３）からパケットを送信</p>
+<p>４．補助SWのパケット受信用ポート１（ポート番号２）或いは、補助SWのパケット受信用ポート２（ポート番号３）でパケットを受信</p>
+<a class="reference internal image-reference" href="_images/fig52.png"><img alt="_images/fig52.png" class="align-center" src="_images/fig52.png" style="width: 498.0px; height: 273.6px;" /></a>
+<p>図の通り、Group_modメッセージのテストを実施するケースのみ、試験対象SWのパケット送信用ポート２及び補助SWのパケット受信用ポート２を利用する場合があります。</p>
+</div>
+</div>
 <div class="section" id="id13">
-<h3>エラーメッセージ一覧<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<h3>ポート番号の変更方法<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<p>用意する環境のOpenFlowスイッチのポート番号が「<a class="reference internal" href="#id5">テストツールの実行環境</a>」と異なる場合、テストツール実行時にオプションを指定することでテストで利用するポート番号を変更することが可能です。</p>
+<p>ポート番号を変更するためのオプションは次のとおりです。</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="31%" />
+<col width="50%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">オプション</th>
+<th class="head">説明</th>
+<th class="head">デフォルト値</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target_recv_port</span></tt></td>
+<td>試験対象スイッチのパケット受信用ポートのポート番号</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-target_send_port_1</span></tt></td>
+<td>試験対象スイッチのパケット送信用ポート１のポート番号</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target_send_port_2</span></tt></td>
+<td>試験対象スイッチのパケット送信用ポート２のポート番号</td>
+<td>3</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_send_port</span></tt></td>
+<td>補助スイッチのパケット送信用ポートのポート番号</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_recv_port_1</span></tt></td>
+<td>補助スイッチのパケット受信用ポート１のポート番号</td>
+<td>2</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_recv_port_2</span></tt></td>
+<td>補助スイッチのパケット受信用ポート２のポート番号</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>本オプションによってポート番号を変更する場合には、テストパターンファイル中のポート番号の値を変更する必要がある点に注意してください。</p>
+<div class="section" id="id14">
+<h4>&lt;参考&gt;テストパターンファイルの記述方法に関する補足<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<blockquote>
+<div><p>テストパターンファイル中のポート番号の値を指定する箇所にオプション引数の設定名を指定すると、テストツール実行時に本値がオプション引数の値に置き換わります。例えば、以下のようにテストパターンファイルを記述します。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>&quot;OFPActionOutput&quot;: {
+    &quot;port&quot;:&quot;target_send_port_1&quot;
+}
+</pre></div>
+</div>
+<p>次に、以下のようにテストツールを実行します。</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
+</pre></div>
+</div>
+<p>すると、テストパターンファイルの該当の箇所は、以下のように置き換わってテストツールに解釈されます。</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>&quot;OFPActionOutput&quot;: {
+    &quot;port&quot;:30
+}
+</pre></div>
+</div>
+<p>これによって、テストパターンファイル中のポート番号の値を、テストツール実行時に決定することが可能となります。</p>
+</div></blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="id15">
+<h2>エラーメッセージ一覧<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本ツールで出力されるエラーメッセージの一覧を示します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -840,7 +926,6 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </table>
 </div>
 </div>
-</div>
 
 
           </div>
@@ -852,28 +937,32 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   <ul>
 <li><a class="reference internal" href="#">OpenFlowスイッチテストツール</a><ul>
 <li><a class="reference internal" href="#id1">テストツールの概要</a><ul>
-<li><a class="reference internal" href="#id2">動作概要</a><ul>
-<li><a class="reference internal" href="#id3">試験実行イメージ</a></li>
-<li><a class="reference internal" href="#id4">試験結果の出力イメージ</a></li>
+<li><a class="reference internal" href="#id2">試験実行イメージ</a></li>
+<li><a class="reference internal" href="#id3">試験結果の出力イメージ</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">テストツールの使用方法</a><ul>
+<li><a class="reference internal" href="#id5">テストツールの実行環境</a></li>
+<li><a class="reference internal" href="#id6">テストツールの実行方法</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">テストツール使用例</a><ul>
+<li><a class="reference internal" href="#id8">サンプルテストパターンの実行手順</a><ul>
+<li><a class="reference internal" href="#id9">&lt;参考&gt;サンプルテストパターンファイル一覧</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">オリジナルのテストパターンの実行手順</a></li>
+<li><a class="reference internal" href="#id11">テストパターンファイルの記述方法</a><ul>
+<li><a class="reference internal" href="#id12">＜参考＞印加パケットの転送イメージ</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">ポート番号の変更方法</a><ul>
+<li><a class="reference internal" href="#id14">&lt;参考&gt;テストパターンファイルの記述方法に関する補足</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id5">使用方法</a><ul>
-<li><a class="reference internal" href="#id6">テストパターンファイル</a></li>
-<li><a class="reference internal" href="#id7">ツール実行環境</a></li>
-<li><a class="reference internal" href="#id8">テストツールの実行方法</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id9">テストツール使用例</a><ul>
-<li><a class="reference internal" href="#id10">サンプルテストパターンの実行手順</a><ul>
-<li><a class="reference internal" href="#id11">&lt;参考&gt;</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id12">オリジナルテストパターンの実行手順</a></li>
-<li><a class="reference internal" href="#id13">エラーメッセージ一覧</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#id15">エラーメッセージ一覧</a></li>
 </ul>
 </li>
 </ul>
