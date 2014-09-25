@@ -849,7 +849,7 @@ If you want to use the other port number which differ from `Tool Execution Envir
 you can specify the port number in the options when this tool is started.
 Option to change the port number is described below.
 
-.. tabularcolumns:: |l|p{20zw}|l|
+.. tabularcolumns:: |l|p{0.35\textwidth}|l|
 
 
 ========================================== ============================================================ ========================
