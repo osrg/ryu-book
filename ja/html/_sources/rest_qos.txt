@@ -241,7 +241,7 @@ Node: c0 (root):
           ]
         }
       ]
-                 
+
 
 設定内容の確認
 ^^^^^^^^^^^^^^
@@ -503,7 +503,7 @@ switch: s2 (root):
 
     root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
- その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPア
+その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPア
 ドレスを設定します。
 
 host: h1:
@@ -743,6 +743,7 @@ Node: c0 (root):
 
 ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして
 登録します。
+
 host: h1:
 
 .. rst-class:: console
@@ -1080,12 +1081,11 @@ DSドメインの境界に位置するルータ(エッジルータ)によって�
      :align: center
 
 
-まずはMininet上に環境を構築します。 ``mn`` コマンドのパラメータは以下のよう
-になります。
 
 環境構築
 ^^^^^^^^
 
+まずはMininet上に環境を構築します。
 トポロジの作成はPythonスクリプトで行います。
 
 ソース名： ``qos_sample_topology.py``
@@ -1265,7 +1265,7 @@ Node: c0 (root):
         }
       ]
 
-以下の通りスイッチ(s2)にメータエントリーを設定します。
+以下の通りスイッチ(s2、s3)にメータエントリーを設定します。
 
 ========= ============ ============ ===========
 (優先度)  DSCP         メータID     (QoS ID)
@@ -1276,7 +1276,7 @@ Node: c0 (root):
 ========= ======= ==================
 メータID  Flags   Bands
 ========= ======= ==================
-1         KBPS    type:REMARK,
+1         KBPS    type:DSCP_REMARK,
                   burst_size:100,
                   rate:400000,
                   prec_level:1
@@ -1299,7 +1299,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1318,13 +1318,14 @@ Node: c0 (root):
         "switch_id": "0000000000000003",
         "command_result": [
           {
-            "result": "success", "details": "QoS added. : qos_id=1"
+            "result": "success",
+            "details": "QoS added. : qos_id=1"
           }
         ]
       }
     ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -1481,7 +1482,7 @@ Node: c0 (root):
 
 この状態で、iperfで帯域計測をしてみます。
 h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。
-h2はクライアントとなりh1宛に各クラスのトラフィックを送出します。
+h2、h3はクライアントとなりh1宛に各クラスのトラフィックを送出します。
 
 まず、h1とh2で2つとh3の1つづつターミナルを起動します。
 
@@ -1776,7 +1777,7 @@ QoSルールの追加
 
 
 QoSルールの削除
-^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 =============  ==========================================
 **メソッド**   DELETE
@@ -1813,7 +1814,7 @@ QoSルールの削除
 
                **bands**:
 
-                 **action**:[DROP \| REMARK]
+                 **action**:[DROP \| DSCP_REMARK]
 
                  **flags**:[KBPS \| PKTPS \| BURST \| STATS]
 

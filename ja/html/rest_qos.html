@@ -468,12 +468,10 @@ root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>   root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
-
-その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPア
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
 </pre></div>
 </div>
-<p>ドレスを設定します。</p>
+<p>その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPアドレスを設定します。</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
 root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
@@ -693,7 +691,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 ...
 </pre></div>
 </div>
-<p>ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして登録します。host: h1:</p>
+<p>ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして登録します。</p>
+<p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
 </pre></div>
 </div>
@@ -995,10 +994,9 @@ UDP buffer size:  208 KByte (default)
 </div>
 <p>以下のように複数のDiffServドメイン(DSドメイン)により構成されているネットワークを想定します。DSドメインの境界に位置するルータ(エッジルータ)によってメータリングが行われ、指定帯域を超えるトラフィックは再マーキングされます。通常再マーキングされたパケットは優先的に破棄されるか、優先順位の低いクラスとして扱われます。例では、AF1クラスに対して800Kbpsの帯域保証を行い、各DSドメインから流入するAF11のトラフィックの400Kbpsを契約帯域とし、それ以上は超過トラフィックとしてパケットはAF12に再マーキングされます。ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。従って、各DSドメインからの高優先度のトラフィックに対しては400Kbpsまでは公平に保証され、最大約500Kbpsの帯域保証を実現できます。</p>
 <a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" style="width: 414.4px; height: 279.6px;" /></a>
-<p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
 <div class="section" id="id11">
 <h3>環境構築<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>トポロジの作成はPythonスクリプトで行います。</p>
+<p>まずはMininet上に環境を構築します。トポロジの作成はPythonスクリプトで行います。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">qos_sample_topology.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
 <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
@@ -1216,7 +1214,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
   ]
 </pre></div>
 </div>
-<p>以下の通りスイッチ(s2)にメータエントリーを設定します。</p>
+<p>以下の通りスイッチ(s2、s3)にメータエントリーを設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -1254,7 +1252,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
 <tbody valign="top">
 <tr class="row-even"><td>1</td>
 <td>KBPS</td>
-<td>type:REMARK,burst_size:100,rate:400000,prec_level:1</td>
+<td>type:DSCP_REMARK,burst_size:100,rate:400000,prec_level:1</td>
 </tr>
 </tbody>
 </table>
@@ -1271,7 +1269,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
     }
   ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000002&quot;,
@@ -1290,13 +1288,14 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
     &quot;switch_id&quot;: &quot;0000000000000003&quot;,
     &quot;command_result&quot;: [
       {
-        &quot;result&quot;: &quot;success&quot;, &quot;details&quot;: &quot;QoS added. : qos_id=1&quot;
+        &quot;result&quot;: &quot;success&quot;,
+        &quot;details&quot;: &quot;QoS added. : qos_id=1&quot;
       }
     ]
   }
 ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000003&quot;,
@@ -1447,7 +1446,7 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000003
   ]
 </pre></div>
 </div>
-<p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2はクライアントとなりh1宛に各クラスのトラフィックを送出します。</p>
+<p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2、h3はクライアントとなりh1宛に各クラスのトラフィックを送出します。</p>
 <p>まず、h1とh2で2つとh3の1つづつターミナルを起動します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h1
 mininet&gt; xterm h2
@@ -1813,7 +1812,7 @@ UDP buffer size:  208 KByte (default)
 <td><p class="first"><strong>meter_id</strong>:メータID</p>
 <p><strong>bands</strong>:</p>
 <blockquote class="last">
-<div><p><strong>action</strong>:[DROP | REMARK]</p>
+<div><p><strong>action</strong>:[DROP | DSCP_REMARK]</p>
 <p><strong>flags</strong>:[KBPS | PKTPS | BURST | STATS]</p>
 <p><strong>burst_size</strong>:[バーストサイズ]</p>
 <p><strong>rate</strong>:[受信レート]</p>
