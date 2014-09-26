@@ -1276,7 +1276,7 @@ Node: c0 (root):
 ========= ======= ==================
 メータID  Flags   Bands
 ========= ======= ==================
-1         KBPS    type:REMARK,
+1         KBPS    type:DSCP_REMARK,
                   burst_size:100,
                   rate:400000,
                   prec_level:1
@@ -1299,7 +1299,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1324,7 +1324,7 @@ Node: c0 (root):
       }
     ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -1813,7 +1813,7 @@ QoSルールの削除
 
                **bands**:
 
-                 **action**:[DROP \| REMARK]
+                 **action**:[DROP \| DSCP_REMARK]
 
                  **flags**:[KBPS \| PKTPS \| BURST \| STATS]
 
