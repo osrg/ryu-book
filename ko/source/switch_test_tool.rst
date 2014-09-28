@@ -11,11 +11,11 @@ OpenFlow 스위치 테스트 도구
 ------------------
 
 
-본 도구는 테스트 패턴에 따라 시험 할 OpenFlow 스위치
-대해 흐름 항목 및 측정기 항목의 등록 / 패킷인가를 실시하고,
+본 도구는 테스트 패턴에 따라 시험할 OpenFlow 스위치에 
+대해 플로우 항목 및 측정기 항목의 등록 / 패킷 인가를 실시하고,
 OpenFlow 스위치의 패킷 재 작성 및 전송 (또는 삭제)의 처리 결과와
-테스트 패턴 파일에 포함 된 「기대하는 처리 결과」의 비교를 실시하는 것으로,
-OpenFlow 스위치 OpenFlow 사양에의 대응 상황을 확인하는 테스트 도구입니다.
+테스트 패턴 파일에 포함된 「기대하는 처리 결과」의 비교를 실행하는 것으로,
+OpenFlow 스위치 OpenFlow 사양과의 대응되는 상태를 확인하는 테스트 도구입니다.
 
 도구는 OpenFlow 버전 1.3 FlowMod 메시지 및 MeterMod 메시지
 시험에 대응하고 있습니다. 
@@ -32,7 +32,7 @@ OpenFlow1.3 MeterMod 메시지    모두
 ============================== ================================
 
 
-인가하는 패킷의 생성과 패킷 재 작성 결과의 확인 등에 「 :ref:`ch_packet_lib` 」 를 사용하고 있습니다. 
+인가하는 패킷의 생성과 패킷 재 작성 결과의 확인 등은 「 :ref:`ch_packet_lib` 」 를 사용하고 있습니다. 
 
 
 동작 개요
@@ -43,7 +43,7 @@ OpenFlow1.3 MeterMod 메시지    모두
 
 테스트 도구를 실행했을 때의 동작 이미지를 보여줍니다. 테스트 패턴 파일
 에는 「등록 흐름 항목 또는 미터 항목」 「인가 패킷」
-「기대하는 처리 결과」가 설명됩니다. 또한 도구 실행을위한 환경 설정
+「기대하는 처리 결과」가 설명됩니다. 또한 도구 실행을 위한 환경 설정
 내용은 뒤에 서술 (`도구 실행 환경`_ 참조)합니다. 
 
 
@@ -68,8 +68,8 @@ OpenFlow1.3 MeterMod 메시지    모두
 """""""""""""""""""""""
 
 지정된 테스트 패턴 테스트 항목을 순서대로 수행하고 시험 결과
-(OK/ERROR)를 출력합니다. 시험 결과가 ERROR의 경우 오류 정보를 함께 출력합니다.
-또한 시험 전체의 OK/ERROR 수 및 발생한 ERROR 내역도 출력합니다. 
+(OK/ERROR)를 출력합니다. 시험 결과가 ERROR인 경우 오류 정보를 함께 출력합니다.
+또한 시험 전체의 OK/ERROR 개수 및 발생한 ERROR 내역도 출력합니다. 
 
 
 .. rst-class:: console
@@ -119,7 +119,7 @@ OpenFlow1.3 MeterMod 메시지    모두
 시험하려는 테스트 패턴에 따라 적절히 테스트 패턴 파일을 만들어야
 있습니다.
 
-테스트 패턴 파일 확장자를 「. json」고 말했다 텍스트 파일입니다.
+테스트 패턴 파일 확장자는 「. json」에 해당하는 텍스트 파일입니다.
 다음의 형식으로 작성합니다. 
 
 
@@ -204,7 +204,7 @@ OpenFlow1.3 MeterMod 메시지    모두
         {...}                            # 시험3
     ]
 
-인가 패킷으로 「(B) 일정 시간 연속하여인가」를,
+인가 패킷으로 「(B) 일정 시간 연속 여부」를,
 기대하는 처리 결과로 「(d) 패킷 전송 (actions = output : X) 때 처리량의 확인 시험」을
 각각 작성하여 시험 대상 SW의 처리량을 측정 할 수 있습니다. 
 
@@ -213,7 +213,7 @@ OpenFlow1.3 MeterMod 메시지    모두
 
     Ryu 소스 트리에는 샘플 테스트 패턴으로 OpenFlow1.3 FlowMod
     메시지 match / actions 지정할 수있는 매개 변수 및 MeterMod
-    메시지 매개 변수가 각각 정상적으로 작동하는지 확인
+    메시지 매개 변수가 각각 정상적으로 작동하는지 확인 가능한 
     테스트 패턴 파일이 포함되어 있습니다. 
 
         ryu/tests/switch/of13
@@ -222,7 +222,7 @@ OpenFlow1.3 MeterMod 메시지    모두
 도구 실행 환경
 ^^^^^^^^^^^^^^
 
-테스트 도구 실행을위한 환경은 다음과 같습니다. 
+테스트 도구 실행을 위한 환경은 다음과 같습니다. 
 
 
 .. only:: latex
@@ -242,7 +242,7 @@ OpenFlow1.3 MeterMod 메시지    모두
         :align: center
 
 
-보조 스위치로 다음 동작을 완료 할 수있다 OpenFlow 스위치가 필요합니다. 
+보조 스위치로 다음 동작을 완료 할 수 있는 OpenFlow 스위치가 필요합니다. 
 
 * actions=CONTROLLER의 흐름 항목 등록 
 
@@ -255,12 +255,12 @@ OpenFlow1.3 MeterMod 메시지    모두
 
 .. NOTE::
 
-    Open vSwitch를 시험 대상 스위치 한 도구 실행 환경을 mininet에서 실현
+    Open vSwitch를 시험 대상 스위치로 하는 도구 실행 환경을 mininet에서 실현한 
     환경 구축 스크립트가 Ryu 소스 트리에 포함되어 있습니다. 
 
         ryu/tests/switch/run_mininet.py
 
-    스크립트 예제를 「 `테스트 도구 사용 예`_ 」에 기재되어 있습니다. 
+    스크립트 예제는 「 `테스트 도구 사용 예`_ 」에 기재되어 있습니다. 
 
 
 
@@ -302,12 +302,12 @@ OpenFlow1.3 MeterMod 메시지    모두
 .. NOTE::
 
     테스트 도구 Ryu 응용 프로그램으로 ryu.base.app_manager.RyuApp을
-    상속 만들어 있기 때문에, 다른 Ryu 응용 프로그램과 마찬가지로 --verbose
+    상속하여 만들어져 있기 때문에, 다른 Ryu 응용 프로그램과 마찬가지로 --verbose
     옵션으로 디버깅 정보 출력 등에도 대응하고 있습니다. 
 
 
 
-테스트 도구를 시작한 후 시험 대상 스위치와 보조 스위치 컨트롤러
+테스트 도구를 시작한 후 시험 대상 스위치와 보조 스위치 컨트롤러에 
 연결되면 지정된 테스트 패턴을 바탕으로 시험이 시작됩니다. 
 
 
@@ -323,12 +323,12 @@ OpenFlow1.3 MeterMod 메시지    모두
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Ryu 소스 트리의 샘플 테스트 패턴 (ryu/tests/switch/of13)을 이용하여
-FlowMod 메시지 match / actions의 대충의 동작 확인 및 MeterMod 메시지
-동작 확인하는 절차를 보여줍니다.
+FlowMod 메시지 match / actions에 대한 전체적 동작 확인 및 MeterMod 메시지
+동작을 확인하는 절차를 보여줍니다.
 
-이 단계에서는 시험 환경 시험 환경 구축 스크립트 (ryu/tests/switch/run_mininet.py)
-를 이용하여 구축하기로합니다. 따라서 시험되는 스위치는 Open vSwitch입니다.
-VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:`ch_switching_hub` 」
+이 단계에서는 시험 환경 구축 스크립트 (ryu/tests/switch/run_mininet.py)
+를 이용하여 구축합니다. 따라서 시험 대상 스위치는 Open vSwitch입니다.
+VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 :ref:`ch_switching_hub` 」
 을 참조하십시오.
 
 
@@ -359,7 +359,7 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
 
 2. 테스트 도구 실행
 
-    테스트 도구 실행을위한 컨트롤러의 xterm을 엽니다.
+    테스트 도구 실행을 위한 컨트롤러의 xterm을 엽니다.
 
     .. rst-class:: console
 
@@ -369,10 +369,10 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
 
 
     「Node: c0 (root)」의 xterm에서 테스트 도구를 실행합니다.
-    이때 테스트 패턴 파일 디렉터리로
+    이때 테스트 패턴 파일 디렉토리로
     샘플 테스트 패턴의 디렉토리 (ryu/tests/switch/of13)을 지정합니다.
     또한 mininet 환경 시험 대상 스위치와 보조 스위치의 데이터 경로 ID는 각각
-    --test-switch-target/--test-switch-tester 옵션 기본값과
+    --test-switch-target/--test-switch-tester 옵션 기본값으로 
     되어 있기 때문에 옵션을 생략합니다.
 
     Node: c0:
@@ -438,8 +438,8 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
         ...
 
 
-    ryu/tests/switch/of13 부하의 모든 샘플 테스트 패턴의 시험
-    가 완료되면 테스트 도구는 종료됩니다.
+    ryu/tests/switch/of13 부하의 모든 샘플 테스트 패턴의 시험이 
+    완료되면 테스트 도구는 종료됩니다.
 
 
 <참고>
@@ -447,11 +447,11 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
 
     샘플 테스트 패턴 파일 목록
 
-        match／actions의 각 설정 항목에 해당하는 흐름 항목을 등록하고
-        흐름 항목에 match (또는 match하지 않는) 여러 패턴의 패킷
-        을 인가하는 테스트 패턴과 일정 빈도 이상인가에 대해 삭제 또는
+        match／actions의 각 설정 항목에 해당하는 플로우 항목을 등록하고
+        플로우 항목에 match (또는 match하지 않는) 여러 패턴의 패킷
+        을 인가하는 테스트 패턴과 일정 빈도 이상에 대해 삭제 또는
         우선 순위 변경할 미터 항목을 등록하고 계량 항목에 match
-        패킷을 연속적으로인가하는 테스트 패턴이 준비되어 있습니다.
+        패킷을 연속적으로 인가하는 테스트 패턴이 준비되어 있습니다.
 
 
     .. rst-class:: console
@@ -522,7 +522,7 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
 기존 테스트 패턴의 실행 단계
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-이제 원본의 테스트 패턴을 만들고 테스트 도구를 실행하는 방법을 설명합니다.
+이제 원본 테스트 패턴을 만들고 테스트 도구를 실행하는 방법을 설명합니다.
 
 예를 들어, OpenFlow 스위치가 라우터 기능을 실현하기 위해 필요한 match / actions을
 처리하는 기능을 가지고 있는지 확인하는 테스트 패턴을 만듭니다.
@@ -671,8 +671,8 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
     시작됩니다.
 
     「dpid=0000000000000002 : receive_packet...」로깅에서 테스트
-    패턴 파일 egress 패킷으로 설정 한 예상 출력 패킷
-    가 전송 된 것을 알 수 있습니다.
+    패턴 파일 egress 패킷으로 설정한 예상 출력 패킷이 
+    전송된 것을 알 수 있습니다.
     또한, 여기에서는 테스트 도구가 출력 한 로그만을 발췌하고 있습니다.
 
     .. rst-class:: console
@@ -704,9 +704,9 @@ VM 이미지 사용을위한 환경 설정 및 로그인 방법 등은 「 :ref:
         ---  Test end  ---
 
 
-    실제로 OpenFlow 스위치에 등록 된 흐름 항목은 다음과 같습니다.
-    테스트 도구에 의해 인가 된 패킷 흐름 항목에 match하고
-    n_packets가 올라 가게되는 것을 알 수 있습니다.
+    실제로 OpenFlow 스위치에 등록된 플로우 항목은 다음과 같습니다.
+    테스트 도구에 의해 인가 된 패킷 플로우 항목에 match하고
+    n_packets가 올라 가게 되는 것을 알 수 있습니다.
 
 
     Node: s1:
@@ -756,11 +756,11 @@ Table-miss error: increment in matched_count.                            table-m
 Table-miss error: no change in lookup_count.                             table-miss 확인 오류 (패킷이 대상의 흐름 테이블에서 처리되지 않은)
 Failed to request table stats: request timeout.                          table-miss 확인에 실패 (TableStats Request 시간 제한)
 Failed to request table stats: [err_msg]                                 table-miss 확인에 실패 (TableStats Request에 대한 Error 메시지 수신)
-Added incorrect flows to tester_sw: [flows]                              보조 SW에 대한 흐름 항목 등록 확인 오류 (예기치 않은 흐름 항목이 등록 된)
+Added incorrect flows to tester_sw: [flows]                              보조 SW에 대한 흐름 항목 등록 확인 오류 (예기치 않은 흐름 항목이 등록됨)
 Failed to add flows to tester_sw: flow stats request timeout.            보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request 시간 제한)
 Failed to add flows to tester_sw: [err_msg]                              보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request에 대한 Error 메시지 수신)
 Failed to request flow stats: request timeout.                           처리량 확인시 보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request 시간 제한)
 Failed to request flow stats: [err_msg]                                  처리량 확인시 보조 SW에 대한 흐름 항목 등록 확인에 실패 (FlowStats Request에 대한 Error 메시지 수신)
-Received unexpected throughput: [detail]                                 상정 처리량에서 동떨어진 처리량을 측정
+Received unexpected throughput: [detail]                                 기대치 처리량에서 동떨어진 처리량을 측정
 Disconnected from switch                                                 시험 대상 SW 또는 보조 SW에서 링크 단선 발생
 ======================================================================== ============================================================================================================
