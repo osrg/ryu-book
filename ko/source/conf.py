@@ -172,12 +172,34 @@ htmlhelp_basename = 'Ryubookdoc'
 
 latex_elements = {
 'papersize': 'a4paper',
-'pointsize': '10pt',
-'babel': '\\usepackage[english]{babel}',
+'pointsize': '11pt',
+'classoptions': ',english',
+'inputenc': '',
+'utf8extra': '',
 'preamble': r"""
-\usepackage[utf,unfonts]{kotex}
-\usepackage{graphicx}
-\usepackage{epstopdf}
+% use CJK
+\usepackage{xeCJK}
+  \xeCJKsetup{%
+    CJKspace=true, % for Korean, it needed
+    CJKecglue={}   % spaces between Western and CJK
+  }
+% use font package
+\usepackage{fontspec}
+% line break style for Korean
+\XeTeXlinebreaklocale "ko"
+% space in english and Korean
+\XeTeXlinebreakskip = 0pt plus 2pt
+\usepackage{relsize}  % for \smaller, \larger relative font size
+\usepackage{fancyvrb}
+\usepackage{setspace} % if CJK spaces are too narrow
+  \onehalfspacing
+% English fonts
+\setmainfont{Apple SD Gothic Neo Medium}
+% Korean fonts
+\setCJKmainfont{Apple SD Gothic Neo Medium}
+\setCJKmonofont{Apple SD Gothic Neo Medium}
+\setCJKsansfont{Apple SD Gothic Neo Medium}
+\setCJKfamilyfont{APPLE}{Apple Gothic}
 \makeatletter
 
 \renewcommand{\maketitle}{
@@ -209,6 +231,20 @@ latex_elements = {
   \@thanks
  \end{titlepage}
  \let\thanks\relax\let\maketitle\relax
+}
+\fancypagestyle{normal}{
+ \fancyhf{}
+ \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+ \fancyhead[LE]{{\py@HeaderFamily\nouppercase{\leftmark}}}
+ \fancyhead[RO]{{\py@HeaderFamily\nouppercase{\rightmark}}}
+ \renewcommand{\headrulewidth}{0.4pt}
+ \renewcommand{\footrulewidth}{0.4pt}
+}
+\fancypagestyle{plainhead}{
+ \fancyhf{}
+ \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+ \renewcommand{\headrulewidth}{0pt}
+ \renewcommand{\footrulewidth}{0.4pt}
 }
 % ---- Code block
 \usepackage{listings}
