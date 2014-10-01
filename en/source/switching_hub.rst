@@ -496,7 +496,7 @@ idle_timeout (0)
 
 hard_timeout (0)
 
-    Specifies the validity period of this entry, in seconds. Unlike dle_timeout, with hard_timeout, even though the entry is referenced, the elapsed time is not reset. That is, regardless of the reference of the entry, the entry is deleted when the specified time elapsed.
+    Specifies the validity period of this entry, in seconds. Unlike idle_timeout, with hard_timeout, even though the entry is referenced, the elapsed time is not reset. That is, regardless of the reference of the entry, the entry is deleted when the specified time elapsed.
 
     As with idle_timeout, when the entry is deleted, a Flow Removed message is sent.
 
