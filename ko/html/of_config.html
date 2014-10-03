@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OF-Config 라이브러리 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="방화벽" href="rest_firewall.html" />
+    <link rel="prev" title="패킷 라이브러리" href="packet_lib.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="방화벽"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="packet_lib.html" title="패킷 라이브러리"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="of-config">
+<h1>OF-Config 라이브러리<a class="headerlink" href="#of-config" title="제목 주소">¶</a></h1>
+<p>이 장에서는 Ryu에 포함된 OF-Config 클라이언트 라이브러리에 대해
+소개합니다.</p>
+<div class="section" id="id1">
+<h2>OF-Config 프로토콜<a class="headerlink" href="#id1" title="제목 주소">¶</a></h2>
+<p>OF-Config는 OpenFlow 스위치의 관리를 위한
+프로토콜입니다.
+NETCONF (RFC 6241) 스키마로 정의되며,
+논리 스위치, 포트, 큐 등의 상태를 얻어오거나 설정이 가능합니다.</p>
+<p>OpenFlow와 동일하게 ONF에서 제정한 것으로, 다음 사이트에서 스펙을 확인할 수 있습니다.</p>
+<p><a class="reference external" href="https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config">https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config</a></p>
+<p>이 라이브러리는 OF-Config 1.1.1을 준수하고 있습니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p>현재 Open vSwitch는 OF-Config를 지원하지 않지만
+같은 목적을 위해 OVSDB하는 서비스를 제공하고 있습니다.
+OF-Config는 비교적 새로운 표준으로 Open vSwitch가 OVSDB을
+구현했을 때는 아직 존재하지 않았었습니다.</p>
+<p class="last">OVSDB 프로토콜은 RFC 7047으로 스펙이 공개되어 있지만,
+사실상 Open vSwitch 전용 프로토콜이 되고 있습니다.
+OF-Config는 비록 갓 등장하였지만 미래에는
+많은 OpenFlow 스위치에서 구현될 것으로 예상됩니다.</p>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>라이브러리 구성<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch">
+<h3>ryu.lib.of_config.capable_switch.OFCapableSwitch 클래스<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch" title="제목 주소">¶</a></h3>
+<p>NETCONF 세션을 처리하기 위한 클래스입니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="kn">import</span> <span class="n">OFCapableSwitch</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="ryu-lib-of-config-classes">
+<h3>ryu.lib.of_config.classes 모듈<a class="headerlink" href="#ryu-lib-of-config-classes" title="제목 주소">¶</a></h3>
+<p>설정 내용을 python 객체로 취급하기위한 클래스 군을 제공하는
+모듈입니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">클래스 이름은 기본적으로 OF-Config 1.1.1 yang specification에
+grouping 키워드로 사용되는 이름과 동일합니다.
+예. OFPortType</p>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="kn">as</span> <span class="nn">ofc</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>예제<a class="headerlink" href="#id3" title="제목 주소">¶</a></h2>
+<div class="section" id="id4">
+<h3>스위치에 연결<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>SSH 트랜스 포트를 사용하여 스위치에 연결합니다.
+unknown_host_cb에는 알 수 없는 SSH 호스트 키를 처리하는 콜백 함수가 있지만,
+여기에서는 무조건 연결을 계속하도록 하고 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+    <span class="n">port</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get">
+<h3>GET<a class="headerlink" href="#get" title="제목 주소">¶</a></h3>
+<p>NETCONF GET을 사용하여 상태를 가져 오는 방법입니다.
+모든 포트의
+/resources/port/resource-id와
+/resources/port/current-rate를 표시합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-config">
+<h3>GET-CONFIG<a class="headerlink" href="#get-config" title="제목 주소">¶</a></h3>
+<p>NETCONF GET-CONFIG를 사용하여 설정을 검색하는 예입니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">실행은 현재 NETCONF의 데이터 저장소에서 실행되는 설정입니다.
+구현에 따라, 그 밖에도 startup (장치를 시작할 때 로드되는 기타 설정)
+나 candidate (후보 설정) 등의 데이터 스토어를 이용할 수 있습니다.</p>
+</div>
+<p>모든 포트의
+/resources/port/resource-id와
+/resources/port/configuration/admin-state를 표시합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="edit-config">
+<h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="제목 주소">¶</a></h3>
+<p>NETCONF EDIT-CONFIG를 사용하여 설정을 변경하는 예입니다.
+기본적으로 GET-CONFIG에서 얻은 설정을 편집하여 EDIT-CONFIG를 사용해
+다시 전송하는 단계입니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">프로토콜상에서는 EDIT-CONFIG 설정의 부분적 편집을 할 수도
+있지만 이러한 방법이 무난합니다.</p>
+</div>
+<p>모든 포트의
+/resources/port/configuration/admin-state를 down으로 설정합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OF-Config 라이브러리</a><ul>
+<li><a class="reference internal" href="#id1">OF-Config 프로토콜</a></li>
+<li><a class="reference internal" href="#id2">라이브러리 구성</a><ul>
+<li><a class="reference internal" href="#ryu-lib-of-config-capable-switch-ofcapableswitch">ryu.lib.of_config.capable_switch.OFCapableSwitch 클래스</a></li>
+<li><a class="reference internal" href="#ryu-lib-of-config-classes">ryu.lib.of_config.classes 모듈</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">예제</a><ul>
+<li><a class="reference internal" href="#id4">스위치에 연결</a></li>
+<li><a class="reference internal" href="#get">GET</a></li>
+<li><a class="reference internal" href="#get-config">GET-CONFIG</a></li>
+<li><a class="reference internal" href="#edit-config">EDIT-CONFIG</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="이전 장">패킷 라이브러리</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="rest_firewall.html"
+                        title="다음 장">방화벽</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/of_config.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="방화벽"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="packet_lib.html" title="패킷 라이브러리"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

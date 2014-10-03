@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ofproto 라이브러리 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="패킷 라이브러리" href="packet_lib.html" />
+    <link rel="prev" title="OpenFlow 프로토콜" href="openflow_protocol.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="패킷 라이브러리"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlow 프로토콜"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ofproto">
+<h1>ofproto 라이브러리<a class="headerlink" href="#ofproto" title="제목 주소">¶</a></h1>
+<p>이 장에서는 Ryu의 ofproto 라이브러리에 대해 소개합니다.</p>
+<div class="section" id="id1">
+<h2>개요<a class="headerlink" href="#id1" title="제목 주소">¶</a></h2>
+<p>ofproto 라이브러리는 OpenFlow 프로토콜 메시지의 작성 · 분석을 하기 위한
+라이브러리입니다.</p>
+</div>
+<div class="section" id="id2">
+<h2>모듈 구성<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>각 OpenFlow 버전 (버전 XY)에 대해
+상수 모듈 (ofproto_vX_Y)과
+파서 모듈 (ofproto_vX_Y_parser)가 포함되어 있습니다.
+각 OpenFlow 버전의 구현은 기본적으로 독립되어 있습니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="33%" />
+<col width="42%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OpenFlow버전</th>
+<th class="head">상수 모듈</th>
+<th class="head">파서 모듈</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1.0.x</td>
+<td>ryu.ofproto.ofproto_v1_0</td>
+<td>ryu.ofproto.ofproto_v1_0_parser</td>
+</tr>
+<tr class="row-odd"><td>1.2.x</td>
+<td>ryu.ofproto.ofproto_v1_2</td>
+<td>ryu.ofproto.ofproto_v1_2_parser</td>
+</tr>
+<tr class="row-even"><td>1.3.x</td>
+<td>ryu.ofproto.ofproto_v1_3</td>
+<td>ryu.ofproto.ofproto_v1_3_parser</td>
+</tr>
+<tr class="row-odd"><td>1.4.x</td>
+<td>ryu.ofproto.ofproto_v1_4</td>
+<td>ryu.ofproto.ofproto_v1_4_parser</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="id3">
+<h3>상수 모듈<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<p>상수 모듈은 프로토콜 상수를 정의합니다.
+예를 들면 다음과 같습니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">상수</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFP_VERSION</td>
+<td>프로토콜 버전 번호</td>
+</tr>
+<tr class="row-odd"><td>OFPP_xxxx</td>
+<td>포트 번호</td>
+</tr>
+<tr class="row-even"><td>OFPCML_NO_BUFFER</td>
+<td>버퍼없이 전체 패킷을 전송</td>
+</tr>
+<tr class="row-odd"><td>OFP_NO_BUFFER</td>
+<td>잘못된 버퍼 번호</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id4">
+<h3>파서 모듈<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>파서 모듈은 각 OpenFlow 메시지에 대응 한 클래스가 정의되어 있습니다.
+예를 들면 다음과 같습니다.
+이 클래스와 그 인스턴스를 앞으로 메시지 클래스,
+메시지 개체라고 합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">클래스</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPHello</td>
+<td>OFPT_HELLO 메시지</td>
+</tr>
+<tr class="row-odd"><td>OFPPacketOut</td>
+<td>OFPT_PACKET_OUT 메시지</td>
+</tr>
+<tr class="row-even"><td>OFPFlowMod</td>
+<td>OFPT_FLOW_MOD 메시지</td>
+</tr>
+</tbody>
+</table>
+<p>또한 파서 모듈은 OpenFlow 메시지의 페이로드 중에 사용되는
+구조에 대응하는 클래스도 정의되어 있습니다.
+예를 들면 다음과 같습니다.
+이 클래스와 그 인스턴스를 앞으로 구조 클래스,
+구조체 개체라고합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">클래스</th>
+<th class="head">구조체</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPMatch</td>
+<td>ofp_match</td>
+</tr>
+<tr class="row-odd"><td>OFPInstructionGotoTable</td>
+<td>ofp_instruction_goto_table</td>
+</tr>
+<tr class="row-even"><td>OFPActionOutput</td>
+<td>ofp_action_output</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>기본적인 사용법<a class="headerlink" href="#id5" title="제목 주소">¶</a></h2>
+<div class="section" id="protocoldesc">
+<h3>ProtocolDesc 클래스<a class="headerlink" href="#protocoldesc" title="제목 주소">¶</a></h3>
+<p>사용하는 OpenFlow 프로토콜을 지정하기 위한 클래스입니다.
+메시지 클래스의 __init__의 datapath 인수는 이 클래스
+(또는 파생 클래스 인 Datapath 클래스)의 객체를 지정합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_protocol</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+
+<span class="n">dp</span> <span class="o">=</span> <span class="n">ofproto_protocol</span><span class="o">.</span><span class="n">ProtocolDesc</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>네트워크 주소<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<p>Ryu ofproto 라이브러리의 API는 기본적으로 문자열 표현의 네트워크 주소가
+사용됩니다. 예를 들면 다음과 같다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">그러나 OpenFlow 1.0에 관해서는 다른 표현이 사용되고 있습니다.
+(2014년 2월 현재)</p>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="59%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">주소 종류</th>
+<th class="head">python 문자열 예제</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MAC 주소</td>
+<td>&#8216;00:03:47:8c:a1:b3&#8217;</td>
+</tr>
+<tr class="row-odd"><td>IPv4 주소</td>
+<td>&#8216;192.0.2.1&#8217;</td>
+</tr>
+<tr class="row-even"><td>IPv6 주소</td>
+<td>&#8216;2001:db8::2&#8217;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id7">
+<h3>메시지 개체의 생성<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<p>각 메시지 클래스, 구조체 클래스의 인스턴스를 적절한 인수로 생성합니다.</p>
+<p>인수의 이름은 기본적으로 OpenFlow 프로토콜에서 정해진 필드 이름은
+동일합니다. 그러나 python의 예약어와 충돌하는 경우 마지막에 「_」를 넣습니다.
+다음 예제에서는 「<tt class="docutils literal"><span class="pre">type_</span></tt>」이 이에 해당됩니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_protocol</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+
+<span class="n">dp</span> <span class="o">=</span> <span class="n">ofproto_protocol</span><span class="o">.</span><span class="n">ProtocolDesc</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
+<span class="n">ofp</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span>
+<span class="n">ofpp</span> <span class="o">=</span> <span class="n">dp</span><span class="o">.</span><span class="n">ofproto_parser</span>
+<span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">ofp</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                  <span class="n">max_len</span><span class="o">=</span><span class="n">ofp</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+<span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">type_</span><span class="o">=</span><span class="n">ofp</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                     <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">)]</span>
+<span class="n">fm</span> <span class="o">=</span> <span class="n">ofpp</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">dp</span><span class="p">,</span>
+                     <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">match</span><span class="o">=</span><span class="n">ofpp</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                         <span class="n">eth_src</span><span class="o">=</span><span class="s">&#39;00:50:56:c0:00:08&#39;</span><span class="p">),</span>
+                     <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">상수 모듈 파서 모듈은 직접 import하여 사용해도 좋지만,
+사용하는 OpenFlow 버전을 변경할 때 최소한의 수정으로 끝나도록,
+가능한 ProtocolDesc 개체의 ofproto, ofproto_parser 특성을
+사용하는 것을 권장합니다.</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>메시지 개체의 분석<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<p>메시지 개체의 내용을 확인할 수 있습니다.</p>
+<p>예를 들어 OFPPacketIn 개체 pid의 match 필드가 pin.match로
+액세스할 수 있습니다.</p>
+<p>OFPMatch 개체의 각 TLV 다음과 같이 이름으로 액세스할 수 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">pin</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="json">
+<h3>JSON<a class="headerlink" href="#json" title="제목 주소">¶</a></h3>
+<p>메시지 개체를 json.dumps 호환 dictionary로 변환하는 기능과
+json.loads 호환 dictionary에서 메시지 개체를 복원하는 기능이 있습니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">그러나 OpenFlow 1.0 관해서는 구현이 불완전합니다.
+(2014년 2월 현재)</p>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="k">print</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">to_jsondict</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="parse">
+<h3>메시지의 해석 (Parse)<a class="headerlink" href="#parse" title="제목 주소">¶</a></h3>
+<p>메시지의 바이트 열에서 해당 메시지 객체를 생성합니다.
+스위치에서 받은 메시지 내용은 프레임 워크가 자동으로
+이 처리를 행하기 위해, Ryu 응용 프로그램에서 인지할 필요는 없습니다.</p>
+<p>구체적으로는 다음과 같습니다.</p>
+<p>1. ryu.ofproto.ofproto_parser.header 함수를 사용하여 버전 독립적 부분을 분석
+2 1. 결과를 ryu.ofproto.ofproto_parser.msg 함수에 전달하여 나머지 부분을 분석</p>
+</div>
+<div class="section" id="serialization">
+<h3>메시지의 생성 (Serialization)<a class="headerlink" href="#serialization" title="제목 주소">¶</a></h3>
+<p>메시지 개체에서 해당 메시지의 바이트를 생성합니다.
+스위치에 보내는 메시지 내용은 프레임 워크가 자동으로
+이 처리를 행하기 위해, Ryu 응용 프로그램이 인지할 필요는 없습니다.</p>
+<p>구체적으로는 다음과 같습니다.</p>
+<ol class="arabic simple">
+<li>메시지 개체의 serialize 메소드를 호출</li>
+<li>메시지 개체의 buf 특성을 읽을</li>
+</ol>
+<p>&#8216;len&#8217;같은 일부 필드는 명시적으로 값을 지정하지 않아도
+serialize시 자동으로 계산됩니다.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ofproto 라이브러리</a><ul>
+<li><a class="reference internal" href="#id1">개요</a></li>
+<li><a class="reference internal" href="#id2">모듈 구성</a><ul>
+<li><a class="reference internal" href="#id3">상수 모듈</a></li>
+<li><a class="reference internal" href="#id4">파서 모듈</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">기본적인 사용법</a><ul>
+<li><a class="reference internal" href="#protocoldesc">ProtocolDesc 클래스</a></li>
+<li><a class="reference internal" href="#id6">네트워크 주소</a></li>
+<li><a class="reference internal" href="#id7">메시지 개체의 생성</a></li>
+<li><a class="reference internal" href="#id8">메시지 개체의 분석</a></li>
+<li><a class="reference internal" href="#json">JSON</a></li>
+<li><a class="reference internal" href="#parse">메시지의 해석 (Parse)</a></li>
+<li><a class="reference internal" href="#serialization">메시지의 생성 (Serialization)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="openflow_protocol.html"
+                        title="이전 장">OpenFlow 프로토콜</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="packet_lib.html"
+                        title="다음 장">패킷 라이브러리</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ofproto_lib.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="packet_lib.html" title="패킷 라이브러리"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlow 프로토콜"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

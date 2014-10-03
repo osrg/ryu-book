@@ -1,0 +1,1702 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IGMP 스누핑 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="OpenFlow 프로토콜" href="openflow_protocol.html" />
+    <link rel="prev" title="스패닝 트리" href="spanning_tree.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlow 프로토콜"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="스패닝 트리"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="igmp">
+<span id="ch-igmp-snooping"></span><h1>IGMP 스누핑<a class="headerlink" href="#igmp" title="제목 주소">¶</a></h1>
+<p>이 장에서는 Ryu 를 이용한 IGMP 스누핑 기능을 구현하는 방법을 설명 하고 있습니다.</p>
+<div class="section" id="id1">
+<h2>IGMP 스누핑<a class="headerlink" href="#id1" title="제목 주소">¶</a></h2>
+<div class="section" id="id2">
+<h3>IGMP 개요<a class="headerlink" href="#id2" title="제목 주소">¶</a></h3>
+<p>IGMP (Internet Group Management Protocol) 는 서브넷 간에 멀티
+캐스트 패킷의 목적지를 관리하기 위한 프로토콜입니다.</p>
+<p>멀티 캐스트 라우터는 라우터가 연결된 모든 서브넷에 대해 멀티
+캐스트 그룹 참여 호스트 가 있는지 여부를 주기적으로 요청 합니다
+(IGMP Query Message). 멀티 캐스트 그룹 에 참여하는 호스트가 어떤 서브넷에
+존재 하는 경우 해당 호스트는 어느 멀티 캐스트 그룹 에 참여하는지
+멀티 캐스트 라우터 에 보고합니다 (IGMP Report Message) . 멀티 캐스트
+라우터는 수신한 보고가 어느 서브넷에서 보내진 것인지를 기억하고 &#8220;어떤 멀티
+캐스트 그룹에게 패킷을 어떤 서브넷으로 전달할지&#8221; 를 결정합니다. 질의에
+대한 보고가 없거나 또는 특정 멀티 캐스트 그룹에서 탈퇴
+메시지 ( IGMP Leave Message ) 를 호스트로부터 받은 경우 멀티 캐스트
+라우터는 해당 서브넷 에 대한 모든, 또는 지정된 멀티 캐스트 그룹에게
+패킷을 전달 하지 않습니다 .</p>
+<p>이 방식은 멀티 캐스트 그룹 참여 호스트가 없는 서브넷에 대해
+멀티 캐스트 패킷이 전송되지 않으며 따라서 불필요한 트래픽을 줄일 수 있습니다.</p>
+<a class="reference internal image-reference" href="_images/fig11.png"><img alt="_images/fig11.png" class="align-center" src="_images/fig11.png" /></a>
+</div>
+<div class="section" id="id3">
+<h3>서브넷의 과제와 IGMP 스누핑 개요<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<p>IGMP를 사용하여 서브넷별로 불필요한 트래픽을 줄일 수 있었지만,
+서브넷 내에서 여전히 불필요한 트래픽이 발생할 수 있습니다.</p>
+<p>멀티 캐스트 패킷의 목적지 MAC 주소는 특수한 값이기 때문에 L2 스위치의 MAC
+주소 테이블에서 학습되지 않고, 항상 브로드캐스트 대상이 됩니다. 따라서
+예를 들어, 어느 하나의 포트에만 멀티 캐스트 그룹 참여 호스트가 연결되어
+있었다고 해도, L2 스위치는 수신된 멀티 캐스트 패킷을 모든 포트로 전송하게
+됩니다.</p>
+<a class="reference internal image-reference" href="_images/fig2.png"><img alt="_images/fig2.png" class="align-center" src="_images/fig2.png" /></a>
+<p>IGMP 스누핑은 멀티 캐스트 그룹 참여 호스트에서 멀티 캐스트 라우터에
+전송되는 IGMP Report Message를 L2 스위치에서 스누핑(snoop)하여 멀티캐스트
+패킷의 대상 포트를 학습하는 방식입니다. 이 방법은 서브넷
+내에서 멀티 캐스트 그룹 참여 호스트가 존재하지 않는 포트에 멀티
+캐스트 패킷이 전송되는 것은 없기에 불필요한 트래픽을 줄일 수
+있습니다.</p>
+<a class="reference internal image-reference" href="_images/fig3.png"><img alt="_images/fig3.png" class="align-center" src="_images/fig3.png" /></a>
+<p>IGMP 스누핑을 하는 L2 스위치는 여러 호스트에서 동일한 멀티 캐스트 그룹에
+참가하고 있다는 IGMP Report Message를 수신해도 쿼리는 1번 밖에
+IGMP Report Message를 전송하지 않습니다. 또한 호스트에서 IGMP Leave Message
+를 수신하고, 다른 동일한 멀티 캐스트 그룹에 참여하는 호스트가 존재하는 동안에는
+쿼리로 IGMP Leave Message를 전송하지 않습니다. 이렇게 하면 쿼리는 마치
+하나의 호스트와 IGMP 메시지를 교환하는 것처럼 보이게 할 수 있고,
+또한 불필요한 IGMP 메시지의 전송을 억제할 수 있습니다.</p>
+</div>
+</div>
+<div class="section" id="ryu">
+<h2>Ryu 응용 프로그램 실행<a class="headerlink" href="#ryu" title="제목 주소">¶</a></h2>
+<p>IGMP 스누핑 기능을 OpenFlow를 이용하여 구현한 Ryu의 IGMP 스누핑 응용
+프로그램을 실행해 봅니다.</p>
+<p>Ryu 소스 트리에 포함되어있는 simple_switch_igmp.py는 OpenFlow 1.0 전용
+응용 프로그램이기 때문에 여기에서는 새롭게 OpenFlow 1.3에 대응한
+simple_switch_igmp_13.py을 만듭니다. 이 프로그램은
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에 IGMP 스누핑 기능을 추가한 응용
+프로그램입니다. 또한 이 프로그램은 dpid = 0000000000000001 스위치를 멀티 캐스트
+라우터로 취급하고, 포트 2에 연결되어있는 호스트를 멀티 캐스트 서버로
+처리하도록 설정되어 있습니다.</p>
+<p>소스 이름： <tt class="docutils literal"><span class="pre">simple_switch_igmp_13.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">igmplib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.dpid</span> <span class="kn">import</span> <span class="n">str_to_dpid</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleSwitchIgmp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;igmplib&#39;</span><span class="p">:</span> <span class="n">igmplib</span><span class="o">.</span><span class="n">IgmpLib</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchIgmp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;igmplib&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span><span class="o">.</span><span class="n">set_querier_mode</span><span class="p">(</span>
+            <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">server_port</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c"># install table-miss flow entry</span>
+        <span class="c">#</span>
+        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c"># correctly.</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+
+        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
+
+        <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+
+        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventMulticastGroupStateChanged</span><span class="p">,</span>
+                <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_status_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_ADDED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Added&#39;</span><span class="p">,</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_MEMBER_CHANGED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Member Changed&#39;</span><span class="p">,</span>
+            <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_REMOVED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Removed&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: [</span><span class="si">%s</span><span class="s">] querier:[</span><span class="si">%s</span><span class="s">] hosts:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                         <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">reason</span><span class="p">),</span> <span class="n">ev</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                         <span class="n">ev</span><span class="o">.</span><span class="n">dsts</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">다음 예에서는 멀티 캐스트 패킷 송수신에 VLC
+(<a class="reference external" href="http://www.videolan.org/vlc/">http://www.videolan.org/vlc/</a>)를 사용합니다. VLC 설치,
+및 스트리밍 용 동영상을 구하는 관해서는 여기에서 설명하지 않습니다.</p>
+</div>
+<div class="section" id="id4">
+<h3>실험 환경 구축<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>IGMP 스누핑 응용 프로그램을 테스트하는 실험 환경을 구축합니다.</p>
+<p>VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」을 참조하십시오.</p>
+<p>먼저 Mininet를 이용하여 아래 그림과 같은 토폴로지를 만듭니다.</p>
+<a class="reference internal image-reference" href="_images/fig4.png"><img alt="_images/fig4.png" class="align-center" src="_images/fig4.png" /></a>
+<p><tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과 같습니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">매개변수</th>
+<th class="head">값</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,2,3</td>
+<td>2 개의 스위치가 직접 연결되는 토폴로지
+(각 스위치에 3 개의 호스트가 연결되는)</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>없음</td>
+<td>자동으로 호스트의 MAC 주소를 설정</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>Open vSwitch를 사용</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>OpenFlow 컨트롤러는 외부의 것을 이용</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>없음</td>
+<td>xterm 시작</td>
+</tr>
+</tbody>
+</table>
+<p>실행 예는 다음과 같습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,2,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1s1 h1s2 h2s1 h2s2 h3s1 h3s2
+*** Adding switches:
+s1 s2
+*** Adding links:
+(h1s1, s1) (h1s2, s2) (h2s1, s1) (h2s2, s2) (h3s1, s1) (h3s2, s2) (s1, s2)
+*** Configuring hosts
+h1s1 h1s2 h2s1 h2s2 h3s1 h3s2
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 2 switches
+s1 s2
+
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>net 명령의 실행 결과는 다음과 같습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
+h1s1 h1s1-eth0:s1-eth1
+h1s2 h1s2-eth0:s2-eth1
+h2s1 h2s1-eth0:s1-eth2
+h2s2 h2s2-eth0:s2-eth2
+h3s1 h3s1-eth0:s1-eth3
+h3s2 h3s2-eth0:s2-eth3
+s1 lo:  s1-eth1:h1s1-eth0 s1-eth2:h2s1-eth0 s1-eth3:h3s1-eth0 s1-eth4:s2-eth4
+s2 lo:  s2-eth1:h1s2-eth0 s2-eth2:h2s2-eth0 s2-eth3:h3s2-eth0 s2-eth4:s1-eth4
+c0
+mininet&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>IGMP 버전 설정<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<p>Ryu의 IGMP 스누핑 응용 프로그램은 IGMP v1/v2 만 지원합니다. 각
+호스트가 IGMP v3을 사용하지 않도록 설정합니다. 이 명령 입력은 각 호스트의
+xterm에서 실행해주세요.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h1s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h1s2-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h2s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h2s2-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h3s1-eth0/force_igmp_version
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# echo 2 &gt; /proc/sys/net/ipv4/conf/h3s2-eth0/force_igmp_version
+</pre></div>
+</div>
+</div>
+<div class="section" id="ip">
+<h3>IP 주소 설정<a class="headerlink" href="#ip" title="제목 주소">¶</a></h3>
+<p>Mininet에 의해 자동으로 할당된 IP 주소는 모든 호스트가 같은 서브넷에
+속해 있습니다. 다른 서브넷을 구축하기위해 각 호스트에서 IP 주소를
+다시 할당합니다.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.1/24 dev h1s2-eth0
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h2s1-eth0
+root@ryu-vm:~# ip addr add 172.16.20.20/24 dev h2s1-eth0
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.2/24 dev h2s2-eth0
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h3s1-eth0
+root@ryu-vm:~# ip addr add 172.16.30.30/24 dev h3s1-eth0
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h3s2-eth0
+root@ryu-vm:~# ip addr add 192.168.1.3/24 dev h3s2-eth0
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>기본 게이트웨이 설정<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<p>각 호스트에서 IGMP 패킷이 성공적으로 보낼 수 있도록 기본 게이트웨이를
+설정합니다.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.254
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.254
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.30.254
+</pre></div>
+</div>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.1.254
+</pre></div>
+</div>
+</div>
+<div class="section" id="openflow">
+<h3>OpenFlow 버전 설정<a class="headerlink" href="#openflow" title="제목 주소">¶</a></h3>
+<p>사용하는 OpenFlow 버전을 1.3으로 설정합니다. 이 명령을 스위치
+s1, s2의 xterm에서 입력해주세요.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h3>스위칭 허브의 실행<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<p>준비가 그래서 처음에 만든 Ryu 응용 프로그램을 실행합니다. 이 명령어
+입력은 컨트롤러 c0의 xterm에서 실시해주세요.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ./simple_switch_igmp_13.py
+loading app ./simple_switch_igmp_13.py
+loading app ryu.controller.ofp_handler
+loading app ryu.controller.ofp_handler
+instantiating app None of IgmpLib
+creating context igmplib
+instantiating app ./simple_switch_igmp_13.py of SimpleSwitchIgmp13
+instantiating app ryu.controller.ofp_handler of OFPHandler
+...
+</pre></div>
+</div>
+<p>시작 후 바로 스위치 s1이 멀티 캐스트 라우터 (IGMP Query Message를 전송하기
+때문에 쿼리라고도 함) 역할을 시작했다는 것을 나타내는 로그가 출력됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[querier][INFO] started a querier.
+...
+</pre></div>
+</div>
+<p>쿼리는 60 초에 한 번 IGMP Query Message를 모든 포트로 전송하여 IGMP Report
+Message가 표시된 포트에 대하여 멀티 캐스트 서버에서 멀티 캐스트 패킷을
+전달하는 플로우 항목을 등록합니다.</p>
+<p>동시에 쿼리 이외의 스위치에서 IGMP 패킷 스누핑이 시작됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=4 IGMP received. [QUERY]
+...
+</pre></div>
+</div>
+<p>위의 로그 쿼리는 스위치 s1에서 보낸 IGMP Query Message를 스위치
+s2가 포트 4에서 수신한 것을 나타냅니다. 스위치 s2는 받은
+IGMP Query Message를 브로드 캐스트합니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">스누핑의 준비가 있기 전에 쿼리기에서 처음 IGMP Query Message
+가 전송될 수 있습니다. 이 경우 60 초 후에 보낸 다음
+IGMP Query Message를 기다립니다.</p>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>멀티 캐스트 그룹 추가<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<p>이어 각 호스트를 멀티 캐스트 그룹에 참가합니다. VLC에서 특정 멀티 캐스트
+주소로 보내는 스트림을 재생하려고 했을 때, VLC는 IGMP Report Message를
+보냅니다.</p>
+<div class="section" id="h1s2-225-0-0-1">
+<h4>호스트 h1s2를 225.0.0.1 그룹에 가입시킴<a class="headerlink" href="#h1s2-225-0-0-1" title="제목 주소">¶</a></h4>
+<p>우선 호스트 h1s2에서 멀티 캐스트 주소 「225.0.0.1」에게 스트림을
+재생하도록 설정합니다. VLC는 호스트 h1s2에서 IGMP Report Message를 보냅니다.</p>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>스위치 s2는 호스트 h1s2에서 IGMP Report Message를 포트 1로 수신하여 멀티 캐스트 주소 「225.0.0.1」를 받는 그룹이 포트 1에 먼저 존재하는 것을 인식합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+Multicast Group Added: [225.0.0.1] querier:[4] hosts:[]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[1]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>위의 로그는 스위치 s2에있어서</p>
+<ul class="simple">
+<li>IGMP Report Message를 포트 1에서 받음</li>
+<li>멀티 캐스트 주소 「225.0.0.1」을 수신하는 멀티 캐스트 그룹의 존재를
+인식하는지 여부 (스위치가 대기 포트 4 먼저 존재)</li>
+<li>멀티 캐스트 주소 「225.0.0.1」을 수신하는 그룹의 참여 호스트 포트 1
+끝에 있는지 여부</li>
+</ul>
+<p>를 나타냅니다. VLC는 시작할 때 IGMP Report Message를 3 회 보내도록
+되어 있습니다.</p>
+<p>이 후 쿼리기는 60 초에 한 번 IGMP Query Message를 계속 보내는 메시지를 수신하고
+멀티 캐스트 그룹 참여 호스트 h1s2는 그때마다 IGMP Report Message를 전송합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=4 IGMP received. [QUERY]
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=827.211s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=827.211s, table=0, n_packets=14, n_bytes=644, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=843.887s, table=0, n_packets=1, n_bytes=46, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 2 (멀티 캐스트 서버)에서 225.0.0.1에게 패킷을 수신 한 경우에는</dt>
+<dd><p class="first last">포트 4 (스위치 s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (스위치 s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">하는</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>세 가지 플로우 항목이 등록되어 있습니다.</p>
+<p>또한 스위치 s2에 등록되어 있는 플로우 항목도 확인해 봅니다.</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1463.549s, table=0, n_packets=26, n_bytes=1196, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=1463.548s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1
+ cookie=0x0, duration=1480.221s, table=0, n_packets=26, n_bytes=1096, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>스위치 s2에</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 1 (호스트 h1s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">하는</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (쿼리 기)에서 225.0.0.1에게 패킷을 수신 한 경우에는 포트 1 (포스</dt>
+<dd><p class="first last">트 h1s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>세 가지 플로우 항목이 등록되어 있습니다.</p>
+</div>
+<div class="section" id="h3s2-225-0-0-1">
+<h4>호스트 h3s2를 225.0.0.1 그룹에 가입시킴<a class="headerlink" href="#h3s2-225-0-0-1" title="제목 주소">¶</a></h4>
+<p>이어 호스트 h3s2에서도 멀티 캐스트 주소 「225.0.0.1」에게 스트림을 재생하도록
+설정합니다. VLC는 호스트 h3s2에서 IGMP Report Message를 보냅니다.</p>
+<p>host: h3s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>스위치 s2는 호스트 h3s2에서 IGMP Report Message를 포트 3에서 수신하고 멀티
+캐스트 주소 「225.0.0.1」를 수신하는 그룹의 참여 호스트가 포트 1의 다른 포트 3
+끝에도 존재함을 인식합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[1, 3]
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1854.016s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=1854.016s, table=0, n_packets=31, n_bytes=1426, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=1870.692s, table=0, n_packets=1, n_bytes=46, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에 등록된 플로우 항목에 특별한 변경은 없습니다.</p>
+<p>또한 스위치 s2에 등록되어 있는 플로우 항목도 확인 해 봅니다.</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1910.703s, table=0, n_packets=34, n_bytes=1564, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=162.606s, table=0, n_packets=5, n_bytes=230, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=162.606s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1,output:3
+ cookie=0x0, duration=1927.375s, table=0, n_packets=35, n_bytes=1478, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>스위치 s2에</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 1 (호스트 h1s2)에서 225.0.0.1에게 패킷을 수신한 경우에는 Packet-In</dt>
+<dd><p class="first last">하는</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 3 (호스트 h3s2)에서 225.0.0.1에게 패킷을 수신한 경우에는 Packet-In</dt>
+<dd><p class="first last">하는</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (쿼리 기)에서 225.0.0.1에게 패킷을 수신한 경우에는 포트 1 (포스</dt>
+<dd><p class="first last">트 h1s2) 및 포트 3 (호스트 h3s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>4 개의 플로우 항목이 등록되어 있습니다.</p>
+</div>
+<div class="section" id="h2s2-225-0-0-2">
+<h4>호스트 h2s2를 225.0.0.2 그룹에 가입시킴<a class="headerlink" href="#h2s2-225-0-0-2" title="제목 주소">¶</a></h4>
+<p>그런 다음 호스트 h2s2는 다른 호스트와는 다른 멀티 캐스트 주소 「225.0.0.2」
+에게 스트림을 재생하도록 설정합니다. VLC는 호스트 h2s2에서
+IGMP Report Message를 보냅니다.</p>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.2
+</pre></div>
+</div>
+<p>스위치 s2는 호스트 h2s2에서 IGMP Report Message를 포트 2에서 수신 멀티 캐스트 주소 &#8220;225.0.0.2&#8221;을 수신하는 그룹 참여 호스트가 포트 2 먼저 존재하는 것을 인식합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+Multicast Group Added: [225.0.0.2] querier:[4] hosts:[]
+Multicast Group Member Changed: [225.0.0.2] querier:[4] hosts:[2]
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+[snoop][INFO] SW=0000000000000002 PORT=2 IGMP received. [REPORT]
+...
+</pre></div>
+</div>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2289.168s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
+ cookie=0x0, duration=108.374s, table=0, n_packets=2, n_bytes=92, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=108.375s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=2289.168s, table=0, n_packets=38, n_bytes=1748, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2305.844s, table=0, n_packets=2, n_bytes=92, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에는</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 2 (멀티 캐스트 서버)에서 225.0.0.1에게 패킷을 수신 한 경우에는</dt>
+<dd><p class="first last">포트 4 (스위치 s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (스위치 s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 2 (멀티 캐스트 서버)에서 225.0.0.2에게 패킷을 수신 한 경우에는</dt>
+<dd><p class="first last">포트 4 (스위치 s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (스위치 s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>5 개의 플로우 항목이 등록되어 있습니다.</p>
+<p>또한 스위치 s2에 등록되어있는 플로우 항목도 확인해 봅니다.</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2379.973s, table=0, n_packets=41, n_bytes=1886, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=199.178s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=631.876s, table=0, n_packets=12, n_bytes=552, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=199.178s, table=0, n_packets=5, n_bytes=230, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=631.876s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1,output:3
+ cookie=0x0, duration=2396.645s, table=0, n_packets=43, n_bytes=1818, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>스위치 s2에</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 1 (호스트 h1s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (쿼리 기)에서 225.0.0.2에게 패킷을 수신 한 경우에는 포트 2 (호스트</dt>
+<dd><p class="first last">h2s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 3 (호스트 h3s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 2 (호스트 h2s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (쿼리 기)에서 225.0.0.1에게 패킷을 수신 한 경우에는 포트 1 (호스트</dt>
+<dd><p class="first last">h1s2) 및 포트 3 (호스트 h3s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>6 개의 플로우 항목이 등록되어 있습니다.</p>
+</div>
+<div class="section" id="h3s1-225-0-0-1">
+<h4>호스트 h3s1를 225.0.0.1 그룹에 가입시킴<a class="headerlink" href="#h3s1-225-0-0-1" title="제목 주소">¶</a></h4>
+<p>또한 호스트 h3s1에서도 멀티 캐스트 주소 「225.0.0.1」에게 스트림을 재생하도록
+설정합니다. VLC는 호스트 h3s1에서 IGMP Report Message를 보냅니다.</p>
+<p>host: h3s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+</pre></div>
+</div>
+<p>호스트 h3s1는 스위치 s2와 연결되어 있지 않습니다. 따라서 IGMP 스누핑 기능의
+대상이 아니라 쿼리기 사이의 일반적인 IGMP 패킷의 교환을 실시합니다.</p>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=12.85s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
+ cookie=0x0, duration=626.33s, table=0, n_packets=10, n_bytes=460, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=12.85s, table=0, n_packets=1, n_bytes=46, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=626.331s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=2807.124s, table=0, n_packets=46, n_bytes=2116, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2823.8s, table=0, n_packets=3, n_bytes=138, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에</p>
+<ul>
+<li><dl class="first docutils">
+<dt>포트 2 (멀티 캐스트 서버)에서 225.0.0.1에게 패킷을 수신 한 경우에는</dt>
+<dd><p class="first last">포트 3 (h3s1) 및 포트 4 (스위치 s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (스위치 s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">포트 3 (h3s1)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In하기</p>
+</li>
+<li><dl class="first docutils">
+<dt>포트 2 (멀티 캐스트 서버)에서 225.0.0.2에게 패킷을 수신 한 경우에는</dt>
+<dd><p class="first last">포트 4 (스위치 s2)로 전송</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>포트 4 (스위치 s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In</dt>
+<dd><p class="first last">수행</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</p>
+</li>
+</ul>
+<p>6 개의 플로우 항목이 등록되어 있습니다.</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>스트리밍 시작<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<p>멀티 캐스트 서버인 호스트 h2s1에서 스트리밍을 시작합니다. 멀티
+캐스트 주소에는 「225.0.0.1」을 사용합니다.</p>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# vlc-wrapper sample.mov --sout udp:225.0.0.1 --loop
+</pre></div>
+</div>
+<p>그러자, 「225.0.0.1」멀티 캐스트 그룹에 참여하는 h1s2, h3s2, h1s3
+각 호스트에서 실행하는 VLC 멀티 캐스트 서버에서 제공하고있는 동영상이 재생
+됩니다. 「225.0.0.2」에 참여하는 h2s2에서는 동영상이 재생되지 않습니다.</p>
+</div>
+<div class="section" id="id10">
+<h3>멀티 캐스트 그룹 삭제<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
+<p>이어 각 호스트를 멀티 캐스트 그룹에서 탈퇴시킵니다. 스트림 재생중인 VLC를
+종료했을 때 VLC는 IGMP Leave Message를 보냅니다.</p>
+<div class="section" id="id11">
+<h4>호스트 h1s2를 225.0.0.1 그룹에서 탈퇴시킴<a class="headerlink" href="#id11" title="제목 주소">¶</a></h4>
+<p>호스트 h1s2에서 실행중인 VLC를 Ctrl+C 등으로 종료합니다. 스위치 s2는 호스트 h1s2 또는
+라 IGMP Leave Message를 포트 1로 수신하여 멀티 캐스트 주소 「225.0.0.1」
+를 수신하는 그룹의 참여 호스트가 포트 1의 끝에 존재하지 않는 것을 인식합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=1 IGMP received. [LEAVE]
+Multicast Group Member Changed: [225.0.0.1] querier:[4] hosts:[3]
+...
+</pre></div>
+</div>
+<p>위의 로그는 스위치 s2에 있어서</p>
+<ul>
+<li><p class="first">포트 1에서 IGMP Leave Message를 받음</p>
+</li>
+<li><dl class="first docutils">
+<dt>멀티 캐스트 주소 「225.0.0.1」을 수신하는 그룹의 참여 호스트 포트 3</dt>
+<dd><p class="first last">끝에 있는지</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>를 나타냅니다. IGMP Leave Message 수신 전까지는 멀티 캐스트 주소
+「225.0.0.1」을 수신하는 그룹의 참여 호스트는 포트 1과 3의 끝에 존재하여
+인식하고 있었지만, IGMP Leave Message 수신시 포트 1이 제외됩니다.</p>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인하려고합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=1565.13s, table=0, n_packets=1047062, n_bytes=1421910196, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
+ cookie=0x0, duration=2178.61s, table=0, n_packets=36, n_bytes=1656, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=1565.13s, table=0, n_packets=27, n_bytes=1242, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2178.611s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=4359.404s, table=0, n_packets=72, n_bytes=3312, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=4376.08s, table=0, n_packets=3, n_bytes=138, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에 등록된 플로우 항목은 특별한 변경은 없습니다.</p>
+<p>또한 스위치 s2에 등록되어있는 플로우 항목도 확인해 봅니다.</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=2228.528s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=2661.226s, table=0, n_packets=46, n_bytes=2116, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=2228.528s, table=0, n_packets=39, n_bytes=1794, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=548.063s, table=0, n_packets=486571, n_bytes=660763418, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:3
+ cookie=0x0, duration=4425.995s, table=0, n_packets=78, n_bytes=3292, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>스위치 s2에</p>
+<ul class="simple">
+<li>포트 4 (쿼리 기)에서 225.0.0.2에게 패킷을 수신 한 경우에는 포트 2 (호스
+트 h2s2)로 전송</li>
+<li>포트 3 (호스트 h3s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+<li>포트 2 (호스트 h2s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+<li>포트 4 (쿼리 기)에서 225.0.0.1에게 패킷을 수신 한 경우에는 포트 3 (포스
+트 h3s2)로 전송</li>
+<li>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</li>
+</ul>
+<p>5 개의 플로우 항목이 등록되어 있습니다. 방금 전까지 비해</p>
+<ul class="simple">
+<li>포트 1 (호스트 h1s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+</ul>
+<p>플로우 항목이 삭제되고, 또한 쿼리기에서 225.0.0.1 앞으로 패킷 대상으로부터
+포트 1 (호스트 h1s2)이 제외 된 것을 알 수 있습니다.</p>
+</div>
+<div class="section" id="id12">
+<h4>호스트 h3s2를 225.0.0.1 그룹에서 탈퇴시킴<a class="headerlink" href="#id12" title="제목 주소">¶</a></h4>
+<p>그런 다음 호스트 h3s2에서 실행중인 VLC를 Ctrl + C 등으로 종료합니다.
+스위치 s2는 호스트 h3s2로부터 IGMP Leave Message 포트 3에서 수신 멀티
+캐스트 주소 「225.0.0.1」을 수신하는 그룹의 참여 호스트 포트 3 부터
+존재하지 않는 것을 인식합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+[snoop][INFO] SW=0000000000000002 PORT=3 IGMP received. [LEAVE]
+Multicast Group Removed: [225.0.0.1] querier:[4] hosts:[]
+...
+</pre></div>
+</div>
+<p>위의 로그는 스위치 s2에있어서</p>
+<ul>
+<li><p class="first">포트 3에서 IGMP Leave Message를 받음</p>
+</li>
+<li><dl class="first docutils">
+<dt>멀티 캐스트 주소 「225.0.0.1」을 수신하는 그룹의 참여 호스트가 모든</dt>
+<dd><p class="first last">존재하지 않음</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>을 나타냅니다.</p>
+<p>이 시점에서 쿼리기에 등록된 플로우 항목을 확인합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=89.891s, table=0, n_packets=79023, n_bytes=107313234, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3
+ cookie=0x0, duration=3823.61s, table=0, n_packets=64, n_bytes=2944, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=3210.139s, table=0, n_packets=55, n_bytes=2530, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
+ cookie=0x0, duration=3823.467s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=output:4
+ cookie=0x0, duration=6021.089s, table=0, n_packets=4, n_bytes=184, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>쿼리기에</p>
+<ul class="simple">
+<li>포트 2 (멀티 캐스트 서버)에서 225.0.0.1에게 패킷을 수신 한 경우에는
+포트 3 (h3s1)로 전송</li>
+<li>포트 4 (스위치 s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+<li>포트 3 (h3s1)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In하기</li>
+<li>포트 2 (멀티 캐스트 서버)에서 225.0.0.2에게 패킷을 수신 한 경우에는
+포트 4 (스위치 s2)로 전송</li>
+<li>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</li>
+</ul>
+<p>5 개의 플로우 항목이 등록되어 있습니다. 방금 전까지 비해</p>
+<ul class="simple">
+<li>포트 4 (스위치 s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+</ul>
+<p>플로우 항목이 삭제되고, 또한 멀티 캐스트 서버에서 225.0.0.1에게 패킷의
+대상에서 포트 4 (스위치 s2)가 제외된 것을 알 수 있습니다.</p>
+<p>또한 스위치 s2에 등록되어있는 플로우 항목도 확인 해 봅니다.</p>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=4704.052s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
+ cookie=0x0, duration=4704.053s, table=0, n_packets=53, n_bytes=2438, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509
+ cookie=0x0, duration=6750.068s, table=0, n_packets=115, n_bytes=29870, priority=0 actions=CONTROLLER:65535
+</pre></div>
+</div>
+<p>스위치 s2에</p>
+<ul class="simple">
+<li>포트 4 (쿼리 기)에서 225.0.0.2에게 패킷을 수신 한 경우에는 포트 2 (호스
+트 h2s2)로 전송</li>
+<li>포트 2 (호스트 h2s2)에서 225.0.0.2에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+<li>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</li>
+</ul>
+<p>세 가지 플로우 항목이 등록되어 있습니다. 방금 전까지 비해</p>
+<ul class="simple">
+<li>포트 3 (호스트 h3s2)에서 225.0.0.1에게 패킷을 수신 한 경우에는 Packet-In
+수행</li>
+<li>포트 4 (쿼리 기)에서 225.0.0.1에게 패킷을 수신 한 경우에는 포트 3 (포스
+트 h3s2)로 전송</li>
+</ul>
+<p>플로우 항목이 삭제 된 것을 알 수 있습니다.</p>
+</div>
+</div>
+</div>
+<div class="section" id="ryu-igmp">
+<h2>Ryu의 IGMP 스누핑 기능 구현<a class="headerlink" href="#ryu-igmp" title="제목 주소">¶</a></h2>
+<p>OpenFlow를 사용하여 어떻게 IGMP 스누핑 기능을 수행하고 있는지를 살펴 보겠습니다.</p>
+<p>IGMP 스누핑 「IGMP 패킷을 살펴봄」이라는 동작은 OpenFlow의 Packet-In
+메시지를 사용하여 구현하고 있습니다. Packet-In 메시지에서 컨트롤러로 전송
+된 IGMP 패킷의 내용을</p>
+<ul class="simple">
+<li>어떤 그룹에 대한 IGMP 메시지인지</li>
+<li>IGMP Report Message인지 IGMP Leave Message인지</li>
+<li>스위치의 모든 포트에서 수신하여 IGMP 메시지인지</li>
+</ul>
+<p>라는 관점에서 분석하고 그에 따라 처리합니다.</p>
+<p>프로그램은 멀티 캐스트 주소와 멀티 캐스트 주소로 보내는 패킷을
+어느 포트로 전송하거나 대응하는 테이블을 유지합니다.</p>
+<p>IGMP Report Message를 수신했을 때, 그것이 해당 테이블에 존재하지 않는 포트로부터
+있으면 해당 멀티 캐스트 주소로 보내는 패킷을 해당 포트로 전송하는 플로우 항목에 등록합니다.</p>
+<p>IGMP Leave Message를 수신했을 때, 그것이 대응 테이블에 있는 포트에 해당하면
+확인을 위해 IGMP Query Message를 보내고 응답이 없으면 해당 멀티 캐스트 주소로
+패킷을 해당 포트로 전송하는 플로우 항목을 삭제합니다.</p>
+<p>IGMP Leave Message를 보내지 않고 멀티 캐스트 그룹 참여 호스트가 없는
+경우를 고려하여 쿼리기에서의 IGMP Query Message를 전송할 때마다 각 포트에서
+IGMP Report Message가 돌아왔는지 여부를 확인합니다. IGMP Report Message를
+회신하지 않은 포트의 끝에는 멀티 캐스트 그룹 참여 호스트가 존재하지 않는 것으로
+간주하여 멀티 캐스트 패킷을 해당 포트로 전송하는 플로우 항목을 삭제합니다.</p>
+<p>멀티 캐스트 그룹에 대한 IGMP Report Message를 여러 포트에서 수신하는
+경우 프로그램은 첫 번째 메시지만 쿼리기로 전송합니다. 이것은 불필요한
+같은 IGMP Report Message를 쿼리기에 전송하는 것을 막아줍니다.</p>
+<p>멀티 캐스트 그룹에 대한 IGMP Leave Message를 수신하는 경우 해당 그룹
+루프에 참가하는 호스트가 다른 포트의 끝에 존재하는 경우 프로그램은
+IGMP Leave Message를 쿼리기에 전송하지 않습니다. 해당 그룹에 참여하는 호스트
+가 하나도 없을 때, 프로그램은 IGMP Leave Message를 쿼리기로 전송합니다.
+이렇게 하면 불필요한 IGMP Leave Message를 쿼리기에 전송하는 것을 막아줍니다.</p>
+<p>또한 쿼리기에 멀티 캐스트 라우터가 존재하지 않는 네트워크에서도 IGMP
+스누핑 기능이 작동할 수 있도록 pseudo 쿼리기 기능도 구현하게 합니다.</p>
+<p>이상의 내용을 IGMP 스누핑 기능을 포괄적으로 구현하는 IGMP 스누핑 라이브러리
+및 라이브러리를 사용하는 응용 프로그램에 나누어 구현합니다.</p>
+<p><strong>IGMP 스누핑 라이브러리</strong></p>
+<ul>
+<li><p class="first">스누핑 기능</p>
+<blockquote>
+<div><ul class="simple">
+<li>IGMP Query Message를 받으면 보유하고 응답 여부의 정보를 초기화하고
+IGMP Report Message를 기다림</li>
+<li>IGMP Report Message를 수신하면 해당 테이블을 갱신하고 필요하다면 플로우 항목
+등록을 실시. 또한 필요한 경우 쿼리기 메시지를 전송</li>
+<li>IGMP Leave Message를 받으면 확인에 대한 IGMP Query Message를 보내고 응답
+이 없으면 플로우 항목의 삭제를 실시한다. 또한 필요한 경우 쿼리기 메시지
+를 전는</li>
+<li>보유하고 있는 해당 테이블이 업데이트되었을 때 그 사실을 응용 프로그램에 알리기 위해
+이벤트를 보냄</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">pseudo 쿼리기 기능</p>
+<blockquote>
+<div><ul class="simple">
+<li>정기적으로 IGMP Query Message를 플러딩, IGMP Report Message를 기다림</li>
+<li>IGMP Report Message를 받으면 플로우 항목을 등록</li>
+<li>IGMP Leave Message를 받으면 플로우 항목을 삭제</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p><strong>응용 프로그램</strong></p>
+<ul class="simple">
+<li>IGMP 스누핑 라이브러리의 통지를 받은 로그를 출력</li>
+<li>IGMP 패킷 이외의 패킷은 종래대로 학습 · 전송</li>
+</ul>
+<p>IGMP 스누핑 라이브러리 및 응용 프로그램의 소스 코드, Ryu 소스
+트리에 있습니다.</p>
+<blockquote>
+<div><p>ryu/lib/igmplib.py</p>
+<p>ryu/app/simple_switch_igmp.py</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">simple_switch_igmp.py는 OpenFlow 1.0 전용 응용 프로그램
+이기 때문에 이 장에서는 「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a> 」에서 보여 주었던
+OpenFlow 1.3에 대응하는 simple_switch_igmp_13.py 기반으로 응용 프로그램의
+자세한 내용을 설명합니다.</p>
+</div>
+<div class="section" id="id13">
+<h3>IGMP 스누핑 라이브러리 구현<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<p>다음 절에서는 위의 기능이 IGMP 스누핑 라이브러리에서 어떻게 구현
+하는지를 살펴 보겠습니다. 인용된 소스는 발췌하였습니다. 전체적 그림은
+실제 소스를 참조하십시오.</p>
+<div class="section" id="pseudo">
+<h4>스누핑 클래스와 pseudo 쿼리기 클래스<a class="headerlink" href="#pseudo" title="제목 주소">¶</a></h4>
+<p>라이브러리의 초기화 때 스누핑 클래스와 pseudo 쿼리기 클래스를 인스턴스화
+합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">IgmpLib</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;igmplib&#39;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span> <span class="o">=</span> <span class="n">IgmpQuerier</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_snooper</span> <span class="o">=</span> <span class="n">IgmpSnooper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Pseudo 쿼리기 인스턴스에 대한 쿼리기 역할을 하는 스위치의 설정과 멀티
+캐스트 서버로 연결되는 포트 설정은 라이브러리의 메서드에서 사용됩니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_querier_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">server_port</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;set a datapath id and server port number to the instance</span>
+<span class="sd">    of IgmpQuerier.</span>
+
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    Attribute    Description</span>
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    dpid         the datapath id that will operate as a querier.</span>
+<span class="sd">    server_port  the port number linked to the multicasting server.</span>
+<span class="sd">    ============ ==================================================</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">set_querier_mode</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">server_port</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Pseudo 쿼리기 인스턴스 스위치와 포트 번호가 지정된 경우 지정된
+스위치가 응용 프로그램과 연결했을 때 Pseudo 쿼리기 처리를 시작합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;StateChange event handler.&quot;&quot;&quot;</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="k">assert</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">dpid</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">evt</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">MAIN_DISPATCHER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">start_loop</span><span class="p">(</span><span class="n">datapath</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">evt</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">stop_loop</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="packet-in">
+<h4>Packet-In 처리<a class="headerlink" href="#packet-in" title="제목 주소">¶</a></h4>
+<p>「 <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>링크 어그리게이션</em></a> 」뿐만 아니라 IGMP 패킷은 모든 IGMP 스누핑
+라이브러리에서 처리합니다. IGMP 패킷을 수신한 스위치가 pseudo 쿼리기 인스턴스에
+설정한 스위치인 경우에는 pseudo 쿼리기 인스턴스로, 그 외의 경우에는
+스누핑 인스턴스에 각각 처리를 맡기고 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was IGMP,</span>
+<span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">evt</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="n">req_pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">req_igmp</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">igmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">req_igmp</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">dpid</span> <span class="o">==</span> <span class="n">dpid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_querier</span><span class="o">.</span><span class="n">packet_in_handler</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_snooper</span><span class="o">.</span><span class="n">packet_in_handler</span><span class="p">(</span><span class="n">req_pkt</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>스누핑 인스턴스의 Packet-In 처리에서는 수신된 IGMP 패킷의 종류에 따라
+처리합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_pkt</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_QUERY</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[QUERY]&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_ipv4</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">req_eth</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">req_pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_query</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">req_ipv4</span><span class="p">,</span> <span class="n">req_eth</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V1</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span> <span class="ow">or</span>
+          <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V2</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[REPORT]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_report</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_LEAVE</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">log</span> <span class="o">+</span> <span class="s">&quot;[LEAVE]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_leave</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>Pseudo 쿼리기 인스턴스의 Packet-In 처리로 수신된 IGMP 패킷의 유형에 따라
+처리합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_igmp</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V1</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span> <span class="ow">or</span>
+            <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_REPORT_V2</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_report</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">igmp</span><span class="o">.</span><span class="n">IGMP_TYPE_LEAVE</span> <span class="o">==</span> <span class="n">req_igmp</span><span class="o">.</span><span class="n">msgtype</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_leave</span><span class="p">(</span><span class="n">req_igmp</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-query-message">
+<h4>스누핑 인스턴스에서 IGMP Query Message 처리<a class="headerlink" href="#igmp-query-message" title="제목 주소">¶</a></h4>
+<p>스누핑 인스턴스는 스위치당 「쿼리기와 연결된 포트」
+「쿼리기의 IP 주소」 「쿼리기의 MAC 주소」를 유지하는 영역이 있습니다. 또한
+각 스위치에 대해 「알려진 멀티 캐스트 그룹」 「해당 멀티 캐스트 그룹
+에 참여하는 호스트가 연결되어있는 포트 번호 」「메시지 수신 여부 」를 유지하는
+영역이 있습니다.</p>
+<p>스누핑 인스턴스는 IGMP Query Message 수신시 메시지를 보내왔다는
+쿼리기의 정보를 유지합니다.</p>
+<p>또한 각 스위치의 메시지 수신 여부를 초기화받은 IGMP Query Message
+플러딩 후 멀티 캐스트 그룹 참여 호스트에서
+IGMP Report Message 수신 타임 아웃 처리를 실시합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">iph</span><span class="p">,</span> <span class="n">eth</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="c"># learn the querier.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_querier</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="n">in_port</span><span class="p">,</span>
+        <span class="s">&#39;ip&#39;</span><span class="p">:</span> <span class="n">iph</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+        <span class="s">&#39;mac&#39;</span><span class="p">:</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+    <span class="p">}</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="s">&#39;0.0.0.0&#39;</span> <span class="o">==</span> <span class="n">query</span><span class="o">.</span><span class="n">address</span><span class="p">:</span>
+        <span class="c"># general query. reset all reply status.</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">group</span><span class="p">[</span><span class="s">&#39;replied&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">group</span><span class="p">[</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="c"># ...</span>
+
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">)]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+        <span class="n">datapath</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="c"># wait for REPORT messages.</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_do_timeout_for_query</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-report-message">
+<h4>스누핑 인스턴스에서 IGMP Report Message 처리<a class="headerlink" href="#igmp-report-message" title="제목 주소">¶</a></h4>
+<p>스누핑 인스턴스는 멀티 캐스트 그룹 참여 호스트에서
+IGMP Report Message를 수신했을 때 해당 멀티 캐스트 주소를 알 수 없으면
+해당 멀티 캐스트 그룹 추가 이벤트를 전송하고 정보 보존 영역을 업데이트합니다.</p>
+<p>또한 해당 멀티 캐스트 그룹 IGMP Report Message를 포트에 처음
+받은 경우에는 정보 보존 영역을 업데이트하고 해당 멀티 캐스트 패킷의 대상으로
+그 포트를 추가한 플로우 항목을 등록하고 멀티 캐스트 그룹 변경 이벤트를
+보냅니다.</p>
+<p>해당 멀티 캐스트 그룹의 IGMP Report Message는 아직 쿼리기로 전달하지 않은
+경우에 전송합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_GROUP_ADDED</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="p">[]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+            <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+            <span class="p">{</span><span class="s">&#39;replied&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;leave&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;ports&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="n">in_port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;out&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">size</span><span class="p">)],</span>
+            <span class="n">in_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c"># ...</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;in&#39;</span><span class="p">]:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ports</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+            <span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_MEMBER_CHANGED</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">ports</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span>
+            <span class="n">in_port</span><span class="p">][</span><span class="s">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="c"># send a REPORT message to the querier if this message arrived</span>
+    <span class="c"># first after a QUERY message was sent.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">outport</span><span class="p">,</span> <span class="n">size</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h4>스누핑 인스턴스에서 IGMP Report Message 수신 타임 아웃 처리<a class="headerlink" href="#id14" title="제목 주소">¶</a></h4>
+<p>IGMP Query Message 처리 후 일정 시간이 지나면 IGMP Report Message 수신 타임 아웃 처리
+관리를 시작합니다. 멀티 캐스트 그룹 참여 호스트가 존재한다면 일반적인
+시간 초과가 발생하기 전에 IGMP Report Message를 보내오기 위해,
+IGMP Report Message 처리에서 보존 영역의 업데이트가 이루어집니다.</p>
+<p>일정 시간이 경과한 후에도 여전히 특정 멀티 캐스트 그룹에 대한
+IGMP Report Message를 수신하지 못하면 해당 멀티 캐스트 그룹에 참가
+호스트가 없어진 것으로 간주하여 멀티 캐스트 그룹 삭제 이벤트를 보내고,
+플로우 항목의 삭제, 정보 보존 영역의 업데이트를 수행합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_timeout_for_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="c"># ...</span>
+
+    <span class="n">remove_dsts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;replied&#39;</span><span class="p">]:</span>
+            <span class="c"># if no REPORT message sent from any members of</span>
+            <span class="c"># the group, remove flow entries about the group and</span>
+            <span class="c"># send a LEAVE message if exists.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_multicast_group</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+            <span class="n">remove_dsts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">remove_dsts</span><span class="p">:</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_remove_multicast_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+        <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+            <span class="n">MG_GROUP_REMOVED</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+    <span class="c">#...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-leave-message">
+<h4>스누핑 인스턴스에서 IGMP Leave Message 처리<a class="headerlink" href="#igmp-leave-message" title="제목 주소">¶</a></h4>
+<p>스누핑 인스턴스는 멀티 캐스트 그룹 참여 호스트에서
+IGMP Leave Message를 수신했을 때, 정보 보존 영역에 받은 메시지를 저장한 후
+확인에 대한 IGMP Query Message를 수신한 포트로 전송하고 멀티 캐스트
+루프 참여 호스트에서 IGMP Report Message (Leave 응답) 수신 타임 아웃 처리를
+수행합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leave</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+        <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+        <span class="p">{</span><span class="s">&#39;replied&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;leave&#39;</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;ports&#39;</span><span class="p">:</span> <span class="p">{}})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;out&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;in&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+    <span class="c"># send a specific query to the host that sent this message.</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span><span class="p">)]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="c"># wait for REPORT messages.</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_do_timeout_for_leave</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span>
+              <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="igmp-report-message-leave">
+<h4>스누핑 인스턴스에서 IGMP Report Message (Leave 응답) 수신 타임 아웃 처리<a class="headerlink" href="#igmp-report-message-leave" title="제목 주소">¶</a></h4>
+<p>IGMP Leave Message 처리 중에서 IGMP Query Message 보낸 후 일정 시간 후에
+IGMP Report Message 수신 타임 아웃 처리를 시작합니다. 멀티 캐스트 그룹
+참여 호스트가 존재한다면 일반적으로 제한 시간 만료 전에
+IGMP Report Message를 보내 오기 때문에 정보 보존 영역이 업데이트되지 않습니다.</p>
+<p>일정 시간이 경과한 후에도 여전히 특정 멀티 캐스트 그룹에 대한
+IGMP Report Message를 수신하지 못하면 해당 포트의 끝에는 해당 멀티
+캐스트 그룹에 참여하는 호스트가 없어진 것으로 간주, 멀티 캐스트 그룹
+변경 이벤트의 전송 플로우 항목의 업데이트 정보 보존 영역을 업데이트합니다.</p>
+<p>포트 전송 대상에서 제외한 결과 해당 멀티 캐스트 그룹에 가입한 호스트는
+포트와 관계 없는 경우 멀티 캐스트 그룹 삭제 이벤트를 보내고,
+플로우 항목의 삭제, 정보 보존 영역의 업데이트를 수행합니다. 이 때 보유하고 있는
+IGMP Leave Message가 있으면 쿼리기에 보냅니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_timeout_for_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="c"># ...</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">][</span><span class="s">&#39;out&#39;</span><span class="p">]:</span>
+        <span class="k">return</span>
+
+    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;ports&#39;</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_event</span><span class="p">(</span>
+            <span class="n">EventMulticastGroupStateChanged</span><span class="p">(</span>
+                <span class="n">MG_MEMBER_CHANGED</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">ports</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_multicast_group</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_remove_multicast_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">outport</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="c"># ...</span>
+
+    <span class="n">leave</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_hosts</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">][</span><span class="s">&#39;leave&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">leave</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">:</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">leave</span><span class="o">.</span><span class="n">in_port</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">in_port</span> <span class="o">=</span> <span class="n">leave</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">outport</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pseudo-igmp-query-message">
+<h4>Pseudo 쿼리기 인스턴스에서 IGMP Query Message 정기 송신 처리<a class="headerlink" href="#pseudo-igmp-query-message" title="제목 주소">¶</a></h4>
+<p>Pseudo 쿼리기 인스턴스는 60 초에 한 번 IGMP Query Message를 플러딩합니다.
+플러딩 후 일정 시간이 지나면 IGMP Report Message 수신 타임 아웃 처리를
+시작합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_send_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="mi">60</span>
+    <span class="c"># ...</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_packet_out</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">res_pkt</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">send_port</span><span class="p">,</span> <span class="n">flood</span><span class="p">)</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">QUERY_RESPONSE_INTERVAL</span><span class="p">)</span>
+        <span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pseudo-igmp-report-message">
+<h4>Pseudo 쿼리기 인스턴스에서 IGMP Report Message 처리<a class="headerlink" href="#pseudo-igmp-report-message" title="제목 주소">¶</a></h4>
+<p>Pseudo 쿼리기 인스턴스는 멀티 캐스트 그룹 참여 호스트 및 스누핑
+인스턴스에서 IGMP Report Message를 수신했을 때 해당 멀티 캐스트 주소의
+대상은 수신 포트가 기억되어 있지 않으면 정보를 기억하고 플로우 항목을
+등록합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="n">update</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">in_port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+        <span class="n">update</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span> <span class="n">update</span><span class="p">:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span> <span class="n">size</span><span class="p">)],</span>
+            <span class="n">in_port</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id15">
+<h4>Pseudo 쿼리기 인스턴스에서 IGMP Report Message 수신 타임 아웃 처리<a class="headerlink" href="#id15" title="제목 주소">¶</a></h4>
+<p>IGMP Query Message 정기적 보낸 후 일정 시간 후에 IGMP Report Message 수신 타임 아웃에 대한 처리를 시작합니다. IGMP Report Message가 전송되지 않은 포트에 대해서
+Pseudo 쿼리기 인스턴스는 기억한 정보의 업데이트 및 플로우 항목을 업데이트합니다.
+전송 대상 포트가 없는 경우, 플로우 항목을 삭제합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_send_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># ...</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c"># ...</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">igmp</span><span class="o">.</span><span class="n">QUERY_RESPONSE_INTERVAL</span><span class="p">)</span>
+        <span class="c"># ...</span>
+        <span class="n">del_groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">del_ports</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">status</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">[</span><span class="n">port</span><span class="p">]:</span>
+                    <span class="n">del_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_ports</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+                <span class="n">del_groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_ports</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">del_ports</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">del_ports</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">status</span><span class="p">[</span><span class="n">port</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">del_groups</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">group</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pseudo-igmp-leave-message">
+<h4>Pseudo 쿼리기 인스턴스에서 IGMP Leave Message 처리<a class="headerlink" href="#pseudo-igmp-leave-message" title="제목 주소">¶</a></h4>
+<p>Pseudo 쿼리기 인스턴스는 멀티 캐스트 그룹 참여 호스트에서
+IGMP Leave Message를 수신했을 때, 기억한 정보의 업데이트 및 플로우 항목 업데이트를
+수행합니다. 전송 대상 포트가 없는 경우, 플로우 항목을 삭제합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">leave</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;the process when the querier received a LEAVE message.&quot;&quot;&quot;</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">if</span> <span class="n">in_port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">in_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">][</span><span class="n">in_port</span><span class="p">]</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcast</span><span class="p">[</span><span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">]:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">actions</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_flow_entry</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_del_flow_entry</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_port</span><span class="p">,</span> <span class="n">leave</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id16">
+<h3>응용 프로그램 구현<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
+<p>「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a> 」에 나와있는 OpenFlow 1.3 지원 IGMP 스누핑
+응용 프로그램 (simple_switch_igmp_13.py)와
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」스위칭 허브의 차이를 차례로 설명합니다.</p>
+<div class="section" id="contexts">
+<h4>「_CONTEXTS」설정<a class="headerlink" href="#contexts" title="제목 주소">¶</a></h4>
+<p>ryu.base.app_manager.RyuApp을 계승 한 Ryu 응용 프로그램은 「_CONTEXTS」
+dictionary에 다른 Ryu 응용 프로그램을 설정하여 다른 응용
+프로그램을 별도의 스레드에서 실행시킬 수 있습니다. 여기에서는 IGMP 스누핑 라이브러리의 IgmpLib 클래스를 「igmplib」라는 이름으로 「_CONTEXTS」로 설정합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">igmplib</span>
+
+<span class="c"># ...</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchIgmp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;igmplib&#39;</span><span class="p">:</span> <span class="n">igmplib</span><span class="o">.</span><span class="n">IgmpLib</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>「_CONTEXTS」에 설정한 응용 프로그램은 __init__() 메서드 kwargs에서
+인스턴스를 얻을 수 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchIgmp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_snoop</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;igmplib&#39;</span><span class="p">]</span>
+<span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id17">
+<h4>라이브러리의 기본<a class="headerlink" href="#id17" title="제목 주소">¶</a></h4>
+<p>「_CONTEXTS」로 설정 한 IGMP 스누핑 라이브러리의 초기 구성을 수행합니다.
+「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a> 」에서 보여준대로 쿼리기의 동작도 pseudo여야합니다.
+요청이 있는 경우 IGMP 스누핑 라이브러리가 제공하는 set_querier_mode() 메서드를
+실행합니다. 여기에 다음 값을 설정합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="43%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">매개변수</th>
+<th class="head">값</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dpid</td>
+<td>str_to_dpid(&#8216;0000000000000001&#8217;)</td>
+<td>쿼리기 역할을 하는 데이터패스
+ID</td>
+</tr>
+<tr class="row-odd"><td>server_port</td>
+<td>2</td>
+<td>멀티캐스트 서버가 연결되어 있는
+쿼리기의 포트</td>
+</tr>
+</tbody>
+</table>
+<p>이 설정은 데이터 경로 ID 「0000000000000001」의 OpenFlow 스위치가 쿼리기
+역할을 하며 멀티 캐스트 패킷의 원본으로 포트 2를 맡은 플로우 항목을
+등록하는 것입니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre># ...
+    self._snoop = kwargs[&#39;igmplib&#39;]
+    self._snoop.set_querier_mode(
+        dpid=str_to_dpid(&#39;0000000000000001&#39;), server_port=2)
+# ...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id18">
+<h4>사용자 정의 이벤트를 수신하는 방법<a class="headerlink" href="#id18" title="제목 주소">¶</a></h4>
+<p>「 <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>링크 어그리게이션</em></a> 」뿐만 아니라 IGMP 스누핑 라이브러리는 IGMP
+패킷이 포함되지 않은 Packet-In 메시지를 <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt> 라는 사용자 정의
+이벤트로 보냅니다. 사용자 정의 이벤트의 이벤트 처리기도 Ryu에서 제공하는
+이벤트 처리기처럼 <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt> 데코레이터로 장식합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>또한 IGMP 스누핑 라이브러리는 멀티 캐스트 그룹의 추가 / 변경 / 삭제를 할
+때 <tt class="docutils literal"><span class="pre">EventMulticastGroupStateChanged</span></tt> 이벤트를 송신하기 때문에, 이쪽에
+해당 이벤트 처리기를 만들어 둡니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">igmplib</span><span class="o">.</span><span class="n">EventMulticastGroupStateChanged</span><span class="p">,</span>
+            <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_status_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_ADDED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Added&#39;</span><span class="p">,</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_MEMBER_CHANGED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Member Changed&#39;</span><span class="p">,</span>
+        <span class="n">igmplib</span><span class="o">.</span><span class="n">MG_GROUP_REMOVED</span><span class="p">:</span> <span class="s">&#39;Multicast Group Removed&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">: [</span><span class="si">%s</span><span class="s">] querier:[</span><span class="si">%s</span><span class="s">] hosts:</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                     <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">reason</span><span class="p">),</span> <span class="n">ev</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">src</span><span class="p">,</span>
+                     <span class="n">ev</span><span class="o">.</span><span class="n">dsts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>이와 같이, IGMP 스누핑 기능을 제공하는 라이브러리와 라이브러리를 사용하는
+응용 프로그램에서 IGMP 스누핑 기능을 가진 스위칭 허브의
+프로그램을 실현하였습니다.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">IGMP 스누핑</a><ul>
+<li><a class="reference internal" href="#id1">IGMP 스누핑</a><ul>
+<li><a class="reference internal" href="#id2">IGMP 개요</a></li>
+<li><a class="reference internal" href="#id3">서브넷의 과제와 IGMP 스누핑 개요</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a><ul>
+<li><a class="reference internal" href="#id4">실험 환경 구축</a></li>
+<li><a class="reference internal" href="#id5">IGMP 버전 설정</a></li>
+<li><a class="reference internal" href="#ip">IP 주소 설정</a></li>
+<li><a class="reference internal" href="#id6">기본 게이트웨이 설정</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlow 버전 설정</a></li>
+<li><a class="reference internal" href="#id7">스위칭 허브의 실행</a></li>
+<li><a class="reference internal" href="#id8">멀티 캐스트 그룹 추가</a><ul>
+<li><a class="reference internal" href="#h1s2-225-0-0-1">호스트 h1s2를 225.0.0.1 그룹에 가입시킴</a></li>
+<li><a class="reference internal" href="#h3s2-225-0-0-1">호스트 h3s2를 225.0.0.1 그룹에 가입시킴</a></li>
+<li><a class="reference internal" href="#h2s2-225-0-0-2">호스트 h2s2를 225.0.0.2 그룹에 가입시킴</a></li>
+<li><a class="reference internal" href="#h3s1-225-0-0-1">호스트 h3s1를 225.0.0.1 그룹에 가입시킴</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">스트리밍 시작</a></li>
+<li><a class="reference internal" href="#id10">멀티 캐스트 그룹 삭제</a><ul>
+<li><a class="reference internal" href="#id11">호스트 h1s2를 225.0.0.1 그룹에서 탈퇴시킴</a></li>
+<li><a class="reference internal" href="#id12">호스트 h3s2를 225.0.0.1 그룹에서 탈퇴시킴</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ryu-igmp">Ryu의 IGMP 스누핑 기능 구현</a><ul>
+<li><a class="reference internal" href="#id13">IGMP 스누핑 라이브러리 구현</a><ul>
+<li><a class="reference internal" href="#pseudo">스누핑 클래스와 pseudo 쿼리기 클래스</a></li>
+<li><a class="reference internal" href="#packet-in">Packet-In 처리</a></li>
+<li><a class="reference internal" href="#igmp-query-message">스누핑 인스턴스에서 IGMP Query Message 처리</a></li>
+<li><a class="reference internal" href="#igmp-report-message">스누핑 인스턴스에서 IGMP Report Message 처리</a></li>
+<li><a class="reference internal" href="#id14">스누핑 인스턴스에서 IGMP Report Message 수신 타임 아웃 처리</a></li>
+<li><a class="reference internal" href="#igmp-leave-message">스누핑 인스턴스에서 IGMP Leave Message 처리</a></li>
+<li><a class="reference internal" href="#igmp-report-message-leave">스누핑 인스턴스에서 IGMP Report Message (Leave 응답) 수신 타임 아웃 처리</a></li>
+<li><a class="reference internal" href="#pseudo-igmp-query-message">Pseudo 쿼리기 인스턴스에서 IGMP Query Message 정기 송신 처리</a></li>
+<li><a class="reference internal" href="#pseudo-igmp-report-message">Pseudo 쿼리기 인스턴스에서 IGMP Report Message 처리</a></li>
+<li><a class="reference internal" href="#id15">Pseudo 쿼리기 인스턴스에서 IGMP Report Message 수신 타임 아웃 처리</a></li>
+<li><a class="reference internal" href="#pseudo-igmp-leave-message">Pseudo 쿼리기 인스턴스에서 IGMP Leave Message 처리</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id16">응용 프로그램 구현</a><ul>
+<li><a class="reference internal" href="#contexts">「_CONTEXTS」설정</a></li>
+<li><a class="reference internal" href="#id17">라이브러리의 기본</a></li>
+<li><a class="reference internal" href="#id18">사용자 정의 이벤트를 수신하는 방법</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="spanning_tree.html"
+                        title="이전 장">스패닝 트리</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="openflow_protocol.html"
+                        title="다음 장">OpenFlow 프로토콜</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/igmp_snooping.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="openflow_protocol.html" title="OpenFlow 프로토콜"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="spanning_tree.html" title="스패닝 트리"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

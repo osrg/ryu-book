@@ -1,0 +1,1558 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>스패닝 트리 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="IGMP 스누핑" href="igmp_snooping.html" />
+    <link rel="prev" title="링크 어그리게이션" href="link_aggregation.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="igmp_snooping.html" title="IGMP 스누핑"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="링크 어그리게이션"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ch-spanning-tree">
+<span id="id1"></span><h1>스패닝 트리<a class="headerlink" href="#ch-spanning-tree" title="제목 주소">¶</a></h1>
+<p>이 장에서는 Ryu를 이용한 스패닝 트리의 구현 방법을 설명하고 있습니다.</p>
+<div class="section" id="id2">
+<h2>스패닝 트리<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>스패닝 트리는 루프(loop) 구조를 가지는 네트워크에서 브로드캐스트가 계속
+발생하는 것을 억제하는 기능입니다. 또한 루프를 방지한다는 본래의 기능을 응용하여
+네트워크 고장이 발생했을 때 자동으로 경로를 전환하는 네트워크
+중복 보장의 수단으로도 이용됩니다.</p>
+<p>스패닝 트리에는 STP, RSTP, PVST + MSTP 등 여러가지 종류가 있습니다만,
+이 장에서는 가장 기본적인 STP 구현을 살펴 보겠습니다.</p>
+<p>STP (spanning tree protocol : IEEE 802.1D)는 네트워크를 논리적 트리로 취급하고,
+각 스위치 (이 장에서는 브리지라고도 부릅니다) 포트를 프레임 전송 가능 또는 불가능 상태로 설정하는 것으로,
+루프 구조를 가진 네트워크에서 브로드 캐스트가 계속의 발생하는 것을 막습니다.</p>
+<a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" /></a>
+<p>STP는 브리지간에 BPDU (Bridge Protocol Data Unit) 패킷을 상호 교환
+하고 브리지와 포트 정보를 비교함으로서,
+각 포트의 프레임 전송 여부를 결정합니다.</p>
+<p>구체적으로는 다음과 같은 순서에 따라 이루어집니다.</p>
+<p>1．루트 브리지 선택</p>
+<blockquote>
+<div>브리지 사이의 BPDU 패킷 교환을 통해 가장 작은 브리지 ID 값을 갖는 브리지가
+루트 브리지로 선출됩니다. 이후에는 루트 브리지에서만 원래
+BPDU 패킷을 전송하고 다른 브리지가 루트 브리지에서 수신한 BPDU 패킷을
+전송합니다.</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p>브리지 ID는 각 브리지에 설정된 브리지 priority와
+특정 포트의 MAC 주소의 조합으로 산출됩니다.</p>
+<blockquote class="last">
+<div><p>브리지 ID</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="59%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">상위2byte</th>
+<th class="head">하위6byte</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>브리지priority</td>
+<td>MAC주소</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<p>2．포트 역할 결정</p>
+<blockquote>
+<div><p>각 포트의 루트 브리지까지의 비용(cost)을 바탕으로, 포트 역할을 결정합니다.</p>
+<ul>
+<li><p class="first">루트 포트 (Root port)</p>
+<blockquote>
+<div><p>브리지에서 루트 브리지까지의 비용이 가장 작은 포트.
+해당 포트에서 루트 브리지로부터 BPDU 패킷을 수신합니다.</p>
+</div></blockquote>
+</li>
+<li><p class="first">지정 포트 (Designated port)</p>
+<blockquote>
+<div><p>각 링크의 루트 브리지까지의 비용이 작은 쪽의 포트.
+루트 브리지로부터 받은 BPDU 패킷을 전송하는 포트입니다.
+루트 브리지의 포트는 모두 지정된 포트입니다.</p>
+</div></blockquote>
+</li>
+<li><p class="first">비지정 포트 (Non designated port)</p>
+<blockquote>
+<div><p>루트 포트 지정 포트 이외의 포트.
+프레임 전송을 억제하는 포트입니다.</p>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" /></a>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p>루트 브리지까지의 비용은 각 포트에서 수신한 BPDU 패킷
+설정에서 다음과 같이 비교됩니다.</p>
+<blockquote class="last">
+<div><p>Priority 1：root path cost 값의 비교</p>
+<blockquote>
+<div>각 브리지는 BPDU 패킷을 전송할 때 출력 포트에 설정된
+path cost 값을 BPDU 패킷의 root path cost 값에 더합니다.
+이렇게하면 root path cost 값은 루트 브리지에 도달 할 때까지
+통해 각 링크의 path cost 값의 합계입니다.</div></blockquote>
+<p>Priority 2：root path cost 값이 같으면 대응하는 브리지의 브리지 ID별로 비교.</p>
+<p>Priority 3：대응하는 브리지의 브리지 ID가 같은 경우 (각 포트가 동일한 브리지에 연결된 케이스), 대응하는 포트의 포트 ID별로 비교.</p>
+<blockquote>
+<div><p>포트 ID</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="58%" />
+<col width="42%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">상위2byte</th>
+<th class="head">하위2byte</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>포트 priority</td>
+<td>포트 번호</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+</div>
+<p>3．포트 상태 변경</p>
+<blockquote>
+<div>포트 역할 결정 후 (STP 계산의 완료시), 각 포트는 LISTEN 상태입니다.
+그 다음 나타내는 아래와 같이 상태가 변경되어, 각 포트의 역할에 따라 점차
+FORWARD 상태 또는 BLOCK 상태로 변경됩니다. 구성에서 사용된 비활성화 포트는
+DISABLE 상태가되고, 이후에는 상태 변경이 일어나지 않습니다.</div></blockquote>
+<a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" /></a>
+<p>각 포트는 상태에 따라 프레임 전송 여부 등의 동작을 결정합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="87%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">상태</th>
+<th class="head">동작</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DISABLE</td>
+<td>비활성화 포트. 모든 수신 패킷을 무시합니다.</td>
+</tr>
+<tr class="row-odd"><td>BLOCK</td>
+<td>BPDU만 수신합니다.</td>
+</tr>
+<tr class="row-even"><td>LISTEN</td>
+<td>BPDU를 송수신합니다.</td>
+</tr>
+<tr class="row-odd"><td>LEARN</td>
+<td>BPDU를 송수신하고, MAC 학습을 실시합니다.</td>
+</tr>
+<tr class="row-even"><td>FORWARD</td>
+<td>BPDU 송수신 / MAC 학습 / 프레임을 전송합니다.</td>
+</tr>
+</tbody>
+</table>
+<p>이러한 작업이 각 브리지에서 실행될 때, 프레임 전송이 이루어지는 포트와
+프레임 전송을 억제하는 포트가 결정되어 네트워크 내 루프가 해소됩니다.</p>
+<p>또한 링크 다운 및 BPDU 패킷 max age (디폴트: 20 초) 사이의 미수신
+에 의한 고장 감지 또는 포트 추가 등에 의해 네트워크 토폴로지 변경 내용이
+발견되는 경우 각 브리지에서 위의 1. 2. 3.을 실행 트리러 재구성합니다
+(STP 재계산).</p>
+</div>
+<div class="section" id="ryu">
+<h2>Ryu 응용 프로그램 실행<a class="headerlink" href="#ryu" title="제목 주소">¶</a></h2>
+<p>스패닝 트리 기능을 OpenFlow를 이용하여 구현한 Ryu 스패닝 트리
+응용 프로그램을 실행 해 봅니다.</p>
+<p>Ryu 소스 트리에 포함되어 있는 simple_switch_stp.py는 OpenFlow 1.0 전용
+응용 프로그램이기 때문에 여기에서는 새롭게 OpenFlow 1.3에 대응하는
+simple_switch_stp_13.py을 만듭니다. 이 프로그램은
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에 스패닝 트리 기능을
+추가한 응용 프로그램입니다.</p>
+<p>소스 이름： <tt class="docutils literal"><span class="pre">simple_switch_stp_13.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">stplib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;stplib&#39;</span><span class="p">:</span> <span class="n">stplib</span><span class="o">.</span><span class="n">Stp</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitch13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;stplib&#39;</span><span class="p">]</span>
+
+        <span class="c"># Sample of stplib config.</span>
+        <span class="c">#  please refer to stplib.Stp.set_config() for details.</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
+                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000002&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
+                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000003&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="c"># install table-miss flow entry</span>
+        <span class="c">#</span>
+        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c"># correctly.</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
+                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
+                                             <span class="n">actions</span><span class="p">)]</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+                <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">,</span> <span class="n">out_group</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPG_ANY</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">dst</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">eth</span><span class="o">.</span><span class="n">src</span>
+
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+
+        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
+
+        <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span>
+
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
+
+        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">buffer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span><span class="p">,</span>
+                                  <span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventTopologyChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_topology_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">dp</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">dp</span>
+        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Receive topology change event. Flush MAC table.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;[dpid=</span><span class="si">%s</span><span class="s">] </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid_str</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dp</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_flow</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPortStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_port_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">of_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="s">&#39;DISABLE&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="s">&#39;BLOCK&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="s">&#39;LISTEN&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="s">&#39;LEARN&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="s">&#39;FORWARD&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;[dpid=</span><span class="si">%s</span><span class="s">][port=</span><span class="si">%d</span><span class="s">] state=</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                          <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="section" id="id3">
+<h3>실험 환경 구축<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<p>스패닝 트리 응용 프로그램의 동작 확인을 할 실험 환경을 구축합니다.</p>
+<p>VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」
+을 참조하십시오.</p>
+<p>「 <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>링크 어그리게이션</em></a> 」에서 처럼, 루프 구조를 가지는 특수한
+토폴로지에서 작동시키기 위한 토폴로지 구성 스크립트는 mininet 환경을 구축합니다.</p>
+<p>소스 이름： <tt class="docutils literal"><span class="pre">spanning_tree.py</span></tt></p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
+<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
+<span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">RemoteController</span>
+<span class="kn">from</span> <span class="nn">mininet.term</span> <span class="kn">import</span> <span class="n">makeTerm</span>
+
+<span class="k">if</span> <span class="s">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">)</span>
+
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">)</span>
+
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s2&#39;</span><span class="p">)</span>
+    <span class="n">s3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s3&#39;</span><span class="p">)</span>
+
+    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">)</span>
+    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">)</span>
+
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">h3</span><span class="p">)</span>
+
+    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">s2</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+    <span class="n">Link</span><span class="p">(</span><span class="n">s3</span><span class="p">,</span> <span class="n">s1</span><span class="p">)</span>
+    
+
+    <span class="n">net</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+    <span class="n">c0</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">s1</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+    <span class="n">s2</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+    <span class="n">s3</span><span class="o">.</span><span class="n">start</span><span class="p">([</span><span class="n">c0</span><span class="p">])</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">c0</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">s3</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h1</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h2</span><span class="p">))</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">makeTerm</span><span class="p">(</span><span class="n">h3</span><span class="p">))</span>
+
+    <span class="n">CLI</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+
+    <span class="n">net</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>VM 환경에서 이 프로그램을 실행하면 스위치 s1, s2, s3 사이에서 루프가
+존재하는 토폴로지가 됩니다.</p>
+<a class="reference internal image-reference" href="_images/fig43.png"><img alt="_images/fig43.png" class="align-center" src="_images/fig43.png" /></a>
+<p>net 명령의 실행 결과는 다음과 같습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
+Unable to contact the remote controller at 127.0.0.1:6633
+mininet&gt; net
+c0
+s1 lo:  s1-eth1:h1-eth0 s1-eth2:s2-eth2 s1-eth3:s3-eth3
+s2 lo:  s2-eth1:h2-eth0 s2-eth2:s1-eth2 s2-eth3:s3-eth2
+s3 lo:  s3-eth1:h3-eth0 s3-eth2:s2-eth3 s3-eth3:s1-eth3
+h1 h1-eth0:s1-eth1
+h2 h2-eth0:s2-eth1
+h3 h3-eth0:s3-eth1
+</pre></div>
+</div>
+</div>
+<div class="section" id="openflow">
+<h3>OpenFlow 버전 설정<a class="headerlink" href="#openflow" title="제목 주소">¶</a></h3>
+<p>사용하는 OpenFlow 버전을 1.3으로 설정합니다.
+아래 명령을 스위치 s1, s2, s3의 xterm에서 실행해 주십시오.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>Node: s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>Node: s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h3>스위칭 허브의 실행<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>준비가 완료되었으므로 Ryu 응용 프로그램을 실행합니다. 윈도우 제목이
+「Node: c0 (root)」인 xterm에서 다음 명령을 실행합니다.</p>
+<p>Node: c0:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
+loading app simple_switch_stp_13.py
+loading app ryu.controller.ofp_handler
+loading app ryu.controller.ofp_handler
+instantiating app None of Stp
+creating context stplib
+instantiating app simple_switch_stp_13.py of SimpleSwitch13
+instantiating app ryu.controller.ofp_handler of OFPHandler
+</pre></div>
+</div>
+<div class="section" id="openflow-stp">
+<h4>OpenFlow 스위치 시작시 STP 계산<a class="headerlink" href="#openflow-stp" title="제목 주소">¶</a></h4>
+<p>각 OpenFlow 스위치와 컨트롤러의 연결이 완료되면 BPDU 패킷의 교환이 시작되고
+루트 브리지 선택, 포트 역할 설정 및 포트 상태 변경이 이루어집니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000001: Join as stp bridge.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: Join as stp bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: Root bridge.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: Non root bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: Join as stp bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: Non root bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: Root bridge.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: Non root bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: Non root bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: Root bridge.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LEARN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+</pre></div>
+</div>
+<p>결과적으로, 최종적으로 각 포트는 FORWARD 상태 또는 BLOCK 상태가 됩니다.</p>
+<a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" class="align-center" src="_images/fig51.png" /></a>
+<p>패킷이 루프되지 않음을 확인하기 위해 호스트 1에서 호스트 2로 ping을 실행합니다.</p>
+<p>ping 명령을 실행하기 전에 tcpdump 명령을 실행합니다.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
+</pre></div>
+</div>
+<p>Node: s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp
+</pre></div>
+</div>
+<p>Node: s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp
+</pre></div>
+</div>
+<p>토폴로지 작성 스크립트를 실행했던 콘솔에서 다음 명령을 실행하여,
+호스트 1에서 호스트 2로 ping을 실행합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.4 ms
+64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.657 ms
+64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.074 ms
+64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.076 ms
+64 bytes from 10.0.0.2: icmp_req=5 ttl=64 time=0.054 ms
+64 bytes from 10.0.0.2: icmp_req=6 ttl=64 time=0.053 ms
+64 bytes from 10.0.0.2: icmp_req=7 ttl=64 time=0.041 ms
+64 bytes from 10.0.0.2: icmp_req=8 ttl=64 time=0.049 ms
+64 bytes from 10.0.0.2: icmp_req=9 ttl=64 time=0.074 ms
+64 bytes from 10.0.0.2: icmp_req=10 ttl=64 time=0.073 ms
+64 bytes from 10.0.0.2: icmp_req=11 ttl=64 time=0.068 ms
+^C
+--- 10.0.0.2 ping statistics ---
+11 packets transmitted, 11 received, 0% packet loss, time 9998ms
+rtt min/avg/max/mdev = 0.041/7.784/84.407/24.230 ms
+</pre></div>
+</div>
+<p>tcpdump의 출력에서 ARP 루프가 발생하지 않음을 확인할 수 있습니다.</p>
+<p>Node: s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s1-eth2 arp
+tcpdump: WARNING: s1-eth2: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on s1-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+11:30:24.692797 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+11:30:24.749153 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
+11:30:29.797665 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
+11:30:29.798250 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+</pre></div>
+</div>
+<p>Node: s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s2-eth2 arp
+tcpdump: WARNING: s2-eth2: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on s2-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+11:30:24.692824 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+11:30:24.749116 ARP, Reply 10.0.0.2 is-at 82:c9:d7:e9:b7:52 (oui Unknown), length 28
+11:30:29.797659 ARP, Request who-has 10.0.0.1 tell 10.0.0.2, length 28
+11:30:29.798254 ARP, Reply 10.0.0.1 is-at c2:a4:54:83:43:fa (oui Unknown), length 28
+</pre></div>
+</div>
+<p>Node: s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -i s3-eth2 arp
+tcpdump: WARNING: s3-eth2: no IPv4 address assigned
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
+11:30:24.698477 ARP, Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+</pre></div>
+</div>
+</div>
+<div class="section" id="stp">
+<h4>감지된 고장에 따른 STP 재계산<a class="headerlink" href="#stp" title="제목 주소">¶</a></h4>
+<p>다음으로, 링크 다운이 일어 났을 때의 STP 재계산 동작을 확인합니다.
+각 OpenFlow 스위치 시작 후 STP 계산이 완료된 상태에서 다음 명령을 실행하여
+포트를 다운시킵니다.</p>
+<p>Node: s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig s2-eth2 down
+</pre></div>
+</div>
+<p>링크 다운이 감지되고 STP 재계산이 실행됩니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: Root bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] Link down.
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / DISABLE
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=2] Wait BPDU timer is exceeded.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: Root bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: Non root bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: Non root bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=3] ROOT_PORT           / FORWARD
+</pre></div>
+</div>
+<p>지금까지 BLOCK 상태였던 s3-eth2 포트가 FORWARD 상태가 되고,
+다시 프레임 전송이 가능한 상태가 된 것을 확인할 수 있습니다.</p>
+<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" /></a>
+</div>
+<div class="section" id="id5">
+<h4>고장 복구시 STP 재계산<a class="headerlink" href="#id5" title="제목 주소">¶</a></h4>
+<p>계속해서, 링크 다운이 복구될 때의 STP 재계산 동작을 확인합니다.
+링크가 다운된 상태에서 다음 명령을 실행하여 포트를 활성화시킵니다.</p>
+<p>Node: s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig s2-eth2 up
+</pre></div>
+</div>
+<p>링크 복구가 감지되고 STP 재계산이 실행됩니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>[STP][INFO] dpid=0000000000000002: [port=2] Link down.
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / DISABLE
+[STP][INFO] dpid=0000000000000002: [port=2] Link up.
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] Link up.
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000001: Root bridge.
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000002: Non root bridge.
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] Receive superior BPDU.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=2] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] DESIGNATED_PORT     / BLOCK
+[STP][INFO] dpid=0000000000000003: Non root bridge.
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LISTEN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LISTEN
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / LEARN
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / LEARN
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / LEARN
+[STP][INFO] dpid=0000000000000001: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000001: [port=2] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000001: [port=3] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=2] ROOT_PORT           / FORWARD
+[STP][INFO] dpid=0000000000000002: [port=3] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=1] DESIGNATED_PORT     / FORWARD
+[STP][INFO] dpid=0000000000000003: [port=2] NON_DESIGNATED_PORT / BLOCK
+[STP][INFO] dpid=0000000000000003: [port=3] ROOT_PORT           / FORWARD
+</pre></div>
+</div>
+<p>응용 프로그램 시작시와 같은 트리 구성이 다시 프레임 전송 가능
+상태로 된 것을 확인할 수 있습니다.</p>
+<a class="reference internal image-reference" href="_images/fig71.png"><img alt="_images/fig71.png" class="align-center" src="_images/fig71.png" /></a>
+</div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>OpenFlow에 의한 스패닝 트리<a class="headerlink" href="#id6" title="제목 주소">¶</a></h2>
+<p>Ryu 스패닝 트리 응용 프로그램에서 OpenFlow를 사용하여 어떻게
+스패닝 트리 기능을 수행하고 있는지를 살펴 보겠습니다.</p>
+<p>OpenFlow 1.3에는 다음과 같은 포트의 동작을 설정하는 구성이 준비되어 있습니다.
+Port Modification 메시지를 OpenFlow 스위치에 발생하여
+포트의 프레임 전송 여부 등의 동작을 제어할 수 있습니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">값</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>OFPPC_PORT_DOWN</td>
+<td>유지 보수에 의해 비활성화 설정된 상태입니다</td>
+</tr>
+<tr class="row-odd"><td>OFPPC_NO_RECV</td>
+<td>해당 포트에서 수신한 모든 패킷을 버립니다</td>
+</tr>
+<tr class="row-even"><td>OFPPC_NO_FWD</td>
+<td>해당 포트에서 패킷을 전송하지 않습니다</td>
+</tr>
+<tr class="row-odd"><td>OFPPC_NO_PACKET_IN</td>
+<td>table-miss인 경우 Packet-In 메시지를 보내지 않습니다</td>
+</tr>
+</tbody>
+</table>
+<p>또한, 포트 당 BPDU 패킷 수신 및 BPDU 이외의 패킷 수신을 제어하기 위해
+BPDU 패킷을 Packet-In 플로우 항목 및 BPDU 이외의 패킷을 drop하는
+플로우 항목을 각각 Flow Mod 메시지를 사용해 OpenFlow 스위치에 등록합니다.</p>
+<p>컨트롤러는 각 OpenFlow 스위치에 대해 아래와 같이 포트 구성 설정 및
+플로우 항목을 설정함으로써 포트 상태에 따라 BPDU 패킷 송수신 또는
+MAC 주소 학습 (BPDU 이외의 패킷 수신) 및 프레임 전송 (BPDU 이외의 패킷 전송)을
+제어합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="31%" />
+<col width="55%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">상태</th>
+<th class="head">포트 구성</th>
+<th class="head">흐름 항목</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DISABLE</td>
+<td>NO_RECV／NO_FWD</td>
+<td>설정없음</td>
+</tr>
+<tr class="row-odd"><td>BLOCK</td>
+<td>NO_FWD</td>
+<td>BPDU Packet-In／BPDU이외drop</td>
+</tr>
+<tr class="row-even"><td>LISTEN</td>
+<td>설정없음</td>
+<td>BPDU Packet-In／BPDU이외drop</td>
+</tr>
+<tr class="row-odd"><td>LEARN</td>
+<td>설정없음</td>
+<td>BPDU Packet-In／BPDU이외drop</td>
+</tr>
+<tr class="row-even"><td>FORWARD</td>
+<td>설정없음</td>
+<td>BPDU Packet-In</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">Ryu에 구현된 스패닝 트리의 라이브러리는 편의상
+LEARN 상태에서 MAC 주소 학습 (BPDU 이외의 패킷 수신)을 수행하지 않습니다.</p>
+</div>
+<p>이러한 설정뿐 아니라 컨트롤러는 OpenFlow 스위치와 연결할 때 수집한
+포트 정보와 각 OpenFlow 스위치가 받은 BPDU 패킷에 설정된 루트 브리지
+정보를 바탕으로 보내기위한 BPDU 패킷을 구축해 Packet-Out 메시지를 발행하는
+것으로, OpenFlow 스위치 사이의 BPDU 패킷의 교환을 제공합니다.</p>
+</div>
+<div class="section" id="id7">
+<h2>Ryu 스패닝 트리 구현<a class="headerlink" href="#id7" title="제목 주소">¶</a></h2>
+<p>이어, Ryu를 사용하여 구현된 스패닝 트리의 소스 코드를 살펴 보겠습니다.
+스패닝 트리의 소스 코드는 Ryu 소스 트리에 있습니다.</p>
+<blockquote>
+<div><p>ryu/lib/stplib.py</p>
+<p>ryu/app/simple_switch_stp.py</p>
+</div></blockquote>
+<p>stplib.py는 BPDU 패킷 교환이나 각 포트의 역할 · 상태 관리 등의
+스패닝 트리 기능을 제공하는 라이브러리입니다.
+simple_switch_stp.py는 스패닝 트리 라이브러리를 적용하여
+스위칭 허브의 응용 프로그램에 스패닝 트리 기능을 추가한
+응용 프로그램입니다.</p>
+<div class="admonition attention">
+<p class="first admonition-title">주의</p>
+<p class="last">simple_switch_stp.py는 OpenFlow 1.0 전용 응용 프로그램
+이기 때문에 이 장에서는 「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a>  」에서 보여 주었던
+OpenFlow 1.3에 대응하는 simple_switch_stp_13.py 을 기반으로 응용
+프로그램에 대한 내용을 자세히 설명합니다.</p>
+</div>
+<div class="section" id="id8">
+<h3>라이브러리의 구현<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<div class="section" id="id9">
+<h4>라이브러리 개요<a class="headerlink" href="#id9" title="제목 주소">¶</a></h4>
+<a class="reference internal image-reference" href="_images/fig81.png"><img alt="_images/fig81.png" class="align-center" src="_images/fig81.png" /></a>
+<p>STP 라이브러리 (Stp 클래스 인스턴스)가 OpenFlow 스위치 컨트롤러
+연결을 감지하면 Bridge 클래스 인스턴스 Port 클래스 인스턴스가
+생성됩니다. 각 클래스 인스턴스가 생성 · 시작 된 후에는</p>
+<ul class="simple">
+<li>Stp 클래스 인스턴스에서 OpenFlow 메시지 수신을 알림</li>
+<li>Bridge 클래스 인스턴스의 STP 계산 (루트 브리지 선택 및 각 포트의 역할 선택)</li>
+<li>Port 클래스 인스턴스의 포트 상태 전이 · BPDU 패킷 전송</li>
+</ul>
+<p>에 의해 연동 스패닝 트리 기능을 제공합니다.</p>
+</div>
+<div class="section" id="id10">
+<h4>구성 설정 항목<a class="headerlink" href="#id10" title="제목 주소">¶</a></h4>
+<p>STP 라이브러리는 <tt class="docutils literal"><span class="pre">Stp.set_config</span> <span class="pre">()</span></tt> 메서드에 의해 브리지 포트
+구성 설정 IF를 제공합니다. 설정 가능한 항목은 다음과 같습니다.</p>
+<ul>
+<li><p class="first">bridge</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="65%" />
+<col width="15%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">항목</th>
+<th class="head">설명</th>
+<th class="head">기본값</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">priority</span></tt></td>
+<td>브리지 우선 순위</td>
+<td>0x8000</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">sys_ext_id</span></tt></td>
+<td>VLAN-ID 설정 (* 현재 STP 라이브러리는 VLAN 비인식)</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">max_age</span></tt></td>
+<td>BPDU 패킷의 수신 타이머 값</td>
+<td>20[sec]</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">hello_time</span></tt></td>
+<td>BPDU 패킷의 전송 간격</td>
+<td>2 [sec]</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">fwd_delay</span></tt></td>
+<td>각 포트가 LISTEN 상태 및 LEARN 상태에 머무는 시간</td>
+<td>15[sec]</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+<li><p class="first">port</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="37%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">항목</th>
+<th class="head">설명</th>
+<th class="head">기본값</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">priority</span></tt></td>
+<td>포트 우선 순위</td>
+<td>0x80</td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">path_cost</span></tt></td>
+<td>링크의 비용 값 링크</td>
+<td>속도를 바탕으로 자동 설정</td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">enable</span></tt></td>
+<td>포트 활성화/비활성화 설정</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="bpdu">
+<h4>BPDU 패킷 전송<a class="headerlink" href="#bpdu" title="제목 주소">¶</a></h4>
+<p>BPDU 패킷은 Port 클래스의 BPDU 패킷 전송 스레드
+(<tt class="docutils literal"><span class="pre">Port.send_bpdu_thread</span></tt>)에서 보냅니다. 포트 역할이 지정 포트
+(<tt class="docutils literal"><span class="pre">DESIGNATED_PORT</span></tt>)인 경우 루트 브리지에서 통지된 hello time
+(<tt class="docutils literal"><span class="pre">Port.port_times.hello_time</span></tt> : 디폴트 2 초) 간격으로 BPDU 패킷 생성
+(<tt class="docutils literal"><span class="pre">Port._generate_config_bpdu</span> <span class="pre">()</span></tt>) 및 BPDU 패킷 전송
+(<tt class="docutils literal"><span class="pre">Port.ofctl.send_packet_out</span> <span class="pre">()</span></tt>)이 이루어집니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
+                 <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="c"># ...</span>
+
+        <span class="c"># BPDU handling threads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_bpdu_thread</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transmit_bpdu</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+
+    <span class="k">def</span> <span class="nf">_transmit_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="c"># Send config BPDU packet if port role is DESIGNATED_PORT.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">DESIGNATED_PORT</span><span class="p">:</span>
+
+                <span class="c"># ...</span>
+
+                <span class="n">bpdu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_config_bpdu</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ofctl</span><span class="o">.</span><span class="n">send_packet_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">bpdu_data</span><span class="p">)</span>
+
+                <span class="c"># ...</span>
+
+            <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">hello_time</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>보내는 BPDU 패킷은 OpenFlow 스위치 컨트롤러 연결시에 수집하는
+포트 정보 (<tt class="docutils literal"><span class="pre">Port.ofport</span></tt>) 또는 받은 BPDU 패킷에 설정된
+루트 브리지 정보 (<tt class="docutils literal"><span class="pre">Port.port_priority,</span> <span class="pre">Port.port_times</span></tt>) 등을 바탕으로
+구축됩니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_generate_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
+        <span class="n">src_mac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">hw_addr</span>
+        <span class="n">dst_mac</span> <span class="o">=</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">BRIDGE_GROUP_ADDRESS</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="p">(</span><span class="n">bpdu</span><span class="o">.</span><span class="n">bpdu</span><span class="o">.</span><span class="n">_PACK_LEN</span> <span class="o">+</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">ConfigurationBPDUs</span><span class="o">.</span><span class="n">PACK_LEN</span>
+                  <span class="o">+</span> <span class="n">llc</span><span class="o">.</span><span class="n">llc</span><span class="o">.</span><span class="n">_PACK_LEN</span> <span class="o">+</span> <span class="n">llc</span><span class="o">.</span><span class="n">ControlFormatU</span><span class="o">.</span><span class="n">_PACK_LEN</span><span class="p">)</span>
+
+        <span class="n">e</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="n">dst_mac</span><span class="p">,</span> <span class="n">src_mac</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">llc</span><span class="o">.</span><span class="n">llc</span><span class="p">(</span><span class="n">llc</span><span class="o">.</span><span class="n">SAP_BPDU</span><span class="p">,</span> <span class="n">llc</span><span class="o">.</span><span class="n">SAP_BPDU</span><span class="p">,</span> <span class="n">llc</span><span class="o">.</span><span class="n">ControlFormatU</span><span class="p">())</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">ConfigurationBPDUs</span><span class="p">(</span>
+            <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span>
+            <span class="n">root_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
+            <span class="n">root_mac_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_id</span><span class="o">.</span><span class="n">mac_addr</span><span class="p">,</span>
+            <span class="n">root_path_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_path_cost</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">path_cost</span><span class="p">,</span>
+            <span class="n">bridge_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
+            <span class="n">bridge_mac_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span><span class="o">.</span><span class="n">mac_addr</span><span class="p">,</span>
+            <span class="n">port_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
+            <span class="n">port_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
+            <span class="n">message_age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">message_age</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">max_age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
+            <span class="n">hello_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">hello_time</span><span class="p">,</span>
+            <span class="n">forward_delay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">)</span>
+
+        <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">pkt</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">pkt</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id11">
+<h4>BPDU 패킷 수신<a class="headerlink" href="#id11" title="제목 주소">¶</a></h4>
+<p>BPDU 패킷의 수신은 Stp 클래스의 Packet-In 이벤트 핸들러에 의해 감지되고
+Bridge 클래스 인스턴스를 통해 Port 클래스 인스턴스에 통지됩니다.
+이벤트 처리기 구현 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」을 참조하십시오.</p>
+<p>BPDU 패킷을 수신하는 포트는 이전에 수신한 BPDU 패킷 및 이 때 받은
+BPDU 패킷의 브리지 ID 등의 비교 (<tt class="docutils literal"><span class="pre">Stp.compare_bpdu_info</span> <span class="pre">()</span></tt>)를 수행하여,
+STP 재계산의 필요 여부를 판정합니다. 이전에 수신한 BPDU보다 더 나은 BPDU
+(<tt class="docutils literal"><span class="pre">SUPERIOR</span></tt>)를 받은 경우 &#8220;새로운 루트 브리지가 추가 됨&#8221; 등과 같은 네트워크
+토폴로지 변경이 발생했다는 것을 의미하며, 이는 STP 재계산의 트리거가 됩니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
+        <span class="c"># Check received BPDU is superior to currently held BPDU.</span>
+        <span class="n">root_id</span> <span class="o">=</span> <span class="n">BridgeId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_priority</span><span class="p">,</span>
+                           <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_system_id_extension</span><span class="p">,</span>
+                           <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_mac_address</span><span class="p">)</span>
+        <span class="n">root_path_cost</span> <span class="o">=</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_path_cost</span>
+        <span class="n">designated_bridge_id</span> <span class="o">=</span> <span class="n">BridgeId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_priority</span><span class="p">,</span>
+                                        <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_system_id_extension</span><span class="p">,</span>
+                                        <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_mac_address</span><span class="p">)</span>
+        <span class="n">designated_port_id</span> <span class="o">=</span> <span class="n">PortId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">port_priority</span><span class="p">,</span>
+                                    <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">port_number</span><span class="p">)</span>
+
+        <span class="n">msg_priority</span> <span class="o">=</span> <span class="n">Priority</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span> <span class="n">root_path_cost</span><span class="p">,</span>
+                                <span class="n">designated_bridge_id</span><span class="p">,</span>
+                                <span class="n">designated_port_id</span><span class="p">)</span>
+        <span class="n">msg_times</span> <span class="o">=</span> <span class="n">Times</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">message_age</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">hello_time</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">)</span>
+
+        <span class="n">rcv_info</span> <span class="o">=</span> <span class="n">Stp</span><span class="o">.</span><span class="n">compare_bpdu_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span><span class="p">,</span>
+                                         <span class="n">msg_priority</span><span class="p">,</span> <span class="n">msg_times</span><span class="p">)</span>
+
+        <span class="c"># ...</span>
+
+        <span class="k">return</span> <span class="n">rcv_info</span><span class="p">,</span> <span class="n">rcv_tc</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id12">
+<h4>고장 검출<a class="headerlink" href="#id12" title="제목 주소">¶</a></h4>
+<p>링크 다운 등의 직접적인 고장이나 일정 시간 루트 브리지에서 BPDU 패킷을
+받을 수 없는 간접적인 고장을 검출하는 경우에도 STP 재계산의 트리거가 됩니다.</p>
+<p>링크 차단은 Stp 클래스의 PortStatus 이벤트 핸들러에 의해 감지하고 Bridge 클래스
+인스턴스에 통지됩니다.</p>
+<p>BPDU 패킷의 수신 시간 제한은 Port 클래스의 BPDU 패킷 수신 스레드
+(<tt class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></tt>)에서 검색합니다. max age (디폴트: 20 초) 동안
+루트 브리지에서 BPDU 패킷을 수신 할 수 없는 경우 간접적인 고장이라고 판단하고
+Bridge 클래스 인스턴스에 통지됩니다.</p>
+<p>BPDU 수신 타이머 업데이트와 시간 초과를 감지에는 hub 모듈 (ryu.lib.hub)
+의 <tt class="docutils literal"><span class="pre">hub.Event</span></tt> 와 <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> 을 사용합니다. `` hub.Event `` 는
+<tt class="docutils literal"><span class="pre">hub.Event.wait</span> <span class="pre">()</span></tt> 에서 wait 상태에 온 후  <tt class="docutils literal"><span class="pre">hub.Event.set</span> <span class="pre">()</span></tt> 가 실행될 때까지
+스레드가 중단됩니다. <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> 는 지정된 제한 시간 내에
+<tt class="docutils literal"><span class="pre">try</span></tt> 절에서 처리가 종료되지 않으면 <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> 예외를 발행합니다.
+<tt class="docutils literal"><span class="pre">hub.Event</span></tt> 가 wait 상태에 온 후 <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> 에 지정된 제한 시간 내에
+<tt class="docutils literal"><span class="pre">hub.Event.set</span> <span class="pre">()</span></tt> 가 실행되지 않을 때 BPDU 패킷 수신 시간 초과로
+판단하어 Bridge 클래스의 STP 재계산 프로세스를 호출합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
+                 <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_timeout</span> <span class="o">=</span> <span class="n">timeout_func</span>
+        <span class="c"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_thread</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_bpdu_timer</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+
+    <span class="k">def</span> <span class="nf">_wait_bpdu_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">time_exceed</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+            <span class="n">message_age</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span><span class="o">.</span><span class="n">message_age</span>
+                           <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">timer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">max_age</span> <span class="o">-</span> <span class="n">message_age</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="n">timer</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">hub</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">timeout</span><span class="p">:</span>
+                    <span class="n">err_msg</span> <span class="o">=</span> <span class="s">&#39;Internal error. Not my timeout.&#39;</span>
+                    <span class="k">raise</span> <span class="n">RyuException</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">err_msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[port=</span><span class="si">%d</span><span class="s">] Wait BPDU timer is exceeded.&#39;</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+                <span class="n">time_exceed</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">timeout</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="o">=</span> <span class="bp">None</span>
+
+            <span class="k">if</span> <span class="n">time_exceed</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">time_exceed</span><span class="p">:</span>  <span class="c"># Bridge.recalculate_spanning_tree</span>
+            <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_timeout</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>받은 BPDU 패킷의 비교 처리 (<tt class="docutils literal"><span class="pre">Stp.compare_bpdu_info</span> <span class="pre">()</span></tt>)에 의해
+<tt class="docutils literal"><span class="pre">SUPERIOR</span></tt> 또는 <tt class="docutils literal"><span class="pre">REPEATED</span></tt> 판정된 경우는 루트 브리지에서
+BPDU 패킷을 수신 할 수 있음을 의미하기 때문에 BPDU 수신 타이머를 업데이트
+(<tt class="docutils literal"><span class="pre">Port._update_wait_bpdu_timer()</span></tt>)합니다. <tt class="docutils literal"><span class="pre">hub.Event</span></tt> 에 해당하는
+<tt class="docutils literal"><span class="pre">Port.wait_timer_event</span></tt> 의 <tt class="docutils literal"><span class="pre">set()</span></tt> 처리에 의해 <tt class="docutils literal"><span class="pre">Port.wait_timer_event</span></tt>
+는 wait 상태에서 release된 BPDU 패킷 수신 스레드 (<tt class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></tt>)
+는 <tt class="docutils literal"><span class="pre">except</span> <span class="pre">hub.Timeout</span></tt> 절 시간 제한 처리에 들어 가지 않고도 타이머를
+취소하고 다시 타이머를 다시 설정하는 것으로 다음의 BPDU 패킷 수신을
+시작합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
+        <span class="c"># ...</span>
+
+        <span class="n">rcv_info</span> <span class="o">=</span> <span class="n">Stp</span><span class="o">.</span><span class="n">compare_bpdu_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span><span class="p">,</span>
+                                         <span class="n">msg_priority</span><span class="p">,</span> <span class="n">msg_times</span><span class="p">)</span>
+        <span class="c"># ...</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">SUPERIOR</span> <span class="ow">or</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">REPEATED</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">ROOT_PORT</span>
+                     <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">NON_DESIGNATED_PORT</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_wait_bpdu_timer</span><span class="p">()</span>
+
+        <span class="c"># ...</span>
+
+    <span class="k">def</span> <span class="nf">_update_wait_bpdu_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id13">
+<h4>STP 계산<a class="headerlink" href="#id13" title="제목 주소">¶</a></h4>
+<p>STP 계산 (루트 브리지 선택 및 각 포트의 역할 선택)은 Bridge 클래스에서 실행합니다.</p>
+<p>STP 계산을 수행하는 경우에는 네트워크 토폴로지 변경이 발생하고
+패킷이 루프될 수 있기 때문에 일단 모든 포트를 BLOCK 상태로 설정
+(<tt class="docutils literal"><span class="pre">port.down</span></tt>)하고 또한 토폴로지 변경 이벤트 (<tt class="docutils literal"><span class="pre">EventTopologyChange</span></tt>)
+상위 APL에게 통지함으로써 학습된 MAC 주소 정보의 초기화를 촉진합니다.</p>
+<p>이후 <tt class="docutils literal"><span class="pre">Bridge._spanning_tree_algorithm()</span></tt> 루트 브리지 및 포트
+역할을 선택한 다음, 각 포트를 LISTEN 상태에서 시작 (<tt class="docutils literal"><span class="pre">port.up</span></tt>)하여 포트
+상태 변경을 시작합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">recalculate_spanning_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Re-calculation of spanning tree. &quot;&quot;&quot;</span>
+        <span class="c"># All port down.</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
+                <span class="n">port</span><span class="o">.</span><span class="n">down</span><span class="p">(</span><span class="n">PORT_STATE_BLOCK</span><span class="p">,</span> <span class="n">msg_init</span><span class="o">=</span><span class="n">init</span><span class="p">)</span>
+
+        <span class="c"># Send topology change event.</span>
+        <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_event</span><span class="p">(</span><span class="n">EventTopologyChange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dp</span><span class="p">))</span>
+
+        <span class="c"># Update tree roles.</span>
+        <span class="n">port_roles</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_priority</span> <span class="o">=</span> <span class="n">Priority</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bridge_times</span>
+
+        <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Root bridge.&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">port_roles</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">DESIGNATED_PORT</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">port_roles</span><span class="p">,</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">root_priority</span><span class="p">,</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_spanning_tree_algorithm</span><span class="p">()</span>
+
+        <span class="c"># All port up.</span>
+        <span class="k">for</span> <span class="n">port_no</span><span class="p">,</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">port_roles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_priority</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>루트 브리지의 선출을 위해 브리지 ID 등 자신의 브리지 정보는
+각 포트에서 수신한 BPDU 패킷에 설정된 다른 브리지 정보와 비교가 이루어집니다
+(<tt class="docutils literal"><span class="pre">Bridge._select_root_port</span></tt>).</p>
+<p>그 결과, 루트 포트가 발견되면 (자신의 브리지 정보보다 포트가
+받은 다른 브리지 정보가 나은 경우) 다른 브리지가 루트 브리지라고
+판단하고, 지정 포트의 선출 (<tt class="docutils literal"><span class="pre">Bridge._select_designated_port</span></tt>)과 비지정 포트
+선출 (루트 포트 / 지정 포트 이외의 포트를 비지정 포트로 선출)이 이루어집니다.</p>
+<p>한편, 루트 포트가 없는 경우 (자신의 브리지 정보가 가장 나은 경우)
+자신을 루트 브리지 판단하고, 각 포트는 모두 지정된 포트로 판단합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_spanning_tree_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Update tree roles.</span>
+<span class="sd">             - Root bridge:</span>
+<span class="sd">                all port is DESIGNATED_PORT.</span>
+<span class="sd">             - Non root bridge:</span>
+<span class="sd">                select one ROOT_PORT and some DESIGNATED_PORT,</span>
+<span class="sd">                and the other port is set to NON_DESIGNATED_PORT.&quot;&quot;&quot;</span>
+        <span class="n">port_roles</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">root_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_root_port</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">root_port</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># My bridge is a root bridge.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Root bridge.&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+            <span class="n">root_priority</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_priority</span>
+            <span class="n">root_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span>
+
+            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
+                    <span class="n">port_roles</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">DESIGNATED_PORT</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Other bridge is a root bridge.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;Non root bridge.&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+            <span class="n">root_priority</span> <span class="o">=</span> <span class="n">root_port</span><span class="o">.</span><span class="n">designated_priority</span>
+            <span class="n">root_times</span> <span class="o">=</span> <span class="n">root_port</span><span class="o">.</span><span class="n">designated_times</span>
+
+            <span class="n">port_roles</span><span class="p">[</span><span class="n">root_port</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">ROOT_PORT</span>
+
+            <span class="n">d_ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_designated_port</span><span class="p">(</span><span class="n">root_port</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="n">d_ports</span><span class="p">:</span>
+                <span class="n">port_roles</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">DESIGNATED_PORT</span>
+
+            <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
+                    <span class="n">port_roles</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">port</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
+                                          <span class="n">NON_DESIGNATED_PORT</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">port_roles</span><span class="p">,</span> <span class="n">root_priority</span><span class="p">,</span> <span class="n">root_times</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h4>포트 상태 변경<a class="headerlink" href="#id14" title="제목 주소">¶</a></h4>
+<p>포트의 상태 변경 처리는, Port 클래스의 상태 변화 제어 스레드 (<tt class="docutils literal"><span class="pre">Port.state_machine</span></tt>)
+에서 실행하고 있습니다. 다음 상태로 전환될 때까지 타이머인 <tt class="docutils literal"><span class="pre">Port._get_timer()</span></tt> 를 사용하고,
+타이머 만료 후 <tt class="docutils literal"><span class="pre">Port._get_next_state()</span></tt> 에서 다음 상태를 가져와,
+상태를 변경환합니다. 또한 STP 재계산이 발생하여 지금까지의 포트 상태에 관계없이
+BLOCK 상태로 전환시키는 케이스 등 <tt class="docutils literal"><span class="pre">Port._change_status()</span></tt> 이 실행된 경우에도
+상태 변경이 이루어집니다. 이러한 작업은 「<a class="reference internal" href="#id12">고장 검출</a> 」처럼
+hub 모듈 <tt class="docutils literal"><span class="pre">hub.Event</span></tt> 와 <tt class="docutils literal"><span class="pre">hub.Timeout</span></tt> 을 이용하여 실현하고 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Port state machine.</span>
+<span class="sd">             Change next status when timer is exceeded</span>
+<span class="sd">             or _change_status() method is called.&quot;&quot;&quot;</span>
+
+        <span class="c"># ...</span>
+
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;[port=</span><span class="si">%d</span><span class="s">] </span><span class="si">%s</span><span class="s"> / </span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
+                             <span class="n">role_str</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="p">],</span> <span class="n">state_str</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">],</span>
+                             <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+            <span class="n">timer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_timer</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">timer</span><span class="p">:</span>
+                <span class="n">timeout</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="n">timer</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                <span class="k">except</span> <span class="n">hub</span><span class="o">.</span><span class="n">Timeout</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">timeout</span><span class="p">:</span>
+                        <span class="n">err_msg</span> <span class="o">=</span> <span class="s">&#39;Internal error. Not my timeout.&#39;</span>
+                        <span class="k">raise</span> <span class="n">RyuException</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="n">err_msg</span><span class="p">)</span>
+                    <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_next_state</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_change_status</span><span class="p">(</span><span class="n">new_state</span><span class="p">,</span> <span class="n">thread_switch</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">timeout</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">_get_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">timer</span> <span class="o">=</span> <span class="p">{</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                 <span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                 <span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">,</span>
+                 <span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">,</span>
+                 <span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">timer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_next_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">next_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                      <span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+                      <span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="n">PORT_STATE_LEARN</span><span class="p">,</span>
+                      <span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="p">(</span><span class="n">PORT_STATE_FORWARD</span>
+                                         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">ROOT_PORT</span> <span class="ow">or</span>
+                                             <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">DESIGNATED_PORT</span><span class="p">)</span>
+                                         <span class="k">else</span> <span class="n">PORT_STATE_BLOCK</span><span class="p">),</span>
+                      <span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">next_state</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id15">
+<h3>응용 프로그램 구현<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<p>「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a> 」에 나와있는 OpenFlow 1.3 대응의 스패닝 트리
+응용 프로그램 (simple_switch_stp_13.py)와 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」
+스위칭 허브의 차이를 순서대로 설명하고 있습니다.</p>
+<div class="section" id="contexts">
+<h4>「_CONTEXTS」 설정<a class="headerlink" href="#contexts" title="제목 주소">¶</a></h4>
+<p>「 <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>링크 어그리게이션</em></a> 」와 같이 STP 라이브러리를 사용하는
+CONTEXT를 등록합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">stplib</span>
+
+<span class="c"># ...</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+    <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;stplib&#39;</span><span class="p">:</span> <span class="n">stplib</span><span class="o">.</span><span class="n">Stp</span><span class="p">}</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id16">
+<h4>구성 설정<a class="headerlink" href="#id16" title="제목 주소">¶</a></h4>
+<p>STP 라이브러리 <tt class="docutils literal"><span class="pre">set_config</span> <span class="pre">()</span></tt> 메소드를 사용하여 구성 설정을 수행합니다.
+여기 예제로 다음 값을 설정합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="36%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OpenFlow 스위치</th>
+<th class="head">항목</th>
+<th class="head">설정</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dpid=0000000000000001</td>
+<td>bridge.priority</td>
+<td>0x8000</td>
+</tr>
+<tr class="row-odd"><td>dpid=0000000000000002</td>
+<td>bridge.priority</td>
+<td>0x9000</td>
+</tr>
+<tr class="row-even"><td>dpid=0000000000000003</td>
+<td>bridge.priority</td>
+<td>0xa000</td>
+</tr>
+</tbody>
+</table>
+<p>이 설정은 dpid = 0000000000000001의 OpenFlow 스위치의 브리지 ID가
+항상 최소값이 루트 브리지에 선택되게 합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+
+    <span class="c"># ...</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitch13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;stplib&#39;</span><span class="p">]</span>
+
+        <span class="c"># Sample of stplib config.</span>
+        <span class="c">#  please refer to stplib.Stp.set_config() for details.</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
+                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000002&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
+                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000003&#39;</span><span class="p">):</span>
+                     <span class="p">{</span><span class="s">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id17">
+<h4>STP 이벤트 처리<a class="headerlink" href="#id17" title="제목 주소">¶</a></h4>
+<p>「 <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><em>링크 어그리게이션</em></a> 」와 같이 STP 라이브러리의 통지가
+이벤트를 수신하는 이벤트 처리기를 제공합니다.</p>
+<p>STP 라이브러리에서 정의된 <tt class="docutils literal"><span class="pre">stplib.EventPacketIn</span></tt> 이벤트를 이용하여
+BPDU 패킷을 제외한 패킷을 수신할 수 있기 때문에,
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 패킷 핸들러에 연결합니다.</p>
+<blockquote>
+<div><div class="sourcecode highlight-python"><div class="highlight"><pre>class SimpleSwitch13(app_manager.RyuApp):
+
+    @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
+    def _packet_in_handler(self, ev):
+
+        # ...
+</pre></div>
+</div>
+</div></blockquote>
+<p>네트워크 토폴로지 변경 알림 이벤트 (<tt class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></tt>)를
+받아 학습된 MAC 주소 및 등록된 플로우 항목을 초기화합니다.</p>
+<blockquote>
+<div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+
+        <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+                <span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+                <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">,</span> <span class="n">out_group</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPG_ANY</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="c"># ...</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventTopologyChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_topology_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">dp</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">dp</span>
+        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&#39;Receive topology change event. Flush MAC table.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;[dpid=</span><span class="si">%s</span><span class="s">] </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid_str</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dp</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_flow</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>포트 상태 변경 알림 이벤트 (<tt class="docutils literal"><span class="pre">stplib.EventPortStateChange</span></tt>)를 받고
+포트 상태 디버그 로그 출력을 실시하고 있습니다.</p>
+<blockquote>
+<div><div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPortStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_port_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">of_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="s">&#39;DISABLE&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="s">&#39;BLOCK&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="s">&#39;LISTEN&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="s">&#39;LEARN&#39;</span><span class="p">,</span>
+                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="s">&#39;FORWARD&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;[dpid=</span><span class="si">%s</span><span class="s">][port=</span><span class="si">%d</span><span class="s">] state=</span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+                          <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>이상과 같이 스패닝 트리 기능을 제공하는 라이브러리와 라이브러리를
+사용하는 응용 프로그램에서 스패닝 트리 기능을 가진 스위칭 허브
+응용 프로그램을 실현하고 있습니다.</p>
+</div>
+</div>
+</div>
+<div class="section" id="id18">
+<h2>정리<a class="headerlink" href="#id18" title="제목 주소">¶</a></h2>
+<p>이 장에서는 스패닝 트리 라이브러리 사용을 주제로 다음 항목
+대해 설명했습니다.</p>
+<ul class="simple">
+<li>hub.Event을 이용한 이벤트 대기 처리의 실현 방법</li>
+<li>hub.Timeout를 이용한 타이머 제어 처리의 실현 방법</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">스패닝 트리</a><ul>
+<li><a class="reference internal" href="#id2">스패닝 트리</a></li>
+<li><a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a><ul>
+<li><a class="reference internal" href="#id3">실험 환경 구축</a></li>
+<li><a class="reference internal" href="#openflow">OpenFlow 버전 설정</a></li>
+<li><a class="reference internal" href="#id4">스위칭 허브의 실행</a><ul>
+<li><a class="reference internal" href="#openflow-stp">OpenFlow 스위치 시작시 STP 계산</a></li>
+<li><a class="reference internal" href="#stp">감지된 고장에 따른 STP 재계산</a></li>
+<li><a class="reference internal" href="#id5">고장 복구시 STP 재계산</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">OpenFlow에 의한 스패닝 트리</a></li>
+<li><a class="reference internal" href="#id7">Ryu 스패닝 트리 구현</a><ul>
+<li><a class="reference internal" href="#id8">라이브러리의 구현</a><ul>
+<li><a class="reference internal" href="#id9">라이브러리 개요</a></li>
+<li><a class="reference internal" href="#id10">구성 설정 항목</a></li>
+<li><a class="reference internal" href="#bpdu">BPDU 패킷 전송</a></li>
+<li><a class="reference internal" href="#id11">BPDU 패킷 수신</a></li>
+<li><a class="reference internal" href="#id12">고장 검출</a></li>
+<li><a class="reference internal" href="#id13">STP 계산</a></li>
+<li><a class="reference internal" href="#id14">포트 상태 변경</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id15">응용 프로그램 구현</a><ul>
+<li><a class="reference internal" href="#contexts">「_CONTEXTS」 설정</a></li>
+<li><a class="reference internal" href="#id16">구성 설정</a></li>
+<li><a class="reference internal" href="#id17">STP 이벤트 처리</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id18">정리</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="link_aggregation.html"
+                        title="이전 장">링크 어그리게이션</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="igmp_snooping.html"
+                        title="다음 장">IGMP 스누핑</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/spanning_tree.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="igmp_snooping.html" title="IGMP 스누핑"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="링크 어그리게이션"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>REST 연동 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="링크 어그리게이션" href="link_aggregation.html" />
+    <link rel="prev" title="트래픽 모니터" href="traffic_monitor.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="링크 어그리게이션"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="traffic_monitor.html" title="트래픽 모니터"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="rest">
+<span id="ch-rest-api"></span><h1>REST 연동<a class="headerlink" href="#rest" title="제목 주소">¶</a></h1>
+<p>이 장에서는 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에서 설명한 스위칭 허브에
+REST 연동 기능을 추가합니다.</p>
+<div class="section" id="rest-api">
+<h2>REST API의 기본<a class="headerlink" href="#rest-api" title="제목 주소">¶</a></h2>
+<p>Ryu에는 WSGI에 대응하는 Web 서버의 기능이 있습니다.
+이 기능을 이용하여 다른 시스템이나 브라우저 등과 연동할 때 유용한,
+REST API를 만들 수 있습니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">WSGI는 Python에서 Web 어플리케이션과 Web 서버 연결을 위한
+통합 프레임워크를 의미합니다.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>REST API와 함께 스위칭 허브 구현<a class="headerlink" href="#id1" title="제목 주소">¶</a></h2>
+<p>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에서 설명한 스위칭 허브에 다음 두 REST API를 추가하여 봅시다.</p>
+<ol class="arabic">
+<li><p class="first">MAC 주소 테이블 획득 API</p>
+<blockquote>
+<div><p>스위칭 허브가 갖고 있는 MAC 주소 테이블의 내용을 반환합니다.
+MAC 주소와 포트 번호의 쌍(pair)을 JSON 형식으로 반환합니다.</p>
+</div></blockquote>
+</li>
+<li><p class="first">MAC 주소 테이블 등록 API</p>
+<blockquote>
+<div><p>MAC 주소와 포트 번호의 쌍(pair)을 MAC 주소 테이블에
+등록하고 스위치 플로우 항목에 추가합니다.</p>
+</div></blockquote>
+</li>
+</ol>
+<p>그러면 소스 코드를 살펴 봅시다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
+<span class="kn">from</span> <span class="nn">webob</span> <span class="kn">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.app.wsgi</span> <span class="kn">import</span> <span class="n">ControllerBase</span><span class="p">,</span> <span class="n">WSGIApplication</span><span class="p">,</span> <span class="n">route</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
+
+<span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s">&#39;simple_switch_api_app&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">&#39;/simpleswitch/mactable/{dpid}&#39;</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
+
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
+        <span class="n">wsgi</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="p">{</span><span class="n">simple_switch_instance_name</span> <span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
+
+    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
+
+        <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
+        <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;mac&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+            <span class="k">if</span> <span class="n">entry_port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+
+                <span class="k">for</span> <span class="n">mac</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+                    <span class="c"># from known device to new device</span>
+                    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">entry_port</span><span class="p">)]</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">entry_mac</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+                    <span class="c"># from new device to known device</span>
+                    <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">entry_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+                <span class="n">mac_table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">entry_mac</span> <span class="p">:</span> <span class="n">entry_port</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">mac_table</span>
+
+<span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
+
+    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+        <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+    <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+        <span class="n">new_entry</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">set_mac_to_port</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">new_entry</span><span class="p">)</span>
+            <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>simple_switch_rest_13.py에서는 두 클래스를 정의하고 있습니다.</p>
+<p>첫째,
+HTTP 요청을 받는 URL과 해당 메서드를 정의하는 컨트롤러 <tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt> 입니다.</p>
+<p>두 번째는 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」를 확장하고 MAC 주소 테이블 업데이트를
+할 수 있도록 한 클래스 <tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt> 입니다.</p>
+<p><tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt> 는 스위치에 플로우 항목을 추가하기 위해
+FeaturesReply 메서드를 오버라이드하고 datapath 개체를
+갖고 있습니다.</p>
+</div>
+<div class="section" id="simpleswitchrest13">
+<h2>SimpleSwitchRest13 클래스 구현<a class="headerlink" href="#simpleswitchrest13" title="제목 주소">¶</a></h2>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
+
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>클래스 변수 <tt class="docutils literal"><span class="pre">_CONTEXT</span></tt> 에서 Ryu의 WSGI와 호환되는 Web 서버 클래스를 지정합니다. 그러면
+<tt class="docutils literal"><span class="pre">wsgi</span></tt> 라는 키에서 WSGI의 Web 서버 인스턴스를 얻을 수 있습니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
+    <span class="n">wsgi</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="p">{</span><span class="n">simple_switch_instance_name</span> <span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>생성자는 뒤에서 설명할 컨트롤러 클래스를 등록하기 위하여,
+<tt class="docutils literal"><span class="pre">WSGIApplication</span></tt> 의 인스턴스를 얻고 있습니다. 등록은 <tt class="docutils literal"><span class="pre">register</span></tt> 메서드를 사용합니다.
+<tt class="docutils literal"><span class="pre">register</span></tt> 메서드 실행시 컨트롤러의 생성자에서 <tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt> 클래스의 인스턴스에
+액세스할 수 있도록 <tt class="docutils literal"><span class="pre">simple_switch_api_app</span></tt> 라는 키 이름에서
+dictionary 개체를 전달합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{})</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>부모 클래스의 <tt class="docutils literal"><span class="pre">switch_features_handler</span></tt> 을 오버라이딩합니다.
+이 메서드는 SwitchFeatures 이벤트가 발생한 시간에
+이벤트 객체 <tt class="docutils literal"><span class="pre">ev</span></tt> 에 포함된 <tt class="docutils literal"><span class="pre">datapath</span></tt> 개체를 가져온 후,
+인스턴스 변수 <tt class="docutils literal"><span class="pre">switches</span></tt> 에 저장합니다.
+또한, 이시기에, MAC 주소 테이블에 초기 값으로 빈 dictionary를 설정합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+    <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
+
+    <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
+    <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;mac&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+        <span class="k">if</span> <span class="n">entry_port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+
+            <span class="k">for</span> <span class="n">mac</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+                <span class="c"># from known device to new device</span>
+                <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">entry_port</span><span class="p">)]</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">entry_mac</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+                <span class="c"># from new device to known device</span>
+                <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">entry_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
+
+            <span class="n">mac_table</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">entry_mac</span> <span class="p">:</span> <span class="n">entry_port</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">mac_table</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>지정된 스위치에 MAC 주소와 포트를 등록하는 메서드입니다.
+REST API가 PUT 방식으로 호출될 때 실행됩니다.</p>
+<p>인수 <tt class="docutils literal"><span class="pre">entry</span></tt> 에는 등록을 하려는 MAC 주소와 연결 포트 쌍(pair)이 포함되어 있습니다.</p>
+<p>MAC 주소 테이블 <tt class="docutils literal"><span class="pre">self.mac_to_port</span></tt> 의 정보를 참조하여
+스위치에 등록하는 플로우 항목을 찾아갑니다.</p>
+<p>예를 들어, MAC 주소 테이블에 다음의 MAC 주소와 연결 포트 쌍(pair)이 등록되어 있고,</p>
+<ul class="simple">
+<li>00:00:00:00:00:01, 1</li>
+</ul>
+<p>인수 <tt class="docutils literal"><span class="pre">entry</span></tt> 에 전달 된 MAC 주소와 포트 쌍(pair)이</p>
+<ul class="simple">
+<li>00:00:00:00:00:02, 2</li>
+</ul>
+<p>일 때, 해당 스위치에 등록해야 하는 플로우 항목은 다음과 같습니다.</p>
+<ul class="simple">
+<li>매칭 조건 : in_port = 1, dst_mac = 00:00:00:00:00:02 조치 : output = 2</li>
+<li>매칭 조건 : in_port = 2, dst_mac = 00:00:00:00:00:01 조치 : output = 1</li>
+</ul>
+<p>플로우 항목의 등록은 부모 클래스의 <tt class="docutils literal"><span class="pre">add_flow</span></tt> 메소드를 사용하고 있습니다. 마지막으로,
+인수 <tt class="docutils literal"><span class="pre">entry</span></tt> 에서 전달된 정보를 MAC 주소 테이블에 저장합니다.</p>
+</div>
+<div class="section" id="simpleswitchcontroller">
+<h2>SimpleSwitchController 클래스 구현<a class="headerlink" href="#simpleswitchcontroller" title="제목 주소">¶</a></h2>
+<p>다음은 REST API에 대한 HTTP 요청을 수락하는 컨트롤러 클래스입니다.
+클래스 이름은 <tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt> 입니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>생성자에서 <tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt> 클래스의 인스턴스를 가져옵니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+    <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>REST API URL과 해당 프로세스를 구현하는 부분입니다. 이 방법과 URL과의 바인딩이
+Ryu에서 정의 된 <tt class="docutils literal"><span class="pre">route</span></tt> 데코레이터를 사용하고 있습니다.</p>
+<p>데코레이터로 지정하는 내용은 다음과 같습니다.</p>
+<ul>
+<li><p class="first">첫 번째 인수</p>
+<blockquote>
+<div><p>이름</p>
+</div></blockquote>
+</li>
+<li><p class="first">두 번째 인수</p>
+<blockquote>
+<div><p>URL을 지정합니다.
+URL이 <a class="reference external" href="http:/">http:/</a>/&lt;서버 IP&gt;:8080/simpleswitch/mactable/&lt;데이터 경로ID&gt;
+가 되도록 합니다.</p>
+</div></blockquote>
+</li>
+<li><p class="first">세 번째 인수</p>
+<blockquote>
+<div><p>HTTP 메서드를 지정합니다.
+GET 메서드를 지정합니다.</p>
+</div></blockquote>
+</li>
+<li><p class="first">네 번째 인수</p>
+<blockquote>
+<div><p>지정 위치의 형식을 지정합니다.
+URL(/simpleswitch/mactable/{dpid})의 {dpid} 부분이
+ryu/lib/dpid.py의 <tt class="docutils literal"><span class="pre">DPID_PATTERN</span></tt> 에서 정의된 16 자리로 된 16 진수로 되어야 합니다.</p>
+</div></blockquote>
+</li>
+</ul>
+<p>두 번째 인수로 지정된 URL에서 REST API가 불려 그 때의 HTTP 방식이 GET 인 경우
+<tt class="docutils literal"><span class="pre">list_mac_table</span></tt> 메서드를 호출합니다.
+이 메서드는, {dpid} 부분에서 지정된 데이터 경로 ID에 해당하는 MAC 주소 테이블을 검색하고
+JSON으로 변환되어 호출자에게 반환합니다.</p>
+<p>또한, Ryu에 연결되지 않은, 정보가 없는 스위치의 데이터 경로 ID를 지정하면 응답 코드 404를 반환합니다.</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+    <span class="n">new_entry</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">set_mac_to_port</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">new_entry</span><span class="p">)</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>다음은 MAC 주소 테이블을 등록하는 REST API입니다.</p>
+<p>URL은 MAC 주소 테이블 취득시의 API와 동일하지만 HTTP 메서드가 PUT의 경우
+<tt class="docutils literal"><span class="pre">put_mac_table</span></tt> 메소드를 호출합니다.
+이 메서드는 내부적으로 스위칭 허브 인스턴스의 <tt class="docutils literal"><span class="pre">set_mac_to_port</span></tt> 메서드를 호출합니다.
+또한 <tt class="docutils literal"><span class="pre">put_mac_table</span></tt> 메소드 내에서 예외가 발생하면 응답 코드 500을 반환합니다.
+또한 <tt class="docutils literal"><span class="pre">list_mac_table</span></tt> 메소드뿐만 아니라 Ryu에 연결하지 않은 미지의 스위치의 데이터 경로 ID를 지정하면
+응답 코드 404을 반환합니다.</p>
+</div>
+<div class="section" id="id2">
+<h2>REST API 추가된 스위칭 허브 실행<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>REST API를 추가한 스위칭 허브를 실행해 봅시다.</p>
+<p>먼저 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같이 Mininet을 실행합니다. 여기서도
+스위치 OpenFlow 버전에 OpenFlow13을 설정하는 것을 잊지 마십시오.
+이어 REST API를 추가한 스위칭 허브를 시작합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
+ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
+ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
+loading app ./simple_switch_rest_13.py
+loading app ryu.controller.ofp_handler
+creating context wsgi
+instantiating app ryu.controller.ofp_handler
+instantiating app ./simple_switch_rest_13.py
+BRICK SimpleSwitchRest13
+  CONSUMES EventOFPPacketIn
+  CONSUMES EventOFPSwitchFeatures
+BRICK ofp_event
+  PROVIDES EventOFPPacketIn TO {&#39;SimpleSwitchRest13&#39;: set([&#39;main&#39;])}
+  PROVIDES EventOFPSwitchFeatures TO {&#39;SimpleSwitchRest13&#39;: set([&#39;config&#39;])}
+  CONSUMES EventOFPErrorMsg
+  CONSUMES EventOFPPortDescStatsReply
+  CONSUMES EventOFPEchoRequest
+  CONSUMES EventOFPSwitchFeatures
+  CONSUMES EventOFPHello
+(31135) wsgi starting up on http://0.0.0.0:8080/
+connected socket:&lt;eventlet.greenio.GreenSocket object at 0x318c6d0&gt; address:(&#39;127.0.0.1&#39;, 48914)
+hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x318cc10&gt;
+move onto config mode
+EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPSwitchFeatures
+switch features ev version: 0x4 msg_type 0x6 xid 0x78dd7a72 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+move onto main mode
+</pre></div>
+</div>
+<p>시작 부분 메시지에 &#8220;(31135) wsgi starting up on <a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>&#8220;줄이 있는데,
+이는 Web 서버가 포트 번호 8080으로 시작되었음을 나타냅니다.</p>
+<p>다음 mininet shell에서 h1에서 h2로 ping을 실행합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.1 ms
+
+--- 10.0.0.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms
+</pre></div>
+</div>
+<p>이때 Ryu의 Packet-In은 3번 발생하고 있습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
+packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
+EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
+packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
+EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
+packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
+</pre></div>
+</div>
+<p>여기서, 스위칭 허브의 MAC 테이블을 검색하는 REST API를 실행해 봅시다.
+이번에는 REST API를 호출하기 위해 curl 명령을 사용합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
+</pre></div>
+</div>
+<p>h1과 h2 두 호스트가 MAC 주소 테이블에서 학습된 것을 알 수 있습니다.</p>
+<p>이번에는 h1, h2의 두 호스트를 미리 MAC 주소 테이블에 저장하고
+ping을 실행해 봅니다. 먼저 스위칭 허브와 Mininet을 중지합니다.
+그 다음 다시 Mininet를 시작하고 OpenFlow 버전을 OpenFlow13로 설정 후
+스위칭 허브를 시작합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>...
+(26759) wsgi starting up on http://0.0.0.0:8080/
+connected socket:&lt;eventlet.greenio.GreenSocket object at 0x2afe6d0&gt; address:(&#39;127.0.0.1&#39;, 48818)
+hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x2afec10&gt;
+move onto config mode
+EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPSwitchFeatures
+switch features ev version: 0x4 msg_type 0x6 xid 0x96681337 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+switch_features_handler inside sub class
+move onto main mode
+</pre></div>
+</div>
+<p>이후, MAC 주소 테이블 업데이트를 위한 REST API를 각 호스트마다 호출합니다.
+REST API를 호출할 때 데이터 형식은 { &#8220;mac&#8221;: &#8220;MAC 주소&#8221;, &#8220;port&#8221;: 연결 포트 번호}가 되도록 합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:01&quot;: 1}
+ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quot;, &quot;port&quot; : 2}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+{&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
+</pre></div>
+</div>
+<p>이 명령을 실행하면 h1, h2에 대응하는 플로우 항목이 스위치에 등록됩니다.</p>
+<p>이어 h1에서 h2로 ping을 실행합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
+PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=4.62 ms
+
+--- 10.0.0.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 4.623/4.623/4.623/0.000 ms
+</pre></div>
+</div>
+<div class="console highlight-python"><div class="highlight"><pre>...
+move onto main mode
+(28293) accepted (&#39;127.0.0.1&#39;, 44453)
+127.0.0.1 - - [19/Nov/2013 19:59:45] &quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot; 200 124 0.002734
+EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
+packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
+</pre></div>
+</div>
+<p>이때 스위치에는 이미 플로우 항목이 존재하기 때문에 Packet-In은 h1에서 h2로 ARP 요청이 있을
+때만 발생하고, 이후의 패킷 교환에서는 발생하지 않습니다.</p>
+</div>
+<div class="section" id="id3">
+<h2>정리<a class="headerlink" href="#id3" title="제목 주소">¶</a></h2>
+<p>이 장에서는 MAC 주소 테이블을 참조하거나 업데이트하는 기능을 중심으로
+REST API를 추가하는 방법에 대해 설명했습니다. 또 하나의 실용적인 응용으로, 스위치에 원하는 플로우 항목을 추가하는 것과
+같이 REST API를 만들고 브라우저에서 사용할 수 있도록 하는 것도 좋을 것입니다.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">REST 연동</a><ul>
+<li><a class="reference internal" href="#rest-api">REST API의 기본</a></li>
+<li><a class="reference internal" href="#id1">REST API와 함께 스위칭 허브 구현</a></li>
+<li><a class="reference internal" href="#simpleswitchrest13">SimpleSwitchRest13 클래스 구현</a></li>
+<li><a class="reference internal" href="#simpleswitchcontroller">SimpleSwitchController 클래스 구현</a></li>
+<li><a class="reference internal" href="#id2">REST API 추가된 스위칭 허브 실행</a></li>
+<li><a class="reference internal" href="#id3">정리</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="traffic_monitor.html"
+                        title="이전 장">트래픽 모니터</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="link_aggregation.html"
+                        title="다음 장">링크 어그리게이션</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rest_api.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="link_aggregation.html" title="링크 어그리게이션"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="traffic_monitor.html" title="트래픽 모니터"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

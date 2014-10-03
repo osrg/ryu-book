@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>컨트리뷰션 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="도입 사례" href="introduction_example.html" />
+    <link rel="prev" title="아키텍처" href="arch.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="introduction_example.html" title="도입 사례"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="arch.html" title="아키텍처"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ch-contribute">
+<span id="id1"></span><h1>컨트리뷰션<a class="headerlink" href="#ch-contribute" title="제목 주소">¶</a></h1>
+<p>오픈 소스 소프트웨어 의 묘미 중 하나로, 자체 개발에 참여할 수 있습니다.
+이 장에서는 Ryu 의 개발에 참여하는 방법을 소개 합니다.</p>
+<div class="section" id="id2">
+<h2>개발 체제<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>Ryu 의 개발은 메일링리스트를 중심으로 진행되고 있습니다.
+우선은 메일링리스트에 가입 하는 것부터 시작합니다.</p>
+<p><a class="reference external" href="https://lists.sourceforge.net/lists/listinfo/ryu-devel">https://lists.sourceforge.net/lists/listinfo/ryu-devel</a></p>
+<p>메일링리스트의 교환은 기본적으로 영어로 진행 됩니다.
+사용법 등 의문이 있거나 결함으로 보이는 것과 같은 상황에 마주쳤을 때,
+이메일을 보내는 것을 망설일 필요는 없습니다.
+오픈 소스 소프트웨어를 사용하는 것 자체가 프로젝트에
+중요한 기여이기 때문입니다.</p>
+</div>
+<div class="section" id="id3">
+<h2>개발 환경<a class="headerlink" href="#id3" title="제목 주소">¶</a></h2>
+<p>이 섹션에서는 Ryu 의 개발에 필요한 환경 및 고려 사항에 대해 설명 합니다.</p>
+<div class="section" id="python">
+<h3>Python<a class="headerlink" href="#python" title="제목 주소">¶</a></h3>
+<p>Ryu 는 Python 2.6 이상을 지원 합니다.
+즉, Python 2.7 에서만 사용 가능한 구문 등은 사용하지 마십시오.</p>
+<p>Python 3.0 이상 은 당분간 지원 되지 않습니다.
+하지만 소스 코드는 향후 변경이 가능한 적게 되도록 작성함을
+유의하면 좋을 것입니다.</p>
+</div>
+<div class="section" id="id4">
+<h3>코딩 스타일<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>Ryu 소스 코드는 PEP8 코딩 스타일 을 준수하고 있습니다.
+뒤에 서술하겠지만, 패치를 보낼 때에는 해당 내용이 PEP8을 준수하고 있는지
+미리 확인 하십시오.</p>
+<p><a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">http://www.python.org/dev/peps/pep-0008/</a></p>
+<p>또한, 소스 코드가 PEP8을 준수 하는지 확인하려면 테스트 섹션에서
+소개하는 스크립트와 함께 검사기를 이용할 수 있습니다.</p>
+<p><a class="reference external" href="https://pypi.python.org/pypi/pep8">https://pypi.python.org/pypi/pep8</a></p>
+</div>
+<div class="section" id="id5">
+<h3>테스트<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<p>Ryu 에는 몇 가지 자동화된 테스트가 있지만 가장 간단하고 많이 사용되는 것은
+Ryu 만으로 완성되는 단위 테스트 입니다.
+뒤에 이야기하는, 패치를 보낼 때에는 변경 사항 때문에 단위 테스트 실행이
+실패하지 않는 것을 미리 확인 하십시오.
+또한 새로 추가된 소스 코드에는 단위 테스트에 대해 가능한 많이
+설명하는 것이 바람직할 것 입니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>$ cd ryu/
+$ ./run_tests.sh
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>패치 쓰기<a class="headerlink" href="#id6" title="제목 주소">¶</a></h2>
+<p>기능 추가 및 버그 수정 등으로 저장소의 소스 코드를 변경 하는 때에는
+변경 사항을 패치한 후 , 메일링 리스트로 보냅니다.
+큰 변경은 미리 메일링리스트 에서 논의되는 것이 바람직할 것입니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">Ryu 소스 코드 저장소는 GitHub 에 존재하지만 ,
+풀 요청을 이용한 개발 프로세스가 아님에 주의 하십시오.</p>
+</div>
+<p>보내는 패치 형식은 Linux 커널 개발 에서 사용되는 스타일을 사용하고 있습니다.
+이 섹션에서는 이 스타일 패치를 메일링리스트에 쓰기까지 의 예를
+소개 하고 있습니다. 더 자세한 내용은 관련 문서를 참조 하십시오.</p>
+<p><a class="reference external" href="http://lxr.linux.no/linux/Documentation/SubmittingPatches">http://lxr.linux.no/linux/Documentation/SubmittingPatches</a></p>
+<p>그럼 단계를 소개 합니다.</p>
+<ol class="arabic simple">
+<li>소스 코드 를 체크 아웃</li>
+</ol>
+<blockquote>
+<div><p>우선 Ryu 의 소스 코드 를 체크 아웃 합니다.
+GitHub 에서 소스 코드 를 fork 하여 자신 의 작업 저장소를 만들어도
+상관없지만, 단순화하기 위해 원본을 그대로 사용하여 예제로 설명합니다.</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/osrg/ryu.git</span></tt>
+<tt class="docutils literal"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">ryu/</span></tt></div></blockquote>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>소스 코드 변경</li>
+</ol>
+<blockquote>
+<div><p>Ryu 소스 코드에 필요한 사항을 변경합니다.
+작업을 구분할 때는 변경 내용을 커밋 합시다.</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">commit</span> <span class="pre">-a</span></tt></div></blockquote>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li>패치 만들기</li>
+</ol>
+<blockquote>
+<div><p>변경 내용의 변화에 대해 패치를 만듭니다.
+패치는 Signed-off-by : 행을 붙이는 것을 잊지 마십시오.
+이 서명은 당신이 제출 한 패치가 오픈 소스 소프트웨어
+라이선스에 문제가 없음을 선언 합니다.</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">format-patch</span> <span class="pre">origin</span> <span class="pre">-s</span></tt></div></blockquote>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>패치 쓰기</li>
+</ol>
+<blockquote>
+<div><p>완성 된 패치 내용이 올바른지 확인한 후 , 메일로 보냅니다.
+직접 메일을 보낼 수도 있지만 git-send-email ( 1 ) 을 사용하는 것으로
+대화식으로 처리 할 수 있습니다.</p>
+<blockquote>
+<div><tt class="docutils literal"><span class="pre">$</span> <span class="pre">git</span> <span class="pre">send-email</span> <span class="pre">0001-sample.patch</span></tt></div></blockquote>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li>응답 대기</li>
+</ol>
+<blockquote>
+<div>패치에 대한 응답을 기다립니다.
+그대로 받아 들여지는 경우도 있지만, 지적 사항 등이 있으면
+내용을 수정하여 다시 보낼 필요가 있을 것입니다.</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">컨트리뷰션</a><ul>
+<li><a class="reference internal" href="#id2">개발 체제</a></li>
+<li><a class="reference internal" href="#id3">개발 환경</a><ul>
+<li><a class="reference internal" href="#python">Python</a></li>
+<li><a class="reference internal" href="#id4">코딩 스타일</a></li>
+<li><a class="reference internal" href="#id5">테스트</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">패치 쓰기</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="arch.html"
+                        title="이전 장">아키텍처</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="introduction_example.html"
+                        title="다음 장">도입 사례</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/contribute.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="introduction_example.html" title="도입 사례"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="arch.html" title="아키텍처"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

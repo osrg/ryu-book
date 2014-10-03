@@ -1,0 +1,1602 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>라우터 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="OpenFlow 스위치 테스트 도구" href="switch_test_tool.html" />
+    <link rel="prev" title="방화벽" href="rest_firewall.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 스위치 테스트 도구"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="방화벽"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ch-rest-router">
+<span id="id1"></span><h1>라우터<a class="headerlink" href="#ch-rest-router" title="제목 주소">¶</a></h1>
+<p>이 장에서는 REST에서 설정이 가능한
+라우터를 사용하는 방법에 대해 설명합니다.</p>
+<div class="section" id="id2">
+<h2>단일 테넌트의 동작 예<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>다음과 같은 토폴로지를 만들고 각 스위치 (라우터)에 주소와 경로를
+추가하거나 삭제할 각 호스트 간의 통신 가능 여부를 확인하는 방법을 소개합니다.</p>
+<a class="reference internal image-reference" href="_images/fig15.png"><img alt="_images/fig15.png" class="align-center" src="_images/fig15.png" /></a>
+<div class="section" id="id3">
+<h3>환경 구축<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<dl class="docutils">
+<dt>우선 Mininet에 환경을 구축합니다. <tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과</dt>
+<dd>같습니다.</dd>
+</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="15%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">매개변수</th>
+<th class="head">값</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,3</td>
+<td>3 개의 스위치가 일렬로 연결되는 토폴로지</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>없음</td>
+<td>자동으로 호스트의 MAC 주소를 설정</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>Open vSwitch를 사용</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>OpenFlow 컨트롤러는 외부의 것을 이용</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>없음</td>
+<td>xterm을 시작</td>
+</tr>
+</tbody>
+</table>
+<p>실행 예는 다음과 같습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3
+*** Adding switches:
+s1 s2 s3
+*** Adding links:
+(h1, s1) (h2, s2) (h3, s3) (s1, s2) (s2, s3)
+*** Configuring hosts
+h1 h2 h3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 3 switches
+s1 s2 s3
+
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>또한 또 다른 컨트롤러의 xterm을 시작합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>이어 각 라우터에서 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s3 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>그런 다음 각 호스트에서 자동으로 할당 된 IP 주소를 삭제하고 새로운 IP 주소를
+설정합니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
+root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h3-eth0
+</pre></div>
+</div>
+<p>마지막으로, 컨트롤러 xterm에서 rest_router을 시작합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
+loading app ryu.app.rest_router
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_router of RestRouterAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2212) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu와 라우터 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
+[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
+[RT][INFO] switch_id=0000000000000003: Join as router.
+...
+</pre></div>
+</div>
+<p>위 로그 라우터 3 대분이 표시되면 준비 완료입니다.</p>
+</div>
+<div class="section" id="id4">
+<h3>주소 설정<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>각 라우터에 주소를 설정합니다.</p>
+<p>먼저 라우터 s1 주소 「172.16.20.1/24」와 「172.16.30.30/24」를
+설정합니다.</p>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">이후의 설명에서 사용하는 REST API의 자세한 내용은 장 끝부분의
+「 <a class="reference internal" href="#rest-api">REST API 목록</a> 」을 참조하십시오.</p>
+</div>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">주석</p>
+<p class="last">REST 명령의 실행 결과는 보기 쉽도록 포맷화하였습니다.</p>
+</div>
+<p>그런 다음 라우터 s2에 주소 「172.16.10.1/24」 「172.16.30.1/24」
+「192.168.10.1/24」을 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=3]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>또한 라우터 s3에 주소 「192.168.30.1/24」와 「192.168.10.20/24」을 설정
+합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터에 IP 주소를 할당할 수 있기 때문에 각 호스트에 기본 게이트웨이로
+등록합니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h3>기본 경로 설정<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<p>각 라우터에 기본 경로를 설정합니다.</p>
+<p>먼저 라우터 s1의 기본 경로로 라우터 s2를 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s2의 기본 경로는 라우터 s1을 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s3의 기본 경로는 라우터 s2를 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h3>정적 경로 설정<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<p>라우터 s2에 대해 라우터 s3 부하의 호스트 (192.168.30.0/24)에 고정 경로
+를 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>주소 및 경로 설정 상태는 다음과 같습니다.</p>
+<a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" /></a>
+</div>
+<div class="section" id="id7">
+<h3>설정 내용 확인<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<p>각 라우터에 설정된 내용을 확인합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.30/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.30&quot;
+            },
+            {
+              &quot;route_id&quot;: 2,
+              &quot;destination&quot;: &quot;192.168.30.0/24&quot;,
+              &quot;gateway&quot;: &quot;192.168.10.20&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 3,
+              &quot;address&quot;: &quot;192.168.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/router/0000000000000003
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;192.168.10.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;192.168.10.20/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>이 상태에서 ping에 의한 통신을 확인하여보십시오. 먼저 h2에서 h3에 ping을 수행합니다
+입니다. 성공적으로 통신하는 것을 확인할 수 있습니다.</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
+PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
+64 bytes from 192.168.30.10: icmp_req=1 ttl=62 time=48.8 ms
+64 bytes from 192.168.30.10: icmp_req=2 ttl=62 time=0.402 ms
+64 bytes from 192.168.30.10: icmp_req=3 ttl=62 time=0.089 ms
+64 bytes from 192.168.30.10: icmp_req=4 ttl=62 time=0.065 ms
+...
+</pre></div>
+</div>
+<p>또한 h2에서 h1로 ping을 실행합니다. 이쪽도 제대로 통신할 수 있는지 확인 할 수
+있습니다.</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+64 bytes from 172.16.20.10: icmp_req=1 ttl=62 time=43.2 ms
+64 bytes from 172.16.20.10: icmp_req=2 ttl=62 time=0.306 ms
+64 bytes from 172.16.20.10: icmp_req=3 ttl=62 time=0.057 ms
+64 bytes from 172.16.20.10: icmp_req=4 ttl=62 time=0.048 ms
+...
+</pre></div>
+</div>
+</div>
+<div class="section" id="id8">
+<h3>정적 경로 삭제<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<p>라우터 s2에 설정한 라우터 s3에 정적 경로를 제거합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Delete route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s2에 설정된 정보를 확인하여보십시오. 라우터 s3에 고정 경로가
+삭제된 것을 알 수 있습니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.30&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 3,
+              &quot;address&quot;: &quot;192.168.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>이 상태에서 ping에 의한 통신을 확인하여보십시오. h2에서 h3까지는 노선 정보가 없어
+때문에 통신할 수 없는 것을 알 수 있습니다.</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
+PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
+^C
+--- 192.168.30.10 ping statistics ---
+12 packets transmitted, 0 received, 100% packet loss, time 11088ms
+</pre></div>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>주소 삭제<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<p>라우터 s1에 설정 한 주소 「172.16.20.1/24」를 삭제합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Delete address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s1에 설정된 정보를 확인하여보십시오. 라우터 s1에 설정된 IP 주소
+중 「172.16.20.1/24」가 삭제된 것을 알 수 있습니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+  [
+    {
+      &quot;internal_network&quot;: [
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;172.16.30.1&quot;
+            }
+          ],
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;172.16.30.30/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>이 상태에서 ping에 의한 통신을 확인하여보십시오. h2에서 h1으로는 h1에 속한 하위
+인터넷에 대한 정보를 라우터 s1에서 삭제하였기 때문에, 통신할 수 없다는 사실을
+알 수 없습니다.</p>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+^C
+--- 172.16.20.10 ping statistics ---
+19 packets transmitted, 0 received, 100% packet loss, time 18004ms
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id10">
+<h2>멀티 테넌트의 동작 예<a class="headerlink" href="#id10" title="제목 주소">¶</a></h2>
+<p>이어 VLAN에 의한 테넌트 구분이 이루어지고 있는 다음과 같은 토폴로지를 만들고 각
+스위치 (라우터)에 주소와 경로를 추가하거나 삭제할 각 호스트 간의 통신
+여부를 확인하는 방법을 소개합니다.</p>
+<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" class="align-center" src="_images/fig5.png" /></a>
+<div class="section" id="id11">
+<h3>환경 구축<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
+<p>우선 Mininet에 환경을 구축합니다. <tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과 같이
+입니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="18%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">매개변수</th>
+<th class="head">값</th>
+<th class="head">설명</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>topo</td>
+<td>linear,3,2</td>
+<td><p class="first">3 개의 스위치가 직렬로 연결되는 토폴로지</p>
+<p class="last">(각 스위치에 2 개의 호스트가 연결되는)</p>
+</td>
+</tr>
+<tr class="row-odd"><td>mac</td>
+<td>없음</td>
+<td>자동으로 호스트의 MAC 주소를 설정</td>
+</tr>
+<tr class="row-even"><td>switch</td>
+<td>ovsk</td>
+<td>Open vSwitch를 사용</td>
+</tr>
+<tr class="row-odd"><td>controller</td>
+<td>remote</td>
+<td>OpenFlow 컨트롤러는 외부의 것을 이용</td>
+</tr>
+<tr class="row-even"><td>x</td>
+<td>없음</td>
+<td>xterm을 시작</td>
+</tr>
+</tbody>
+</table>
+<p>실행 예는 다음과 같습니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1s1 h1s2 h1s3 h2s1 h2s2 h2s3
+*** Adding switches:
+s1 s2 s3
+*** Adding links:
+(h1s1, s1) (h1s2, s2) (h1s3, s3) (h2s1, s1) (h2s2, s2) (h2s3, s3) (s1, s2) (s2, s3)
+*** Configuring hosts
+h1s1 h1s2 h1s3 h2s1 h2s2 h2s3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 3 switches
+s1 s2 s3
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>또한 컨트롤러의 xterm을 하나 더 시작합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>이어 각 라우터에서 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>switch: s3 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>그런 다음 각 호스트 인터페이스에 VLAN ID를 설정하고 새로운 IP 주소를 설정
+합니다.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
+root@ryu-vm:~# ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0.2
+root@ryu-vm:~# ip link set dev h1s1-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s1-eth0
+root@ryu-vm:~# ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 172.16.10.11/24 dev h2s1-eth0.110
+root@ryu-vm:~# ip link set dev h2s1-eth0.110 up
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
+root@ryu-vm:~# ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h1s2-eth0.2
+root@ryu-vm:~# ip link set dev h1s2-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h2s2-eth0
+root@ryu-vm:~# ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 192.168.30.11/24 dev h2s2-eth0.110
+root@ryu-vm:~# ip link set dev h2s2-eth0.110 up
+</pre></div>
+</div>
+<p>host: h1s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h1s3-eth0
+root@ryu-vm:~# ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1s3-eth0.2
+root@ryu-vm:~# ip link set dev h1s3-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h2s3-eth0
+root@ryu-vm:~# ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add 172.16.20.11/24 dev h2s3-eth0.110
+root@ryu-vm:~# ip link set dev h2s3-eth0.110 up
+</pre></div>
+</div>
+<p>마지막으로, 컨트롤러 xterm에서 rest_router을 시작합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
+loading app ryu.app.rest_router
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_router of RestRouterAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2447) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu와 라우터 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
+[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
+[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
+[RT][INFO] switch_id=0000000000000003: Join as router.
+...
+</pre></div>
+</div>
+<p>위 로그 라우터 3 대분이 표시되면 준비 완료입니다.</p>
+</div>
+<div class="section" id="id12">
+<h3>주소 설정<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
+<p>각 라우터에 주소를 설정합니다.</p>
+<p>먼저 라우터 s1 주소 「172.16.20.1/24」와 「10.10.10.1/24」을 설정합니다.
+입니다. 각 VLAN ID마다 설정해야합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>그런 다음 라우터 s2에 주소 「192.168.30.1/24」와 「10.10.10.2/24」을 설정
+합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>또한 라우터 s3에 주소 「172.16.20.1/24」와 「10.10.10.3/24」을 설정합니
+다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터에 IP 주소를 할당할 수 있기 때문에 각 호스트에 기본 게이트웨이로
+등록합니다.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+</pre></div>
+</div>
+<p>host: h1s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+<p>host: h2s2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+</pre></div>
+</div>
+<p>host: h1s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>host: h2s3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+</pre></div>
+</div>
+<p>설정된 주소는 다음과 같습니다.</p>
+<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" /></a>
+</div>
+<div class="section" id="id13">
+<h3>기본 경로 및 정적 경로 설정<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<p>각 라우터에 기본 경로 및 정적 경로를 설정합니다.</p>
+<p>먼저 라우터 s1의 기본 경로로 라우터 s2를 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s2의 기본 경로는 라우터 s1을 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>라우터 s3의 기본 경로는 라우터 s2를 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 110,
+          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>이어 라우터 s2에 대해 라우터 s3 부하의 호스트 (172.16.20.0/24)의 정적
+경로를 설정합니다. vlan_id=2 인 경우에만 설정합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>설정 내용 확인<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
+<p>각 라우터에 설정된 내용을 확인합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/all/all
+  [
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.10.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    },
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 2,
+              &quot;destination&quot;: &quot;172.16.20.0/24&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.3&quot;
+            },
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.1&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.2/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.1&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.2/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;192.168.30.1/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000002&quot;
+    },
+    {
+      &quot;internal_network&quot;: [
+        {},
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 2,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.3/24&quot;
+            }
+          ]
+        },
+        {
+          &quot;route&quot;: [
+            {
+              &quot;route_id&quot;: 1,
+              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
+              &quot;gateway&quot;: &quot;10.10.10.2&quot;
+            }
+          ],
+          &quot;vlan_id&quot;: 110,
+          &quot;address&quot;: [
+            {
+              &quot;address_id&quot;: 1,
+              &quot;address&quot;: &quot;172.16.20.1/24&quot;
+            },
+            {
+              &quot;address_id&quot;: 2,
+              &quot;address&quot;: &quot;10.10.10.3/24&quot;
+            }
+          ]
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000003&quot;
+    }
+  ]
+</pre></div>
+</div>
+<p>각 라우터의 설정 내용을 표로 나타내면 다음과 같이 됩니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">라우터</th>
+<th class="head">VLAN ID</th>
+<th class="head">IP 주소</th>
+<th class="head">기본 경로</th>
+<th class="head">고정 경로</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>s1</td>
+<td>2</td>
+<td>172.16.10.1/24, 10.10.10.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>s1</td>
+<td>110</td>
+<td>172.16.10.1/24, 10.10.10.1/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s2</td>
+<td>2</td>
+<td>192.168.30.1/24, 10.10.10.2/24</td>
+<td>10.10.10.1(s1)</td>
+<td>대상:172.16.20.0/24, 게이트웨이:10.10.10.3(s3)</td>
+</tr>
+<tr class="row-odd"><td>s2</td>
+<td>110</td>
+<td>192.168.30.1/24, 10.10.10.2/24</td>
+<td>10.10.10.1(s1)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>s3</td>
+<td>2</td>
+<td>172.16.20.1/24, 10.10.10.3/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>s3</td>
+<td>110</td>
+<td>172.16.20.1/24, 10.10.10.3/24</td>
+<td>10.10.10.2(s2)</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p>h1s1에서 h1s3에 대해 ping을 시도합니다. 같은 vlan_id=2의 호스트끼리이며,
+라우터 s2에 s3에게 고정 경로가 설정되어 있기 때문에 통신이 가능합니다.</p>
+<p>host: h1s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
+PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
+64 bytes from 172.16.20.10: icmp_req=1 ttl=61 time=45.9 ms
+64 bytes from 172.16.20.10: icmp_req=2 ttl=61 time=0.257 ms
+64 bytes from 172.16.20.10: icmp_req=3 ttl=61 time=0.059 ms
+64 bytes from 172.16.20.10: icmp_req=4 ttl=61 time=0.182 ms
+</pre></div>
+</div>
+<p>h2s1에서 h2s3 대해 ping을 시도합니다. 같은 vlan_id=110 호스트끼리이지만,
+라우터 s2에 s3에게 고정 경로가 설정되어 있지 않기 때문에 통신이 불가능합니다.</p>
+<p>host: h2s1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.11
+PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
+^C
+--- 172.16.20.11 ping statistics ---
+8 packets transmitted, 0 received, 100% packet loss, time 7009ms
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" /></a>
+<p>이 장에서는 구체적인 예를 들면서 라우터의 사용 방법을 설명했습니다.</p>
+</div>
+</div>
+<div class="section" id="rest-api">
+<h2>REST API 목록<a class="headerlink" href="#rest-api" title="제목 주소">¶</a></h2>
+<p>이 장에서 소개한 rest_router의 REST API를 나열합니다.</p>
+<div class="section" id="id15">
+<h3>설정 가져오기<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>GET</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>주의</strong></td>
+<td>VLAN ID의 지정은 선택 사항입니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id16">
+<h3>주소 설정<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>데이터</strong></td>
+<td><strong>address</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</td>
+</tr>
+<tr class="row-even"><td><strong>주의</strong></td>
+<td><p class="first">주소 설정은 루트 설정 전에 수행해야합니다.</p>
+<p class="last">VLAN ID의 지정은 선택 사항입니다.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id17">
+<h3>정적 경로 설정<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>데이터</strong></td>
+<td><p class="first"><strong>destination</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</p>
+<p class="last"><strong>gateway</strong>:&#8221;&lt;xxx.xxx.xxx.xxx&gt;&#8221;</p>
+</td>
+</tr>
+<tr class="row-even"><td><strong>주의</strong></td>
+<td>VLAN ID의 지정은 선택 사항입니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id18">
+<h3>디폴트 경로 설정<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>POST</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>데이터</strong></td>
+<td><strong>gateway</strong>:&#8221;&lt;xxx.xxx.xxx.xxx&gt;&#8221;</td>
+</tr>
+<tr class="row-even"><td><strong>주의</strong></td>
+<td>VLAN ID의 지정은 선택 사항입니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id19">
+<h3>주소 삭제<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>DELETE</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>데이터</strong></td>
+<td><strong>address_id</strong>:[ 1 - ... ]</td>
+</tr>
+<tr class="row-even"><td><strong>주의</strong></td>
+<td>VLAN ID의 지정은 선택 사항입니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id20">
+<h3>루트 삭제<a class="headerlink" href="#id20" title="제목 주소">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="24%" />
+<col width="76%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>메소드</strong></td>
+<td>DELETE</td>
+</tr>
+<tr class="row-even"><td><strong>URL</strong></td>
+<td><p class="first">/router/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
+</td>
+</tr>
+<tr class="row-odd"><td><strong>데이터</strong></td>
+<td><strong>route_id</strong>:[ 1 - ... ]</td>
+</tr>
+<tr class="row-even"><td><strong>주의</strong></td>
+<td>VLAN ID의 지정은 선택 사항입니다.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">라우터</a><ul>
+<li><a class="reference internal" href="#id2">단일 테넌트의 동작 예</a><ul>
+<li><a class="reference internal" href="#id3">환경 구축</a></li>
+<li><a class="reference internal" href="#id4">주소 설정</a></li>
+<li><a class="reference internal" href="#id5">기본 경로 설정</a></li>
+<li><a class="reference internal" href="#id6">정적 경로 설정</a></li>
+<li><a class="reference internal" href="#id7">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id8">정적 경로 삭제</a></li>
+<li><a class="reference internal" href="#id9">주소 삭제</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">멀티 테넌트의 동작 예</a><ul>
+<li><a class="reference internal" href="#id11">환경 구축</a></li>
+<li><a class="reference internal" href="#id12">주소 설정</a></li>
+<li><a class="reference internal" href="#id13">기본 경로 및 정적 경로 설정</a></li>
+<li><a class="reference internal" href="#id14">설정 내용 확인</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rest-api">REST API 목록</a><ul>
+<li><a class="reference internal" href="#id15">설정 가져오기</a></li>
+<li><a class="reference internal" href="#id16">주소 설정</a></li>
+<li><a class="reference internal" href="#id17">정적 경로 설정</a></li>
+<li><a class="reference internal" href="#id18">디폴트 경로 설정</a></li>
+<li><a class="reference internal" href="#id19">주소 삭제</a></li>
+<li><a class="reference internal" href="#id20">루트 삭제</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="rest_firewall.html"
+                        title="이전 장">방화벽</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="다음 장">OpenFlow 스위치 테스트 도구</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rest_router.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 스위치 테스트 도구"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="rest_firewall.html" title="방화벽"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>

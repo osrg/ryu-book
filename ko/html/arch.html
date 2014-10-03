@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>아키텍처 &mdash; Ryubook 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="컨트리뷰션" href="contribute.html" />
+    <link rel="prev" title="OpenFlow 스위치 테스트 도구" href="switch_test_tool.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             accesskey="I">색인</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="컨트리뷰션"
+             accesskey="N">다음</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 스위치 테스트 도구"
+             accesskey="P">이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>아키텍처<a class="headerlink" href="#id1" title="제목 주소">¶</a></h1>
+<p>Ryu 아키텍처 를 소개 합니다.
+각 클래스의 사용법 등은 <a class="reference external" href="http://ryu.readthedocs.org/en/latest/">API 레퍼런스</a> 를 참조하십시오.</p>
+<div class="section" id="id2">
+<h2>응용 프로그래밍 모델<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<p>Ryu 응용 프로그램 프로그래밍 모델을 설명합니다.</p>
+<img alt="_images/fig1.png" src="_images/fig1.png" />
+<div class="section" id="id3">
+<h3>응용 프로그램<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<p>응용 프로그램은 <tt class="docutils literal"><span class="pre">ryu.base.app_manager.RyuApp</span></tt> 을 상속한 클래스입니다.
+사용자 로직은 응용 프로그램으로 기술됩니다.</p>
+</div>
+<div class="section" id="id4">
+<h3>이벤트<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<p>이벤트는 <tt class="docutils literal"><span class="pre">ryu.controller.event.EventBase</span></tt> 를 상속한 클래스의
+개체입니다.
+응용 프로그램 간의 통신은 이벤트를 송수신함으로써 가능합니다.</p>
+</div>
+<div class="section" id="id5">
+<h3>이벤트 큐<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<p>각 응용 프로그램은 이벤트 수신을 위한 큐를 하나 가지고 있습니다.</p>
+</div>
+<div class="section" id="id6">
+<h3>스레드<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<p>Ryu 는 eventlet을 사용한 멀티-스레드로 동작합니다.
+스레드 는 비선점형 이므로, 시간이 걸리는 처리를 수행하는
+경우에는 주의가 필요합니다.</p>
+<div class="section" id="id7">
+<h4>이벤트 루프<a class="headerlink" href="#id7" title="제목 주소">¶</a></h4>
+<p>응용 프로그램 당 한 개의 스레드 가 자동으로 생성됩니다.
+이 스레드는 이벤트 루프를 실행 합니다.
+이벤트 루프는 이벤트 큐에 이벤트가 있으면 꺼내
+해당 이벤트 처리기 (뒤에 설명) 를 호출합니다.</p>
+</div>
+<div class="section" id="id8">
+<h4>추가 스레드<a class="headerlink" href="#id8" title="제목 주소">¶</a></h4>
+<p>hub.spawn 함수를 사용하여 추가 스레드를 만들고 응용 프로그램 별
+처리를 할 수 있습니다.</p>
+</div>
+<div class="section" id="eventlet">
+<h4>eventlet<a class="headerlink" href="#eventlet" title="제목 주소">¶</a></h4>
+<p>eventlet 기능을 응용 프로그램에서 직접 사용할 수 있지만, 추천하지 않습니다.
+가능하다면 hub 모듈에서 제공하는 래퍼를 사용하도록 하십시오.</p>
+</div>
+</div>
+<div class="section" id="id9">
+<h3>이벤트 처리기<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<p>응용 프로그램 클래스 의 메서드를 <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt>
+데코레이터로 한정하여 이벤트 처리기를 정의할 수 있습니다 .
+이벤트 처리기는 지정된 형식의 이벤트가 발생했을 때
+응용 프로그램 이벤트 루프에서 호출됩니다.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">목차</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">아키텍처</a><ul>
+<li><a class="reference internal" href="#id2">응용 프로그래밍 모델</a><ul>
+<li><a class="reference internal" href="#id3">응용 프로그램</a></li>
+<li><a class="reference internal" href="#id4">이벤트</a></li>
+<li><a class="reference internal" href="#id5">이벤트 큐</a></li>
+<li><a class="reference internal" href="#id6">스레드</a><ul>
+<li><a class="reference internal" href="#id7">이벤트 루프</a></li>
+<li><a class="reference internal" href="#id8">추가 스레드</a></li>
+<li><a class="reference internal" href="#eventlet">eventlet</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">이벤트 처리기</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>이전 항목</h4>
+  <p class="topless"><a href="switch_test_tool.html"
+                        title="이전 장">OpenFlow 스위치 테스트 도구</a></p>
+  <h4>다음 항목</h4>
+  <p class="topless"><a href="contribute.html"
+                        title="다음 장">컨트리뷰션</a></p>
+  <h3>현재 문서</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/arch.txt"
+           rel="nofollow">소스 코드를 보려면</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>빠른 검색</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="바로 가기" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    모듈, 클래스 또는 함수 이름을 입력하십시오.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>탐색</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="전체 색인"
+             >색인</a></li>
+        <li class="right" >
+          <a href="contribute.html" title="컨트리뷰션"
+             >다음</a> |</li>
+        <li class="right" >
+          <a href="switch_test_tool.html" title="OpenFlow 스위치 테스트 도구"
+             >이전</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, RYU project team.
+    </div>
+  </body>
+</html>
