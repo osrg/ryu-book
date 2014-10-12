@@ -47,7 +47,7 @@ arp_sha           ARP의 소스 MAC 주소
 arp_tha           ARP의 대상 MAC 주소
 ipv6_src          IPv6의 소스 IP 주소
 ipv6_dst          IPv6의 대상 IP 주소
-ipv6_flabel       IPv6의 흐름 레이블
+ipv6_flabel       IPv6의 플로우 레이블
 icmpv6_type       ICMPv6의 Type
 icmpv6_code       ICMPv6의 Code
 ipv6_nd_target    IPv6 네이버 디스커버리의 대상 주소 
