@@ -110,10 +110,10 @@ Write/Apply/Clear Actionsは、OPFInstructionActionsにまとめられていて�
 
 .. NOTE::
 
-   Write Actionsのサポートは必須とされていますが、現時点のOpen vSwitch
-   ではサポートされていません。Apply Actionsがサポートされているので、
-   代わりにこちらを使う必要があります。
-   Write ActionsはOpen vSwitch 2.1.0からサポートされる予定です。
+   Write Actionsのサポートは仕様上必須とされていますが、古いバージョンの
+   Open vSwitchでは未実装であり、代替としてApply Actionsを使用する必要が
+   ありました。
+   Open vSwitch 2.1.0からはWrite Actionsのサポートが追加されました。
 
 
 アクション
