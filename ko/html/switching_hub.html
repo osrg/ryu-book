@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/translations.js"></script>
     <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
     <link rel="next" title="트래픽 모니터" href="traffic_monitor.html" />
-    <link rel="prev" title="서문" href="preface.html" /> 
+    <link rel="prev" title="역자 머리말" href="preface_translation.html" /> 
   </head>
   <body>
     <div class="related">
@@ -39,7 +39,7 @@
           <a href="traffic_monitor.html" title="트래픽 모니터"
              accesskey="N">다음</a> |</li>
         <li class="right" >
-          <a href="preface.html" title="서문"
+          <a href="preface_translation.html" title="역자 머리말"
              accesskey="P">이전</a> |</li>
         <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
       </ul>
@@ -52,17 +52,17 @@
             
   <div class="section" id="ch-switching-hub">
 <span id="id1"></span><h1>스위칭 허브<a class="headerlink" href="#ch-switching-hub" title="제목 주소">¶</a></h1>
-<p>이 장에서는 간단한 스위칭 허브 구현을 소재로 Ryu를 사용한 응용 프로그램
-을 구현하는 방법을 설명하고 있습니다.</p>
+<p>이 장에서는 간단한 스위칭 허브 구현을 주제로 Ryu를 사용한 응용 프로그램을
+구현하는 방법을 설명하고 있습니다.</p>
 <div class="section" id="id2">
 <h2>스위칭 허브<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
 <p>스위칭 허브는 다양한 기능들을 갖고 있습니다만, 여기에서는
 다음과 같은 간단한 기능을 가진 스위칭 허브의 구현을 살펴 보고자 합니다.</p>
 <ul class="simple">
-<li>포트에 연결되어 있는 호스트의 MAC 주소를 학습하고 MAC 주소 테이블
-을 유지하기</li>
+<li>포트에 연결되어 있는 호스트의 MAC 주소를 학습하고 MAC 주소 테이블을
+유지하기</li>
 <li>이미 학습된 호스트에 대한 패킷을 수신하면 호스트에 연결된 포트로 전송</li>
-<li>알 수 없는 호스트에 대한 패킷을 수신하면, Flooding</li>
+<li>알 수 없는 호스트에 대한 패킷을 수신하면, 플러딩(Flooding)</li>
 </ul>
 <p>이러한 스위치를 Ryu를 사용하여 구현해 봅시다.</p>
 </div>
@@ -76,17 +76,17 @@
 <li>컨트롤러에 의해 전달된 (forwarded) 패킷을 특정 포트쪽으로부터 전송 (Packet-Out)</li>
 </ul>
 <p>이러한 기능들을 결합하여 스위칭 허브를 만들 수 있습니다.</p>
-<p>우선, Packet-In 기능을 이용하여 MAC 주소 학습할 필요가 있습니다.
+<p>우선, Packet-In 기능을 이용하여 MAC 주소를 학습할 필요가 있습니다.
 컨트롤러는 Packet-In 기능을 이용하여 스위치로부터 패킷을 받을 수가 있습니다.
-스위치는 받은 패킷을 분석하고 연결되어있는
-포트에 대한 호스트의 MAC 주소 및 정보를 학습 할 수 있습니다.</p>
+스위치는 받은 패킷을 분석하고 연결되어 있는
+포트에 대한 호스트의 MAC 주소 및 정보를 학습할 수 있습니다.</p>
 <p>학습 후에는 받은 패킷을 전송합니다.
 스위치는 패킷의 목적지 MAC 주소가 학습된 호스트에 속해있는지 아닌지를
 찾아봅니다.
 검색 결과 여부에 따라 스위치는 다음과 같은 작업을 수행합니다.</p>
 <ul class="simple">
 <li>학습된 호스트인 경우 ... Packet-Out 기능으로 연결된 포트쪽으로 패킷을 전송</li>
-<li>알 수 없는 호스트인 경우 ... Packet-Out 기능으로 패킷을 플러딩 (Flooding)</li>
+<li>알 수 없는 호스트인 경우 ... Packet-Out 기능으로 패킷을 플러딩</li>
 </ul>
 <p>이러한 동작을 그림과 함께 단계별로 설명합니다.</p>
 <ol class="arabic">
@@ -97,7 +97,7 @@
 <p>포트 1에 호스트 A, 포트 4에 호스트 B, 포트 3에 호스트 C가 연결되어 있다고
 가정합니다.</p>
 </div></blockquote>
-<img alt="_images/fig18.png" class="align-center" src="_images/fig18.png" />
+<img alt="_images/fig19.png" class="align-center" src="_images/fig19.png" />
 </div></blockquote>
 </li>
 <li><p class="first">호스트 A → 호스트 B</p>
@@ -108,7 +108,7 @@
 못하기 때문에 패킷은 플러딩되고 따라서 해당 패킷은 호스트 B와
 호스트 C에서 수신됩니다.</p>
 </div></blockquote>
-<img alt="_images/fig25.png" class="align-center" src="_images/fig25.png" />
+<img alt="_images/fig26.png" class="align-center" src="_images/fig26.png" />
 <p>Packet-In:</p>
 <div class="highlight-python"><div class="highlight"><pre>in-port: 1
 eth-dst: 호스트B
@@ -128,7 +128,7 @@ eth-src: 호스트A
 또한 패킷은 포트 1에 전송됩니다. 따라서 호스트 C는 이 패킷을
 수신하지 않습니다.</p>
 </div></blockquote>
-<img alt="_images/fig34.png" class="align-center" src="_images/fig34.png" />
+<img alt="_images/fig36.png" class="align-center" src="_images/fig36.png" />
 <p>Packet-In:</p>
 <div class="highlight-python"><div class="highlight"><pre>in-port: 4
 eth-dst: 호스트A
@@ -147,7 +147,7 @@ eth-src: 호스트B
 <div><p>또한, 호스트 A에서 호스트 B로 패킷이 전송되면 플로우 테이블에
 항목을 추가하고 또한 패킷은 포트 4에 전송됩니다.</p>
 </div></blockquote>
-<img alt="_images/fig44.png" class="align-center" src="_images/fig44.png" />
+<img alt="_images/fig45.png" class="align-center" src="_images/fig45.png" />
 <p>Packet-In:</p>
 <div class="highlight-python"><div class="highlight"><pre>in-port: 1
 eth-dst: 호스트B
@@ -269,8 +269,8 @@ simple_switch_12.py (OpenFlow 1.2)이 있지만, 여기에서는 OpenFlow 1.3을
 <p>또한 MAC 주소 테이블에 해당하는 mac_to_port를 정의합니다.</p>
 <p>OpenFlow 프로토콜은 OpenFlow 스위치와 컨트롤러가 통신을 위해
 필요한 핸드 셰이크 등의 몇 가지 단계가 정의되어 있습니다. 그러나, Ryu의
-프레임 워크가 이러한 단계들을 다루기에, Ryu 응용 프로그램에서 이러한 것
-들을 신경쓸 필요가 없습니다.</p>
+프레임워크가 이러한 단계들을 다루기에, Ryu 응용 프로그램에서는 이러한 것들을
+신경쓰지 않아도 됩니다.</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
 
@@ -322,7 +322,7 @@ OpenFlow 스위치의 상태를 지정합니다.</p>
 </tbody>
 </table>
 <div class="section" id="table-miss">
-<h4>Table-miss 흐름 항목 추가<a class="headerlink" href="#table-miss" title="제목 주소">¶</a></h4>
+<h4>Table-miss 플로우 항목 추가<a class="headerlink" href="#table-miss" title="제목 주소">¶</a></h4>
 <p>OpenFlow 스위치와의 핸드 셰이크가 완료된 후, Table-miss 플로우 항목(entry)이
 플로우 테이블에 추가되고 Packet-In 메시지를 수신할 준비를 합니다.</p>
 <p>구체적으로는 Switch Features (Features Reply) 메시지를 수신하자마자
@@ -424,10 +424,10 @@ Table-miss 플로우 항목이 현재는 지원되지 않고 정상(normal) 플�
 <p class="first admonition-title">주석</p>
 <p class="last">컨트롤러는 패킷의 시작 부분(Ethernet 헤더 분)만을 전송
 하고 나머지는 스위치 버퍼에 두는 것이 효율성 측면에서 바람직
-하지만 Open vSwitch 버그(2014 년 1 월 현재)를 해결하기 위해 여기에
-전체 패킷을 전송합니다.</p>
+하지만 Open vSwitch 버그를 해결하기 위해 여기에 전체 패킷을
+전송합니다. 이 버그는 Open vSwitch 2.1.0에서 수정되었습니다.</p>
 </div>
-<p>마지막으로, 우선 순위 0(가장 낮음)을 지정하여 <tt class="docutils literal"><span class="pre">add_flow()</span></tt> 메소드를 실행하여 Flow Mod
+<p>마지막으로, 우선 순위 0(가장 낮음)을 지정하여 <tt class="docutils literal"><span class="pre">add_flow()</span></tt> 메서드를 실행하여 Flow Mod
 메시지를 보냅니다. add_flow() 메서드의 내용에 대해서는 뒤에서 설명하고자 합니다.</p>
 </div>
 <div class="section" id="packet-in">
@@ -546,9 +546,9 @@ add_flow()를 실행하여 플로우 항목을 추가합니다.</p>
 포트 4에 전송하기</div></blockquote>
 <div class="admonition hint">
 <p class="first admonition-title">힌트</p>
-<p class="last">OpenFlow는 NORMAL 포트는 논리적인 출력 포트가 옵션으로 규정
-되고 출력 포트에 NORMAL을 지정하면 스위치의 L2/L3 기능을 사용
-하라고 패킷을 처리할 수 있습니다. 즉, 모든 패킷을 NORMAL
+<p class="last">OpenFlow에서 NORMAL 포트는 논리적인 출력 포트가 옵션으로 규정하고
+출력 포트에 NORMAL을 지정하면 스위치의 L2/L3 기능을 사용하라고
+패킷을 처리할 수 있습니다. 즉, 모든 패킷을 NORMAL
 포트에 출력하도록 지시하는 것만으로, 스위칭 허브 역할을 하는 것처럼
 할 수 있지만, 여기에서는 각각의 처리를 OpenFlow를 사용하여 수행하는 것으로 합니다.</p>
 </div>
@@ -839,7 +839,7 @@ ssh에서 X11 Forwarding을 사용하여 로그인하십시오.</p>
 </tr>
 <tr class="row-odd"><td>controller</td>
 <td>remote</td>
-<td>(별도로) 외부에서 OpenFlow 컨트롤러 사용</td>
+<td>외부 OpenFlow 컨트롤러 사용</td>
 </tr>
 <tr class="row-even"><td>x</td>
 <td>없음</td>
@@ -871,8 +871,8 @@ mininet&gt;
 <p>실행하면 데스크탑 PC에서 5개의 xterm이 시작됩니다.
 각 xterm은 호스트 1~3, 스위치, 그리고 컨트롤러에 대응합니다.</p>
 <p>스위치에 대한 xterm에서 명령을 실행하여 사용하는 OpenFlow 버전을
-설정합니다. 윈도우 제목이 「switch : s1 (root)」인 xterm이
-스위치 용 xterm입니다.</p>
+설정합니다. 윈도우 제목이 「switch : s1 (root)」인 xterm으로
+스위치용 xterm입니다.</p>
 <p>우선 Open vSwitch의 상태를 확인합니다.</p>
 <p>switch: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl show
@@ -959,9 +959,9 @@ move onto main mode
 </pre></div>
 </div>
 <p>로 표시됩니다.</p>
-<p>이제 OVS와 연결되었고, 핸드쉐이크가 이루어져 Table-miss 흐름 항목이
+<p>이제 OVS와 연결되었고, 핸드쉐이크가 이루어져 Table-miss 플로우 항목이
 추가되었고, 스위칭 허브는 Packet-In을 기다리는 상태입니다.</p>
-<p>Table-miss 흐름 항목이 추가되어 있는지 확인합니다.</p>
+<p>Table-miss 플로우 항목이 추가되어 있는지 확인합니다.</p>
 <p>switch: s1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
 OFPST_FLOW reply (OF1.3) (xid=0x2):
@@ -1136,7 +1136,7 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 <li><a class="reference internal" href="#ryu">Ryu를 사용한 스위칭 허브 구현</a><ul>
 <li><a class="reference internal" href="#id3">클래스의 정의 및 초기화</a></li>
 <li><a class="reference internal" href="#id4">이벤트 처리기</a><ul>
-<li><a class="reference internal" href="#table-miss">Table-miss 흐름 항목 추가</a></li>
+<li><a class="reference internal" href="#table-miss">Table-miss 플로우 항목 추가</a></li>
 <li><a class="reference internal" href="#packet-in">Packet-in 메시지</a></li>
 <li><a class="reference internal" href="#mac">MAC 주소 테이블 업데이트</a></li>
 <li><a class="reference internal" href="#id5">대상 포트 판정</a></li>
@@ -1158,8 +1158,8 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 </ul>
 
   <h4>이전 항목</h4>
-  <p class="topless"><a href="preface.html"
-                        title="이전 장">서문</a></p>
+  <p class="topless"><a href="preface_translation.html"
+                        title="이전 장">역자 머리말</a></p>
   <h4>다음 항목</h4>
   <p class="topless"><a href="traffic_monitor.html"
                         title="다음 장">트래픽 모니터</a></p>
@@ -1195,7 +1195,7 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
           <a href="traffic_monitor.html" title="트래픽 모니터"
              >다음</a> |</li>
         <li class="right" >
-          <a href="preface.html" title="서문"
+          <a href="preface_translation.html" title="역자 머리말"
              >이전</a> |</li>
         <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
       </ul>

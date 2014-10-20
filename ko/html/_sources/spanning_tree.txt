@@ -201,7 +201,41 @@ simple_switch_stp_13.py을 만듭니다. 이 프로그램은
 .. literalinclude:: sources/simple_switch_stp_13.py
 
 
+.. NOTE::
 
+    사용하는 스위치가 Open vSwitch인 경우, 버전 및 설정에 따라
+    BPDU가 전송되지 않고, 본 응용 프로그램이 제대로 동작하지 않을 수 있습니다.
+    Open vSwitch는 스위치 자신의 기능으로 STP를 구현하고 있는데, 
+    이 기능을 비활성화 (기본 설정)하는 경우
+    IEEE 802.1D에서 규정된 스패닝 트리의 멀티 캐스트 MAC 주소 
+    "01:80:c2:00:00:00"을 대상으로 하는 패킷을 전송하지 않기 때문입니다.
+    본 응용 프로그램을 동작시킬 때는 아래와 같이 소스를 수정하여
+    해당 제약을 피할 수 있습니다.
+
+    ryu/ryu/lib/packet/bpdu.py:
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        # BPDU destination
+        #BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:00'
+        BRIDGE_GROUP_ADDRESS = '01:80:c2:00:00:0e'
+
+    또한, 소스 수정 후 변경 사항을 반영하기 위해 다음 명령을 실행하십시오.
+
+    .. rst-class:: console
+
+    ::
+
+        $ cd ryu
+        $ sudo python setup.py install
+        running install
+        ...
+        ...
+        running install_scripts
+        Installing ryu-manager script to /usr/local/bin
+        Installing ryu script to /usr/local/bin
 
 
 실험 환경 구축 
@@ -780,7 +814,7 @@ MAC 주소 학습 (BPDU 이외의 패킷 수신) 및 프레임 전송 (BPDU 이�
 
 
 ======= ================ ============================
-상태    포트 구성        흐름 항목
+상태    포트 구성        플로우 항목
 ======= ================ ============================
 DISABLE NO_RECV／NO_FWD  설정없음
 BLOCK   NO_FWD           BPDU Packet-In／BPDU이외drop
@@ -1359,7 +1393,7 @@ CONTEXT를 등록합니다.
 구성 설정
 """""""""
 
-STP 라이브러리 ``set_config ()`` 메소드를 사용하여 구성 설정을 수행합니다.
+STP 라이브러리 ``set_config ()`` 메서드를 사용하여 구성 설정을 수행합니다.
 여기 예제로 다음 값을 설정합니다. 
 
 ===================== =============== ======
