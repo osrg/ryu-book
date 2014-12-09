@@ -1745,27 +1745,30 @@ QoSルールの追加
                --**vlan**: [ "all" \| *VLAN ID* ]
 **データ**     **priority**:[ 0 - 65535 ]
 
-               **in_port**:[ 0 - 65535 ]
+               **match**:
 
-               **dl_src**:"<xx:xx:xx:xx:xx:xx>"
+                 **in_port**:[ 0 - 65535 ]
 
-               **dl_dst**:"<xx:xx:xx:xx:xx:xx>"
+                 **dl_src**:"<xx:xx:xx:xx:xx:xx>"
 
-               **dl_type**:[ "ARP" \| "IPv4" ]
+                 **dl_dst**:"<xx:xx:xx:xx:xx:xx>"
 
-               **nw_src**:"<xxx.xxx.xxx.xxx/xx>"
+                 **dl_type**:[ "ARP" \| "IPv4" ]
 
-               **nw_dst**:"<xxx.xxx.xxx.xxx/xx">
+                 **nw_src**:"<xxx.xxx.xxx.xxx/xx>"
 
-               **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" ]
+                 **nw_dst**:"<xxx.xxx.xxx.xxx/xx>"
 
-               **tp_src**:[ 0 - 65535 ]
+                 **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" ]
 
-               **tp_dst**:[ 0 - 65535 ]
+                 **tp_src**:[ 0 - 65535 ]
 
-               **ip_dscp**:[ 0 - 63 ]
+                 **tp_dst**:[ 0 - 65535 ]
+
+                 **ip_dscp**:[ 0 - 63 ]
 
                **actions**:
+
                  [ "mark": [ 0 - 63  ] \|
                  [ "meter": [ メーターID ] \|
                  [ "queue": [ キューID ]
