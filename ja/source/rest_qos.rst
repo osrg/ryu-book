@@ -1066,7 +1066,7 @@ OpenFlow 1.3よりMeter Tableが導入されOpenFlowでトラフィックのポ�
 DSドメインの境界に位置するルータ(エッジルータ)によってメータリングが行われ、指定帯域を超えるトラフィックは再マーキングされます。
 通常再マーキングされたパケットは優先的に破棄されるか、優先順位の低いクラスとして扱われます。
 例では、AF1クラスに対して800Kbpsの帯域保証を行い、各DSドメインから流入するAF11のトラフィックの400Kbpsを契約帯域とし、それ以上は超過トラフィックとしてパケットはAF12に再マーキングされます。
-ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。従って、各DSドメインからの高優先度のトラフィックに対しては400Kbpsまでは公平に保証され、最大約500Kbpsの帯域保証を実現できます。
+ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。
 
 .. only:: latex
 
@@ -1321,7 +1321,6 @@ Node: c0 (root):
 メータID  Flags   Bands
 ========= ======= ==================
 1         KBPS    type:DSCP_REMARK,
-                  burst_size:100,
                   rate:400000,
                   prec_level:1
 ========= ======= ==================
@@ -1343,7 +1342,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1369,7 +1368,7 @@ Node: c0 (root):
       }
     ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
