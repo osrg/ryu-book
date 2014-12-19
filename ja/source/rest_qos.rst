@@ -1096,7 +1096,46 @@ DSドメインの境界に位置するルータ(エッジルータ)によって�
 
 .. NOTE::
 
-    あらかじめofsoftswitch13のリンクスピードを1Mbpsに変更しています。
+    あらかじめofsoftswitch13のリンクスピードを1Mbpsに変更します。
+
+    まず、ofsoftswitch13のソースコードを修正します。
+
+    .. rst-class:: console
+
+    ::
+
+        $ cd ofsoftswitch13
+        $ gedit lib/netdev.c
+
+    lib/netdev.c:
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        644           if (ecmd.autoneg) {
+        645               netdev->curr |= OFPPF_AUTONEG;
+        646           }
+        647
+        648 -         netdev->speed = ecmd.speed;
+        649 +         netdev->speed = 1;  /* Fix to 1Mbps link */
+        650
+        651       } else {
+        652           VLOG_DBG(LOG_MODULE, "ioctl(SIOCETHTOOL) failed: %s", strerror(errno));
+        653       }
+
+    そして、ofsoftswitch13を再インストールします。
+
+    .. rst-class:: console
+
+    ::
+
+        $ make clean
+        $ ./boot.sh
+        $ ./configure
+        $ make
+        $ sudo make install
+
 
 実行例は以下の通りになります
 
