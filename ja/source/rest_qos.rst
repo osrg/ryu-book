@@ -1548,34 +1548,38 @@ Node: h1(1) (root):
 
 * ベストエフォートと超過したAF11トラフィック
 
+Node: h2 (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 800K
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5002
+    Client connecting to 10.0.0.1, UDP port 5001
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5002
+    [  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5001
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   979 KBytes   800 Kbits/sec
     [  4] Sent 682 datagrams
     [  4] Server Report:
     [  4]  0.0-11.9 sec   650 KBytes   449 Kbits/sec  18.458 ms  229/  682 (34%)
 
+Node: h3(1) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
+    Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5003
+    [  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5002
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
     [  4] Sent 512 datagrams
@@ -1587,6 +1591,28 @@ AF11のトラフィックが契約帯域400Kbpsを超過した場合でもベス
 帯域が保証されている事が分かります。
 
 * ベストエフォートとAF11の契約帯域内トラフィックと超過トラフィック
+
+Node: h2 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+    ------------------------------------------------------------
+    Client connecting to 10.0.0.1, UDP port 5001
+    Sending 1470 byte datagrams
+    UDP buffer size:  208 KByte (default)
+    ------------------------------------------------------------
+    [  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5001
+    [ ID] Interval       Transfer     Bandwidth
+    [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
+    [  4] Sent 512 datagrams
+    [  4] Server Report:
+    [  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
+    [  4]  0.0-10.0 sec  192 datagrams received out-of-order
+
+Node: h3(1) (root):
 
 .. rst-class:: console
 
@@ -1606,44 +1632,30 @@ AF11のトラフィックが契約帯域400Kbpsを超過した場合でもベス
     [  4] Server Report:
     [  4]  0.0-14.0 sec   359 KBytes   210 Kbits/sec  102.479 ms  177/  427 (41%)
 
+Node: h3(2) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 400K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5001
+    Client connecting to 10.0.0.1, UDP port 5003
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5001
+    [  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5003
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.1 sec   491 KBytes   400 Kbits/sec
     [  4] Sent 342 datagrams
     [  4] Server Report:
     [  4]  0.0-10.5 sec   491 KBytes   384 Kbits/sec  15.422 ms    0/  342 (0%)
 
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
-    ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
-    Sending 1470 byte datagrams
-    UDP buffer size:  208 KByte (default)
-    ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5003
-    [ ID] Interval       Transfer     Bandwidth
-    [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
-    [  4] Sent 512 datagrams
-    [  4] Server Report:
-    [  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
-    [  4]  0.0-10.0 sec  192 datagrams received out-of-order
-
 400Kbpsの契約帯域内のトラフィックはドロップされていない事がわかります。
 
 * AF11の超過トラフィック、超過トラフィック
+
+Node: h2 (root):
 
 .. rst-class:: console
 
@@ -1663,17 +1675,19 @@ AF11のトラフィックが契約帯域400Kbpsを超過した場合でもベス
     [  4]  0.0-11.0 sec   673 KBytes   501 Kbits/sec  964.490 ms   43/  512 (8.4%)
     [  4]  0.0-11.0 sec  95 datagrams received out-of-order
 
+Node: h3(1) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
+    Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5003
+    [  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5002
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
     [  4] Sent 512 datagrams
