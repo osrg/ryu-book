@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>QoS &mdash; Ryubook 1.0 ドキュメント</title>
+    <title>QoS &mdash; Ryubook 1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -23,25 +23,24 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 ドキュメント" href="index.html" />
-    <link rel="next" title="OpenFlowスイッチテストツール" href="switch_test_tool.html" />
-    <link rel="prev" title="ルータ" href="rest_router.html" /> 
+    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="next" title="OpenFlow Switch Test Tool" href="switch_test_tool.html" />
+    <link rel="prev" title="Router" href="rest_router.html" /> 
   </head>
   <body>
     <div class="related">
-      <h3>ナビゲーション</h3>
+      <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="総合索引"
-             accesskey="I">索引</a></li>
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
         <li class="right" >
-          <a href="switch_test_tool.html" title="OpenFlowスイッチテストツール"
-             accesskey="N">次へ</a> |</li>
+          <a href="switch_test_tool.html" title="OpenFlow Switch Test Tool"
+             accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="rest_router.html" title="ルータ"
-             accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+          <a href="rest_router.html" title="Router"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -51,51 +50,57 @@
           <div class="body">
             
   <div class="section" id="qos">
-<span id="ch-rest-qos"></span><h1>QoS<a class="headerlink" href="#qos" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、RESTで設定が出来るQoS機能の使用方法について説明します。</p>
-<div class="section" id="id1">
-<h2>QoSについて<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>QoS(Quality of Service)とはネットワーク上でデータの種類に応じた優先順位に従ってデータを転送したり、ある特定の通信の為にネットワーク帯域を予約し、一定の通信速度で通信できるようにする技術です。OpenFlowでは帯域制御によるQoSが実現できます。</p>
+<span id="ch-rest-qos"></span><h1>QoS<a class="headerlink" href="#qos" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to use QoS functions that can be set using REST.</p>
+<div class="section" id="about-qos">
+<h2>About QoS<a class="headerlink" href="#about-qos" title="Permalink to this headline">¶</a></h2>
+<p>QoS (Quality of Service) is a technology that can transfer the data in
+accordance with the priority based on the type of data,
+and reserve network bandwidth for a particular communication in order to
+communicate with a constant communication bandwidth on the network.</p>
 </div>
-<div class="section" id="id2">
-<h2>フロー単位のQoSの動作例<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>以下のようなトポロジを想定し、スイッチにQueueの設定とルールを追加し適切な帯域幅を割り当てる例を紹介します。また、OFS1のWAN側インターフェースでトラフィックシェーピングを行う場合を想定しています。</p>
-<a class="reference internal image-reference" href="_images/fig15.png"><img alt="_images/fig15.png" class="align-center" src="_images/fig15.png" style="width: 280.0px; height: 85.6px;" /></a>
-<div class="section" id="id3">
-<h3>環境構築<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
+<div class="section" id="example-of-the-operation-of-the-per-flow-qos">
+<h2>Example of the operation of the per-flow QoS<a class="headerlink" href="#example-of-the-operation-of-the-per-flow-qos" title="Permalink to this headline">¶</a></h2>
+<p>The following shows an example of creating topology, adding Queue settings and
+rules to reserve network bandwidth.
+And this example shows traffic shaping at WAN side interface of OFS1.</p>
+<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" style="width: 280.0px; height: 85.6px;" /></a>
+<div class="section" id="building-the-environment">
+<h3>Building the environment<a class="headerlink" href="#building-the-environment" title="Permalink to this headline">¶</a></h3>
+<p>First, build an environment on Mininet. Parameters of the <tt class="docutils literal"><span class="pre">mn</span></tt> command are as
+follows.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="18%" />
 <col width="15%" />
-<col width="66%" />
+<col width="67%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">パラメータ</th>
-<th class="head">値</th>
-<th class="head">説明</th>
+<tr class="row-odd"><th class="head">Parameters</th>
+<th class="head">Value</th>
+<th class="head">Explanation</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>mac</td>
-<td>なし</td>
-<td>自動的にホストのMACアドレスをセットする</td>
+<td>None</td>
+<td>Set the MAC address of the host automatically</td>
 </tr>
 <tr class="row-odd"><td>switch</td>
 <td>ovsk</td>
-<td>Open vSwitchを使用する</td>
+<td>Use Open vSwitch</td>
 </tr>
 <tr class="row-even"><td>controller</td>
 <td>remote</td>
-<td>OpenFlowコントローラは外部のものを利用する</td>
+<td>Use an external one for OpenFlow controller</td>
 </tr>
 <tr class="row-odd"><td>x</td>
-<td>なし</td>
-<td>xtermを起動する</td>
+<td>None</td>
+<td>Start xterm</td>
 </tr>
 </tbody>
 </table>
-<p>実行例は以下のようになります。</p>
+<p>An execution example is as follows.</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
@@ -116,27 +121,30 @@ s1
 mininet&gt;
 </pre></div>
 </div>
-<p>また、コントローラ用のxtermをもうひとつ起動しておきます。</p>
+<p>Also, start another xterm for the controller.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
 mininet&gt;
 </pre></div>
 </div>
-<p>続いて、スイッチで使用するOpenFlowのバージョンを1.3に設定します。また、OVSDBへアクセスを行うため、6632ポートで待ち受けるように設定します。</p>
+<p>Next, set the version of OpenFlow to be used in each router to version 1.3
+and set to listen on port 6632 to access OVSDB.</p>
 <p>switch: s1 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
 </pre></div>
 </div>
-<p>続いて、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で使用したsimple_switch_13.pyを変更します。rest_qos.pyはフローテーブルのパイプライン上で処理される事を想定しているため、simple_switch_13.pyのフローエントリをtable id:1に登録するように変更します。</p>
+<p>Then, modify simple_switch_13.py used in &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;.
+rest_qos.py suppose to be processed on Flow Table pipeline processing,
+modify simple_switch_13.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root)</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py
 root@ryu-vm:~# cd ryu/; python ./setup.py install
 </pre></div>
 </div>
-<p>最後に、コントローラのxterm上でrest_qos、qos_simple_switch_13、rest_conf_switchを起動させます。</p>
+<p>Finally, start rest_qos, qos_simple_switch_13 and rest_conf_switch on xterm of
+controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos
-ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
+<div class="console highlight-python"><div class="highlight"><pre>root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
 loading app ryu.app.rest_qos
 loading app ryu.app.qos_simple_switch_13
 loading app ryu.app.rest_conf_switch
@@ -155,16 +163,17 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 (3519) wsgi starting up on http://0.0.0.0:8080/
 </pre></div>
 </div>
-<p>Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。</p>
+<p>After a successful connection between the router and Ryu, the following
+message appears.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>[QoS][INFO] dpid=0000000000000001: Join qos switch.
 </pre></div>
 </div>
-<p>上記ログが表示されれば、準備完了です。</p>
+<p>If the above log is displayed for the three routers, preparation is complete.</p>
 </div>
-<div class="section" id="queue">
-<h3>Queueの設定<a class="headerlink" href="#queue" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>スイッチにQueueを設定します。</p>
+<div class="section" id="queue-setting">
+<h3>Queue Setting<a class="headerlink" href="#queue-setting" title="Permalink to this headline">¶</a></h3>
+<p>Set the Queue to switch.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="27%" />
@@ -172,9 +181,9 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 <col width="36%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">キューID</th>
-<th class="head">最大レート</th>
-<th class="head">最小レート</th>
+<tr class="row-odd"><th class="head">Queue ID</th>
+<th class="head">Max rate</th>
+<th class="head">Min rate</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -189,16 +198,17 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </tbody>
 </table>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">以降の説明で使用するREST APIの詳細は、章末の「<a class="reference internal" href="#rest-api">REST API一覧</a>」を参照してください。</p>
+<p class="first admonition-title">Note</p>
+<p class="last">For details of REST API used in the following description, see
+&#8220;<a class="reference internal" href="#rest-api-list">REST API List</a>&#8221; at the end of the section.</p>
 </div>
-<p>まずは、OVSDBへアクセスする為の設定を行います。</p>
+<p>First, set ovsdb_addr in order to access OVSDB.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
 root@ryu-vm:~#
 </pre></div>
 </div>
-<p>続いて、Queueの設定を行います。</p>
+<p>Also, execute setting of Queue.</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;: [{&quot;max_rate&quot;: &quot;500000&quot;}, {&quot;min_rate&quot;: &quot;800000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001
   [
     {
@@ -223,27 +233,27 @@ root@ryu-vm:~#
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">RESTコマンドの実行結果は見やすいように整形しています。</p>
+<p class="first admonition-title">Note</p>
+<p class="last">The result of the REST command is formatted for easy viewing.</p>
 </div>
 </div>
-<div class="section" id="id4">
-<h3>QoSの設定<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>以下の通りスイッチにフローの設定を行います。</p>
+<div class="section" id="qos-setting">
+<h3>QoS Setting<a class="headerlink" href="#qos-setting" title="Permalink to this headline">¶</a></h3>
+<p>Install the following flow entry to the switch.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="19%" />
-<col width="19%" />
-<col width="17%" />
 <col width="13%" />
-<col width="17%" />
+<col width="26%" />
+<col width="22%" />
+<col width="14%" />
+<col width="10%" />
+<col width="14%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">(優先度)</th>
-<th class="head">宛先</th>
-<th class="head">宛先ポート</th>
-<th class="head">プロトコル</th>
+<tr class="row-odd"><th class="head">(Priority)</th>
+<th class="head">Destination address</th>
+<th class="head">Destination port</th>
+<th class="head">Protocol</th>
 <th class="head">Queue ID</th>
 <th class="head">(QoS ID)</th>
 </tr>
@@ -274,9 +284,9 @@ root@ryu-vm:~#
 </pre></div>
 </div>
 </div>
-<div class="section" id="id5">
-<h3>設定内容の確認<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>各スイッチに設定された内容を確認します。</p>
+<div class="section" id="verifying-the-setting">
+<h3>Verifying the Setting<a class="headerlink" href="#verifying-the-setting" title="Permalink to this headline">¶</a></h3>
+<p>Check the contents of the setting of the switch.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
   [
@@ -306,14 +316,20 @@ root@ryu-vm:~#
 </pre></div>
 </div>
 </div>
-<div class="section" id="id6">
-<h3>帯域計測<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートで待ち受けます。h2はクライアントとなりh1の5001ポートに1MbpsのUDPトラフィック、h1の5002ポートに1MbpsのUDPトラフィックを送出します。</p>
+<div class="section" id="measuring-the-bandwidth">
+<h3>Measuring the bandwidth<a class="headerlink" href="#measuring-the-bandwidth" title="Permalink to this headline">¶</a></h3>
+<p>Try to measure the bandwidth by using iperf.
+In the following example, h1(server) listens on the port 5001 and 5002
+with UDP protocol.
+h2(client) sends 1Mbps UDP traffic to the port 5001 on h1 and
+1Mbps UDP traffic to the port 5002 on h1</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">以降の例では、帯域計測にiperf(<a class="reference external" href="http://iperf.fr/">http://iperf.fr/</a>)を使用します。iperfのインストール、使用方法については、本稿では解説しません。</p>
+<p class="first admonition-title">Note</p>
+<p class="last">The fallowing examples use iperf (<a class="reference external" href="http://iperf.fr/">http://iperf.fr/</a>) to measure the
+bandwidth.
+But this document does not describe how to install iperf and how to use it.</p>
 </div>
-<p>まず、h1、h2のターミナルを一つずつ起動します。</p>
+<p>First, start another xterm on each h1 and h2.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h1
 mininet&gt; xterm h2
 </pre></div>
@@ -392,53 +408,66 @@ mininet&gt; xterm h2
 [  4]  0.0-10.8 sec  1.19 MBytes   931 Kbits/sec   4.287 ms    0/  852 (0%)
 </pre></div>
 </div>
-<p>結果から分かる通りに5001ポート宛のトラフィックは帯域制限により500Kbps以下にシェーピングされ、5002ポート宛のトラフィックは800kbpsの帯域保証が行われていることが分かります。</p>
+<p>The above result shows the traffic sent to the port 5001 is shaped with up to
+500Kbps and the traffic to the port 5002 is guaranteed 800Kbps bandwidth.</p>
 </div>
 </div>
-<div class="section" id="diffservqos">
-<h2>DiffServによるQoSの動作例<a class="headerlink" href="#diffservqos" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>先ほどの例ではフロー毎にQoSを行いましたが、きめ細かい制御ができる反面、扱うフローが増加するに伴い、帯域制御を行う各スイッチに設定するフローも増加し、スケーラブルではありません。そこでフロー毎にQoSを行うのではなく、DiffServドメインの入り口のルータでフローをいくつかのクラスに分け、クラス毎の制御を行うDiffServを適用します。DiffServではIPヘッダのToSフィールド内の6ビットのDSCP値を使用し、DSCP値により定義されるPHBに従って転送することで、QoSを実現します。</p>
-<p>以下のようなトポロジを想定し、スイッチ(ルータ)OFS1にQueueの設定とクラスに応じた帯域制御を設定し、ルータOFS2にはフローに応じたDSCP値をマーキングを行うルールを適用する例を紹介します。また、OFS1のWAN側インターフェースでトラフィックシェーピングを行う場合を想定しています。</p>
-<a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 289.6px; height: 103.6px;" /></a>
-<div class="section" id="id7">
-<h3>環境構築<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
+<div class="section" id="example-of-the-operation-of-qos-by-using-diffserv">
+<h2>Example of the operation of QoS by using DiffServ<a class="headerlink" href="#example-of-the-operation-of-qos-by-using-diffserv" title="Permalink to this headline">¶</a></h2>
+<p>Previous example shows the per-flow QoS, while it is able to control finely,
+as the communication flows increase, the flow entries which are set for
+each switch to control the bandwidth also increase.
+So the per-flow QoS is not scalable.
+Therefore, the following example divides flows into the several QoS classes at
+the entrance router of DiffServ domain and applies DiffServ to control flows
+for each class.
+DiffServ forward the packets according to PHB defined by DSCP value which is
+the first 6-bit of ToS field in IP header, and realizes QoS.</p>
+<p>The following shows an example of setting Queue and bandwidth configuration
+based on the QoS class into Switch (Router) OFS1, and installation rules
+of marking the DSCP value in accordance with the flow.
+And this example shows traffic shaping at WAN side interface of OFS1.</p>
+<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 289.6px; height: 103.6px;" /></a>
+<div class="section" id="id1">
+<h3>Building the environment<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>First, build an environment on Mininet. Parameters of the <tt class="docutils literal"><span class="pre">mn</span></tt> command are as
+follows.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="18%" />
-<col width="15%" />
-<col width="66%" />
+<col width="17%" />
+<col width="14%" />
+<col width="69%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">パラメータ</th>
-<th class="head">値</th>
-<th class="head">説明</th>
+<tr class="row-odd"><th class="head">Parameters</th>
+<th class="head">Value</th>
+<th class="head">Explanation</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>topo</td>
 <td>linear,2</td>
-<td>2台のスイッチが直列に接続されているトポロジ</td>
+<td>Topology where two switches are connected serially</td>
 </tr>
 <tr class="row-odd"><td>mac</td>
-<td>なし</td>
-<td>自動的にホストのMACアドレスをセットする</td>
+<td>None</td>
+<td>Set the MAC address of the host automatically</td>
 </tr>
 <tr class="row-even"><td>switch</td>
 <td>ovsk</td>
-<td>Open vSwitchを使用する</td>
+<td>Use Open vSwitch</td>
 </tr>
 <tr class="row-odd"><td>controller</td>
 <td>remote</td>
-<td>OpenFlowコントローラは外部のものを利用する</td>
+<td>Use an external one for OpenFlow controller</td>
 </tr>
 <tr class="row-even"><td>x</td>
-<td>なし</td>
-<td>xtermを起動する</td>
+<td>None</td>
+<td>Start xterm</td>
 </tr>
 </tbody>
 </table>
-<p>実行例は以下のようになります。</p>
+<p>An execution example is as follows.</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,2 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
@@ -459,12 +488,13 @@ s1
 mininet&gt;
 </pre></div>
 </div>
-<p>また、コントローラ用のxtermをもうひとつ起動しておきます。</p>
+<p>Also, start another xterm for the controller.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
 mininet&gt;
 </pre></div>
 </div>
-<p>続いて、スイッチで使用するOpenFlowのバージョンを1.3に設定します。また、OVSDBへアクセスを行うため、6632ポートで待ち受けるように設定します。</p>
+<p>Next, set the version of OpenFlow to be used in each router to version 1.3
+and set to listen on port 6632 to access OVSDB.</p>
 <p>switch: s1 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
 root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
@@ -474,7 +504,8 @@ root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
 </pre></div>
 </div>
-<p>その後、各ホストで自動的に割り当てられているIPアドレスを削除し、新たにIPアドレスを設定します。</p>
+<p>Then, delete the IP address that is assigned automatically on each host and
+set a new IP address.</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
 root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
@@ -485,13 +516,16 @@ root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
 root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
 </pre></div>
 </div>
-<p>続いて、「<a class="reference internal" href="rest_router.html#ch-rest-router"><em>ルータ</em></a>」で使用したrest_router.pyを変更します。rest_qos.pyはフローテーブルのパイプライン上で処理される事を想定しているため、rest_router.pyのフローエントリをtable id:1に登録するように変更します。</p>
+<p>And, modify rest_router.py used in &#8220;<a class="reference internal" href="rest_router.html#ch-rest-router"><em>Router</em></a>&#8221;.
+rest_qos.py suppose to be processed on Flow Table pipeline processing,
+modify rest_router.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# sed &#39;/OFPFlowMod(/,/)/s/0, cmd/1, cmd/&#39; ryu/ryu/app/rest_router.py &gt; ryu/ryu/app/qos_rest_router.py
 root@ryu-vm:~# cd ryu/; python ./setup.py install
 </pre></div>
 </div>
-<p>最後に、コントローラのxterm上でrest_qos、qos_rest_router、rest_conf_switchを起動させます。</p>
+<p>Finally, start rest_qos, qos_rest_router and rest_conf_switch on xterm of
+controller.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_rest_router ryu.app.rest_conf_switch
 loading app ryu.app.rest_qos
@@ -513,7 +547,8 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 (4687) wsgi starting up on http://0.0.0.0:8080/
 </pre></div>
 </div>
-<p>Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。</p>
+<p>After a successful connection between the router and Ryu, the following
+message appears.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000002: Set SW config for TTL error packet in.
 [RT][INFO] switch_id=0000000000000002: Set ARP handling (packet in) flow [cookie=0x0]
@@ -531,10 +566,10 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 [QoS][INFO] dpid=0000000000000001: Join qos switch.
 </pre></div>
 </div>
-<p>上記ログが表示されれば、準備完了です。</p>
+<p>If the above log is displayed for the three routers, preparation is complete.</p>
 </div>
-<div class="section" id="id8">
-<h3>Queueの設定<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id2">
+<h3>Queue Setting<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -543,10 +578,10 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 <col width="27%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">キューID</th>
-<th class="head">最大レート</th>
-<th class="head">最小レート</th>
-<th class="head">クラス</th>
+<tr class="row-odd"><th class="head">Queue ID</th>
+<th class="head">Max rate</th>
+<th class="head">Min rate</th>
+<th class="head">Class</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -568,16 +603,17 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </tbody>
 </table>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">以降の説明で使用するREST APIの詳細は、章末の「<a class="reference internal" href="#rest-api">REST API一覧</a>」を参照してください。</p>
+<p class="first admonition-title">Note</p>
+<p class="last">For details of REST API used in the following description, see
+&#8220;<a class="reference internal" href="#rest-api-list">REST API List</a>&#8221; at the end of the section.</p>
 </div>
-<p>まずは、OVSDBへアクセスする為の設定を行います。</p>
+<p>First, set ovsdb_addr in order to access OVSDB.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
 root@ryu-vm:~#
 </pre></div>
 </div>
-<p>続いて、Queueの設定を行います。</p>
+<p>Also, execute setting of Queue.</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;:[{&quot;max_rate&quot;: &quot;1000000&quot;}, {&quot;min_rate&quot;: &quot;200000&quot;}, {&quot;min_rate&quot;: &quot;500000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001
   [
     {
@@ -607,13 +643,13 @@ root@ryu-vm:~#
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">RESTコマンドの実行結果は見やすいように整形しています。</p>
+<p class="first admonition-title">Note</p>
+<p class="last">The result of the REST command is formatted for easy viewing.</p>
 </div>
 </div>
-<div class="section" id="id9">
-<h3>ルータの設定<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>各ルータへアドレスの設定、デフォルトルートの設定を行います。</p>
+<div class="section" id="router-setting">
+<h3>Router Setting<a class="headerlink" href="#router-setting" title="Permalink to this headline">¶</a></h3>
+<p>Set the IP address and the default route for each router.</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
   [
     {
@@ -694,7 +730,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 ...
 </pre></div>
 </div>
-<p>ルータへのIPアドレスの設定ができたので、各ホストにデフォルトゲートウェイとして登録します。</p>
+<p>The IP address settings for each router are done, register the routers as the
+default gateway to each host.</p>
 <p>host: h1:</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
 </pre></div>
@@ -704,9 +741,10 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 </pre></div>
 </div>
 </div>
-<div class="section" id="id10">
-<h3>QoSの設定<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>以下の通りルータ(s1)にDSCP値に応じた制御を行うフローを設定します。</p>
+<div class="section" id="id3">
+<h3>QoS Setting<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Install the following flow entry in accordance with DSCP value into the
+router (s1).</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -715,9 +753,9 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 <col width="25%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">(優先度)</th>
+<tr class="row-odd"><th class="head">Priority</th>
 <th class="head">DSCP</th>
-<th class="head">キューID</th>
+<th class="head">Queue ID</th>
 <th class="head">(QoS ID)</th>
 </tr>
 </thead>
@@ -762,21 +800,21 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
   ]
 </pre></div>
 </div>
-<p>以下の通りルータ(s2)にマーキングを行うフローの設定を行います。</p>
+<p>Install the following rules of marking the DSCP value into the router (s2).</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="19%" />
-<col width="19%" />
-<col width="17%" />
 <col width="13%" />
-<col width="17%" />
+<col width="26%" />
+<col width="22%" />
+<col width="14%" />
+<col width="10%" />
+<col width="14%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">(優先度)</th>
-<th class="head">宛先</th>
-<th class="head">宛先ポート</th>
-<th class="head">プロトコル</th>
+<tr class="row-odd"><th class="head">(Priority)</th>
+<th class="head">Destination address</th>
+<th class="head">Destination port</th>
+<th class="head">Protocol</th>
 <th class="head">DSCP</th>
 <th class="head">(QoS ID)</th>
 </tr>
@@ -827,9 +865,9 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &qu
 </pre></div>
 </div>
 </div>
-<div class="section" id="id11">
-<h3>設定内容の確認<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>各スイッチに設定された内容を確認します。</p>
+<div class="section" id="id4">
+<h3>Verifying the Setting<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>Check the contents of the setting of each switch.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
   [
@@ -907,10 +945,14 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000002
 </pre></div>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>帯域計測<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2はクライアントとなりh1の5001ポートに1MbpsのUDPトラフィック、h1の5002ポートに300KbpsのUDPトラフィック、h1の5003ポートに600KbpsのUDPトラフィックを送出します。</p>
-<p>まず、h2のターミナルを2つ起動します。</p>
+<div class="section" id="id5">
+<h3>Measuring the bandwidth<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>Try to measure the bandwidth by using iperf.
+In the following example, h1(server) listens on the port 5001, 5002 and
+5003 with UDP protocol.
+h2(client) sends 1Mbps UDP traffic to the port 5001 on h1, 300Kbps UDP
+traffic to the port 5002 on h1 and 600Kbps UDP traffic to the port 5003.</p>
+<p>First, start 2 xterm on h2.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h2
 mininet&gt; xterm h2
 </pre></div>
@@ -988,22 +1030,39 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-19.7 sec  1.19 MBytes   508 Kbits/sec   0.981 ms    0/  852 (0%)
 </pre></div>
 </div>
-<p>AF41にマーキングされているトラフィックは500Kbpsの帯域保証がされ、AF31にマーキングされているトラフィックは200Kbpsの帯域保証がされています。一方、ベストエフォートのトラフィックはAFにマーキングされているトラフィックが流れている間は帯域幅が狭められているのが分かります。このようにDiffServによりQoSを実現できることが確認できました。</p>
+<p>The above result shows the traffic marked with AF41 (sent to the port 5002) is
+guaranteed 500Kbps bandwidth, and the traffic marked with AF31 (sent to the
+port 5003) is guaranteed 200Kbps bandwidth.
+On the other hand, the bandwidth of best-effort traffic is limited while
+the traffic marked with AF class is communicating.</p>
+<p>In this way, we were able to confirm that it is possible to realize a QoS by
+using DiffServ model.</p>
 </div>
 </div>
-<div class="section" id="meter-tableqos">
-<h2>Meter Tableを使用したQoSの動作例<a class="headerlink" href="#meter-tableqos" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>OpenFlow 1.3よりMeter Tableが導入されOpenFlowでトラフィックのポリシングが可能となりました。Meter Tableの利用例について紹介します。こちらの例では、Meter TableをサポートするOpenFlow Switchのofsoftswitch13(<a class="reference external" href="https://github.com/CPqD/ofsoftswitch13">https://github.com/CPqD/ofsoftswitch13</a>)を使用します。</p>
+<div class="section" id="example-of-the-operation-of-qos-by-using-meter-table">
+<h2>Example of the operation of QoS by using Meter Table<a class="headerlink" href="#example-of-the-operation-of-qos-by-using-meter-table" title="Permalink to this headline">¶</a></h2>
+<p>Meter Table is introduced in the OpenFlow 1.3, makes it enable to use policing of traffic in OpenFlow mechanism.
+This chapter describes example of the use of Meter Table. This example uses the OpenFlow Switch ofsoftswitch13(<a class="reference external" href="https://github.com/CPqD/ofsoftswitch13">https://github.com/CPqD/ofsoftswitch13</a>).
+This switch supports Meter Table.</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p class="last">ofsoftswitch13のインストール手順などについては本稿では解説しません。参考:(<a class="reference external" href="https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial">https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial</a>)</p>
+<p class="first admonition-title">Note</p>
+<p>This section does not describe the installation instructions for ofsoftswitch13.</p>
+<p class="last">Reference: <a class="reference external" href="https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial">https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial</a></p>
 </div>
-<p>以下のように複数のDiffServドメイン(DSドメイン)により構成されているネットワークを想定します。DSドメインの境界に位置するルータ(エッジルータ)によってメータリングが行われ、指定帯域を超えるトラフィックは再マーキングされます。通常再マーキングされたパケットは優先的に破棄されるか、優先順位の低いクラスとして扱われます。例では、AF1クラスに対して800Kbpsの帯域保証を行い、各DSドメインから流入するAF11のトラフィックの400Kbpsを契約帯域とし、それ以上は超過トラフィックとしてパケットはAF12に再マーキングされます。ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。</p>
-<a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" style="width: 414.4px; height: 279.6px;" /></a>
-<div class="section" id="id13">
-<h3>環境構築<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>まずはMininet上に環境を構築します。トポロジの作成はPythonスクリプトで行います。</p>
-<p>ソース名：<tt class="docutils literal"><span class="pre">qos_sample_topology.py</span></tt></p>
+<p>The following shows an example of the network composed of the multiple DiffServ domain (DS domain).
+Traffic metering are executed by the router (edge router) located on the boundary of the DS domain,
+and the traffic that exceeds the specified bandwidth will be re-marking.
+Usually, re-marked packets are dropped preferentially or treated as low priority class.
+In this example, perform the bandwidth guarantee of 800Kbps to AF1 class.
+Also, AF11 class traffic transferred from each DS domain is guaranteed with  400Kbps bandwidth.
+Traffic that is more than 400kbps is treated as excess traffic, and re-marked with AF12 class.
+However, it is still guaranteed that AF12 class is more preferentially transferred than the best effort class.</p>
+<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 414.4px; height: 279.6px;" /></a>
+<div class="section" id="id6">
+<h3>Building the environment<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>First, build an environment on Mininet.
+Build a topology using a python script.</p>
+<p>source code: <tt class="docutils literal"><span class="pre">qos_sample_topology.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
 <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
 <span class="kn">from</span> <span class="nn">mininet.topo</span> <span class="kn">import</span> <span class="n">Topo</span>
@@ -1056,9 +1115,9 @@ UDP buffer size:  208 KByte (default)
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
-<p>あらかじめofsoftswitch13のリンクスピードを1Mbpsに変更します。</p>
-<p>まず、ofsoftswitch13のソースコードを修正します。</p>
+<p class="first admonition-title">Note</p>
+<p>Change the link speed of ofsoftswitch13 to 1Mbps in advance.</p>
+<p>First, modify the sourcecode of ofsoftswitch13.</p>
 <div class="console highlight-python"><div class="highlight"><pre>$ cd ofsoftswitch13
 $ gedit lib/netdev.c
 </pre></div>
@@ -1076,7 +1135,7 @@ $ gedit lib/netdev.c
 653       }
 </pre></div>
 </div>
-<p>そして、ofsoftswitch13を再インストールします。</p>
+<p>Then, re-install ofsoftswitch13.</p>
 <div class="console last highlight-python"><div class="highlight"><pre>$ make clean
 $ ./boot.sh
 $ ./configure
@@ -1085,25 +1144,26 @@ $ sudo make install
 </pre></div>
 </div>
 </div>
-<p>実行例は以下の通りになります</p>
+<p>An execution example is as follows.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet@mininet-vm:~$ sudo python qos_sample_topology.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt;
 </pre></div>
 </div>
-<p>また、コントローラ用のxtermを2つ起動しておきます。</p>
+<p>Also, start two xterm for the controller.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
 mininet&gt; xterm c0
 mininet&gt;
 </pre></div>
 </div>
-<p>続いて、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で使用したsimple_switch_13.pyを変更します。rest_qos.pyはフローテーブルのパイプライン上で処理される事を想定しているため、simple_switch_13.pyのフローエントリをtable id:1に登録するように変更します。</p>
+<p>Next, modify the simple_switch_13.py used in &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>Switching Hub</em></a>&#8221;.
+rest_qos.py suppose to be processed on Flow Table pipeline processing,modify simple_switch_13.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root)</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py
 root@ryu-vm:~# cd ryu/; python ./setup.py install
 </pre></div>
 </div>
-<p>最後に、コントローラのxterm上でrest_qos、qos_simple_switch_13を起動させます。</p>
+<p>Finally, start rest_qos and qos_simple_switch_13 on xterm of controller.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13
 loading app ryu.app.rest_qos
@@ -1122,7 +1182,7 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 (2348) wsgi starting up on http://0.0.0.0:8080/
 </pre></div>
 </div>
-<p>Ryuとスイッチの間の接続に成功すると、次のメッセージが表示されます。</p>
+<p>After a successful connection between the switch and Ryu, the following message appears.</p>
 <p>controller: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>[QoS][INFO] dpid=0000000000000003: Join qos switch.
 [QoS][INFO] dpid=0000000000000001: Join qos switch.
@@ -1131,20 +1191,20 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </pre></div>
 </div>
 </div>
-<div class="section" id="id14">
-<h3>QoSの設定<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>以下の通りスイッチ(s1)にDSCP値に応じた制御を行うフローを設定します。</p>
+<div class="section" id="setting-qos">
+<h3>Setting QoS<a class="headerlink" href="#setting-qos" title="Permalink to this headline">¶</a></h3>
+<p>Install the following flow entry in accordance with DSCP value into the router (s1).</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
+<col width="22%" />
 <col width="27%" />
 <col width="27%" />
-<col width="25%" />
+<col width="24%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">(優先度)</th>
+<tr class="row-odd"><th class="head">(Priority)</th>
 <th class="head">DSCP</th>
-<th class="head">キューID</th>
+<th class="head">Queue ID</th>
 <th class="head">(QoS ID)</th>
 </tr>
 </thead>
@@ -1246,23 +1306,24 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
   ]
 </pre></div>
 </div>
-<p>以下の通りスイッチ(s2、s3)にメータエントリーを設定します。</p>
+<p>Install the following meter entries to the switches (s2, s3).</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
+<col width="9%" />
+<col width="11%" />
 <col width="27%" />
 <col width="27%" />
 <col width="25%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">(優先度)</th>
+<tr class="row-odd"><th class="head" colspan="2">(Priority)</th>
 <th class="head">DSCP</th>
-<th class="head">メータID</th>
+<th class="head">Meter ID</th>
 <th class="head">(QoS ID)</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>1</td>
+<tr class="row-even"><td colspan="2">1</td>
 <td>10(AF11)</td>
 <td>1</td>
 <td>1</td>
@@ -1276,7 +1337,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
 <col width="53%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">メータID</th>
+<tr class="row-odd"><th class="head">Meter ID</th>
 <th class="head">Flags</th>
 <th class="head">Bands</th>
 </tr>
@@ -1284,7 +1345,9 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
 <tbody valign="top">
 <tr class="row-even"><td>1</td>
 <td>KBPS</td>
-<td>type:DSCP_REMARK,rate:400000,prec_level:1</td>
+<td>type:DSCP_REMARK,
+rate:400000,
+prec_level:1</td>
 </tr>
 </tbody>
 </table>
@@ -1342,9 +1405,9 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;
 </pre></div>
 </div>
 </div>
-<div class="section" id="id15">
-<h3>設定内容の確認<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>各スイッチに設定された内容を確認します。</p>
+<div class="section" id="id7">
+<h3>Verifying the Setting<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>Check the contents of the setting of each switch.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
   [
@@ -1479,10 +1542,12 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000003
 </pre></div>
 </div>
 </div>
-<div class="section" id="id16">
-<h3>帯域計測<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2、h3はクライアントとなりh1宛に各クラスのトラフィックを送出します。</p>
-<p>まず、h1とh2で2つとh3の1つづつターミナルを起動します。</p>
+<div class="section" id="id8">
+<h3>Measuring the bandwidth<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>Try to measure the bandwidth by using iperf.
+h1(server) is listening on port 5001 and 5002 and port 5003 in the UDP protocol.
+h2, h3 (client) sends the traffic of each class addressed to h1.</p>
+<p>First, start 4 xterm as follows.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h1
 mininet&gt; xterm h2
 mininet&gt; xterm h3
@@ -1497,8 +1562,8 @@ root@ryu-vm:~# iperf -s -u -p 5003 &amp;
 ...
 </pre></div>
 </div>
-<div class="section" id="af11">
-<h4>ベストエフォートと超過したAF11トラフィック<a class="headerlink" href="#af11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="best-effort-traffic-af11-excess-traffic">
+<h4>Best-effort traffic &amp; AF11 excess traffic<a class="headerlink" href="#best-effort-traffic-af11-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
 ------------------------------------------------------------
@@ -1530,10 +1595,11 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-10.0 sec  6 datagrams received out-of-order
 </pre></div>
 </div>
-<p>AF11のトラフィックが契約帯域400Kbpsを超過した場合でもベストエフォートのトラフィックより帯域が保証されている事が分かります。</p>
+<p>The above result shows, even if the traffic of AF11 exceeds the contracted bandwidth 400Kbps,
+AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p>
 </div>
-<div class="section" id="af11af11">
-<h4>AF11の超過トラフィックとベストエフォートとAF11の契約帯域内トラフィック<a class="headerlink" href="#af11af11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="af11-excess-traffic-best-effort-traffic-af11-non-excess-traffic">
+<h4>AF11 excess traffic &amp; Best-effort traffic &amp; AF11 non-excess traffic<a class="headerlink" href="#af11-excess-traffic-best-effort-traffic-af11-non-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
 ------------------------------------------------------------
@@ -1581,10 +1647,10 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-10.5 sec   491 KBytes   384 Kbits/sec  15.422 ms    0/  342 (0%)
 </pre></div>
 </div>
-<p>400Kbpsの契約帯域内のトラフィックはドロップされていない事がわかります。</p>
+<p>The above result shows, traffic within the contracted bandwidth of 400Kbps are not dropped.</p>
 </div>
-<div class="section" id="id17">
-<h4>AF11の超過トラフィックとAF11の超過トラフィック<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<div class="section" id="af11-excess-traffic-af11-excess-traffic">
+<h4>AF11 excess traffic &amp; AF11 excess traffic<a class="headerlink" href="#af11-excess-traffic-af11-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
 ------------------------------------------------------------
@@ -1617,155 +1683,156 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-10.6 sec  93 datagrams received out-of-order
 </pre></div>
 </div>
-<p>超過トラフィックは同程度にドロップされている事が分かります。</p>
-<p>本章では、具体例を挙げながらQoS REST APIの使用方法を説明しました。</p>
+<p>The above result shows, two excess traffic are droped in the same rate.</p>
+<p>In this section, you learned how to use the QoS REST API with specific examples.</p>
 </div>
 </div>
 </div>
-<div class="section" id="rest-api">
-<h2>REST API一覧<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>本章で紹介したrest_qosのREST API一覧です。</p>
-<div class="section" id="id18">
-<h3>キューの状態の取得<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="rest-api-list">
+<h2>REST API List<a class="headerlink" href="#rest-api-list" title="Permalink to this headline">¶</a></h2>
+<p>A list of REST API of rest_qos introduced in this section.</p>
+<div class="section" id="get-queue-status">
+<h3>Get queue status<a class="headerlink" href="#get-queue-status" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
 <col width="75%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>GET</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/queue/status/{<strong>switch</strong>}</p>
-<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
+<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id19">
-<h3>キューの設定情報の取得<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="get-queue-configuration">
+<h3>Get queue configuration<a class="headerlink" href="#get-queue-configuration" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="16%" />
-<col width="84%" />
+<col width="14%" />
+<col width="86%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>GET</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/queue/{<strong>switch</strong>}</p>
-<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
+<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>備考</strong></td>
-<td>QoS REST APIを起動した後有効にしたキューの設定情報のみ取得できます。</td>
+<tr class="row-odd"><td><strong>Remarks</strong></td>
+<td>It is possible to get only queue configuration after start of the QoS REST API.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id20">
-<h3>キューの設定<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="set-queue">
+<h3>Set queue<a class="headerlink" href="#set-queue" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="19%" />
 <col width="81%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>POST</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/queue/{<strong>switch</strong>}</p>
-<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
+<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>データ</strong></td>
-<td><p class="first"><strong>port_name</strong>:[設定対象のポート名]</p>
+<tr class="row-odd"><td><strong>Data</strong></td>
+<td><p class="first"><strong>port_name</strong>:[Port name]</p>
 <p><strong>type</strong>:[linux-htb | linux-hfsc]</p>
-<p><strong>max_rate</strong>:[帯域幅(bps)]</p>
+<p><strong>max_rate</strong>:[Bandwidth(bps)]</p>
 <p><strong>queues</strong>:</p>
 <blockquote class="last">
-<div><p><strong>max_rate</strong>:[帯域幅(bps)]</p>
-<p><strong>min_rate</strong>:[帯域幅(bps)]</p>
+<div><p><strong>max_rate</strong>:[Bandwidth(bps)]</p>
+<p><strong>min_rate</strong>:[Bandwidth(bps)]</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="row-even"><td><strong>備考</strong></td>
-<td><p class="first">既存の設定が存在する場合は上書きされます。</p>
-<p>OpenvSwitchにのみ設定が可能です。</p>
-<p>port_nameパラメータはオプションです。</p>
-<p class="last">port_nameを指定しない場合は全てのポートに設定されます。</p>
+<tr class="row-even"><td><strong>Remarks</strong></td>
+<td><p class="first">If an action of the given type exists in the current set,
+overwrite it.</p>
+<p>This command is compatible with only Open vSwitch.</p>
+<p>port_name on Data is optional.</p>
+<p class="last">If you do not specify a port_name, it is set to OFPP_ANY.</p>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id21">
-<h3>キューの削除<a class="headerlink" href="#id21" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="delete-queue">
+<h3>Delete queue<a class="headerlink" href="#delete-queue" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
 <col width="79%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>DELETE</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/queue/{<strong>swtich</strong>}</p>
-<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
+<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>備考</strong></td>
-<td>OVSDBのQoSレコードとの関連を削除します。</td>
+<tr class="row-odd"><td><strong>Remarks</strong></td>
+<td>Remove the association with QoS record of OVSDB</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id22">
-<h3>全QoSルールの取得<a class="headerlink" href="#id22" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="get-all-of-qos-rules">
+<h3>Get all of QoS rules<a class="headerlink" href="#get-all-of-qos-rules" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
 <col width="76%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>GET</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/rules/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
-<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
-<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; |<em>VLAN ID</em>]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>備考</strong></td>
-<td>VLAN IDの指定はオプションです。</td>
+<tr class="row-odd"><td><strong>Remarks</strong></td>
+<td>VLAN ID on URL is optional.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id23">
-<h3>QoSルールの追加<a class="headerlink" href="#id23" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="set-a-qos-rule">
+<h3>Set a QoS rule<a class="headerlink" href="#set-a-qos-rule" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col width="13%" />
+<col width="87%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>POST</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/rules/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
-<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
-<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; |<em>VLAN ID</em>]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>データ</strong></td>
+<tr class="row-odd"><td><strong>Data</strong></td>
 <td><p class="first"><strong>priority</strong>:[ 0 - 65535 ]</p>
 <p><strong>match</strong>:</p>
 <blockquote>
@@ -1780,92 +1847,95 @@ UDP buffer size:  208 KByte (default)
 <p><strong>tp_dst</strong>:[ 0 - 65535 ]</p>
 <p><strong>ip_dscp</strong>:[ 0 - 63 ]</p>
 </div></blockquote>
-<p><strong>actions</strong>:</p>
-<blockquote class="last">
-<div>[ &#8220;mark&#8221;: [ 0 - 63  ] ] |[ &#8220;meter&#8221;: [ メーターID ] ] |[ &#8220;queue&#8221;: [ キューID ] ]</div></blockquote>
+<dl class="last docutils">
+<dt><strong>actions</strong>:</dt>
+<dd>[ &#8220;mark&#8221;: [ 0 - 63  ] ] |
+[ &#8220;meter&#8221;: [ Meter ID ] ] |
+[ &#8220;queue&#8221;: [ Queue ID ] ]</dd>
+</dl>
 </td>
 </tr>
-<tr class="row-even"><td><strong>備考</strong></td>
-<td><p class="first">登録に成功するとQoS IDが生成され、応答に記載されます。</p>
-<p class="last">VLAN IDの指定はオプションです。</p>
+<tr class="row-even"><td><strong>Remarks</strong></td>
+<td><p class="first">If successful registration, QoS ID is generated, it will be described in the response.</p>
+<p class="last">VLAN ID on URL is optional.</p>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id24">
-<h3>QoSルールの削除<a class="headerlink" href="#id24" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="delete-qos-rules">
+<h3>Delete qos rules<a class="headerlink" href="#delete-qos-rules" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
 <col width="76%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>DELETE</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/rules/{<strong>switch</strong>}[/{<strong>vlan</strong>}]</p>
-<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
-<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; |<em>VLAN ID</em>]</p>
+<p>&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
+<p class="last">&#8211;<strong>vlan</strong>: [ &#8220;all&#8221; | <em>VLAN ID</em> ]</p>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>データ</strong></td>
+<tr class="row-odd"><td><strong>Data</strong></td>
 <td><strong>rule_id</strong>:[ &#8220;all&#8221; | 1 - ... ]</td>
 </tr>
-<tr class="row-even"><td><strong>備考</strong></td>
-<td>VLAN IDの指定はオプションです。</td>
+<tr class="row-even"><td><strong>Remarks</strong></td>
+<td>VLAN ID on URL is optional.</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id25">
-<h3>メーターテーブルの情報取得<a class="headerlink" href="#id25" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="get-meter-statistics">
+<h3>Get Meter Statistics<a class="headerlink" href="#get-meter-statistics" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
 <col width="75%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>GET</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td><p class="first">/qos/meter/{<strong>switch</strong>}</p>
-<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
+<p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>Switch ID</em> ]</p>
 </td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="id26">
-<h3>メーターテーブルの設定<a class="headerlink" href="#id26" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="set-meter-table">
+<h3>Set meter table<a class="headerlink" href="#set-meter-table" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="15%" />
-<col width="85%" />
+<col width="14%" />
+<col width="86%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><strong>メソッド</strong></td>
+<tr class="row-odd"><td><strong>Method</strong></td>
 <td>POST</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
 <td>/qos/meter/{<strong>switch</strong>}</td>
 </tr>
-<tr class="row-odd"><td><strong>データ</strong></td>
-<td><p class="first"><strong>meter_id</strong>:メータID</p>
+<tr class="row-odd"><td><strong>Data</strong></td>
+<td><p class="first"><strong>meter_id</strong>:Meter ID</p>
 <p><strong>bands</strong>:</p>
 <blockquote class="last">
 <div><p><strong>action</strong>:[DROP | DSCP_REMARK]</p>
 <p><strong>flags</strong>:[KBPS | PKTPS | BURST | STATS]</p>
-<p><strong>burst_size</strong>:[バーストサイズ]</p>
-<p><strong>rate</strong>:[受信レート]</p>
-<p><strong>prec_level</strong>:[リマークする破棄優先度レベル]</p>
+<p><strong>burst_size</strong>:[Burst size]</p>
+<p><strong>rate</strong>:[Reception rate]</p>
+<p><strong>prec_level</strong>:[Number of drop precedence level to add]</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="row-even"><td><strong>備考</strong></td>
-<td>bandsで指定する、また有効になるパラメータはactionやflagsによって異なります。</td>
+<tr class="row-even"><td><strong>Remarks</strong></td>
+<td>The parameter specified or enabled in the bands is depends on the action and flags.</td>
 </tr>
 </tbody>
 </table>
@@ -1879,76 +1949,76 @@ UDP buffer size:  208 KByte (default)
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">目次</a></h3>
+  <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">QoS</a><ul>
-<li><a class="reference internal" href="#id1">QoSについて</a></li>
-<li><a class="reference internal" href="#id2">フロー単位のQoSの動作例</a><ul>
-<li><a class="reference internal" href="#id3">環境構築</a></li>
-<li><a class="reference internal" href="#queue">Queueの設定</a></li>
-<li><a class="reference internal" href="#id4">QoSの設定</a></li>
-<li><a class="reference internal" href="#id5">設定内容の確認</a></li>
-<li><a class="reference internal" href="#id6">帯域計測</a></li>
+<li><a class="reference internal" href="#about-qos">About QoS</a></li>
+<li><a class="reference internal" href="#example-of-the-operation-of-the-per-flow-qos">Example of the operation of the per-flow QoS</a><ul>
+<li><a class="reference internal" href="#building-the-environment">Building the environment</a></li>
+<li><a class="reference internal" href="#queue-setting">Queue Setting</a></li>
+<li><a class="reference internal" href="#qos-setting">QoS Setting</a></li>
+<li><a class="reference internal" href="#verifying-the-setting">Verifying the Setting</a></li>
+<li><a class="reference internal" href="#measuring-the-bandwidth">Measuring the bandwidth</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#diffservqos">DiffServによるQoSの動作例</a><ul>
-<li><a class="reference internal" href="#id7">環境構築</a></li>
-<li><a class="reference internal" href="#id8">Queueの設定</a></li>
-<li><a class="reference internal" href="#id9">ルータの設定</a></li>
-<li><a class="reference internal" href="#id10">QoSの設定</a></li>
-<li><a class="reference internal" href="#id11">設定内容の確認</a></li>
-<li><a class="reference internal" href="#id12">帯域計測</a></li>
+<li><a class="reference internal" href="#example-of-the-operation-of-qos-by-using-diffserv">Example of the operation of QoS by using DiffServ</a><ul>
+<li><a class="reference internal" href="#id1">Building the environment</a></li>
+<li><a class="reference internal" href="#id2">Queue Setting</a></li>
+<li><a class="reference internal" href="#router-setting">Router Setting</a></li>
+<li><a class="reference internal" href="#id3">QoS Setting</a></li>
+<li><a class="reference internal" href="#id4">Verifying the Setting</a></li>
+<li><a class="reference internal" href="#id5">Measuring the bandwidth</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#meter-tableqos">Meter Tableを使用したQoSの動作例</a><ul>
-<li><a class="reference internal" href="#id13">環境構築</a></li>
-<li><a class="reference internal" href="#id14">QoSの設定</a></li>
-<li><a class="reference internal" href="#id15">設定内容の確認</a></li>
-<li><a class="reference internal" href="#id16">帯域計測</a><ul>
-<li><a class="reference internal" href="#af11">ベストエフォートと超過したAF11トラフィック</a></li>
-<li><a class="reference internal" href="#af11af11">AF11の超過トラフィックとベストエフォートとAF11の契約帯域内トラフィック</a></li>
-<li><a class="reference internal" href="#id17">AF11の超過トラフィックとAF11の超過トラフィック</a></li>
+<li><a class="reference internal" href="#example-of-the-operation-of-qos-by-using-meter-table">Example of the operation of QoS by using Meter Table</a><ul>
+<li><a class="reference internal" href="#id6">Building the environment</a></li>
+<li><a class="reference internal" href="#setting-qos">Setting QoS</a></li>
+<li><a class="reference internal" href="#id7">Verifying the Setting</a></li>
+<li><a class="reference internal" href="#id8">Measuring the bandwidth</a><ul>
+<li><a class="reference internal" href="#best-effort-traffic-af11-excess-traffic">Best-effort traffic &amp; AF11 excess traffic</a></li>
+<li><a class="reference internal" href="#af11-excess-traffic-best-effort-traffic-af11-non-excess-traffic">AF11 excess traffic &amp; Best-effort traffic &amp; AF11 non-excess traffic</a></li>
+<li><a class="reference internal" href="#af11-excess-traffic-af11-excess-traffic">AF11 excess traffic &amp; AF11 excess traffic</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#rest-api">REST API一覧</a><ul>
-<li><a class="reference internal" href="#id18">キューの状態の取得</a></li>
-<li><a class="reference internal" href="#id19">キューの設定情報の取得</a></li>
-<li><a class="reference internal" href="#id20">キューの設定</a></li>
-<li><a class="reference internal" href="#id21">キューの削除</a></li>
-<li><a class="reference internal" href="#id22">全QoSルールの取得</a></li>
-<li><a class="reference internal" href="#id23">QoSルールの追加</a></li>
-<li><a class="reference internal" href="#id24">QoSルールの削除</a></li>
-<li><a class="reference internal" href="#id25">メーターテーブルの情報取得</a></li>
-<li><a class="reference internal" href="#id26">メーターテーブルの設定</a></li>
+<li><a class="reference internal" href="#rest-api-list">REST API List</a><ul>
+<li><a class="reference internal" href="#get-queue-status">Get queue status</a></li>
+<li><a class="reference internal" href="#get-queue-configuration">Get queue configuration</a></li>
+<li><a class="reference internal" href="#set-queue">Set queue</a></li>
+<li><a class="reference internal" href="#delete-queue">Delete queue</a></li>
+<li><a class="reference internal" href="#get-all-of-qos-rules">Get all of QoS rules</a></li>
+<li><a class="reference internal" href="#set-a-qos-rule">Set a QoS rule</a></li>
+<li><a class="reference internal" href="#delete-qos-rules">Delete qos rules</a></li>
+<li><a class="reference internal" href="#get-meter-statistics">Get Meter Statistics</a></li>
+<li><a class="reference internal" href="#set-meter-table">Set meter table</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
-  <h4>前のトピックへ</h4>
+  <h4>Previous topic</h4>
   <p class="topless"><a href="rest_router.html"
-                        title="前の章へ">ルータ</a></p>
-  <h4>次のトピックへ</h4>
+                        title="previous chapter">Router</a></p>
+  <h4>Next topic</h4>
   <p class="topless"><a href="switch_test_tool.html"
-                        title="次の章へ">OpenFlowスイッチテストツール</a></p>
-  <h3>このページ</h3>
+                        title="next chapter">OpenFlow Switch Test Tool</a></p>
+  <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/rest_qos.txt"
-           rel="nofollow">ソースコードを表示</a></li>
+           rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
-  <h3>クイック検索</h3>
+  <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" />
-      <input type="submit" value="検索" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
     <p class="searchtip" style="font-size: 90%">
-    モジュール、クラス、または関数名を入力してください
+    Enter search terms or a module, class or function name.
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
@@ -1957,18 +2027,18 @@ UDP buffer size:  208 KByte (default)
       <div class="clearer"></div>
     </div>
     <div class="related">
-      <h3>ナビゲーション</h3>
+      <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="総合索引"
-             >索引</a></li>
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
         <li class="right" >
-          <a href="switch_test_tool.html" title="OpenFlowスイッチテストツール"
-             >次へ</a> |</li>
+          <a href="switch_test_tool.html" title="OpenFlow Switch Test Tool"
+             >next</a> |</li>
         <li class="right" >
-          <a href="rest_router.html" title="ルータ"
-             >前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+          <a href="rest_router.html" title="Router"
+             >previous</a> |</li>
+        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
