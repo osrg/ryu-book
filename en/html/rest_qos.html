@@ -305,6 +305,9 @@ root@ryu-vm:~#
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id6">
+<h3>帯域計測<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートで待ち受けます。h2はクライアントとなりh1の5001ポートに1MbpsのUDPトラフィック、h1の5002ポートに1MbpsのUDPトラフィックを送出します。</p>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
@@ -397,8 +400,8 @@ mininet&gt; xterm h2
 <p>先ほどの例ではフロー毎にQoSを行いましたが、きめ細かい制御ができる反面、扱うフローが増加するに伴い、帯域制御を行う各スイッチに設定するフローも増加し、スケーラブルではありません。そこでフロー毎にQoSを行うのではなく、DiffServドメインの入り口のルータでフローをいくつかのクラスに分け、クラス毎の制御を行うDiffServを適用します。DiffServではIPヘッダのToSフィールド内の6ビットのDSCP値を使用し、DSCP値により定義されるPHBに従って転送することで、QoSを実現します。</p>
 <p>以下のようなトポロジを想定し、スイッチ(ルータ)OFS1にQueueの設定とクラスに応じた帯域制御を設定し、ルータOFS2にはフローに応じたDSCP値をマーキングを行うルールを適用する例を紹介します。また、OFS1のWAN側インターフェースでトラフィックシェーピングを行う場合を想定しています。</p>
 <a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" style="width: 289.6px; height: 103.6px;" /></a>
-<div class="section" id="id6">
-<h3>環境構築<a class="headerlink" href="#id6" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id7">
+<h3>環境構築<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>まずはMininet上に環境を構築します。<tt class="docutils literal"><span class="pre">mn</span></tt>コマンドのパラメータは以下のようになります。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -530,8 +533,8 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </div>
 <p>上記ログが表示されれば、準備完了です。</p>
 </div>
-<div class="section" id="id7">
-<h3>Queueの設定<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id8">
+<h3>Queueの設定<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -608,8 +611,8 @@ root@ryu-vm:~#
 <p class="last">RESTコマンドの実行結果は見やすいように整形しています。</p>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>ルータの設定<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id9">
+<h3>ルータの設定<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>各ルータへアドレスの設定、デフォルトルートの設定を行います。</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
   [
@@ -701,8 +704,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 </pre></div>
 </div>
 </div>
-<div class="section" id="id9">
-<h3>QoSの設定<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id10">
+<h3>QoSの設定<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>以下の通りルータ(s1)にDSCP値に応じた制御を行うフローを設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -824,8 +827,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &qu
 </pre></div>
 </div>
 </div>
-<div class="section" id="id10">
-<h3>設定内容の確認<a class="headerlink" href="#id10" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id11">
+<h3>設定内容の確認<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>各スイッチに設定された内容を確認します。</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
@@ -903,6 +906,9 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000002
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id12">
+<h3>帯域計測<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2はクライアントとなりh1の5001ポートに1MbpsのUDPトラフィック、h1の5002ポートに300KbpsのUDPトラフィック、h1の5003ポートに600KbpsのUDPトラフィックを送出します。</p>
 <p>まず、h2のターミナルを2つ起動します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h2
@@ -992,10 +998,10 @@ UDP buffer size:  208 KByte (default)
 <p class="first admonition-title">ノート</p>
 <p class="last">ofsoftswitch13のインストール手順などについては本稿では解説しません。参考:(<a class="reference external" href="https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial">https://github.com/CPqD/ofsoftswitch13/wiki/OpenFlow-1.3-Tutorial</a>)</p>
 </div>
-<p>以下のように複数のDiffServドメイン(DSドメイン)により構成されているネットワークを想定します。DSドメインの境界に位置するルータ(エッジルータ)によってメータリングが行われ、指定帯域を超えるトラフィックは再マーキングされます。通常再マーキングされたパケットは優先的に破棄されるか、優先順位の低いクラスとして扱われます。例では、AF1クラスに対して800Kbpsの帯域保証を行い、各DSドメインから流入するAF11のトラフィックの400Kbpsを契約帯域とし、それ以上は超過トラフィックとしてパケットはAF12に再マーキングされます。ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。従って、各DSドメインからの高優先度のトラフィックに対しては400Kbpsまでは公平に保証され、最大約500Kbpsの帯域保証を実現できます。</p>
+<p>以下のように複数のDiffServドメイン(DSドメイン)により構成されているネットワークを想定します。DSドメインの境界に位置するルータ(エッジルータ)によってメータリングが行われ、指定帯域を超えるトラフィックは再マーキングされます。通常再マーキングされたパケットは優先的に破棄されるか、優先順位の低いクラスとして扱われます。例では、AF1クラスに対して800Kbpsの帯域保証を行い、各DSドメインから流入するAF11のトラフィックの400Kbpsを契約帯域とし、それ以上は超過トラフィックとしてパケットはAF12に再マーキングされます。ただし、AF12はベストエフォートのトラフィックよりは保証されるように設定しています。</p>
 <a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" style="width: 414.4px; height: 279.6px;" /></a>
-<div class="section" id="id11">
-<h3>環境構築<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id13">
+<h3>環境構築<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>まずはMininet上に環境を構築します。トポロジの作成はPythonスクリプトで行います。</p>
 <p>ソース名：<tt class="docutils literal"><span class="pre">qos_sample_topology.py</span></tt></p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
@@ -1051,7 +1057,33 @@ UDP buffer size:  208 KByte (default)
 </div>
 <div class="admonition note">
 <p class="first admonition-title">ノート</p>
-<p class="last">あらかじめofsoftswitch13のリンクスピードを1Mbpsに変更しています。</p>
+<p>あらかじめofsoftswitch13のリンクスピードを1Mbpsに変更します。</p>
+<p>まず、ofsoftswitch13のソースコードを修正します。</p>
+<div class="console highlight-python"><div class="highlight"><pre>$ cd ofsoftswitch13
+$ gedit lib/netdev.c
+</pre></div>
+</div>
+<p>lib/netdev.c:</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>644           if (ecmd.autoneg) {
+645               netdev-&gt;curr |= OFPPF_AUTONEG;
+646           }
+647
+648 -         netdev-&gt;speed = ecmd.speed;
+649 +         netdev-&gt;speed = 1;  /* Fix to 1Mbps link */
+650
+651       } else {
+652           VLOG_DBG(LOG_MODULE, &quot;ioctl(SIOCETHTOOL) failed: %s&quot;, strerror(errno));
+653       }
+</pre></div>
+</div>
+<p>そして、ofsoftswitch13を再インストールします。</p>
+<div class="console last highlight-python"><div class="highlight"><pre>$ make clean
+$ ./boot.sh
+$ ./configure
+$ make
+$ sudo make install
+</pre></div>
+</div>
 </div>
 <p>実行例は以下の通りになります</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet@mininet-vm:~$ sudo python qos_sample_topology.py
@@ -1099,8 +1131,8 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </pre></div>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>QoSの設定<a class="headerlink" href="#id12" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id14">
+<h3>QoSの設定<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>以下の通りスイッチ(s1)にDSCP値に応じた制御を行うフローを設定します。</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -1181,7 +1213,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=1&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=4&quot;
         }
       ]
     }
@@ -1194,7 +1226,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=2&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=5&quot;
         }
       ]
     }
@@ -1207,7 +1239,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=3&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=6&quot;
         }
       ]
     }
@@ -1252,7 +1284,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
 <tbody valign="top">
 <tr class="row-even"><td>1</td>
 <td>KBPS</td>
-<td>type:DSCP_REMARK,burst_size:100,rate:400000,prec_level:1</td>
+<td>type:DSCP_REMARK,rate:400000,prec_level:1</td>
 </tr>
 </tbody>
 </table>
@@ -1269,7 +1301,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
     }
   ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000002&quot;,
@@ -1295,7 +1327,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
   }
 ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000003&quot;,
@@ -1310,8 +1342,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;
 </pre></div>
 </div>
 </div>
-<div class="section" id="id13">
-<h3>設定内容の確認<a class="headerlink" href="#id13" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id15">
+<h3>設定内容の確認<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>各スイッチに設定された内容を確認します。</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
@@ -1446,6 +1478,9 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000003
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id16">
+<h3>帯域計測<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>この状態で、iperfで帯域計測をしてみます。h1はサーバとなりプロトコルはUDPで5001ポートと5002ポートと5003ポートで待ち受けます。h2、h3はクライアントとなりh1宛に各クラスのトラフィックを送出します。</p>
 <p>まず、h1とh2で2つとh3の1つづつターミナルを起動します。</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm h1
@@ -1462,16 +1497,16 @@ root@ryu-vm:~# iperf -s -u -p 5003 &amp;
 ...
 </pre></div>
 </div>
-<ul class="simple">
-<li>ベストエフォートと超過したAF11トラフィック</li>
-</ul>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 800K
+<div class="section" id="af11">
+<h4>ベストエフォートと超過したAF11トラフィック<a class="headerlink" href="#af11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>Node: h2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5002
+Client connecting to 10.0.0.1, UDP port 5001
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5002
+[  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5001
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   979 KBytes   800 Kbits/sec
 [  4] Sent 682 datagrams
@@ -1479,13 +1514,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-11.9 sec   650 KBytes   449 Kbits/sec  18.458 ms  229/  682 (34%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+<p>Node: h3(1) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
+Client connecting to 10.0.0.1, UDP port 5002
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5003
+[  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5002
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
 [  4] Sent 512 datagrams
@@ -1495,9 +1531,26 @@ UDP buffer size:  208 KByte (default)
 </pre></div>
 </div>
 <p>AF11のトラフィックが契約帯域400Kbpsを超過した場合でもベストエフォートのトラフィックより帯域が保証されている事が分かります。</p>
-<ul class="simple">
-<li>ベストエフォートとAF11の契約帯域内トラフィックと超過トラフィック</li>
-</ul>
+</div>
+<div class="section" id="af11af11">
+<h4>AF11の超過トラフィックとベストエフォートとAF11の契約帯域内トラフィック<a class="headerlink" href="#af11af11" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>Node: h2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+------------------------------------------------------------
+Client connecting to 10.0.0.1, UDP port 5001
+Sending 1470 byte datagrams
+UDP buffer size:  208 KByte (default)
+------------------------------------------------------------
+[  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
+[  4] Sent 512 datagrams
+[  4] Server Report:
+[  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
+[  4]  0.0-10.0 sec  192 datagrams received out-of-order
+</pre></div>
+</div>
+<p>Node: h3(1) (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 500K
 ------------------------------------------------------------
 Client connecting to 10.0.0.1, UDP port 5002
@@ -1513,13 +1566,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-14.0 sec   359 KBytes   210 Kbits/sec  102.479 ms  177/  427 (41%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 400K --tos 0x28
+<p>Node: h3(2) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5001
+Client connecting to 10.0.0.1, UDP port 5003
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5001
+[  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5003
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.1 sec   491 KBytes   400 Kbits/sec
 [  4] Sent 342 datagrams
@@ -1527,25 +1581,11 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-10.5 sec   491 KBytes   384 Kbits/sec  15.422 ms    0/  342 (0%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
-------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
-Sending 1470 byte datagrams
-UDP buffer size:  208 KByte (default)
-------------------------------------------------------------
-[  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5003
-[ ID] Interval       Transfer     Bandwidth
-[  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
-[  4] Sent 512 datagrams
-[  4] Server Report:
-[  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
-[  4]  0.0-10.0 sec  192 datagrams received out-of-order
-</pre></div>
-</div>
 <p>400Kbpsの契約帯域内のトラフィックはドロップされていない事がわかります。</p>
-<ul class="simple">
-<li>AF11の超過トラフィック、超過トラフィック</li>
-</ul>
+</div>
+<div class="section" id="id17">
+<h4>AF11の超過トラフィックとAF11の超過トラフィック<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h4>
+<p>Node: h2 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
 ------------------------------------------------------------
 Client connecting to 10.0.0.1, UDP port 5001
@@ -1561,13 +1601,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-11.0 sec  95 datagrams received out-of-order
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+<p>Node: h3(1) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
+Client connecting to 10.0.0.1, UDP port 5002
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5003
+[  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5002
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
 [  4] Sent 512 datagrams
@@ -1580,11 +1621,12 @@ UDP buffer size:  208 KByte (default)
 <p>本章では、具体例を挙げながらQoS REST APIの使用方法を説明しました。</p>
 </div>
 </div>
+</div>
 <div class="section" id="rest-api">
 <h2>REST API一覧<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>本章で紹介したrest_qosのREST API一覧です。</p>
-<div class="section" id="id14">
-<h3>キューの状態の取得<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id18">
+<h3>キューの状態の取得<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -1602,8 +1644,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id15">
-<h3>キューの設定情報の取得<a class="headerlink" href="#id15" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id19">
+<h3>キューの設定情報の取得<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="16%" />
@@ -1624,8 +1666,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id16">
-<h3>キューの設定<a class="headerlink" href="#id16" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id20">
+<h3>キューの設定<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="19%" />
@@ -1661,8 +1703,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id17">
-<h3>キューの削除<a class="headerlink" href="#id17" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id21">
+<h3>キューの削除<a class="headerlink" href="#id21" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -1673,7 +1715,7 @@ UDP buffer size:  208 KByte (default)
 <td>DELETE</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
-<td><p class="first">/qos/queue/{<strong>swtich-id</strong>}</p>
+<td><p class="first">/qos/queue/{<strong>swtich</strong>}</p>
 <p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; |<em>スイッチID</em>]</p>
 </td>
 </tr>
@@ -1683,8 +1725,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id18">
-<h3>全QoSルールの取得<a class="headerlink" href="#id18" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id22">
+<h3>全QoSルールの取得<a class="headerlink" href="#id22" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -1706,8 +1748,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id19">
-<h3>QoSルールの追加<a class="headerlink" href="#id19" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id23">
+<h3>QoSルールの追加<a class="headerlink" href="#id23" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="19%" />
@@ -1740,7 +1782,7 @@ UDP buffer size:  208 KByte (default)
 </div></blockquote>
 <p><strong>actions</strong>:</p>
 <blockquote class="last">
-<div>[ &#8220;mark&#8221;: [ 0 - 63  ] |[ &#8220;meter&#8221;: [ メーターID ] |[ &#8220;queue&#8221;: [ キューID ]</div></blockquote>
+<div>[ &#8220;mark&#8221;: [ 0 - 63  ] ] |[ &#8220;meter&#8221;: [ メーターID ] ] |[ &#8220;queue&#8221;: [ キューID ] ]</div></blockquote>
 </td>
 </tr>
 <tr class="row-even"><td><strong>備考</strong></td>
@@ -1751,8 +1793,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id20">
-<h3>QoSルールの削除<a class="headerlink" href="#id20" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id24">
+<h3>QoSルールの削除<a class="headerlink" href="#id24" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -1777,8 +1819,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id21">
-<h3>メーターテーブルの情報取得<a class="headerlink" href="#id21" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id25">
+<h3>メーターテーブルの情報取得<a class="headerlink" href="#id25" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -1796,8 +1838,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id22">
-<h3>メーターテーブルの設定<a class="headerlink" href="#id22" title="このヘッドラインへのパーマリンク">¶</a></h3>
+<div class="section" id="id26">
+<h3>メーターテーブルの設定<a class="headerlink" href="#id26" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="15%" />
@@ -1846,32 +1888,40 @@ UDP buffer size:  208 KByte (default)
 <li><a class="reference internal" href="#queue">Queueの設定</a></li>
 <li><a class="reference internal" href="#id4">QoSの設定</a></li>
 <li><a class="reference internal" href="#id5">設定内容の確認</a></li>
+<li><a class="reference internal" href="#id6">帯域計測</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#diffservqos">DiffServによるQoSの動作例</a><ul>
-<li><a class="reference internal" href="#id6">環境構築</a></li>
-<li><a class="reference internal" href="#id7">Queueの設定</a></li>
-<li><a class="reference internal" href="#id8">ルータの設定</a></li>
-<li><a class="reference internal" href="#id9">QoSの設定</a></li>
-<li><a class="reference internal" href="#id10">設定内容の確認</a></li>
+<li><a class="reference internal" href="#id7">環境構築</a></li>
+<li><a class="reference internal" href="#id8">Queueの設定</a></li>
+<li><a class="reference internal" href="#id9">ルータの設定</a></li>
+<li><a class="reference internal" href="#id10">QoSの設定</a></li>
+<li><a class="reference internal" href="#id11">設定内容の確認</a></li>
+<li><a class="reference internal" href="#id12">帯域計測</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#meter-tableqos">Meter Tableを使用したQoSの動作例</a><ul>
-<li><a class="reference internal" href="#id11">環境構築</a></li>
-<li><a class="reference internal" href="#id12">QoSの設定</a></li>
-<li><a class="reference internal" href="#id13">設定内容の確認</a></li>
+<li><a class="reference internal" href="#id13">環境構築</a></li>
+<li><a class="reference internal" href="#id14">QoSの設定</a></li>
+<li><a class="reference internal" href="#id15">設定内容の確認</a></li>
+<li><a class="reference internal" href="#id16">帯域計測</a><ul>
+<li><a class="reference internal" href="#af11">ベストエフォートと超過したAF11トラフィック</a></li>
+<li><a class="reference internal" href="#af11af11">AF11の超過トラフィックとベストエフォートとAF11の契約帯域内トラフィック</a></li>
+<li><a class="reference internal" href="#id17">AF11の超過トラフィックとAF11の超過トラフィック</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#rest-api">REST API一覧</a><ul>
-<li><a class="reference internal" href="#id14">キューの状態の取得</a></li>
-<li><a class="reference internal" href="#id15">キューの設定情報の取得</a></li>
-<li><a class="reference internal" href="#id16">キューの設定</a></li>
-<li><a class="reference internal" href="#id17">キューの削除</a></li>
-<li><a class="reference internal" href="#id18">全QoSルールの取得</a></li>
-<li><a class="reference internal" href="#id19">QoSルールの追加</a></li>
-<li><a class="reference internal" href="#id20">QoSルールの削除</a></li>
-<li><a class="reference internal" href="#id21">メーターテーブルの情報取得</a></li>
-<li><a class="reference internal" href="#id22">メーターテーブルの設定</a></li>
+<li><a class="reference internal" href="#id18">キューの状態の取得</a></li>
+<li><a class="reference internal" href="#id19">キューの設定情報の取得</a></li>
+<li><a class="reference internal" href="#id20">キューの設定</a></li>
+<li><a class="reference internal" href="#id21">キューの削除</a></li>
+<li><a class="reference internal" href="#id22">全QoSルールの取得</a></li>
+<li><a class="reference internal" href="#id23">QoSルールの追加</a></li>
+<li><a class="reference internal" href="#id24">QoSルールの削除</a></li>
+<li><a class="reference internal" href="#id25">メーターテーブルの情報取得</a></li>
+<li><a class="reference internal" href="#id26">メーターテーブルの設定</a></li>
 </ul>
 </li>
 </ul>
