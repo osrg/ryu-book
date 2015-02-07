@@ -281,6 +281,9 @@ Node: c0 (root):
       ]
 
 
+대역폭 측정
+^^^^^^^^^^
+
 이 상태에서 iperf 대역 측정을 해 봅니다.
 h1 서버에서는 UDP 프로토콜로 5001 포트와 5002 포트에서 수신 대기합니다. h2는 클라이언트로, h1의 5001 포트에 1Mbps의 UDP 트래픽 및 h1의 5002 포트에 1Mbps의 UDP 트래픽을 전달합니다.
 
@@ -932,6 +935,9 @@ Node: c0 (root):
       ]
 
 
+대역폭 측정
+^^^^^^^^^^
+
 이 상태에서 iperf 대역 측정을 합니다.
 h1 서버에서는 UDP 프로토콜로 포트 번호 5001, 5002, 5003에서 수신 대기합니다. h2 클라이언트에서는 h1 5001 포트로 1Mbps의 UDP 트래픽을, h1 5002 포트로 300Kbps UDP 트래픽을, 그리고 h1 5003 포트로 600Kbps UDP 트래픽을 전송합니다.
 
@@ -1059,7 +1065,7 @@ OpenFlow 1.3에서 Meter Table이 도입되어, OpenFlow에서 트래픽 폴리�
 DS 도메인의 경계에 위치하는 라우터 (에지 라우터)에 의해 계량이 이루어 지정된 대역폭을 초과하는 트래픽은 다시 표시됩니다.
 보통, 다시 마킹된 패킷은 우선적으로 삭제 되거나 우선 순위가 낮은 클래스로 처리됩니다.
 예를 들어, AF1 클래스에 800Kbps의 대역폭을 보증하고 각 DS 도메인에서 유입되는 AF11 트래픽을 400Kbps로 대역폭을 지정하면, 그 이상은 초과 트래픽으로 패킷 AF12에 다시 표시됩니다.
-그러나 이 때, AF12은 Best-effort 트래픽으로 보장되도록 설정합니다. 따라서, 각 DS 도메인에서 우선 순위가 높은 트래픽은 400Kbps까지 공정하게 보장되어 최대 약 500Kbps의 대역폭 보장을 제공합니다.
+그러나 이 때, AF12은 Best-effort 트래픽으로 보장되도록 설정합니다.
 
 .. only:: latex
 
@@ -1095,6 +1101,45 @@ Python 스크립트로 토폴로지를 생성합니다.
 .. NOTE::
 
     미리 ofsoftswitch13 링크 속도를 1Mbps로 변경합니다.
+
+    먼저, ofsoftswitch13의 소스 코드를 수정합니다.
+
+    .. rst-class:: console
+
+    ::
+
+        $ cd ofsoftswitch13
+        $ gedit lib/netdev.c
+
+    lib/netdev.c:
+
+    .. rst-class:: sourcecode
+
+    ::
+
+        644           if (ecmd.autoneg) {
+        645               netdev->curr |= OFPPF_AUTONEG;
+        646           }
+        647
+        648 -         netdev->speed = ecmd.speed;
+        649 +         netdev->speed = 1;  /* Fix to 1Mbps link */
+        650
+        651       } else {
+        652           VLOG_DBG(LOG_MODULE, "ioctl(SIOCETHTOOL) failed: %s", strerror(errno));
+        653       }
+
+    그리고 ofsoftswitch13를 다시 설치합니다.
+
+    .. rst-class:: console
+
+    ::
+
+        $ make clean
+        $ ./boot.sh
+        $ ./configure
+        $ make
+        $ sudo make install
+
 
 실행 예는 다음과 같습니다.
 
@@ -1232,7 +1277,7 @@ Node: c0 (root):
           "command_result": [
             {
               "result": "success",
-              "details": "QoS added. : qos_id=1"
+              "details": "QoS added. : qos_id=4"
             }
           ]
         }
@@ -1245,7 +1290,7 @@ Node: c0 (root):
           "command_result": [
             {
               "result": "success",
-              "details": "QoS added. : qos_id=2"
+              "details": "QoS added. : qos_id=5"
             }
           ]
         }
@@ -1258,7 +1303,7 @@ Node: c0 (root):
           "command_result": [
             {
               "result": "success",
-              "details": "QoS added. : qos_id=3"
+              "details": "QoS added. : qos_id=6"
             }
           ]
         }
@@ -1276,7 +1321,6 @@ Node: c0 (root):
 미터 ID   Flags   Bands
 ========= ======= ==================
 1         KBPS    type:DSCP_REMARK,
-                  burst_size:100,
                   rate:400000,
                   prec_level:1
 ========= ======= ==================
@@ -1298,7 +1342,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1324,7 +1368,7 @@ Node: c0 (root):
       }
     ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "burst_size": "1", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
+    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -1479,6 +1523,9 @@ Node: c0 (root):
         }
       ]
 
+대역폭 측정
+^^^^^^^^^^
+
 이 상태에서 iperf로 대역폭 측정을 해 봅니다.
 h1 서버에서는 UDP 프로토콜에 해당하는 포트 번호 5001, 5002, 5003에서 수신 대기합니다.
 h2, h3는 클라이언트로, h1에 각각 지정된 유형의 트래픽을 보냅니다.
@@ -1506,36 +1553,41 @@ Node: h1(1) (root):
     root@ryu-vm:~# iperf -s -u -p 5003 &
     ...
 
-* Best-effort 및 AF11 트래픽 초과량 발생
+Best-effort 및 AF11 트래픽 초과량 발생
+""""""""""""""""""""""""""""""""""""""
+
+Node: h2 (root):
 
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 800K
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5002
+    Client connecting to 10.0.0.1, UDP port 5001
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5002
+    [  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5001
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   979 KBytes   800 Kbits/sec
     [  4] Sent 682 datagrams
     [  4] Server Report:
     [  4]  0.0-11.9 sec   650 KBytes   449 Kbits/sec  18.458 ms  229/  682 (34%)
 
+Node: h3(1) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
+    Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5003
+    [  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5002
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
     [  4] Sent 512 datagrams
@@ -1546,7 +1598,30 @@ Node: h1(1) (root):
 AF11 트래픽이 계약 대역폭인 400Kbps를 초과하는 경우에도 Best-effort 트래픽보다
 대역폭이 보장되어 있는 것을 확인할 수 있습니다. 
 
-* Best-effort와 AF11 계약 대역 내에서의 트래픽을 초과하는 트래픽
+AF11 초과 트래픽과 Best-effort와 AF11 계약 대역 내 트래픽
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+Node: h2 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+    ------------------------------------------------------------
+    Client connecting to 10.0.0.1, UDP port 5001
+    Sending 1470 byte datagrams
+    UDP buffer size:  208 KByte (default)
+    ------------------------------------------------------------
+    [  4] local 10.0.0.2 port 42758 connected with 10.0.0.1 port 5001
+    [ ID] Interval       Transfer     Bandwidth
+    [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
+    [  4] Sent 512 datagrams
+    [  4] Server Report:
+    [  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
+    [  4]  0.0-10.0 sec  192 datagrams received out-of-order
+
+Node: h3(1) (root):
 
 .. rst-class:: console
 
@@ -1566,44 +1641,31 @@ AF11 트래픽이 계약 대역폭인 400Kbps를 초과하는 경우에도 Best-
     [  4] Server Report:
     [  4]  0.0-14.0 sec   359 KBytes   210 Kbits/sec  102.479 ms  177/  427 (41%)
 
+Node: h3(2) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 400K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5001
+    Client connecting to 10.0.0.1, UDP port 5003
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5001
+    [  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5003
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.1 sec   491 KBytes   400 Kbits/sec
     [  4] Sent 342 datagrams
     [  4] Server Report:
     [  4]  0.0-10.5 sec   491 KBytes   384 Kbits/sec  15.422 ms    0/  342 (0%)
 
-.. rst-class:: console
-
-::
-
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
-    ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
-    Sending 1470 byte datagrams
-    UDP buffer size:  208 KByte (default)
-    ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5003
-    [ ID] Interval       Transfer     Bandwidth
-    [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
-    [  4] Sent 512 datagrams
-    [  4] Server Report:
-    [  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
-    [  4]  0.0-10.0 sec  192 datagrams received out-of-order
-
 400Kbps의 계약 내역에 해당하는 트래픽은 드롭되지 않는 것을 알 수 있습니다.
 
-* AF11 초과 트래픽, 초과 트래픽
+AF11 초과 트래픽과 AF11 초과 트래픽
+"""""""""""""""""""""""""""""""""""
+
+Node: h2 (root):
 
 .. rst-class:: console
 
@@ -1623,17 +1685,19 @@ AF11 트래픽이 계약 대역폭인 400Kbps를 초과하는 경우에도 Best-
     [  4]  0.0-11.0 sec   673 KBytes   501 Kbits/sec  964.490 ms   43/  512 (8.4%)
     [  4]  0.0-11.0 sec  95 datagrams received out-of-order
 
+Node: h3(1) (root):
+
 .. rst-class:: console
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
-    Client connecting to 10.0.0.1, UDP port 5003
+    Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
     UDP buffer size:  208 KByte (default)
     ------------------------------------------------------------
-    [  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5003
+    [  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5002
     [ ID] Interval       Transfer     Bandwidth
     [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
     [  4] Sent 512 datagrams
@@ -1710,7 +1774,7 @@ REST API 목록
 
 =============  ================================================
 **메서드**      DELETE 
-**URL**        /qos/queue/{**swtich-id**}
+**URL**        /qos/queue/{**swtich**}
 
                --**switch**: [ "all" \| *스위치ID* ]
 
@@ -1744,30 +1808,33 @@ QoS 규칙 추가
                --**vlan**: [ "all" \| *VLAN ID* ]
 **데이터**     **priority**:[ 0 - 65535 ]
 
-               **in_port**:[ 0 - 65535 ]
+               **match**:
 
-               **dl_src**:"<xx:xx:xx:xx:xx:xx>"
+                 **in_port**:[ 0 - 65535 ]
 
-               **dl_dst**:"<xx:xx:xx:xx:xx:xx>"
+                 **dl_src**:"<xx:xx:xx:xx:xx:xx>"
 
-               **dl_type**:[ "ARP" \| "IPv4" ]
+                 **dl_dst**:"<xx:xx:xx:xx:xx:xx>"
 
-               **nw_src**:"<xxx.xxx.xxx.xxx/xx>"
+                 **dl_type**:[ "ARP" \| "IPv4" ]
 
-               **nw_dst**:"<xxx.xxx.xxx.xxx/xx">
+                 **nw_src**:"<xxx.xxx.xxx.xxx/xx>"
 
-               **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" ]
+                 **nw_dst**:"<xxx.xxx.xxx.xxx/xx">
 
-               **tp_src**:[ 0 - 65535 ]
+                 **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" ]
 
-               **tp_dst**:[ 0 - 65535 ]
+                 **tp_src**:[ 0 - 65535 ]
 
-               **ip_dscp**:[ 0 - 63 ]
+                 **tp_dst**:[ 0 - 65535 ]
+
+                 **ip_dscp**:[ 0 - 63 ]
 
                **actions**:
-                 [ "mark": [ 0 - 63  ] \|
-                 [ "meter": [ 미터 ID ] \|
-                 [ "queue": [ 큐 ID ]
+
+                 [ "mark": [ 0 - 63  ] ] \|
+                 [ "meter": [ 미터 ID ] ] \|
+                 [ "queue": [ 큐 ID ] ]
 
 **참고**       등록에 성공하면 QoS ID가 생성되어 응답에 포함됩니다.
 
