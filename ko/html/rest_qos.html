@@ -312,6 +312,9 @@ root@ryu-vm:~#
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id6">
+<h3>대역폭 측정<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
 <p>이 상태에서 iperf 대역 측정을 해 봅니다.
 h1 서버에서는 UDP 프로토콜로 5001 포트와 5002 포트에서 수신 대기합니다. h2는 클라이언트로, h1의 5001 포트에 1Mbps의 UDP 트래픽 및 h1의 5002 포트에 1Mbps의 UDP 트래픽을 전달합니다.</p>
 <div class="admonition note">
@@ -414,8 +417,8 @@ QoS를 제공합니다.</p>
 <p>다음과 같은 토폴로지를 가정하고 스위치 (라우터) OFS1에 Queue 및 클래스에 대한 대역폭 제어를 설정하고, 라우터 OFS2는 플로우에 따라 DSCP 값을 표시하도록 규칙을 적용하는 예제를 소개합니다.
 또한, OFS1의 WAN 쪽 인터페이스에서 트래픽 쉐이핑을 사용하는 경우를 가정합니다.</p>
 <a class="reference internal image-reference" href="_images/fig23.png"><img alt="_images/fig23.png" class="align-center" src="_images/fig23.png" /></a>
-<div class="section" id="id6">
-<h3>환경 구축<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<div class="section" id="id7">
+<h3>환경 구축<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
 <p>우선 Mininet에 환경을 구축합니다. <tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과 같습니다.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -549,8 +552,8 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </div>
 <p>위 로그가 표시되면 준비가 완료된 것입니다.</p>
 </div>
-<div class="section" id="id7">
-<h3>Queue 설정<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<div class="section" id="id8">
+<h3>Queue 설정<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -627,8 +630,8 @@ root@ryu-vm:~#
 <p class="last">REST 명령의 실행 결과는 보기 쉽도록 포맷화하였습니다.</p>
 </div>
 </div>
-<div class="section" id="id8">
-<h3>라우터 설정<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<div class="section" id="id9">
+<h3>라우터 설정<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
 <p>각 라우터에 주소, 기본 경로를 설정합니다.</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
   [
@@ -721,8 +724,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quo
 </pre></div>
 </div>
 </div>
-<div class="section" id="id9">
-<h3>QoS 설정<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<div class="section" id="id10">
+<h3>QoS 설정<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
 <p>다음 라우터 (s1)에 DSCP 값에 따른 제어 플로우를 설정합니다.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -844,8 +847,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &qu
 </pre></div>
 </div>
 </div>
-<div class="section" id="id10">
-<h3>설정 내용 확인<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
+<div class="section" id="id11">
+<h3>설정 내용 확인<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
 <p>각 스위치에 설정된 내용을 확인합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
@@ -923,6 +926,9 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000002
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id12">
+<h3>대역폭 측정<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
 <p>이 상태에서 iperf 대역 측정을 합니다.
 h1 서버에서는 UDP 프로토콜로 포트 번호 5001, 5002, 5003에서 수신 대기합니다. h2 클라이언트에서는 h1 5001 포트로 1Mbps의 UDP 트래픽을, h1 5002 포트로 300Kbps UDP 트래픽을, 그리고 h1 5003 포트로 600Kbps UDP 트래픽을 전송합니다.</p>
 <p>먼저, h2 터미널을 시작합니다.</p>
@@ -1020,10 +1026,10 @@ UDP buffer size:  208 KByte (default)
 DS 도메인의 경계에 위치하는 라우터 (에지 라우터)에 의해 계량이 이루어 지정된 대역폭을 초과하는 트래픽은 다시 표시됩니다.
 보통, 다시 마킹된 패킷은 우선적으로 삭제 되거나 우선 순위가 낮은 클래스로 처리됩니다.
 예를 들어, AF1 클래스에 800Kbps의 대역폭을 보증하고 각 DS 도메인에서 유입되는 AF11 트래픽을 400Kbps로 대역폭을 지정하면, 그 이상은 초과 트래픽으로 패킷 AF12에 다시 표시됩니다.
-그러나 이 때, AF12은 Best-effort 트래픽으로 보장되도록 설정합니다. 따라서, 각 DS 도메인에서 우선 순위가 높은 트래픽은 400Kbps까지 공정하게 보장되어 최대 약 500Kbps의 대역폭 보장을 제공합니다.</p>
+그러나 이 때, AF12은 Best-effort 트래픽으로 보장되도록 설정합니다.</p>
 <a class="reference internal image-reference" href="_images/fig33.png"><img alt="_images/fig33.png" class="align-center" src="_images/fig33.png" /></a>
-<div class="section" id="id11">
-<h3>환경 구축<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
+<div class="section" id="id13">
+<h3>환경 구축<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
 <p>우선 Mininet으로 환경을 구축합니다.
 Python 스크립트로 토폴로지를 생성합니다.</p>
 <p>소스 이름： <tt class="docutils literal"><span class="pre">qos_sample_topology.py</span></tt></p>
@@ -1080,7 +1086,33 @@ Python 스크립트로 토폴로지를 생성합니다.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">주석</p>
-<p class="last">미리 ofsoftswitch13 링크 속도를 1Mbps로 변경합니다.</p>
+<p>미리 ofsoftswitch13 링크 속도를 1Mbps로 변경합니다.</p>
+<p>먼저, ofsoftswitch13의 소스 코드를 수정합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>$ cd ofsoftswitch13
+$ gedit lib/netdev.c
+</pre></div>
+</div>
+<p>lib/netdev.c:</p>
+<div class="sourcecode highlight-python"><div class="highlight"><pre>644           if (ecmd.autoneg) {
+645               netdev-&gt;curr |= OFPPF_AUTONEG;
+646           }
+647
+648 -         netdev-&gt;speed = ecmd.speed;
+649 +         netdev-&gt;speed = 1;  /* Fix to 1Mbps link */
+650
+651       } else {
+652           VLOG_DBG(LOG_MODULE, &quot;ioctl(SIOCETHTOOL) failed: %s&quot;, strerror(errno));
+653       }
+</pre></div>
+</div>
+<p>그리고 ofsoftswitch13를 다시 설치합니다.</p>
+<div class="console last highlight-python"><div class="highlight"><pre>$ make clean
+$ ./boot.sh
+$ ./configure
+$ make
+$ sudo make install
+</pre></div>
+</div>
 </div>
 <p>실행 예는 다음과 같습니다.</p>
 <div class="console highlight-python"><div class="highlight"><pre>mininet@mininet-vm:~$ sudo python qos_sample_topology.py
@@ -1128,8 +1160,8 @@ instantiating app ryu.app.rest_qos of RestQoSAPI
 </pre></div>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>QoS 설정<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
+<div class="section" id="id14">
+<h3>QoS 설정<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
 <p>다음과 같이 스위치 (s1)에 DSCP 값에 따라 제어 플로우를 설정합니다.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -1210,7 +1242,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=1&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=4&quot;
         }
       ]
     }
@@ -1223,7 +1255,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=2&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=5&quot;
         }
       ]
     }
@@ -1236,7 +1268,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
       &quot;command_result&quot;: [
         {
           &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;QoS added. : qos_id=3&quot;
+          &quot;details&quot;: &quot;QoS added. : qos_id=6&quot;
         }
       ]
     }
@@ -1282,7 +1314,6 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
 <tr class="row-even"><td>1</td>
 <td>KBPS</td>
 <td>type:DSCP_REMARK,
-burst_size:100,
 rate:400000,
 prec_level:1</td>
 </tr>
@@ -1301,7 +1332,7 @@ prec_level:1</td>
     }
   ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000002&quot;,
@@ -1327,7 +1358,7 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &q
   }
 ]
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;burst_size&quot;: &quot;1&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003
   [
     {
       &quot;switch_id&quot;: &quot;0000000000000003&quot;,
@@ -1342,8 +1373,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;
 </pre></div>
 </div>
 </div>
-<div class="section" id="id13">
-<h3>설정 내용 확인<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<div class="section" id="id15">
+<h3>설정 내용 확인<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
 <p>각 스위치에 설정된 내용을 확인합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
@@ -1478,6 +1509,9 @@ root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000003
   ]
 </pre></div>
 </div>
+</div>
+<div class="section" id="id16">
+<h3>대역폭 측정<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
 <p>이 상태에서 iperf로 대역폭 측정을 해 봅니다.
 h1 서버에서는 UDP 프로토콜에 해당하는 포트 번호 5001, 5002, 5003에서 수신 대기합니다.
 h2, h3는 클라이언트로, h1에 각각 지정된 유형의 트래픽을 보냅니다.</p>
@@ -1496,16 +1530,16 @@ root@ryu-vm:~# iperf -s -u -p 5003 &amp;
 ...
 </pre></div>
 </div>
-<ul class="simple">
-<li>Best-effort 및 AF11 트래픽 초과량 발생</li>
-</ul>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 800K
+<div class="section" id="best-effort-af11">
+<h4>Best-effort 및 AF11 트래픽 초과량 발생<a class="headerlink" href="#best-effort-af11" title="제목 주소">¶</a></h4>
+<p>Node: h2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5002
+Client connecting to 10.0.0.1, UDP port 5001
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5002
+[  4] local 10.0.0.3 port 60324 connected with 10.0.0.1 port 5001
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   979 KBytes   800 Kbits/sec
 [  4] Sent 682 datagrams
@@ -1513,13 +1547,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-11.9 sec   650 KBytes   449 Kbits/sec  18.458 ms  229/  682 (34%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+<p>Node: h3(1) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
+Client connecting to 10.0.0.1, UDP port 5002
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5003
+[  4] local 10.0.0.2 port 53661 connected with 10.0.0.1 port 5002
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
 [  4] Sent 512 datagrams
@@ -1530,9 +1565,26 @@ UDP buffer size:  208 KByte (default)
 </div>
 <p>AF11 트래픽이 계약 대역폭인 400Kbps를 초과하는 경우에도 Best-effort 트래픽보다
 대역폭이 보장되어 있는 것을 확인할 수 있습니다.</p>
-<ul class="simple">
-<li>Best-effort와 AF11 계약 대역 내에서의 트래픽을 초과하는 트래픽</li>
-</ul>
+</div>
+<div class="section" id="af11-best-effort-af11">
+<h4>AF11 초과 트래픽과 Best-effort와 AF11 계약 대역 내 트래픽<a class="headerlink" href="#af11-best-effort-af11" title="제목 주소">¶</a></h4>
+<p>Node: h2 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+------------------------------------------------------------
+Client connecting to 10.0.0.1, UDP port 5001
+Sending 1470 byte datagrams
+UDP buffer size:  208 KByte (default)
+------------------------------------------------------------
+[  4] local 10.0.0.2 port 42758 connected with 10.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
+[  4] Sent 512 datagrams
+[  4] Server Report:
+[  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
+[  4]  0.0-10.0 sec  192 datagrams received out-of-order
+</pre></div>
+</div>
+<p>Node: h3(1) (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 500K
 ------------------------------------------------------------
 Client connecting to 10.0.0.1, UDP port 5002
@@ -1548,13 +1600,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-14.0 sec   359 KBytes   210 Kbits/sec  102.479 ms  177/  427 (41%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 400K --tos 0x28
+<p>Node: h3(2) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5001
+Client connecting to 10.0.0.1, UDP port 5003
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5001
+[  4] local 10.0.0.3 port 35475 connected with 10.0.0.1 port 5003
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.1 sec   491 KBytes   400 Kbits/sec
 [  4] Sent 342 datagrams
@@ -1562,25 +1615,11 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-10.5 sec   491 KBytes   384 Kbits/sec  15.422 ms    0/  342 (0%)
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
-------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
-Sending 1470 byte datagrams
-UDP buffer size:  208 KByte (default)
-------------------------------------------------------------
-[  4] local 10.0.0.2 port 49358 connected with 10.0.0.1 port 5003
-[ ID] Interval       Transfer     Bandwidth
-[  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
-[  4] Sent 512 datagrams
-[  4] Server Report:
-[  4]  0.0-10.0 sec   666 KBytes   544 Kbits/sec  500.361 ms   48/  512 (9.4%)
-[  4]  0.0-10.0 sec  192 datagrams received out-of-order
-</pre></div>
-</div>
 <p>400Kbps의 계약 내역에 해당하는 트래픽은 드롭되지 않는 것을 알 수 있습니다.</p>
-<ul class="simple">
-<li>AF11 초과 트래픽, 초과 트래픽</li>
-</ul>
+</div>
+<div class="section" id="af11-af11">
+<h4>AF11 초과 트래픽과 AF11 초과 트래픽<a class="headerlink" href="#af11-af11" title="제목 주소">¶</a></h4>
+<p>Node: h2 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
 ------------------------------------------------------------
 Client connecting to 10.0.0.1, UDP port 5001
@@ -1596,13 +1635,14 @@ UDP buffer size:  208 KByte (default)
 [  4]  0.0-11.0 sec  95 datagrams received out-of-order
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 600K --tos 0x28
+<p>Node: h3(1) (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
 ------------------------------------------------------------
-Client connecting to 10.0.0.1, UDP port 5003
+Client connecting to 10.0.0.1, UDP port 5002
 Sending 1470 byte datagrams
 UDP buffer size:  208 KByte (default)
 ------------------------------------------------------------
-[  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5003
+[  4] local 10.0.0.2 port 53066 connected with 10.0.0.1 port 5002
 [ ID] Interval       Transfer     Bandwidth
 [  4]  0.0-10.0 sec   735 KBytes   600 Kbits/sec
 [  4] Sent 512 datagrams
@@ -1615,11 +1655,12 @@ UDP buffer size:  208 KByte (default)
 <p>이 장에서는 구체적인 예를 들면서 QoS REST API의 사용 방법을 설명했습니다.</p>
 </div>
 </div>
+</div>
 <div class="section" id="rest-api">
 <h2>REST API 목록<a class="headerlink" href="#rest-api" title="제목 주소">¶</a></h2>
 <p>이 장에서 소개했던 reqt_qos의 REST API 목록입니다.</p>
-<div class="section" id="id14">
-<h3>큐 상태 얻기<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
+<div class="section" id="id17">
+<h3>큐 상태 얻기<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="26%" />
@@ -1637,8 +1678,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id15">
-<h3>큐 설정 정보 얻기<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<div class="section" id="id18">
+<h3>큐 설정 정보 얻기<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="16%" />
@@ -1659,8 +1700,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id16">
-<h3>큐 설정<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
+<div class="section" id="id19">
+<h3>큐 설정<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -1696,8 +1737,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id17">
-<h3>큐 삭제<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
+<div class="section" id="id20">
+<h3>큐 삭제<a class="headerlink" href="#id20" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -1708,7 +1749,7 @@ UDP buffer size:  208 KByte (default)
 <td>DELETE</td>
 </tr>
 <tr class="row-even"><td><strong>URL</strong></td>
-<td><p class="first">/qos/queue/{<strong>swtich-id</strong>}</p>
+<td><p class="first">/qos/queue/{<strong>swtich</strong>}</p>
 <p class="last">&#8211;<strong>switch</strong>: [ &#8220;all&#8221; | <em>스위치ID</em> ]</p>
 </td>
 </tr>
@@ -1718,8 +1759,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id18">
-<h3>전체 QoS 규칙 얻기<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
+<div class="section" id="id21">
+<h3>전체 QoS 규칙 얻기<a class="headerlink" href="#id21" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -1741,8 +1782,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id19">
-<h3>QoS 규칙 추가<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
+<div class="section" id="id22">
+<h3>QoS 규칙 추가<a class="headerlink" href="#id22" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="19%" />
@@ -1760,7 +1801,9 @@ UDP buffer size:  208 KByte (default)
 </tr>
 <tr class="row-odd"><td><strong>데이터</strong></td>
 <td><p class="first"><strong>priority</strong>:[ 0 - 65535 ]</p>
-<p><strong>in_port</strong>:[ 0 - 65535 ]</p>
+<p><strong>match</strong>:</p>
+<blockquote>
+<div><p><strong>in_port</strong>:[ 0 - 65535 ]</p>
 <p><strong>dl_src</strong>:&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
 <p><strong>dl_dst</strong>:&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
 <p><strong>dl_type</strong>:[ &#8220;ARP&#8221; | &#8220;IPv4&#8221; ]</p>
@@ -1770,12 +1813,12 @@ UDP buffer size:  208 KByte (default)
 <p><strong>tp_src</strong>:[ 0 - 65535 ]</p>
 <p><strong>tp_dst</strong>:[ 0 - 65535 ]</p>
 <p><strong>ip_dscp</strong>:[ 0 - 63 ]</p>
-<dl class="last docutils">
-<dt><strong>actions</strong>:</dt>
-<dd>[ &#8220;mark&#8221;: [ 0 - 63  ] |
-[ &#8220;meter&#8221;: [ 미터 ID ] |
-[ &#8220;queue&#8221;: [ 큐 ID ]</dd>
-</dl>
+</div></blockquote>
+<p><strong>actions</strong>:</p>
+<blockquote class="last">
+<div>[ &#8220;mark&#8221;: [ 0 - 63  ] ] |
+[ &#8220;meter&#8221;: [ 미터 ID ] ] |
+[ &#8220;queue&#8221;: [ 큐 ID ] ]</div></blockquote>
 </td>
 </tr>
 <tr class="row-even"><td><strong>참고</strong></td>
@@ -1786,8 +1829,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id20">
-<h3>QoS 규칙 삭제<a class="headerlink" href="#id20" title="제목 주소">¶</a></h3>
+<div class="section" id="id23">
+<h3>QoS 규칙 삭제<a class="headerlink" href="#id23" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -1812,8 +1855,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id21">
-<h3>미터 테이블 정보 얻기<a class="headerlink" href="#id21" title="제목 주소">¶</a></h3>
+<div class="section" id="id24">
+<h3>미터 테이블 정보 얻기<a class="headerlink" href="#id24" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="26%" />
@@ -1831,8 +1874,8 @@ UDP buffer size:  208 KByte (default)
 </tbody>
 </table>
 </div>
-<div class="section" id="id22">
-<h3>미터 테이블 설정<a class="headerlink" href="#id22" title="제목 주소">¶</a></h3>
+<div class="section" id="id25">
+<h3>미터 테이블 설정<a class="headerlink" href="#id25" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="16%" />
@@ -1881,32 +1924,40 @@ UDP buffer size:  208 KByte (default)
 <li><a class="reference internal" href="#queue">Queue 설정</a></li>
 <li><a class="reference internal" href="#id4">QoS 설정</a></li>
 <li><a class="reference internal" href="#id5">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id6">대역폭 측정</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#diffserv-qos">DiffServ의 QoS의 동작 예제</a><ul>
-<li><a class="reference internal" href="#id6">환경 구축</a></li>
-<li><a class="reference internal" href="#id7">Queue 설정</a></li>
-<li><a class="reference internal" href="#id8">라우터 설정</a></li>
-<li><a class="reference internal" href="#id9">QoS 설정</a></li>
-<li><a class="reference internal" href="#id10">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id7">환경 구축</a></li>
+<li><a class="reference internal" href="#id8">Queue 설정</a></li>
+<li><a class="reference internal" href="#id9">라우터 설정</a></li>
+<li><a class="reference internal" href="#id10">QoS 설정</a></li>
+<li><a class="reference internal" href="#id11">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id12">대역폭 측정</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#meter-table-qos">Meter Table을 사용한 QoS의 동작 예</a><ul>
-<li><a class="reference internal" href="#id11">환경 구축</a></li>
-<li><a class="reference internal" href="#id12">QoS 설정</a></li>
-<li><a class="reference internal" href="#id13">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id13">환경 구축</a></li>
+<li><a class="reference internal" href="#id14">QoS 설정</a></li>
+<li><a class="reference internal" href="#id15">설정 내용 확인</a></li>
+<li><a class="reference internal" href="#id16">대역폭 측정</a><ul>
+<li><a class="reference internal" href="#best-effort-af11">Best-effort 및 AF11 트래픽 초과량 발생</a></li>
+<li><a class="reference internal" href="#af11-best-effort-af11">AF11 초과 트래픽과 Best-effort와 AF11 계약 대역 내 트래픽</a></li>
+<li><a class="reference internal" href="#af11-af11">AF11 초과 트래픽과 AF11 초과 트래픽</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#rest-api">REST API 목록</a><ul>
-<li><a class="reference internal" href="#id14">큐 상태 얻기</a></li>
-<li><a class="reference internal" href="#id15">큐 설정 정보 얻기</a></li>
-<li><a class="reference internal" href="#id16">큐 설정</a></li>
-<li><a class="reference internal" href="#id17">큐 삭제</a></li>
-<li><a class="reference internal" href="#id18">전체 QoS 규칙 얻기</a></li>
-<li><a class="reference internal" href="#id19">QoS 규칙 추가</a></li>
-<li><a class="reference internal" href="#id20">QoS 규칙 삭제</a></li>
-<li><a class="reference internal" href="#id21">미터 테이블 정보 얻기</a></li>
-<li><a class="reference internal" href="#id22">미터 테이블 설정</a></li>
+<li><a class="reference internal" href="#id17">큐 상태 얻기</a></li>
+<li><a class="reference internal" href="#id18">큐 설정 정보 얻기</a></li>
+<li><a class="reference internal" href="#id19">큐 설정</a></li>
+<li><a class="reference internal" href="#id20">큐 삭제</a></li>
+<li><a class="reference internal" href="#id21">전체 QoS 규칙 얻기</a></li>
+<li><a class="reference internal" href="#id22">QoS 규칙 추가</a></li>
+<li><a class="reference internal" href="#id23">QoS 규칙 삭제</a></li>
+<li><a class="reference internal" href="#id24">미터 테이블 정보 얻기</a></li>
+<li><a class="reference internal" href="#id25">미터 테이블 설정</a></li>
 </ul>
 </li>
 </ul>
