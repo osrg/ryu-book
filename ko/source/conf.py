@@ -228,6 +228,30 @@ latex_elements = {
     \endgroup
    \end{picture}
   \endgroup
+  \begingroup
+   \setlength{\unitlength}{1truemm}
+   \begin{picture}(210,234)(25,38)
+    \begingroup
+     \makeatletter
+     \ifx\svgwidth\undefined
+      \setlength{\unitlength}{595.27558594bp}
+      \ifx\svgscale\undefined
+       \relax
+      \else
+       \setlength{\unitlength}{\unitlength * \real{\svgscale}}
+      \fi
+     \else
+      \setlength{\unitlength}{\svgwidth}
+     \fi
+     \global\let\svgwidth\undefined
+     \global\let\svgscale\undefined
+     \begin{picture}(1,1.4142857)
+      \put(0,0){\includegraphics[width=\unitlength]{cover_translation.eps}}
+     \end{picture}
+     \makeatother
+    \endgroup
+   \end{picture}
+  \endgroup
   \@thanks
  \end{titlepage}
  \let\thanks\relax\let\maketitle\relax
@@ -351,7 +375,7 @@ latex_documents = [
 #latex_docclass = {'manual': 'jsbook'}
 
 #latex_additional_files = ['jlisting.sty', 'images/cover.eps']
-latex_additional_files = ['images/cover.eps']
+latex_additional_files = ['images/cover.eps', 'images/cover_translation.eps']
 
 # -- Options for manual page output --------------------------------------------
 
@@ -390,9 +414,9 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = 'RYU SDN Framework'
+epub_title = 'RYU SDN Framework (Korean)'
 epub_author = 'RYU project team'
-epub_publisher = 'RYU project team'
+epub_publisher = 'BPAN books'
 epub_copyright = '2014, RYU project team'
 
 # The language of the text. It defaults to the language option
@@ -404,7 +428,7 @@ epub_copyright = '2014, RYU project team'
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.
-#epub_identifier = ''
+epub_identifier = '978-89-94797-16-8 (55000)'
 
 # A unique identification for the text.
 #epub_uid = ''

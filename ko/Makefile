@@ -21,10 +21,10 @@ IMG_EPS = $(IMG_SVG:.svg=.eps)
 .SUFFIXES: .svg .png .eps
 
 .svg.png:
-	inkscape -f $< -D --export-png=$@
+	inkscape -f $(abspath $<) -D --export-png=$(abspath $@)
 
 .svg.eps:
-	inkscape -f $< -D --export-eps=$@
+	inkscape -f $(abspath $<) -D --export-eps=$(abspath $@)
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
