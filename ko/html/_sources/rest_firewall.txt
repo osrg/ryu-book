@@ -6,8 +6,8 @@
 이 장에서는 REST를 사용해 설정을 하는 방화벽을 사용하는 방법에 대해 설명합니다.
 
 
-단일 테넌트의 동작 예
----------------------
+단일 테넌트의 동작 예 (IPv4)
+----------------------------
 
 다음과 같은 토폴로지를 만들고 해당 스위치 s1에 경로를 
 추가 · 삭제하는 예를 소개합니다. 
@@ -610,12 +610,12 @@ host: h2:
     ...
 
 
-멀티 테넌트의 동작 예
----------------------
+멀티 테넌트의 동작 예 (IPv4)
+----------------------------
 
 이어 VLAN에 의한 테넌트 분리가 이루어지고 있는 다음과 같은 토폴로지를 만들고
-스위치 s1에 규칙 추가하거나 삭제할 각 호스트 사이의 소통 여부를 확인하는 방법
-을 소개합니다.
+스위치 s1에 규칙을 추가하거나 삭제하여 각 호스트 사이의 통신 여부를 확인하는 방법을 
+소개합니다.
 
 .. only:: latex
 
@@ -919,6 +919,630 @@ controller: c0 (root):
     [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='00:00:00:00:00:04',ethertype=33024,src='00:00:00:00:00:03'), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=9891,dst='10.0.0.4',flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src='10.0.0.3',tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=58104,data=echo(data='\xb8\xa9\xaeR\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !"#$%&\'()*+,-./01234567',id=7760,seq=4),type=8)
     ...
 
+단일 테넌트의 동작 예 (IPv6)
+----------------------------
+
+이어서, 「`단일 테넌트의 동작 예 (IPv4)`_ 」와 동일한 토폴로지에서 
+IPv6 주소를 해당 스위치 s1에 경로를 추가 ·  삭제하고,
+각 호스트 사이의 통신 여부를 확인하는 방법을 소개합니다.
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig5.eps
+     :scale: 80%
+     :align: center
+
+.. only:: epub
+
+  .. image:: images/rest_firewall/fig5.png
+     :align: center
+
+.. only:: not latex and not epub
+
+  .. image:: images/rest_firewall/fig5.png
+     :scale: 40%
+     :align: center
+
+
+환경 구축
+^^^^^^^^^
+
+우선 「`단일 테넌트의 동작 예 (IPv4)`_ 」와 마찬가지로 Mininet에 환경을 구축합니다.
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+    *** Creating network
+    *** Adding controller
+    Unable to contact the remote controller at 127.0.0.1:6633
+    *** Adding hosts:
+    h1 h2 h3
+    *** Adding switches:
+    s1
+    *** Adding links:
+    (h1, s1) (h2, s1) (h3, s1)
+    *** Configuring hosts
+    h1 h2 h3
+    *** Running terms on localhost:10.0
+    *** Starting controller
+    *** Starting 1 switches
+    s1
+    *** Starting CLI:
+    mininet>
+
+또한 컨트롤러에 대한 xterm을 하나 더 시작합니다. 
+
+.. rst-class:: console
+
+::
+
+    mininet> xterm c0
+    mininet>
+
+이어 사용하는 OpenFlow 버전을 1.3으로 설정합니다. 
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+마지막으로, 컨트롤러 xterm에서 rest_firewall을 시작합니다. 
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    loading app ryu.app.rest_firewall
+    loading app ryu.controller.ofp_handler
+    instantiating app None of DPSet
+    creating context dpset
+    creating context wsgi
+    instantiating app ryu.app.rest_firewall of RestFirewallAPI
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    (2210) wsgi starting up on http://0.0.0.0:8080/
+
+Ryu와 스위치 간의 연결에 성공하면 다음 메시지가 표시됩니다. 
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] switch_id=0000000000000001: Join as firewall
+
+
+
+초기 상태의 변경
+^^^^^^^^^^^^^^^^
+
+다음 명령으로 활성화 (enable)합니다. 
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": {
+            "result": "success",
+            "details": "firewall running."
+          }
+        }
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+      [
+        {
+          "status": "enable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+규칙 추가
+^^^^^^^^^
+
+h1과 h2 사이에서 ping을 허용하는 규칙을 추가합니다. 양방향 규칙을 추가해야 합니다.
+
+다음 규칙을 추가하여 봅시다. 규칙 ID는 자동 번호 지정됩니다.
+
+=================== =================== ========== ==== ========== ======================================
+원본                대상                프로토콜   여부 (규칙ID)   (비고)
+=================== =================== ========== ==== ========== ======================================
+fe80::200:ff:fe00:1 fe80::200:ff:fe00:2 ICMPv6     허용 1          Unicast message (Echo)
+fe80::200:ff:fe00:2 fe80::200:ff:fe00:1 ICMPv6     허용 2          Unicast message (Echo)
+fe80::200:ff:fe00:1 ff02::1:ff00:2      ICMPv6     허용 3          Multicast message (Neighbor Discovery)
+fe80::200:ff:fe00:2 ff02::1:ff00:1      ICMPv6     허용 4          Multicast message (Neighbor Discovery)
+=================== =================== ========== ==== ========== ======================================
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=1"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=2"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "ff02::1:ff00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=3"
+            }
+          ]
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "ff02::1:ff00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": [
+            {
+              "result": "success",
+              "details": "Rule added. : rule_id=4"
+            }
+          ]
+        }
+      ]
+
+
+규칙 확인
+^^^^^^^^^
+
+설정된 규칙을 확인합니다.
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+      [
+        {
+          "switch_id": "0000000000000001",
+          "access_control_list": [
+            {
+              "rules": [
+                {
+                  "ipv6_dst": "fe80::200:ff:fe00:2",
+                  "actions": "ALLOW",
+                  "rule_id": 1,
+                  "ipv6_src": "fe80::200:ff:fe00:1",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                },
+                {
+                  "ipv6_dst": "fe80::200:ff:fe00:1",
+                  "actions": "ALLOW",
+                  "rule_id": 2,
+                  "ipv6_src": "fe80::200:ff:fe00:2",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                },
+                {
+                  "ipv6_dst": "ff02::1:ff00:2",
+                  "actions": "ALLOW",
+                  "rule_id": 3,
+                  "ipv6_src": "fe80::200:ff:fe00:1",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                },
+                {
+                  "ipv6_dst": "ff02::1:ff00:1",
+                  "actions": "ALLOW",
+                  "rule_id": 4,
+                  "ipv6_src": "fe80::200:ff:fe00:2",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+h1과 h2에 ping을 실행해 봅니다.
+허용하는 규칙이 설정되어 있기 때문에 ping이 잘 됩니다.
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:2
+    PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.954 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.047 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=3 ttl=64 time=0.055 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=4 ttl=64 time=0.027 ms
+    ...
+
+
+h1과 h3 사이에는 규칙이 등록되어 있지 않기 때문에, ping 패킷이 차단됩니다.
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:3
+    PING fe80::200:ff:fe00:3(fe80::200:ff:fe00:3) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
+    From fe80::200:ff:fe00:1 icmp_seq=1 Destination unreachable: Address unreachable
+    From fe80::200:ff:fe00:1 icmp_seq=2 Destination unreachable: Address unreachable
+    From fe80::200:ff:fe00:1 icmp_seq=3 Destination unreachable: Address unreachable
+    ^C
+    --- fe80::200:ff:fe00:3 ping statistics ---
+    4 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2999ms
+
+패킷이 차단되었기 때문에 로그가 출력됩니다.
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='33:33:ff:00:00:03',ethertype=34525,src='00:00:00:00:00:01'), ipv6(dst='ff02::1:ff00:3',ext_hdrs=[],flow_label=0,hop_limit=255,nxt=58,payload_length=32,src='fe80::200:ff:fe00:1',traffic_class=0,version=6), icmpv6(code=0,csum=31381,data=nd_neighbor(dst='fe80::200:ff:fe00:3',option=nd_option_sla(data=None,hw_src='00:00:00:00:00:01',length=1),res=0),type_=135)
+    ...
+
+
+멀티 테넌트의 동작 예 (IPv6)
+----------------------------
+
+이어 VLAN에 의한 테넌트 분리가 이루어지고 있는 다음과 같은 토폴로지를 만들고
+스위치 s1에 규칙을 추가하거나 삭제하여 각 호스트 사이의 통신 여부를 확인하는 방법을 
+소개합니다.
+
+.. only:: latex
+
+  .. image:: images/rest_firewall/fig6.eps
+     :scale: 80%
+     :align: center
+
+.. only:: epub
+
+  .. image:: images/rest_firewall/fig6.png
+     :align: center
+
+.. only:: not latex and not epub
+
+  .. image:: images/rest_firewall/fig6.png
+     :scale: 40%
+     :align: center
+
+
+환경 구축
+^^^^^^^^^
+
+먼저 「 `멀티 테넌트의 동작 예 (IPv4)`_ 」와 마찬가지로 Mininet에 환경을 구축합니다.
+
+.. rst-class:: console
+
+::
+
+    ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+    *** Creating network
+    *** Adding controller
+    Unable to contact the remote controller at 127.0.0.1:6633
+    *** Adding hosts:
+    h1 h2 h3 h4
+    *** Adding switches:
+    s1
+    *** Adding links:
+    (h1, s1) (h2, s1) (h3, s1) (h4, s1)
+    *** Configuring hosts
+    h1 h2 h3 h4
+    *** Running terms on localhost:10.0
+    *** Starting controller
+    *** Starting 1 switches
+    s1
+
+    *** Starting CLI:
+    mininet> xterm c0
+    mininet>
+
+이어 각 호스트 인터페이스에 VLAN ID를 설정합니다.
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0
+    root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2
+    root@ryu-vm:~# ip link set dev h1-eth0.2 up
+
+host: h2:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0
+    root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2
+    root@ryu-vm:~# ip link set dev h2-eth0.2 up
+
+host: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0
+    root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110
+    root@ryu-vm:~# ip link set dev h3-eth0.110 up
+
+host: h4:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0
+    root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110
+    root@ryu-vm:~# ip link set dev h4-eth0.110 up
+
+또한 사용하는 OpenFlow 버전을 1.3으로 설정합니다.
+
+switch: s1 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+
+마지막으로, 컨트롤러 xterm에서 rest_firewall을 시작합니다.
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    loading app ryu.app.rest_firewall
+    loading app ryu.controller.ofp_handler
+    instantiating app None of DPSet
+    creating context dpset
+    creating context wsgi
+    instantiating app ryu.app.rest_firewall of RestFirewallAPI
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    (13419) wsgi starting up on http://0.0.0.0:8080/
+
+Ryu와 스위치 간의 연결에 성공하면 다음 메시지가 표시됩니다.
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] switch_id=0000000000000001: Join as firewall
+
+
+초기 상태의 변경
+^^^^^^^^^^^^^^^^
+
+firewall을 활성화 (enable)합니다.
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+      [
+        {
+          "switch_id": "0000000000000001",
+          "command_result": {
+            "result": "success",
+            "details": "firewall running."
+          }
+        }
+      ]
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+      [
+        {
+          "status": "enable",
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+
+규칙 추가
+^^^^^^^^^
+
+vlan_id=2에 fe80::/64에서 송수신되는 ping (ICMPv6 패킷)을 허용하는 규칙을 추가합니다.
+양방향 규칙을 설정해야 하므로 규칙을 모두 추가합니다.
+
+==========  ======= =================== ==== ========== ==== ==========
+(우선순위)  VLAN ID 원본                대상 프로토콜   여부 (규칙 ID)
+==========  ======= =================== ==== ========== ==== ==========
+1           2       fe80::200:ff:fe00:1 any  ICMPv6     허용 1
+1           2       fe80::200:ff:fe00:2 any  ICMPv6     허용 2
+==========  ======= =================== ==== ========== ==== ==========
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
+      [
+        {
+          "command_result": [
+            {
+              "details": "Rule added. : rule_id=1",
+              "vlan_id": 2,
+              "result": "success"
+            }
+          ],
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
+      [
+        {
+          "command_result": [
+            {
+              "details": "Rule added. : rule_id=2",
+              "vlan_id": 2,
+              "result": "success"
+            }
+          ],
+          "switch_id": "0000000000000001"
+        }
+      ]
+
+
+규칙 확인
+^^^^^^^^^^
+
+설정된 규칙을 확인합니다.
+
+Node: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+      [
+        {
+          "switch_id": "0000000000000001",
+          "access_control_list": [
+            {
+              "vlan_id": "2",
+              "rules": [
+                {
+                  "actions": "ALLOW",
+                  "rule_id": 1,
+                  "dl_vlan": "2",
+                  "ipv6_src": "fe80::200:ff:fe00:1",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                },
+                {
+                  "actions": "ALLOW",
+                  "rule_id": 2,
+                  "dl_vlan": "2",
+                  "ipv6_src": "fe80::200:ff:fe00:2",
+                  "nw_proto": "ICMPv6",
+                  "dl_type": "IPv6",
+                  "priority": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+
+실제로 확인해 보겠습니다. vlan_id=2이다 h1에서, 같은 vlan_id=2이다 h2 대해
+ping을 실행하면 추가한 규칙에 의해 통신되는 것을 알 수 있습니다.
+
+host: h1:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping6 -I h1-eth0.2 fe80::200:ff:fe00:2
+    PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0.2: 56 data bytes
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.609 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.046 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=3 ttl=64 time=0.046 ms
+    64 bytes from fe80::200:ff:fe00:2: icmp_seq=4 ttl=64 time=0.057 ms
+    ...
+
+
+vlan_id = 110 사이다 h3와 h4 사이에는 규칙이 등록되어 있지 않기 때문에, ping 패킷
+포트는 차단됩니다.
+
+host: h3:
+
+.. rst-class:: console
+
+::
+
+    root@ryu-vm:~# ping6 -I h3-eth0.110 fe80::200:ff:fe00:4
+    PING fe80::200:ff:fe00:4(fe80::200:ff:fe00:4) from fe80::200:ff:fe00:3 h3-eth0.110: 56 data bytes
+    From fe80::200:ff:fe00:3 icmp_seq=1 Destination unreachable: Address unreachable
+    From fe80::200:ff:fe00:3 icmp_seq=2 Destination unreachable: Address unreachable
+    From fe80::200:ff:fe00:3 icmp_seq=3 Destination unreachable: Address unreachable
+    ^C
+    --- fe80::200:ff:fe00:4 ping statistics ---
+    4 packets transmitted, 0 received, +3 errors, 100% packet loss, time 3014ms
+
+패킷이 차단되었기 때문에 로그가 출력됩니다.
+
+controller: c0 (root):
+
+.. rst-class:: console
+
+::
+
+    [FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst='33:33:ff:00:00:04',ethertype=33024,src='00:00:00:00:00:03'), vlan(cfi=0,ethertype=34525,pcp=0,vid=110), ipv6(dst='ff02::1:ff00:4',ext_hdrs=[],flow_label=0,hop_limit=255,nxt=58,payload_length=32,src='fe80::200:ff:fe00:3',traffic_class=0,version=6), icmpv6(code=0,csum=31375,data=nd_neighbor(dst='fe80::200:ff:fe00:4',option=nd_option_sla(data=None,hw_src='00:00:00:00:00:03',length=1),res=0),type_=135)
+    ...
+
 이 장에서는 구체적인 예를 들면서 방화벽의 사용 방법을 설명했습니다.
 
 
@@ -983,13 +1607,17 @@ REST API 목록
 
                **dl_dst**:"<xx:xx:xx:xx:xx:xx>"
 
-               **dl_type**:[ "ARP" \| "IPv4" ]
+               **dl_type**:[ "ARP" \| "IPv4" \| "IPv6" ]
 
                **nw_src**:"<xxx.xxx.xxx.xxx/xx>"
 
                **nw_dst**:"<xxx.xxx.xxx.xxx/xx">
 
-               **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" ]
+               **ipv6_src**:"<xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/xx>"
+
+               **ipv6_dst**:"<xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/xx>"
+
+               **nw_proto**":[ "TCP" \| "UDP" \| "ICMP" \| "ICMPv6" ]
 
                **tp_src**:[ 0 - 65535 ]
 

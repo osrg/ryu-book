@@ -53,13 +53,13 @@
   <div class="section" id="ch-rest-firewall">
 <span id="id1"></span><h1>방화벽<a class="headerlink" href="#ch-rest-firewall" title="제목 주소">¶</a></h1>
 <p>이 장에서는 REST를 사용해 설정을 하는 방화벽을 사용하는 방법에 대해 설명합니다.</p>
-<div class="section" id="id2">
-<h2>단일 테넌트의 동작 예<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
+<div class="section" id="ipv4">
+<h2>단일 테넌트의 동작 예 (IPv4)<a class="headerlink" href="#ipv4" title="제목 주소">¶</a></h2>
 <p>다음과 같은 토폴로지를 만들고 해당 스위치 s1에 경로를
 추가 · 삭제하는 예를 소개합니다.</p>
 <a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" /></a>
-<div class="section" id="id3">
-<h3>환경 구축<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<div class="section" id="id2">
+<h3>환경 구축<a class="headerlink" href="#id2" title="제목 주소">¶</a></h3>
 <p>우선 Mininet에 환경을 구축합니다. 입력하는 명령어는
 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에서와 같습니다.</p>
 <div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
@@ -112,8 +112,8 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 </div>
-<div class="section" id="id4">
-<h3>초기 상태의 변경<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<div class="section" id="id3">
+<h3>초기 상태의 변경<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
 <p>firewall 시작 직후에는 모든 통신을 차단하도록 비활성화 상태로 되어 있습니다.
 다음 명령으로 활성화 (enable)합니다.</p>
 <div class="admonition note">
@@ -163,8 +163,8 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 </pre></div>
 </div>
 </div>
-<div class="section" id="id5">
-<h3>규칙 추가<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<div class="section" id="id4">
+<h3>규칙 추가<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
 <p>h1과 h2 사이에서 ping을 허용하는 규칙을 추가합니다. 양방향 규칙을
 추가해야 합니다.</p>
 <p>다음 규칙을 추가하여 봅시다. 규칙 ID는 자동 번호 지정됩니다.</p>
@@ -391,8 +391,8 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </pre></div>
 </div>
 </div>
-<div class="section" id="id6">
-<h3>규칙 확인<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<div class="section" id="id5">
+<h3>규칙 확인<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
 <p>설정된 규칙을 확인합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
@@ -512,8 +512,8 @@ PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
 </pre></div>
 </div>
 </div>
-<div class="section" id="id7">
-<h3>규칙 삭제<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<div class="section" id="id6">
+<h3>규칙 삭제<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
 <p>&#8220;rule_id:5&#8221;및 &#8220;rule_id:6&#8221;규칙을 삭제합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
@@ -559,14 +559,14 @@ PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
 </div>
 </div>
 </div>
-<div class="section" id="id8">
-<h2>멀티 테넌트의 동작 예<a class="headerlink" href="#id8" title="제목 주소">¶</a></h2>
+<div class="section" id="id7">
+<h2>멀티 테넌트의 동작 예 (IPv4)<a class="headerlink" href="#id7" title="제목 주소">¶</a></h2>
 <p>이어 VLAN에 의한 테넌트 분리가 이루어지고 있는 다음과 같은 토폴로지를 만들고
-스위치 s1에 규칙 추가하거나 삭제할 각 호스트 사이의 소통 여부를 확인하는 방법
-을 소개합니다.</p>
+스위치 s1에 규칙을 추가하거나 삭제하여 각 호스트 사이의 통신 여부를 확인하는 방법을
+소개합니다.</p>
 <a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" /></a>
-<div class="section" id="id9">
-<h3>환경 구축<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<div class="section" id="id8">
+<h3>환경 구축<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
 <p>단일 테넌트의 예와 마찬가지로 Mininet에 환경을 구축하고 컨트롤러의 xterm
 을 다시 시작해야합니다. 사용하는 호스트가 하나 증가하고 있는 것에 주의
 하십시오.</p>
@@ -645,8 +645,8 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 </div>
-<div class="section" id="id10">
-<h3>초기 상태의 변경<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
+<div class="section" id="id9">
+<h3>초기 상태의 변경<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
 <p>firewall을 활성화 (enable)합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
@@ -670,8 +670,8 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
 </pre></div>
 </div>
 </div>
-<div class="section" id="id11">
-<h3>규칙 추가<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
+<div class="section" id="id10">
+<h3>규칙 추가<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
 <p>vlan_id=2에 10.0.0.0/8로 송수신되는 ping (ICMP 패킷)을 허용하는 규칙을 추가
 합니다. 양방향 규칙을 설정할 필요가 있기 때문에 규칙을 모두 추가합니다.</p>
 <table border="1" class="docutils">
@@ -744,8 +744,8 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;,
 </pre></div>
 </div>
 </div>
-<div class="section" id="id12">
-<h3>규칙 확인<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
+<div class="section" id="id11">
+<h3>규칙 확인<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
 <p>설정된 규칙을 확인합니다.</p>
 <p>Node: c0 (root):</p>
 <div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
@@ -809,14 +809,544 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 ...
 </pre></div>
 </div>
+</div>
+</div>
+<div class="section" id="ipv6">
+<h2>단일 테넌트의 동작 예 (IPv6)<a class="headerlink" href="#ipv6" title="제목 주소">¶</a></h2>
+<p>이어서, 「<a class="reference internal" href="#ipv4">단일 테넌트의 동작 예 (IPv4)</a> 」와 동일한 토폴로지에서
+IPv6 주소를 해당 스위치 s1에 경로를 추가 ·  삭제하고,
+각 호스트 사이의 통신 여부를 확인하는 방법을 소개합니다.</p>
+<a class="reference internal image-reference" href="_images/fig5.png"><img alt="_images/fig5.png" class="align-center" src="_images/fig5.png" /></a>
+<div class="section" id="id12">
+<h3>환경 구축<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
+<p>우선 「<a class="reference internal" href="#ipv4">단일 테넌트의 동작 예 (IPv4)</a> 」와 마찬가지로 Mininet에 환경을 구축합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3
+*** Adding switches:
+s1
+*** Adding links:
+(h1, s1) (h2, s1) (h3, s1)
+*** Configuring hosts
+h1 h2 h3
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 1 switches
+s1
+*** Starting CLI:
+mininet&gt;
+</pre></div>
+</div>
+<p>또한 컨트롤러에 대한 xterm을 하나 더 시작합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>이어 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>마지막으로, 컨트롤러 xterm에서 rest_firewall을 시작합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+loading app ryu.app.rest_firewall
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_firewall of RestFirewallAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(2210) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu와 스위치 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+</pre></div>
+</div>
+</div>
+<div class="section" id="id13">
+<h3>초기 상태의 변경<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<p>다음 명령으로 활성화 (enable)합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: {
+        &quot;result&quot;: &quot;success&quot;,
+        &quot;details&quot;: &quot;firewall running.&quot;
+      }
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+  [
+    {
+      &quot;status&quot;: &quot;enable&quot;,
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>규칙 추가<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
+<p>h1과 h2 사이에서 ping을 허용하는 규칙을 추가합니다. 양방향 규칙을 추가해야 합니다.</p>
+<p>다음 규칙을 추가하여 봅시다. 규칙 ID는 자동 번호 지정됩니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="10%" />
+<col width="4%" />
+<col width="10%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">원본</th>
+<th class="head">대상</th>
+<th class="head">프로토콜</th>
+<th class="head">여부</th>
+<th class="head">(규칙ID)</th>
+<th class="head">(비고)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>fe80::200:ff:fe00:1</td>
+<td>fe80::200:ff:fe00:2</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>1</td>
+<td>Unicast message (Echo)</td>
+</tr>
+<tr class="row-odd"><td>fe80::200:ff:fe00:2</td>
+<td>fe80::200:ff:fe00:1</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>2</td>
+<td>Unicast message (Echo)</td>
+</tr>
+<tr class="row-even"><td>fe80::200:ff:fe00:1</td>
+<td>ff02::1:ff00:2</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>3</td>
+<td>Multicast message (Neighbor Discovery)</td>
+</tr>
+<tr class="row-odd"><td>fe80::200:ff:fe00:2</td>
+<td>ff02::1:ff00:1</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>4</td>
+<td>Multicast message (Neighbor Discovery)</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=3&quot;
+        }
+      ]
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: [
+        {
+          &quot;result&quot;: &quot;success&quot;,
+          &quot;details&quot;: &quot;Rule added. : rule_id=4&quot;
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id15">
+<h3>규칙 확인<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<p>설정된 규칙을 확인합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;access_control_list&quot;: [
+        {
+          &quot;rules&quot;: [
+            {
+              &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:2&quot;,
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 1,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            },
+            {
+              &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:1&quot;,
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 2,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            },
+            {
+              &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:2&quot;,
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 3,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            },
+            {
+              &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:1&quot;,
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 4,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>h1과 h2에 ping을 실행해 봅니다.
+허용하는 규칙이 설정되어 있기 때문에 ping이 잘 됩니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:2
+PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.954 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.047 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=3 ttl=64 time=0.055 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=4 ttl=64 time=0.027 ms
+...
+</pre></div>
+</div>
+<p>h1과 h3 사이에는 규칙이 등록되어 있지 않기 때문에, ping 패킷이 차단됩니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:3
+PING fe80::200:ff:fe00:3(fe80::200:ff:fe00:3) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
+From fe80::200:ff:fe00:1 icmp_seq=1 Destination unreachable: Address unreachable
+From fe80::200:ff:fe00:1 icmp_seq=2 Destination unreachable: Address unreachable
+From fe80::200:ff:fe00:1 icmp_seq=3 Destination unreachable: Address unreachable
+^C
+--- fe80::200:ff:fe00:3 ping statistics ---
+4 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2999ms
+</pre></div>
+</div>
+<p>패킷이 차단되었기 때문에 로그가 출력됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;33:33:ff:00:00:03&#39;,ethertype=34525,src=&#39;00:00:00:00:00:01&#39;), ipv6(dst=&#39;ff02::1:ff00:3&#39;,ext_hdrs=[],flow_label=0,hop_limit=255,nxt=58,payload_length=32,src=&#39;fe80::200:ff:fe00:1&#39;,traffic_class=0,version=6), icmpv6(code=0,csum=31381,data=nd_neighbor(dst=&#39;fe80::200:ff:fe00:3&#39;,option=nd_option_sla(data=None,hw_src=&#39;00:00:00:00:00:01&#39;,length=1),res=0),type_=135)
+...
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id16">
+<h2>멀티 테넌트의 동작 예 (IPv6)<a class="headerlink" href="#id16" title="제목 주소">¶</a></h2>
+<p>이어 VLAN에 의한 테넌트 분리가 이루어지고 있는 다음과 같은 토폴로지를 만들고
+스위치 s1에 규칙을 추가하거나 삭제하여 각 호스트 사이의 통신 여부를 확인하는 방법을
+소개합니다.</p>
+<a class="reference internal image-reference" href="_images/fig6.png"><img alt="_images/fig6.png" class="align-center" src="_images/fig6.png" /></a>
+<div class="section" id="id17">
+<h3>환경 구축<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
+<p>먼저 「 <a class="reference internal" href="#id7">멀티 테넌트의 동작 예 (IPv4)</a> 」와 마찬가지로 Mininet에 환경을 구축합니다.</p>
+<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3 h4
+*** Adding switches:
+s1
+*** Adding links:
+(h1, s1) (h2, s1) (h3, s1) (h4, s1)
+*** Configuring hosts
+h1 h2 h3 h4
+*** Running terms on localhost:10.0
+*** Starting controller
+*** Starting 1 switches
+s1
+
+*** Starting CLI:
+mininet&gt; xterm c0
+mininet&gt;
+</pre></div>
+</div>
+<p>이어 각 호스트 인터페이스에 VLAN ID를 설정합니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0
+root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2
+root@ryu-vm:~# ip link set dev h1-eth0.2 up
+</pre></div>
+</div>
+<p>host: h2:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0
+root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+root@ryu-vm:~# ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2
+root@ryu-vm:~# ip link set dev h2-eth0.2 up
+</pre></div>
+</div>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0
+root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110
+root@ryu-vm:~# ip link set dev h3-eth0.110 up
+</pre></div>
+</div>
+<p>host: h4:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0
+root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+root@ryu-vm:~# ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110
+root@ryu-vm:~# ip link set dev h4-eth0.110 up
+</pre></div>
+</div>
+<p>또한 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
+<p>switch: s1 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+</pre></div>
+</div>
+<p>마지막으로, 컨트롤러 xterm에서 rest_firewall을 시작합니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+loading app ryu.app.rest_firewall
+loading app ryu.controller.ofp_handler
+instantiating app None of DPSet
+creating context dpset
+creating context wsgi
+instantiating app ryu.app.rest_firewall of RestFirewallAPI
+instantiating app ryu.controller.ofp_handler of OFPHandler
+(13419) wsgi starting up on http://0.0.0.0:8080/
+</pre></div>
+</div>
+<p>Ryu와 스위치 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+</pre></div>
+</div>
+</div>
+<div class="section" id="id18">
+<h3>초기 상태의 변경<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
+<p>firewall을 활성화 (enable)합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;command_result&quot;: {
+        &quot;result&quot;: &quot;success&quot;,
+        &quot;details&quot;: &quot;firewall running.&quot;
+      }
+    }
+  ]
+
+root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+  [
+    {
+      &quot;status&quot;: &quot;enable&quot;,
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id19">
+<h3>규칙 추가<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
+<p>vlan_id=2에 fe80::/64에서 송수신되는 ping (ICMPv6 패킷)을 허용하는 규칙을 추가합니다.
+양방향 규칙을 설정해야 하므로 규칙을 모두 추가합니다.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="11%" />
+<col width="30%" />
+<col width="6%" />
+<col width="16%" />
+<col width="6%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">(우선순위)</th>
+<th class="head">VLAN ID</th>
+<th class="head">원본</th>
+<th class="head">대상</th>
+<th class="head">프로토콜</th>
+<th class="head">여부</th>
+<th class="head">(규칙 ID)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>2</td>
+<td>fe80::200:ff:fe00:1</td>
+<td>any</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>1</td>
+<td>2</td>
+<td>fe80::200:ff:fe00:2</td>
+<td>any</td>
+<td>ICMPv6</td>
+<td>허용</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
+  [
+    {
+      &quot;command_result&quot;: [
+        {
+          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;result&quot;: &quot;success&quot;
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+
+root@ryu-vm:~# curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
+  [
+    {
+      &quot;command_result&quot;: [
+        {
+          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;,
+          &quot;vlan_id&quot;: 2,
+          &quot;result&quot;: &quot;success&quot;
+        }
+      ],
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;
+    }
+  ]
+</pre></div>
+</div>
+</div>
+<div class="section" id="id20">
+<h3>규칙 확인<a class="headerlink" href="#id20" title="제목 주소">¶</a></h3>
+<p>설정된 규칙을 확인합니다.</p>
+<p>Node: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+  [
+    {
+      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
+      &quot;access_control_list&quot;: [
+        {
+          &quot;vlan_id&quot;: &quot;2&quot;,
+          &quot;rules&quot;: [
+            {
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 1,
+              &quot;dl_vlan&quot;: &quot;2&quot;,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            },
+            {
+              &quot;actions&quot;: &quot;ALLOW&quot;,
+              &quot;rule_id&quot;: 2,
+              &quot;dl_vlan&quot;: &quot;2&quot;,
+              &quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;,
+              &quot;nw_proto&quot;: &quot;ICMPv6&quot;,
+              &quot;dl_type&quot;: &quot;IPv6&quot;,
+              &quot;priority&quot;: 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+</pre></div>
+</div>
+<p>실제로 확인해 보겠습니다. vlan_id=2이다 h1에서, 같은 vlan_id=2이다 h2 대해
+ping을 실행하면 추가한 규칙에 의해 통신되는 것을 알 수 있습니다.</p>
+<p>host: h1:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping6 -I h1-eth0.2 fe80::200:ff:fe00:2
+PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0.2: 56 data bytes
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.609 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.046 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=3 ttl=64 time=0.046 ms
+64 bytes from fe80::200:ff:fe00:2: icmp_seq=4 ttl=64 time=0.057 ms
+...
+</pre></div>
+</div>
+<p>vlan_id = 110 사이다 h3와 h4 사이에는 규칙이 등록되어 있지 않기 때문에, ping 패킷
+포트는 차단됩니다.</p>
+<p>host: h3:</p>
+<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping6 -I h3-eth0.110 fe80::200:ff:fe00:4
+PING fe80::200:ff:fe00:4(fe80::200:ff:fe00:4) from fe80::200:ff:fe00:3 h3-eth0.110: 56 data bytes
+From fe80::200:ff:fe00:3 icmp_seq=1 Destination unreachable: Address unreachable
+From fe80::200:ff:fe00:3 icmp_seq=2 Destination unreachable: Address unreachable
+From fe80::200:ff:fe00:3 icmp_seq=3 Destination unreachable: Address unreachable
+^C
+--- fe80::200:ff:fe00:4 ping statistics ---
+4 packets transmitted, 0 received, +3 errors, 100% packet loss, time 3014ms
+</pre></div>
+</div>
+<p>패킷이 차단되었기 때문에 로그가 출력됩니다.</p>
+<p>controller: c0 (root):</p>
+<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;33:33:ff:00:00:04&#39;,ethertype=33024,src=&#39;00:00:00:00:00:03&#39;), vlan(cfi=0,ethertype=34525,pcp=0,vid=110), ipv6(dst=&#39;ff02::1:ff00:4&#39;,ext_hdrs=[],flow_label=0,hop_limit=255,nxt=58,payload_length=32,src=&#39;fe80::200:ff:fe00:3&#39;,traffic_class=0,version=6), icmpv6(code=0,csum=31375,data=nd_neighbor(dst=&#39;fe80::200:ff:fe00:4&#39;,option=nd_option_sla(data=None,hw_src=&#39;00:00:00:00:00:03&#39;,length=1),res=0),type_=135)
+...
+</pre></div>
+</div>
 <p>이 장에서는 구체적인 예를 들면서 방화벽의 사용 방법을 설명했습니다.</p>
 </div>
 </div>
 <div class="section" id="rest-api">
 <h2>REST API 목록<a class="headerlink" href="#rest-api" title="제목 주소">¶</a></h2>
 <p>이 장에서 소개한 rest_firewall의 REST API를 나열합니다.</p>
-<div class="section" id="id13">
-<h3>모든 스위치의 사용 가능 상태 얻기<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<div class="section" id="id21">
+<h3>모든 스위치의 사용 가능 상태 얻기<a class="headerlink" href="#id21" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="35%" />
@@ -832,8 +1362,8 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id14">
-<h3>각 스위치의 사용 가능 상태 변경<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
+<div class="section" id="id22">
+<h3>각 스위치의 사용 가능 상태 변경<a class="headerlink" href="#id22" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -855,8 +1385,8 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id15">
-<h3>모든 규칙 가져오기<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<div class="section" id="id23">
+<h3>모든 규칙 가져오기<a class="headerlink" href="#id23" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -878,12 +1408,12 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id16">
-<h3>규칙 추가<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
+<div class="section" id="id24">
+<h3>규칙 추가<a class="headerlink" href="#id24" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col width="18%" />
+<col width="82%" />
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><strong>메서드</strong></td>
@@ -900,10 +1430,12 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 <p><strong>in_port</strong>:[ 0 - 65535 ]</p>
 <p><strong>dl_src</strong>:&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
 <p><strong>dl_dst</strong>:&#8221;&lt;xx:xx:xx:xx:xx:xx&gt;&#8221;</p>
-<p><strong>dl_type</strong>:[ &#8220;ARP&#8221; | &#8220;IPv4&#8221; ]</p>
+<p><strong>dl_type</strong>:[ &#8220;ARP&#8221; | &#8220;IPv4&#8221; | &#8220;IPv6&#8221; ]</p>
 <p><strong>nw_src</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&gt;&#8221;</p>
 <p><strong>nw_dst</strong>:&#8221;&lt;xxx.xxx.xxx.xxx/xx&#8221;&gt;</p>
-<p><strong>nw_proto</strong>&#8221;:[ &#8220;TCP&#8221; | &#8220;UDP&#8221; | &#8220;ICMP&#8221; ]</p>
+<p><strong>ipv6_src</strong>:&#8221;&lt;xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/xx&gt;&#8221;</p>
+<p><strong>ipv6_dst</strong>:&#8221;&lt;xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx/xx&gt;&#8221;</p>
+<p><strong>nw_proto</strong>&#8221;:[ &#8220;TCP&#8221; | &#8220;UDP&#8221; | &#8220;ICMP&#8221; | &#8220;ICMPv6&#8221; ]</p>
 <p><strong>tp_src</strong>:[ 0 - 65535 ]</p>
 <p><strong>tp_dst</strong>:[ 0 - 65535 ]</p>
 <p class="last"><strong>actions</strong>: [ &#8220;ALLOW&#8221; | &#8220;DENY&#8221; ]</p>
@@ -917,8 +1449,8 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id17">
-<h3>규칙 삭제<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
+<div class="section" id="id25">
+<h3>규칙 삭제<a class="headerlink" href="#id25" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -943,8 +1475,8 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id18">
-<h3>모든 스위치 로깅 상태 가져 오기<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
+<div class="section" id="id26">
+<h3>모든 스위치 로깅 상태 가져 오기<a class="headerlink" href="#id26" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="39%" />
@@ -960,8 +1492,8 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </tbody>
 </table>
 </div>
-<div class="section" id="id19">
-<h3>각 스위치의 로깅 상태 변경<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
+<div class="section" id="id27">
+<h3>각 스위치의 로깅 상태 변경<a class="headerlink" href="#id27" title="제목 주소">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="21%" />
@@ -995,29 +1527,43 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
   <h3><a href="index.html">목차</a></h3>
   <ul>
 <li><a class="reference internal" href="#">방화벽</a><ul>
-<li><a class="reference internal" href="#id2">단일 테넌트의 동작 예</a><ul>
-<li><a class="reference internal" href="#id3">환경 구축</a></li>
-<li><a class="reference internal" href="#id4">초기 상태의 변경</a></li>
-<li><a class="reference internal" href="#id5">규칙 추가</a></li>
-<li><a class="reference internal" href="#id6">규칙 확인</a></li>
-<li><a class="reference internal" href="#id7">규칙 삭제</a></li>
+<li><a class="reference internal" href="#ipv4">단일 테넌트의 동작 예 (IPv4)</a><ul>
+<li><a class="reference internal" href="#id2">환경 구축</a></li>
+<li><a class="reference internal" href="#id3">초기 상태의 변경</a></li>
+<li><a class="reference internal" href="#id4">규칙 추가</a></li>
+<li><a class="reference internal" href="#id5">규칙 확인</a></li>
+<li><a class="reference internal" href="#id6">규칙 삭제</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id8">멀티 테넌트의 동작 예</a><ul>
-<li><a class="reference internal" href="#id9">환경 구축</a></li>
-<li><a class="reference internal" href="#id10">초기 상태의 변경</a></li>
-<li><a class="reference internal" href="#id11">규칙 추가</a></li>
-<li><a class="reference internal" href="#id12">규칙 확인</a></li>
+<li><a class="reference internal" href="#id7">멀티 테넌트의 동작 예 (IPv4)</a><ul>
+<li><a class="reference internal" href="#id8">환경 구축</a></li>
+<li><a class="reference internal" href="#id9">초기 상태의 변경</a></li>
+<li><a class="reference internal" href="#id10">규칙 추가</a></li>
+<li><a class="reference internal" href="#id11">규칙 확인</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ipv6">단일 테넌트의 동작 예 (IPv6)</a><ul>
+<li><a class="reference internal" href="#id12">환경 구축</a></li>
+<li><a class="reference internal" href="#id13">초기 상태의 변경</a></li>
+<li><a class="reference internal" href="#id14">규칙 추가</a></li>
+<li><a class="reference internal" href="#id15">규칙 확인</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id16">멀티 테넌트의 동작 예 (IPv6)</a><ul>
+<li><a class="reference internal" href="#id17">환경 구축</a></li>
+<li><a class="reference internal" href="#id18">초기 상태의 변경</a></li>
+<li><a class="reference internal" href="#id19">규칙 추가</a></li>
+<li><a class="reference internal" href="#id20">규칙 확인</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#rest-api">REST API 목록</a><ul>
-<li><a class="reference internal" href="#id13">모든 스위치의 사용 가능 상태 얻기</a></li>
-<li><a class="reference internal" href="#id14">각 스위치의 사용 가능 상태 변경</a></li>
-<li><a class="reference internal" href="#id15">모든 규칙 가져오기</a></li>
-<li><a class="reference internal" href="#id16">규칙 추가</a></li>
-<li><a class="reference internal" href="#id17">규칙 삭제</a></li>
-<li><a class="reference internal" href="#id18">모든 스위치 로깅 상태 가져 오기</a></li>
-<li><a class="reference internal" href="#id19">각 스위치의 로깅 상태 변경</a></li>
+<li><a class="reference internal" href="#id21">모든 스위치의 사용 가능 상태 얻기</a></li>
+<li><a class="reference internal" href="#id22">각 스위치의 사용 가능 상태 변경</a></li>
+<li><a class="reference internal" href="#id23">모든 규칙 가져오기</a></li>
+<li><a class="reference internal" href="#id24">규칙 추가</a></li>
+<li><a class="reference internal" href="#id25">규칙 삭제</a></li>
+<li><a class="reference internal" href="#id26">모든 스위치 로깅 상태 가져 오기</a></li>
+<li><a class="reference internal" href="#id27">각 스위치의 로깅 상태 변경</a></li>
 </ul>
 </li>
 </ul>
