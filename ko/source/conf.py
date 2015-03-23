@@ -172,7 +172,7 @@ htmlhelp_basename = 'Ryubookdoc'
 
 latex_elements = {
 'papersize': 'a4paper',
-'pointsize': '11pt',
+'pointsize': '10pt',
 'classoptions': ',english',
 'inputenc': '',
 'utf8extra': '',
