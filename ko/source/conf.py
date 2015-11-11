@@ -194,12 +194,11 @@ latex_elements = {
 \usepackage{setspace} % if CJK spaces are too narrow
   \onehalfspacing
 % English fonts
-\setmainfont{Apple SD Gothic Neo Medium}
+\setmainfont{NanumGothic}
 % Korean fonts
-\setCJKmainfont{Apple SD Gothic Neo Medium}
-\setCJKmonofont{Apple SD Gothic Neo Medium}
-\setCJKsansfont{Apple SD Gothic Neo Medium}
-\setCJKfamilyfont{APPLE}{Apple Gothic}
+\setCJKmainfont{NanumGothic}
+\setCJKmonofont{NanumGothic}
+\setCJKsansfont{NanumGothic}
 \makeatletter
 
 \renewcommand{\maketitle}{

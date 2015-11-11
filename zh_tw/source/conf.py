@@ -202,12 +202,11 @@ latex_elements = {
 % space in english and Chinese
 \XeTeXlinebreakskip = 0pt plus 1pt
 % english fonts
-\setmainfont{Apple LiGothic Medium}
+\setmainfont{WenQuanYi Zen Hei}
 % Chinese fonts
-\setCJKmainfont{Apple LiGothic Medium}
-\setCJKmonofont{Apple LiGothic Medium}
-\setCJKsansfont{Apple LiGothic Medium}
-\setCJKfamilyfont{APPLE}{Apple LiGothic}
+\setCJKmainfont{WenQuanYi Zen Hei}
+\setCJKmonofont{WenQuanYi Zen Hei}
+\setCJKsansfont{WenQuanYi Zen Hei}
 \makeatletter
 
 \renewcommand{\maketitle}{
