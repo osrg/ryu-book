@@ -56,6 +56,8 @@ clean:
 	-rm -rf $(IMG_PNG)
 	-rm -rf $(IMG_EPS)
 
+all: latexpdfja epub html
+
 html: $(IMG_PNG)
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
