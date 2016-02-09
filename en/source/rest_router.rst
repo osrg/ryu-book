@@ -940,7 +940,7 @@ Setting an Address
 
 Set the address for each router.
 
-First, set the addresses "172.16.20.1/24" and "10.10.10.1/24" to router s1. They must be set to each VLAN ID respectively.
+First, set the addresses "172.16.10.1/24" and "10.10.10.1/24" to router s1. They must be set to each VLAN ID respectively.
 
 Node: c0 (root):
 
