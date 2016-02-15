@@ -9,7 +9,7 @@ from mininet.term import makeTerm
 if '__main__' == __name__:
     net = Mininet(controller=RemoteController)
 
-    c0 = net.addController('c0')
+    c0 = net.addController('c0', port=6633)
 
     s1 = net.addSwitch('s1')
 
