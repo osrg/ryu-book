@@ -198,7 +198,6 @@ This chapter discusses the dynamic link aggregation function using LACP.</p>
 <div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 
 <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
-<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span>
 <span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
 <span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">RemoteController</span>
 <span class="kn">from</span> <span class="nn">mininet.term</span> <span class="kn">import</span> <span class="n">makeTerm</span>
@@ -206,7 +205,7 @@ This chapter discusses the dynamic link aggregation function using LACP.</p>
 <span class="k">if</span> <span class="s">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
     <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">)</span>
 
-    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">)</span>
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">6633</span><span class="p">)</span>
 
     <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
 
@@ -215,11 +214,11 @@ This chapter discusses the dynamic link aggregation function using LACP.</p>
     <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:23&#39;</span><span class="p">)</span>
     <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h4&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:24&#39;</span><span class="p">)</span>
 
-    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
-    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
-    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
-    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h3</span><span class="p">)</span>
-    <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h4</span><span class="p">)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h2</span><span class="p">)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h3</span><span class="p">)</span>
+    <span class="n">net</span><span class="o">.</span><span class="n">addLink</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h4</span><span class="p">)</span>
 
     <span class="n">net</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
     <span class="n">c0</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
