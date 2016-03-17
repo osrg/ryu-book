@@ -625,22 +625,35 @@ Related document (Wiki page)
 Because the Open vSwitch and Ryu version used for the VM images in the document are old, you must be careful.
 
 
-If you do not want to use these VM images, you of course can build an environment yourself. For your reference, when building an environment yourself, the version of each software used for the VM images is as follows.
+If you do not want to use these VM images, you of course can build an environment yourself. For your reference, when building an environment yourself, assume use of the latest version of each software used for the VM images.
 
-Mininet VM version 2.0.0
+Mininet VM
   http://mininet.org/download/
 
-Open vSwitch version 1.11.0
+  Installation procedure (github page)
+    https://github.com/mininet/mininet/blob/master/INSTALL
+
+
+Open vSwitch
   http://openvswitch.org/download/
 
-Ryu version 3.2
+  Installation procedure (github page)
+    https://github.com/openvswitch/ovs/blob/master/INSTALL.md
+
+
+Ryu
   https://github.com/osrg/ryu/
 
-    .. rst-class:: console
+  Installation procedure
 
-    ::
+  .. rst-class:: console
 
-        $ sudo pip install ryu
+  ::
+
+      $ sudo apt-get install git python-dev python-setuptools python-pip
+      $ git clone https://github.com/osrg/ryu.git
+      $ cd ryu
+      $ sudo pip install .
 
 
 Here, we use the VM images of the OpenFlow Tutorial for Ryu.
