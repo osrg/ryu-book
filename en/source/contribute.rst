@@ -22,9 +22,8 @@ This section describes the necessary environment and points to consider during R
 Python
 ^^^^^^
 
-Ryu supports Python 2.6 and later. Therefore, do not use syntax only available in Python 2.7.
-
-Python 3.0 or later are not supported at the moment. However, it's best to keep in mind to write source code that avoids future changes as much as possible.
+Ryu supports Python 2.7 and Python 3.4.
+It is out of guarantee, if you use Ryu in other Python version.
 
 Coding Style
 ^^^^^^^^^^^^
