@@ -3,8 +3,8 @@
 QoS
 ===
 
-이 장에서는 REST에서 설정이 가능한 
-QoS 기능의 사용 방법에 대해 
+이 장에서는 REST에서 설정이 가능한
+QoS 기능의 사용 방법에 대해
 설명합니다.
 
 QoS에 대해
@@ -40,7 +40,7 @@ OpenFlow는 대역폭 제어에 의한 QoS가 가능합니다.
 환경 구축
 ^^^^^^^^^
 
-우선 Mininet에 환경을 구축합니다. ``mn`` 명령의 매개 변수는 다음과 
+우선 Mininet에 환경을 구축합니다. ``mn`` 명령의 매개 변수는 다음과
 같습니다.
 
 ============ ========== ===========================================
@@ -63,7 +63,7 @@ x            없음       xterm을 시작
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
     *** Adding hosts:
-    h1 h2 
+    h1 h2
     *** Adding switches:
     s1
     *** Adding links:
@@ -120,8 +120,7 @@ controller: c0 (root):
 
 ::
 
-    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos 
-    ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
+    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
     loading app ryu.app.rest_qos
     loading app ryu.app.qos_simple_switch_13
     loading app ryu.app.rest_conf_switch
@@ -147,7 +146,7 @@ controller: c0 (root):
 
 ::
 
-    [QoS][INFO] dpid=0000000000000001: Join qos switch.   
+    [QoS][INFO] dpid=0000000000000001: Join qos switch.
 
 
 위 로그가 표시되면 준비 완료입니다.
@@ -177,7 +176,7 @@ Node: c0 (root):
 ::
 
     root@ryu-vm:~# curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
-    root@ryu-vm:~# 
+    root@ryu-vm:~#
 
 다음으로, Queue를 설정합니다.
 
@@ -196,7 +195,7 @@ Node: c0 (root):
                 "config": {
                   "max-rate": "500000"
                 }
-              }, 
+              },
               "1": {
                 "config": {
                   "min-rate": "800000"
@@ -288,7 +287,7 @@ Node: c0 (root):
 h1 서버에서는 UDP 프로토콜로 5001 포트와 5002 포트에서 수신 대기합니다. h2는 클라이언트로, h1의 5001 포트에 1Mbps의 UDP 트래픽 및 h1의 5002 포트에 1Mbps의 UDP 트래픽을 전달합니다.
 
 .. NOTE:: 다음 예제에서는 대역 측정에 iperf
-          (http://iperf.fr/)를 사용합니다. iperf 설치 및 
+          (http://iperf.fr/)를 사용합니다. iperf 설치 및
           사용 방법은 이 글에서는 설명하지 않습니다.
 
 먼저 h1, h2 터미널을 하나씩 시작합니다.
@@ -399,7 +398,7 @@ Node: h1(2) (root):
     [  4]  7.0- 8.0 sec   113 KBytes   929 Kbits/sec   4.241 ms    0/   79 (0%)
     [  4]  8.0- 9.0 sec   115 KBytes   941 Kbits/sec   3.886 ms    0/   80 (0%)
     [  4]  9.0-10.0 sec   112 KBytes   917 Kbits/sec   3.969 ms    0/   78 (0%)
-    [  4]  0.0-10.8 sec  1.19 MBytes   931 Kbits/sec   4.287 ms    0/  852 (0%)    
+    [  4]  0.0-10.8 sec  1.19 MBytes   931 Kbits/sec   4.287 ms    0/  852 (0%)
 
 결과에서 보는 바와 같이, 5001번 포트로 향하는 트래픽은 대역폭 제한으로 인해 500Kbps 이하로 형성되고, 5002번 포트로 향하는 트래픽은
 800kbps의 대역폭 보장이 이루어짐을 알 수 있습니다.
@@ -410,7 +409,7 @@ DiffServ의 QoS의 동작 예제
 
 앞의 예제에서는 플로우마다 QoS를 생성하여 상세한 제어가 가능한 반면,
 처리하는 플로우가 많아질수록 대역폭을 제어하는 스위치에 플로우가 증가하여 확장성이 없습니다.
-해당 플로우에 QoS를 처리하는 대신, DiffServ 도메인의 입구 라우터에서 
+해당 플로우에 QoS를 처리하는 대신, DiffServ 도메인의 입구 라우터에서
 플로우를 여러 클래스로 나누어 각 클래스마다 제어를 하는 DiffServ를 적용합니다.
 DiffServ는 IP 헤더의 ToS 필드에 6 비트 DSCP 값을 사용하여 DSCP 값에 의해 정의되는 PHB에 따라 전송하도록
 QoS를 제공합니다.
@@ -461,7 +460,7 @@ x            없음       xterm을 시작
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
     *** Adding hosts:
-    h1 h2 
+    h1 h2
     *** Adding switches:
     s1
     *** Adding links:
@@ -505,7 +504,7 @@ switch: s2 (root):
 
     root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
-그 다음, 각 호스트에서 자동으로 할당된 IP 주소를 삭제하고 새로운 IP 주소를 
+그 다음, 각 호스트에서 자동으로 할당된 IP 주소를 삭제하고 새로운 IP 주소를
 설정합니다.
 
 host: h1:
@@ -742,7 +741,7 @@ Node: c0 (root):
       ]
     ...
 
-라우터에 IP 주소를 구성할 수 있으므로 각 호스트에 기본 게이트웨이를 
+라우터에 IP 주소를 구성할 수 있으므로 각 호스트에 기본 게이트웨이를
 등록합니다.
 
 host: h1:
@@ -1001,7 +1000,7 @@ Node: h2(3) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5003 -u -b 600K 
+    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5003 -u -b 600K
     ------------------------------------------------------------
     Client connecting to 172.16.20.10, UDP port 5003
     Sending 1470 byte datagrams
@@ -1401,12 +1400,12 @@ Node: c0 (root):
               "qos": [
                 {
                   "priority": 1,
-                  "dl_type": "IPv4", 
+                  "dl_type": "IPv4",
                   "actions": [
                     {
                       "queue": "1"
                     }
-                  ], 
+                  ],
                   "in_port": 2,
                   "qos_id": 1
                 },
@@ -1596,7 +1595,7 @@ Node: h3(1) (root):
     [  4]  0.0-10.0 sec  6 datagrams received out-of-order
 
 AF11 트래픽이 계약 대역폭인 400Kbps를 초과하는 경우에도 Best-effort 트래픽보다
-대역폭이 보장되어 있는 것을 확인할 수 있습니다. 
+대역폭이 보장되어 있는 것을 확인할 수 있습니다.
 
 AF11 초과 트래픽과 Best-effort와 AF11 계약 대역 내 트래픽
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1707,7 +1706,7 @@ Node: h3(1) (root):
 
 초과 트래픽은 동일한 수준으로 드롭되어있는 것을 알 수 있습니다.
 
-이 장에서는 구체적인 예를 들면서 QoS REST API의 사용 방법을 설명했습니다. 
+이 장에서는 구체적인 예를 들면서 QoS REST API의 사용 방법을 설명했습니다.
 
 
 REST API 목록
@@ -1743,7 +1742,7 @@ REST API 목록
 ^^^^^^^
 
 =============  ========================
-**메서드**     POST 
+**메서드**     POST
 **URL**        /qos/queue/{**switch**}
 
                --**switch**: [ "all" \| *스위치ID* ]
@@ -1773,7 +1772,7 @@ REST API 목록
 ^^^^^^^
 
 =============  ================================================
-**메서드**      DELETE 
+**메서드**      DELETE
 **URL**        /qos/queue/{**swtich**}
 
                --**switch**: [ "all" \| *스위치ID* ]
@@ -1863,7 +1862,7 @@ QoS 규칙 삭제
 =============  ====================
 **메서드**     GET
 **URL**        /qos/meter/{**switch**}
-               
+
                --**switch**: [ "all" \| *스위치ID* ]
 
 =============  ====================
@@ -1873,7 +1872,7 @@ QoS 규칙 삭제
 ^^^^^^^^^^^^^^^^
 
 =============  ===============================================
-**메서드**     POST 
+**메서드**     POST
 **URL**        /qos/meter/{**switch**}
 
 **데이터**     **meter_id**:미터 ID

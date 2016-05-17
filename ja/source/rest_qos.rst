@@ -63,7 +63,7 @@ x            なし       xtermを起動する
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
     *** Adding hosts:
-    h1 h2 
+    h1 h2
     *** Adding switches:
     s1
     *** Adding links:
@@ -119,8 +119,7 @@ controller: c0 (root):
 
 ::
 
-    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos 
-    ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
+    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
     loading app ryu.app.rest_qos
     loading app ryu.app.qos_simple_switch_13
     loading app ryu.app.rest_conf_switch
@@ -146,7 +145,7 @@ controller: c0 (root):
 
 ::
 
-    [QoS][INFO] dpid=0000000000000001: Join qos switch.   
+    [QoS][INFO] dpid=0000000000000001: Join qos switch.
 
 
 上記ログが表示されれば、準備完了です。
@@ -177,7 +176,7 @@ Node: c0 (root):
 ::
 
     root@ryu-vm:~# curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
-    root@ryu-vm:~# 
+    root@ryu-vm:~#
 
 続いて、Queueの設定を行います。
 
@@ -196,7 +195,7 @@ Node: c0 (root):
                 "config": {
                   "max-rate": "500000"
                 }
-              }, 
+              },
               "1": {
                 "config": {
                   "min-rate": "800000"
@@ -219,7 +218,7 @@ QoSの設定
 ========= ============ ============ =========== ======== ===========
 (優先度)  宛先         宛先ポート   プロトコル  Queue ID (QoS ID)
 ========= ============ ============ =========== ======== ===========
-1         10.0.0.1     5002         UDP         1        1 
+1         10.0.0.1     5002         UDP         1        1
 ========= ============ ============ =========== ======== ===========
 
 
@@ -399,7 +398,7 @@ Node: h1(2) (root):
     [  4]  7.0- 8.0 sec   113 KBytes   929 Kbits/sec   4.241 ms    0/   79 (0%)
     [  4]  8.0- 9.0 sec   115 KBytes   941 Kbits/sec   3.886 ms    0/   80 (0%)
     [  4]  9.0-10.0 sec   112 KBytes   917 Kbits/sec   3.969 ms    0/   78 (0%)
-    [  4]  0.0-10.8 sec  1.19 MBytes   931 Kbits/sec   4.287 ms    0/  852 (0%)    
+    [  4]  0.0-10.8 sec  1.19 MBytes   931 Kbits/sec   4.287 ms    0/  852 (0%)
 
 結果から分かる通りに5001ポート宛のトラフィックは帯域制限により500Kbps以下にシェーピングされ、5002ポート宛のトラフィックは
 800kbpsの帯域保証が行われていることが分かります。
@@ -462,7 +461,7 @@ x            なし       xtermを起動する
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
     *** Adding hosts:
-    h1 h2 
+    h1 h2
     *** Adding switches:
     s1
     *** Adding links:
@@ -1002,7 +1001,7 @@ Node: h2(3) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5003 -u -b 600K 
+    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5003 -u -b 600K
     ------------------------------------------------------------
     Client connecting to 172.16.20.10, UDP port 5003
     Sending 1470 byte datagrams
@@ -1401,12 +1400,12 @@ Node: c0 (root):
               "qos": [
                 {
                   "priority": 1,
-                  "dl_type": "IPv4", 
+                  "dl_type": "IPv4",
                   "actions": [
                     {
                       "queue": "1"
                     }
-                  ], 
+                  ],
                   "in_port": 2,
                   "qos_id": 1
                 },
@@ -1743,7 +1742,7 @@ REST API一覧
 ^^^^^^^^^^^^
 
 =============  ========================
-**メソッド**   POST 
+**メソッド**   POST
 **URL**        /qos/queue/{**switch**}
 
                --**switch**: [ "all" \| *スイッチID* ]
@@ -1773,7 +1772,7 @@ REST API一覧
 ^^^^^^^^^^^^
 
 =============  ================================================
-**メソッド**   DELETE 
+**メソッド**   DELETE
 **URL**        /qos/queue/{**swtich**}
 
                --**switch**: [ "all" \| *スイッチID* ]
@@ -1863,7 +1862,7 @@ QoSルールの削除
 =============  ====================
 **メソッド**   GET
 **URL**        /qos/meter/{**switch**}
-               
+
                --**switch**: [ "all" \| *スイッチID* ]
 
 =============  ====================
@@ -1873,7 +1872,7 @@ QoSルールの削除
 ^^^^^^^^^^^^^^^^^^^^^^
 
 =============  ===============================================
-**メソッド**   POST 
+**メソッド**   POST
 **URL**        /qos/meter/{**switch**}
 
 **データ**     **meter_id**:メータID
