@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_TW">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>防火牆（ Firewall ） &mdash; Ryubook 1.0 documentation</title>
+    <title>防火牆（ Firewall ） &mdash; Ryubook 1.0 說明文件</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="top" title="Ryubook 1.0 說明文件" href="index.html" />
     <link rel="next" title="路由器（ Router ）" href="rest_router.html" />
     <link rel="prev" title="OF-Config 函式庫" href="of_config.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,26 +41,26 @@
         <li class="right" >
           <a href="of_config.html" title="OF-Config 函式庫"
              accesskey="P">上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="firewall">
-<span id="ch-rest-firewall"></span><h1>防火牆（ Firewall ）<a class="headerlink" href="#firewall" title="Permalink to this headline">¶</a></h1>
+<span id="ch-rest-firewall"></span><h1>防火牆（ Firewall ）<a class="headerlink" href="#firewall" title="本標題的永久連結">¶</a></h1>
 <p>本章將說明如何利用 REST 的方式使用防火牆。</p>
 <div class="section" id="single-tenant">
-<h2>Single tenant 操作範例<a class="headerlink" href="#single-tenant" title="Permalink to this headline">¶</a></h2>
+<h2>Single tenant 操作範例<a class="headerlink" href="#single-tenant" title="本標題的永久連結">¶</a></h2>
 <p>以下說明如何建立一個如下所示的拓璞，並且對交換器 s1 進行路由的增加和刪除。</p>
-<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" /></a>
+<a class="reference internal image-reference" href="_images/fig14.png"><img alt="_images/fig14.png" class="align-center" src="_images/fig14.png" style="width: 405.6px; height: 295.2px;" /></a>
 <div class="section" id="id1">
-<h3>環境構築<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>首先在 Mininet 上建構環境。所要輸入的指令跟 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」 是一樣的。</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+<h3>環境構築<a class="headerlink" href="#id1" title="本標題的永久連結">¶</a></h3>
+<p>首先在 Mininet 上建構環境。所要輸入的指令跟 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」 是一樣的。</p>
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -82,86 +82,86 @@ mininet&gt;
 </pre></div>
 </div>
 <p>接著建立一個新的 xterm 用來操作 Controller。</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
-mininet&gt;
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">xterm</span> <span class="n">c0</span>
+<span class="n">mininet</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>將 OpenFlow 的版本設定為 1.3。</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>最後在控制 Controller 的 xterm 上啟動 rest_firewall。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
-loading app ryu.app.rest_firewall
-loading app ryu.controller.ofp_handler
-instantiating app None of DPSet
-creating context dpset
-creating context wsgi
-instantiating app ryu.app.rest_firewall of RestFirewallAPI
-instantiating app ryu.controller.ofp_handler of OFPHandler
-(2210) wsgi starting up on http://0.0.0.0:8080/
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">dpset</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">wsgi</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span> <span class="n">of</span> <span class="n">RestFirewallAPI</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span> <span class="n">of</span> <span class="n">OFPHandler</span>
+<span class="p">(</span><span class="mi">2210</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>Ryu 和交換器中間的連線已經完成後，會出現下面的訊息。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">firewall</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id2">
-<h3>改變初始狀態<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>改變初始狀態<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h3>
 <p>防火牆啟動後，在初始狀態下全部的網路都會處於無法連線的狀態。
 接下來我們要下指令使其生效，並開放網路的連線。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">接下來的說明會使用到 REST API，若需要詳細的解釋請參考本章結尾的「 <a class="reference internal" href="#rest-api">REST API 列表</a> 」。</p>
 </div>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: {
-        &quot;result&quot;: &quot;success&quot;,
-        &quot;details&quot;: &quot;firewall running.&quot;
-      }
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;firewall running.&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-  [
-    {
-      &quot;status&quot;: &quot;enable&quot;,
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">REST 命令執行的結果已經被格式為較為容易理解的格式。</p>
 </div>
 <p>確認可以從 h1 向 h2 執行 ping 指令。
 但是存取的權限規則並沒有被設定，所以目前是處於無法連通的狀態。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-^C
---- 10.0.0.2 ping statistics ---
-20 packets transmitted, 0 received, 100% packet loss, time 19003ms
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">20</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">19003</span><span class="n">ms</span>
 </pre></div>
 </div>
 <p>封包被阻擋的過程被寫進記錄擋（ log ）中。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:02&#39;,ethertype=2048,src=&#39;00:00:00:00:00:01&#39;), ipv4(csum=9895,dst=&#39;10.0.0.2&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.1&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=55644,data=echo(data=&#39;K\x8e\xaeR\x00\x00\x00\x00=\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=6952,seq=1),type=8)
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Blocked</span> <span class="n">packet</span> <span class="o">=</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:02&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:01&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">9895</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;10.0.0.2&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;10.0.0.1&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">55644</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;K</span><span class="se">\x8e\xae</span><span class="s1">R</span><span class="se">\x00\x00\x00\x00</span><span class="s1">=</span><span class="se">\xc6\r\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./01234567&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">6952</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id3">
-<h3>新增規則<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>新增規則<a class="headerlink" href="#id3" title="本標題的永久連結">¶</a></h3>
 <p>增加 h1 和 h2 之間允許 ping 發送的規則。不論是從哪個方向都需要加入。</p>
 <p>接下來新增規則，規則的編號會自動編碼。</p>
 <table border="1" class="docutils">
@@ -196,41 +196,41 @@ PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=1&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=2&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>新增加的規則做為 Flow Entry 被註冊到交換器中。</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=823.705s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
- cookie=0x0, duration=542.472s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
- cookie=0x1, duration=145.05s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x2, duration=118.265s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">823.705</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">420</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65534</span><span class="p">,</span><span class="n">arp</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">542.472</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1960</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x1</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">145.05</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x2</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">118.265</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
 </pre></div>
 </div>
 <p>接著 h2 和 h3 之間，新增加規則允許包含 ping 的所有 ipv4 封包通過。</p>
@@ -266,42 +266,42 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=3&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=3&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=4&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=4&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>新增的規則作為 Flow Entry 被註冊到交換器當中。</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=12.724s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
- cookie=0x4, duration=3.668s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x0, duration=1040.802s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
- cookie=0x0, duration=759.569s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
- cookie=0x1, duration=362.147s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x2, duration=335.362s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x3</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">12.724</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x4</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.668</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1040.802</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">420</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65534</span><span class="p">,</span><span class="n">arp</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">759.569</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1960</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x1</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">362.147</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x2</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">335.362</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
 </pre></div>
 </div>
 <p>可以設定規則的優先權。</p>
@@ -343,218 +343,218 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=5&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=5&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule added. : rule_id=6&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=6&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>新增的規則做為 Flow Entry 註冊到交換器當中。</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x3, duration=242.155s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
- cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x0, duration=1270.233s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
- cookie=0x0, duration=989s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
- cookie=0x5, duration=26.984s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=CONTROLLER:128
- cookie=0x1, duration=591.578s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.1,nw_dst=10.0.0.2 actions=NORMAL
- cookie=0x6, duration=14.523s, table=0, n_packets=0, n_bytes=0, priority=10,icmp,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=CONTROLLER:128
- cookie=0x2, duration=564.793s, table=0, n_packets=0, n_bytes=0, priority=1,icmp,nw_src=10.0.0.2,nw_dst=10.0.0.1 actions=NORMAL
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x3</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">242.155</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x4</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">233.099</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1270.233</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">420</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65534</span><span class="p">,</span><span class="n">arp</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">989</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1960</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x5</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">26.984</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x1</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">591.578</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x6</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">14.523</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x2</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">564.793</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">icmp</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id4">
-<h3>確認規則<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h3>確認規則<a class="headerlink" href="#id4" title="本標題的永久連結">¶</a></h3>
 <p>確認已經設定完成的規則。</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;access_control_list&quot;: [
-        {
-          &quot;rules&quot;: [
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.3&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
-              &quot;rule_id&quot;: 3,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            },
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.3&quot;,
-              &quot;rule_id&quot;: 4,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            },
-            {
-              &quot;priority&quot;: 10,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.3&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
-              &quot;rule_id&quot;: 5,
-              &quot;actions&quot;: &quot;DENY&quot;
-            },
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.1&quot;,
-              &quot;rule_id&quot;: 1,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            },
-            {
-              &quot;priority&quot;: 10,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.2&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.3&quot;,
-              &quot;rule_id&quot;: 6,
-              &quot;actions&quot;: &quot;DENY&quot;
-            },
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.1&quot;,
-              &quot;nw_src&quot;: &quot;10.0.0.2&quot;,
-              &quot;rule_id&quot;: 2,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;access_control_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.3&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.3&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.3&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;DENY&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.1&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.3&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;DENY&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.1&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.2&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>設定完成的規則如下。</p>
-<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" /></a>
+<a class="reference internal image-reference" href="_images/fig22.png"><img alt="_images/fig22.png" class="align-center" src="_images/fig22.png" style="width: 405.2px; height: 295.2px;" /></a>
 <p>從 h1 向 h2 執行 ping 。如果允許的規則有被正確設定的話，ping 就可以正常連線。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.419 ms
-64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.047 ms
-64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.060 ms
-64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.033 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.419</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.047</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.060</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.033</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>從 h1 發送到 h2 非 ping 的封包會被防火牆所阻擋。例如從 h1 發送到 h2 的 wget 指令就會被阻擋下來並記錄在記錄檔（ log ）中。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# wget http://10.0.0.2
---2013-12-16 15:00:38--  http://10.0.0.2/
-Connecting to 10.0.0.2:80... ^C
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># wget http://10.0.0.2</span>
+<span class="o">--</span><span class="mi">2013</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">38</span><span class="o">--</span>  <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="o">/</span>
+<span class="n">Connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span><span class="mf">80.</span><span class="o">..</span> <span class="o">^</span><span class="n">C</span>
 </pre></div>
 </div>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:02&#39;,ethertype=2048,src=&#39;00:00:00:00:00:01&#39;), ipv4(csum=4812,dst=&#39;10.0.0.2&#39;,flags=2,header_length=5,identification=5102,offset=0,option=None,proto=6,src=&#39;10.0.0.1&#39;,tos=0,total_length=60,ttl=64,version=4), tcp(ack=0,bits=2,csum=45753,dst_port=80,offset=10,option=&#39;\x02\x04\x05\xb4\x04\x02\x08\n\x00H:\x99\x00\x00\x00\x00\x01\x03\x03\t&#39;,seq=1021913463,src_port=42664,urgent=0,window_size=14600)
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Blocked</span> <span class="n">packet</span> <span class="o">=</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:02&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:01&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">4812</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;10.0.0.2&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">5102</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;10.0.0.1&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">tcp</span><span class="p">(</span><span class="n">ack</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">bits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">45753</span><span class="p">,</span><span class="n">dst_port</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\x02\x04\x05\xb4\x04\x02\x08\n\x00</span><span class="s1">H:</span><span class="se">\x99\x00\x00\x00\x00\x01\x03\x03\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">1021913463</span><span class="p">,</span><span class="n">src_port</span><span class="o">=</span><span class="mi">42664</span><span class="p">,</span><span class="n">urgent</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">window_size</span><span class="o">=</span><span class="mi">14600</span><span class="p">)</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>h2 和 h3 之間除了 ping 以外的封包則允許被通過。例如從 h2 向 h3 發送 ssh 指令，記錄檔（ log ）中並不會出現封包被阻擋的記錄（ 如果 ssh 是發送到 h3 以外的地點，則 ssh 的連線將會失敗 ）。</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ssh 10.0.0.3
-ssh: connect to host 10.0.0.3 port 22: Connection refused
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ssh 10.0.0.3</span>
+<span class="n">ssh</span><span class="p">:</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">host</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">port</span> <span class="mi">22</span><span class="p">:</span> <span class="n">Connection</span> <span class="n">refused</span>
 </pre></div>
 </div>
 <p>從 h2 向 h3 發送 ping 指令，封包將會被防火牆所阻擋，並出現在記錄檔（ log ）中。</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.3
-PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
-^C
---- 10.0.0.3 ping statistics ---
-8 packets transmitted, 0 received, 100% packet loss, time 7055ms
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.3</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">8</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">7055</span><span class="n">ms</span>
 </pre></div>
 </div>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:03&#39;,ethertype=2048,src=&#39;00:00:00:00:00:02&#39;), ipv4(csum=9893,dst=&#39;10.0.0.3&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.2&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=35642,data=echo(data=&#39;\r\x12\xcaR\x00\x00\x00\x00\xab\x8b\t\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=8705,seq=1),type=8)
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Blocked</span> <span class="n">packet</span> <span class="o">=</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:03&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:02&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">9893</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;10.0.0.3&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;10.0.0.2&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">35642</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\r\x12\xca</span><span class="s1">R</span><span class="se">\x00\x00\x00\x00\xab\x8b\t\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./01234567&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">8705</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id5">
-<h3>刪除規則<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<h3>刪除規則<a class="headerlink" href="#id5" title="本標題的永久連結">¶</a></h3>
 <p>刪除 &#8220;rule_id:5&#8221; 和 &#8220;rule_id:6&#8221; 的規則。</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule deleted. : ruleID=5&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule deleted. : ruleID=5&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Rule deleted. : ruleID=6&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule deleted. : ruleID=6&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>現在的規則如下圖所示。</p>
-<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" /></a>
+<a class="reference internal image-reference" href="_images/fig32.png"><img alt="_images/fig32.png" class="align-center" src="_images/fig32.png" style="width: 405.6px; height: 295.6px;" /></a>
 <p>經實際確認。h2 和 h3 之間的 ping（ ICMP ）阻擋連線的規則刪除後， ping 指令現在可以被正常執行並進行通訊。</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.3
-PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
-64 bytes from 10.0.0.3: icmp_req=1 ttl=64 time=0.841 ms
-64 bytes from 10.0.0.3: icmp_req=2 ttl=64 time=0.036 ms
-64 bytes from 10.0.0.3: icmp_req=3 ttl=64 time=0.026 ms
-64 bytes from 10.0.0.3: icmp_req=4 ttl=64 time=0.033 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.3</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.841</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.036</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.026</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.033</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="multi-tenant">
-<h2>Multi tenant 操作範例<a class="headerlink" href="#multi-tenant" title="Permalink to this headline">¶</a></h2>
+<h2>Multi tenant 操作範例<a class="headerlink" href="#multi-tenant" title="本標題的永久連結">¶</a></h2>
 <p>接下來這個例子將建立拓璞並使用 VLAN 來對 tenants 進行處理，還有像是路由或是位址對於交換器 s1 對的新增或刪除，以及每一個連接埠之間的連通做驗證。</p>
-<a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" /></a>
+<a class="reference internal image-reference" href="_images/fig41.png"><img alt="_images/fig41.png" class="align-center" src="_images/fig41.png" style="width: 399.6px; height: 355.6px;" /></a>
 <div class="section" id="id6">
-<h3>環境構築<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<h3>環境構築<a class="headerlink" href="#id6" title="本標題的永久連結">¶</a></h3>
 <p>下面的例子使用 Single-tenant ，在 Mininet 上進行環境的建置，另外開啟一個 xterm 做為控制 Controller 的方法，請注意與之前相比這邊需要多一台 host。</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -578,84 +578,84 @@ mininet&gt;
 </div>
 <p>接下來到每一個 host 的界面中設定 VLAN ID。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
-root@ryu-vm:~# ip addr add 10.0.0.1/8 dev h1-eth0.2
-root@ryu-vm:~# ip link set dev h1-eth0.2 up
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1-eth0 name h1-eth0.2 type vlan id 2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.1/8 dev h1-eth0.2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
-root@ryu-vm:~# ip addr add 10.0.0.2/8 dev h2-eth0.2
-root@ryu-vm:~# ip link set dev h2-eth0.2 up
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2-eth0 name h2-eth0.2 type vlan id 2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.2/8 dev h2-eth0.2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
-root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
-root@ryu-vm:~# ip addr add 10.0.0.3/8 dev h3-eth0.110
-root@ryu-vm:~# ip link set dev h3-eth0.110 up
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h3-eth0 name h3-eth0.110 type vlan id 110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.3/8 dev h3-eth0.110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h3-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h4:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h4-eth0
-root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
-root@ryu-vm:~# ip addr add 10.0.0.4/8 dev h4-eth0.110
-root@ryu-vm:~# ip link set dev h4-eth0.110 up
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.4/8 dev h4-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h4-eth0 name h4-eth0.110 type vlan id 110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.4/8 dev h4-eth0.110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h4-eth0.110 up</span>
 </pre></div>
 </div>
 <p>接著將使用的 OpenFlow 版本設定為 1.3。</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>最後，從 controller 的 xterm 畫面中啟動 rest_firewall 。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
-loading app ryu.app.rest_firewall
-loading app ryu.controller.ofp_handler
-instantiating app None of DPSet
-creating context dpset
-creating context wsgi
-instantiating app ryu.app.rest_firewall of RestFirewallAPI
-instantiating app ryu.controller.ofp_handler of OFPHandler
-(13419) wsgi starting up on http://0.0.0.0:8080/
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">dpset</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">wsgi</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span> <span class="n">of</span> <span class="n">RestFirewallAPI</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span> <span class="n">of</span> <span class="n">OFPHandler</span>
+<span class="p">(</span><span class="mi">13419</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>Ryu 和交換器之間的連線已經成功的話，就會出現接下來的訊息。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] switch_id=0000000000000001: Join as firewall
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">firewall</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id7">
-<h3>變更初始狀態<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<h3>變更初始狀態<a class="headerlink" href="#id7" title="本標題的永久連結">¶</a></h3>
 <p>啟動防火牆。</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: {
-        &quot;result&quot;: &quot;success&quot;,
-        &quot;details&quot;: &quot;firewall running.&quot;
-      }
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;firewall running.&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
-  [
-    {
-      &quot;status&quot;: &quot;enable&quot;,
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id8">
-<h3>新增規則<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<h3>新增規則<a class="headerlink" href="#id8" title="本標題的永久連結">¶</a></h3>
 <p>新增允許使用 VLAN_ID = 2 向 10.0.0.0/8 發送 ping 訊息（ ICMP封包 ）的規則到交換器中，
 設定雙向的規則是必要的。</p>
 <table border="1" class="docutils">
@@ -698,107 +698,107 @@ root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Rule added. : rule_id=1&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=1&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Rule added. : rule_id=2&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Rule added. : rule_id=2&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id9">
-<h3>規則確認<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<h3>規則確認<a class="headerlink" href="#id9" title="本標題的永久連結">¶</a></h3>
 <p>確認已經設定的規則。</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
-  [
-    {
-      &quot;access_control_list&quot;: [
-        {
-          &quot;rules&quot;: [
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;dl_vlan&quot;: 2,
-              &quot;nw_src&quot;: &quot;10.0.0.0/8&quot;,
-              &quot;rule_id&quot;: 1,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            },
-            {
-              &quot;priority&quot;: 1,
-              &quot;dl_type&quot;: &quot;IPv4&quot;,
-              &quot;nw_proto&quot;: &quot;ICMP&quot;,
-              &quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;,
-              &quot;dl_vlan&quot;: 2,
-              &quot;rule_id&quot;: 2,
-              &quot;actions&quot;: &quot;ALLOW&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 2
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;access_control_list&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;dl_vlan&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;nw_src&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;dl_type&quot;</span><span class="p">:</span> <span class="s2">&quot;IPv4&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_proto&quot;</span><span class="p">:</span> <span class="s2">&quot;ICMP&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;nw_dst&quot;</span><span class="p">:</span> <span class="s2">&quot;10.0.0.0/8&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;dl_vlan&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;rule_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="s2">&quot;ALLOW&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>讓我們確認一下實際狀況。在 VLAN_ID = 2 的情況下，從 h1 發送的 ping 在 h2 也同樣是 VLAN_ID = 2 的情況下，你會發現他是連通的，因為我們剛才已經把規則加入。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.893 ms
-64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.098 ms
-64 bytes from 10.0.0.2: icmp_req=3 ttl=64 time=0.122 ms
-64 bytes from 10.0.0.2: icmp_req=4 ttl=64 time=0.047 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.893</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.098</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.122</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.047</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>VLAN_ID = 110 的情況下 h3 和 h4 之間，由於規則沒有被加入，所以 ping 封包被阻擋。</p>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.4
-PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
-^C
---- 10.0.0.4 ping statistics ---
-6 packets transmitted, 0 received, 100% packet loss, time 4999ms
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.4</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">6</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">4999</span><span class="n">ms</span>
 </pre></div>
 </div>
 <p>封包被阻斷的時候會被記錄在記錄檔（ log ）之中。</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[FW][INFO] dpid=0000000000000001: Blocked packet = ethernet(dst=&#39;00:00:00:00:00:04&#39;,ethertype=33024,src=&#39;00:00:00:00:00:03&#39;), vlan(cfi=0,ethertype=2048,pcp=0,vid=110), ipv4(csum=9891,dst=&#39;10.0.0.4&#39;,flags=2,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;10.0.0.3&#39;,tos=0,total_length=84,ttl=64,version=4), icmp(code=0,csum=58104,data=echo(data=&#39;\xb8\xa9\xaeR\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./01234567&#39;,id=7760,seq=4),type=8)
-...
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">FW</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Blocked</span> <span class="n">packet</span> <span class="o">=</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:04&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">33024</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:03&#39;</span><span class="p">),</span> <span class="n">vlan</span><span class="p">(</span><span class="n">cfi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">pcp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">vid</span><span class="o">=</span><span class="mi">110</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">9891</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;10.0.0.4&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;10.0.0.3&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">58104</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\xb8\xa9\xae</span><span class="s1">R</span><span class="se">\x00\x00\x00\x00\xce\xe3\x02\x00\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./01234567&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">7760</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>本章中，透過具體的例子說明學到如何使用防火牆。</p>
 </div>
 </div>
 <div class="section" id="rest-api">
-<h2>REST API 列表<a class="headerlink" href="#rest-api" title="Permalink to this headline">¶</a></h2>
+<h2>REST API 列表<a class="headerlink" href="#rest-api" title="本標題的永久連結">¶</a></h2>
 <p>本章說明中所提到的 rest_firewall REST API 一覽。</p>
 <div class="section" id="id10">
-<h3>取得交換器的防火牆狀態<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<h3>取得交換器的防火牆狀態<a class="headerlink" href="#id10" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="34%" />
@@ -815,7 +815,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id11">
-<h3>變更交換器的防火牆狀態<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<h3>變更交換器的防火牆狀態<a class="headerlink" href="#id11" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="24%" />
@@ -838,7 +838,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id12">
-<h3>取得全部規則<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<h3>取得全部規則<a class="headerlink" href="#id12" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="22%" />
@@ -861,7 +861,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id13">
-<h3>新增規則<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<h3>新增規則<a class="headerlink" href="#id13" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="19%" />
@@ -900,7 +900,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id14">
-<h3>刪除規則<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<h3>刪除規則<a class="headerlink" href="#id14" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="22%" />
@@ -926,7 +926,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id15">
-<h3>取得交換器的記錄檔<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<h3>取得交換器的記錄檔<a class="headerlink" href="#id15" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="37%" />
@@ -943,7 +943,7 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
 </table>
 </div>
 <div class="section" id="id16">
-<h3>變更交換器記錄檔的狀態<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<h3>變更交換器記錄檔的狀態<a class="headerlink" href="#id16" title="本標題的永久連結">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -972,9 +972,9 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">內容目錄</a></h3>
+  <h3><a href="index.html">目錄</a></h3>
   <ul>
 <li><a class="reference internal" href="#">防火牆（ Firewall ）</a><ul>
 <li><a class="reference internal" href="#single-tenant">Single tenant 操作範例</a><ul>
@@ -1012,29 +1012,28 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
   <h4>下一個主題</h4>
   <p class="topless"><a href="rest_router.html"
                         title="下一章">路由器（ Router ）</a></p>
-  <h3>本頁</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/rest_firewall.txt"
-           rel="nofollow">顯示原始碼</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>本頁</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rest_firewall.txt"
+            rel="nofollow">顯示原始碼</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>快速搜尋</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="前往" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1046,12 +1045,12 @@ PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
         <li class="right" >
           <a href="of_config.html" title="OF-Config 函式庫"
              >上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &copy; 版權所有 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
     </div>
   </body>
 </html>

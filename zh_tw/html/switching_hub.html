@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_TW">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>交換器（ Switching Hub ） &mdash; Ryubook 1.0 documentation</title>
+    <title>交換器（ Switching Hub ） &mdash; Ryubook 1.0 說明文件</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="top" title="Ryubook 1.0 說明文件" href="index.html" />
     <link rel="next" title="流量監控（ Traffic Monitor ）" href="traffic_monitor.html" />
     <link rel="prev" title="前言" href="preface.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,20 +41,20 @@
         <li class="right" >
           <a href="preface.html" title="前言"
              accesskey="P">上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="switching-hub">
-<span id="ch-switching-hub"></span><h1>交換器（ Switching Hub ）<a class="headerlink" href="#switching-hub" title="Permalink to this headline">¶</a></h1>
+<span id="ch-switching-hub"></span><h1>交換器（ Switching Hub ）<a class="headerlink" href="#switching-hub" title="本標題的永久連結">¶</a></h1>
 <p>本章將會用簡單的 Switching hub 安裝做為題材，說明 Ryu 如何安裝一個應用程式。</p>
 <div class="section" id="id1">
-<h2>Switching Hub<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>Switching Hub<a class="headerlink" href="#id1" title="本標題的永久連結">¶</a></h2>
 <p>在交換器中有許許多多的功能。在這邊我們將看到擁有下列簡單功能的交換器。</p>
 <ul class="simple">
 <li>學習連接到連接埠的 host 之 MAC 位址，並記錄在 MAC 位址表當中。</li>
@@ -64,7 +64,7 @@
 <p>讓我們使用 Ryu 來實現這樣一個交換器吧。</p>
 </div>
 <div class="section" id="openflow">
-<h2>OpenFlow 實作的交換器<a class="headerlink" href="#openflow" title="Permalink to this headline">¶</a></h2>
+<h2>OpenFlow 實作的交換器<a class="headerlink" href="#openflow" title="本標題的永久連結">¶</a></h2>
 <p>OpenFlow 交換器會接受來自于 controller 的指令並達到以下功能。</p>
 <ul class="simple">
 <li>對於接收到的封包進行修改或針對指定的連接埠進行轉送。</li>
@@ -93,13 +93,13 @@ Controller 使用 Packet-In 接收來自交換器的封包之後進行分析，�
 <div><p>當 host A 向 host B 發送封包。這時後會觸發 Packet-In 訊息。host A 的 MAC 位址會被連接埠 1 給記錄下來。由於 host B 的 MAC 位址尚未被學習，因此會進行 Flooding 並將封包往 host B 和 host C 發送。</p>
 <img alt="_images/fig26.png" class="align-center" src="_images/fig26.png" />
 <p>Packet-In:</p>
-<div class="highlight-python"><div class="highlight"><pre>in-port: 1
-eth-dst: host B
-eth-src: host A
+<div class="highlight-default"><div class="highlight"><pre><span class="ow">in</span><span class="o">-</span><span class="n">port</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">dst</span><span class="p">:</span> <span class="n">host</span> <span class="n">B</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">src</span><span class="p">:</span> <span class="n">host</span> <span class="n">A</span>
 </pre></div>
 </div>
 <p>Packet-Out:</p>
-<div class="highlight-python"><div class="highlight"><pre>action: OUTPUT: Flooding
+<div class="highlight-default"><div class="highlight"><pre><span class="n">action</span><span class="p">:</span> <span class="n">OUTPUT</span><span class="p">:</span> <span class="n">Flooding</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -110,13 +110,13 @@ eth-src: host A
 因此該封包並不會被 host C 收到。</p>
 <img alt="_images/fig35.png" class="align-center" src="_images/fig35.png" />
 <p>Packet-In:</p>
-<div class="highlight-python"><div class="highlight"><pre>in-port: 4
-eth-dst: host A
-eth-src: host B
+<div class="highlight-default"><div class="highlight"><pre><span class="ow">in</span><span class="o">-</span><span class="n">port</span><span class="p">:</span> <span class="mi">4</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">dst</span><span class="p">:</span> <span class="n">host</span> <span class="n">A</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">src</span><span class="p">:</span> <span class="n">host</span> <span class="n">B</span>
 </pre></div>
 </div>
 <p>Packet-Out:</p>
-<div class="highlight-python"><div class="highlight"><pre>action: OUTPUT: port 1
+<div class="highlight-default"><div class="highlight"><pre><span class="n">action</span><span class="p">:</span> <span class="n">OUTPUT</span><span class="p">:</span> <span class="n">port</span> <span class="mi">1</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -126,13 +126,13 @@ eth-src: host B
 <div><p>再一次， host A 向 host B 發送封包，在 Flow table 中新增一個 Flow Entry 接著轉送封包到連接埠4。</p>
 <img alt="_images/fig44.png" class="align-center" src="_images/fig44.png" />
 <p>Packet-In:</p>
-<div class="highlight-python"><div class="highlight"><pre>in-port: 1
-eth-dst: host B
-eth-src: host A
+<div class="highlight-default"><div class="highlight"><pre><span class="ow">in</span><span class="o">-</span><span class="n">port</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">dst</span><span class="p">:</span> <span class="n">host</span> <span class="n">B</span>
+<span class="n">eth</span><span class="o">-</span><span class="n">src</span><span class="p">:</span> <span class="n">host</span> <span class="n">A</span>
 </pre></div>
 </div>
 <p>Packet-Out:</p>
-<div class="highlight-python"><div class="highlight"><pre>action: OUTPUT: port 4
+<div class="highlight-default"><div class="highlight"><pre><span class="n">action</span><span class="p">:</span> <span class="n">OUTPUT</span><span class="p">:</span> <span class="n">port</span> <span class="mi">4</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -141,19 +141,19 @@ eth-src: host A
 <p>接下來，讓我們實際來看一下在 Ryu 當中實作交換器的原始碼。</p>
 </div>
 <div class="section" id="ryu">
-<h2>在 Ryu 上實作交換器<a class="headerlink" href="#ryu" title="Permalink to this headline">¶</a></h2>
+<h2>在 Ryu 上實作交換器<a class="headerlink" href="#ryu" title="本標題的永久連結">¶</a></h2>
 <p>Ryu 的原始碼之中有提供交換器的程式原始碼。</p>
 <blockquote>
 <div>ryu/app/simple_switch_13.py</div></blockquote>
 <p>OpenFlow 其他的版本也有相對應的原始碼，例如 simple_switch.py（ OpenFlow 1.0 ）和 simple_switch_12.py（ OpenFlow 1.2 ）。我們現在要來看的則是 OpenFlow 1.3 的版本。</p>
 <p>由於原始碼不多，因此我們把全部都拿來檢視。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="k">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ethernet</span>
 
 
 <span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
@@ -169,13 +169,13 @@ eth-src: host A
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
-        <span class="c"># install table-miss flow entry</span>
-        <span class="c">#</span>
-        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
-        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
-        <span class="c"># correctly.</span>
+        <span class="c1"># install table-miss flow entry</span>
+        <span class="c1">#</span>
+        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c1"># correctly.</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
                                           <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
@@ -198,7 +198,7 @@ eth-src: host A
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
 
         <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -209,9 +209,9 @@ eth-src: host A
         <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;packet in </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
 
-        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="c1"># learn a mac address to avoid FLOOD next time.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
 
         <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
@@ -221,12 +221,12 @@ eth-src: host A
 
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
 
-        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="c1"># install a flow to avoid packet_in next time</span>
         <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
             <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
 
@@ -237,30 +237,30 @@ eth-src: host A
 </div>
 <p>那麼我們開始看一下其中的內容吧。</p>
 <div class="section" id="id2">
-<h3>類別的定義和初始化<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>類別的定義和初始化<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h3>
 <p>為了要實作 Ryu 應用程式，因此繼承了 ryu.base.app_manager.RyuApp。
-接著為了使用 OpenFlow 1.3 ，將 <tt class="docutils literal"><span class="pre">OFP_VERSIONS</span></tt> 指定為 OpenFlow 1.3。</p>
+接著為了使用 OpenFlow 1.3 ，將 <code class="docutils literal"><span class="pre">OFP_VERSIONS</span></code> 指定為 OpenFlow 1.3。</p>
 <p>然後，MAC 位址表的 mac_to_port 也已經被定義。</p>
 <p>OpenFlow 通訊協定中有些程序像是握手協定（ handshake ），是定義好讓 OpenFlow 交換器和 Controller 之間進行通訊時使用。
 但這些細節，對於一個 Ryu 應用程式來說是不用擔心或需要特別處理的。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitch13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="event-handler">
-<h3>事件管理（ Event handler ）<a class="headerlink" href="#event-handler" title="Permalink to this headline">¶</a></h3>
+<h3>事件管理（ Event handler ）<a class="headerlink" href="#event-handler" title="本標題的永久連結">¶</a></h3>
 <p>對於 Ryu 來說，接受到任何一個 OpenFlow 訊息即會產生一個相對應的事件。而 Ryu 應用程式則是必須實作事件管理以處理相對應發生的事件。</p>
 <p>事件管理（ Event Handler ）是一個擁有事件物件（ Event Object ）做為參數，並且使用``ryu.controller.handler.set_ev_cls`` 修飾（ Decorator ）的函數。</p>
 <p>set_ev_cls 則指定事件類別得以接受訊息和交換器狀態作為參數。</p>
-<p>事件類別名稱的規則為 <tt class="docutils literal"><span class="pre">ryu.controller.ofp_event.EventOFP</span></tt> + &lt;OpenFlow訊息名稱&gt;，
-例如：在 Packet-In 訊息的狀態下的事件名稱為 <tt class="docutils literal"><span class="pre">EventOFPPacketIn</span></tt> 。
+<p>事件類別名稱的規則為 <code class="docutils literal"><span class="pre">ryu.controller.ofp_event.EventOFP</span></code> + &lt;OpenFlow訊息名稱&gt;，
+例如：在 Packet-In 訊息的狀態下的事件名稱為 <code class="docutils literal"><span class="pre">EventOFPPacketIn</span></code> 。
 詳細的內容請參考 Ryu 的文件 <a class="reference external" href="http://ryu.readthedocs.org/en/latest/">API 參考資料</a> 。
 對於狀態來說，請指定下面列表的其中一項。</p>
 <table border="1" class="docutils">
@@ -289,21 +289,21 @@ eth-src: host A
 </tbody>
 </table>
 <div class="section" id="table-miss-flow-entry">
-<h4>新增 Table-miss Flow Entry<a class="headerlink" href="#table-miss-flow-entry" title="Permalink to this headline">¶</a></h4>
+<h4>新增 Table-miss Flow Entry<a class="headerlink" href="#table-miss-flow-entry" title="本標題的永久連結">¶</a></h4>
 <p>OpenFlow 交換器的握手協議完成之後，新增 Table-miss Flow Entry 到 Flow table 中為接收 Packet-In 訊息做準備。</p>
 <p>具體來說，接收到 Switch features（ Features reply ）訊息後就會新增 Table-miss Flow Entry。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
-<p><tt class="docutils literal"><span class="pre">ev.msg</span></tt> 是用來儲存對應事件的 OpenFlow 訊息類別實體。
-在這個例子中則是 <tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures</span></tt> 。</p>
-<p><tt class="docutils literal"><span class="pre">msg.datapath</span></tt> 這個訊息是用來儲存 OpenFlow 交換器的 <tt class="docutils literal"><span class="pre">ryu.controller.controller.Datapath</span></tt> 類別所對應的實體。</p>
+<p><code class="docutils literal"><span class="pre">ev.msg</span></code> 是用來儲存對應事件的 OpenFlow 訊息類別實體。
+在這個例子中則是 <code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures</span></code> 。</p>
+<p><code class="docutils literal"><span class="pre">msg.datapath</span></code> 這個訊息是用來儲存 OpenFlow 交換器的 <code class="docutils literal"><span class="pre">ryu.controller.controller.Datapath</span></code> 類別所對應的實體。</p>
 <p>Datapath 類別是用來處理 OpenFlow 交換器重要的訊息，例如執行與交換器的通訊和觸發接收訊息相關的事件。</p>
 <p>Ryu 應用程式所使用的主要屬性如下：</p>
 <table border="1" class="docutils">
@@ -323,19 +323,19 @@ eth-src: host A
 <tr class="row-odd"><td>ofproto</td>
 <td><p class="first">表示使用的 OpenFlow 版本所對應的 ofproto module。
 目前的狀況會是下述的其中之一。</p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3</span></tt></p>
-<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4</span></tt></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0</span></code></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2</span></code></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3</span></code></p>
+<p class="last"><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4</span></code></p>
 </td>
 </tr>
 <tr class="row-even"><td>ofproto_parser</td>
 <td><p class="first">和 ofproto 一樣，表示 ofproto_parser module。
 目前的狀況會是下述的其中之一。</p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0_parser</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2_parser</span></tt></p>
-<p><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser</span></tt></p>
-<p class="last"><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4_parser</span></tt></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_0_parser</span></code></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_2_parser</span></code></p>
+<p><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser</span></code></p>
+<p class="last"><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_4_parser</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -345,19 +345,19 @@ eth-src: host A
 <blockquote>
 <div>發送 OpenFlow 訊息。
 msg 是發送 OpenFlow 訊息
-<tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_parser.MsgBase</span></tt> 類別的子類別。</div></blockquote>
+<code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_parser.MsgBase</span></code> 類別的子類別。</div></blockquote>
 <p>交換器本身不僅僅使用 Switch features 訊息，還使用事件處理以取得新增 Table-miss Flow Entry 的時間點。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 
-    <span class="c"># install table-miss flow Entry</span>
-    <span class="c">#</span>
-    <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
-    <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-    <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-    <span class="c"># truncated packet data. In that case, we cannot output packets</span>
-    <span class="c"># correctly.</span>
+    <span class="c1"># install table-miss flow Entry</span>
+    <span class="c1">#</span>
+    <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
+    <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+    <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+    <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
+    <span class="c1"># correctly.</span>
     <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
     <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
                                       <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
@@ -368,32 +368,32 @@ msg 是發送 OpenFlow 訊息
 這個 Entry 的 Instruction 通常指定為 output action ，並且輸出的連接埠將指向 Controller。
 因此當封包沒有 match 任何一個普通 Flow Entry 時，則觸發 Packet-In。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">目前（ 2014年1月 ），市面上的 Open vSwitch 對於 OpenFlow 1.3 的支援並不完整，
 而且對於 OpenFlow 1.3 以前的版本 Packet-In 是個基本的功能。
 包括 Table-miss Flow Entry 也尚未被支援，僅僅是使用一般的 Flow Entry 取代。</p>
 </div>
-<p>空的 match 將被產生為了 match 所有的封包。match 表示於 <tt class="docutils literal"><span class="pre">OFPMatch</span></tt> 類別中。</p>
-<p>接下來，為了轉送到 Controller 連接埠， OUTPUT action 類別（ <tt class="docutils literal"><span class="pre">OFPActionOutput</span></tt> ）的實例將會被產生。Controller 會被指定為封包的目的地，<tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt> 會被設定為 max_len 以便接下來的封包傳送。</p>
+<p>空的 match 將被產生為了 match 所有的封包。match 表示於 <code class="docutils literal"><span class="pre">OFPMatch</span></code> 類別中。</p>
+<p>接下來，為了轉送到 Controller 連接埠， OUTPUT action 類別（ <code class="docutils literal"><span class="pre">OFPActionOutput</span></code> ）的實例將會被產生。Controller 會被指定為封包的目的地，<code class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></code> 會被設定為 max_len 以便接下來的封包傳送。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">送往 Controller 的封包可以僅只傳送 header 部分（ Ethernet header ），剩下的則存在緩衝區間中以增加效率。
 但目前（ 2014年1月 ）Open vSwitch 存在臭蟲的關係，會將所有的封包都傳送，並不會只傳送 header。</p>
 </div>
-<p>最後將優先權設定為 0（ 最低優先權 ），然後執行 <tt class="docutils literal"><span class="pre">add_flow()</span></tt> 方法以發送 Flow Mod 訊息。
+<p>最後將優先權設定為 0（ 最低優先權 ），然後執行 <code class="docutils literal"><span class="pre">add_flow()</span></code> 方法以發送 Flow Mod 訊息。
 add_flow() 方法的內容將會在稍後進行說明。</p>
 </div>
 <div class="section" id="packet-in">
-<h4>Packet-in 訊息<a class="headerlink" href="#packet-in" title="Permalink to this headline">¶</a></h4>
+<h4>Packet-in 訊息<a class="headerlink" href="#packet-in" title="本標題的永久連結">¶</a></h4>
 <p>為了接收處理未知目的地的封包，需要 Packet-In 事件管理。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>OFPPacketIn 類別經常使用的屬性如下列所示。</p>
@@ -409,7 +409,7 @@ add_flow() 方法的內容將會在稍後進行說明。</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>match</td>
-<td><tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser.OFPMatch</span></tt> 類別的實體，用來儲存接收封包的 Meta 資訊。</td>
+<td><code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3_parser.OFPMatch</span></code> 類別的實體，用來儲存接收封包的 Meta 資訊。</td>
 </tr>
 <tr class="row-odd"><td>data</td>
 <td>接收封包本身的 binary 資料</td>
@@ -419,18 +419,18 @@ add_flow() 方法的內容將會在稍後進行說明。</p>
 </tr>
 <tr class="row-odd"><td>buffer_id</td>
 <td>接收封包的內容若是存在 OpenFlow 交換器上時所指定的ID
-如果在沒有 buffer 的狀況下，則設定 <tt class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER</span></tt></td>
+如果在沒有 buffer 的狀況下，則設定 <code class="docutils literal"><span class="pre">ryu.ofproto.ofproto_v1_3.OFP_NO_BUFFER</span></code></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="section" id="mac">
-<h4>更新 MAC 位址表<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h4>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<h4>更新 MAC 位址表<a class="headerlink" href="#mac" title="本標題的永久連結">¶</a></h4>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 
-    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
 
     <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -441,25 +441,25 @@ add_flow() 方法的內容將會在稍後進行說明。</p>
     <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;packet in </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
 
-    <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+    <span class="c1"># learn a mac address to avoid FLOOD next time.</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
-<p>從 OFPPacketIn 類別的 match 得到接收埠（ <tt class="docutils literal"><span class="pre">in_port</span></tt> ）的資訊。
+<p>從 OFPPacketIn 類別的 match 得到接收埠（ <code class="docutils literal"><span class="pre">in_port</span></code> ）的資訊。
 目的 MAC 位址和來源 MAC 位址使用 Ryu 的封包函式庫，從接收到封包的 Ethernet header 取得。</p>
 <p>藉由得知目的 MAC 位址和來源 Mac 位址，更新 MAC 位址表。</p>
 <p>為了可以對應連接到多個 OpenFlow 交換器，MAC 位址表和每一個交換器之間的識別，就使用 datapath ID 來進行確認。</p>
 </div>
 <div class="section" id="id3">
-<h4>判斷轉送封包的連接埠<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
-<p>目的 MAC 位址若存在于 MAC 位址表，則判斷該連接埠的號碼為輸出。反之若不存在于 MAC 位址表則 OUTPUT action 類別的實體並生成 flooding（ <tt class="docutils literal"><span class="pre">OFPP_FLOOD</span></tt> ）給目的連接埠使用。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<h4>判斷轉送封包的連接埠<a class="headerlink" href="#id3" title="本標題的永久連結">¶</a></h4>
+<p>目的 MAC 位址若存在于 MAC 位址表，則判斷該連接埠的號碼為輸出。反之若不存在于 MAC 位址表則 OUTPUT action 類別的實體並生成 flooding（ <code class="docutils literal"><span class="pre">OFPP_FLOOD</span></code> ）給目的連接埠使用。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 
     <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
         <span class="n">out_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">dst</span><span class="p">]</span>
@@ -468,12 +468,12 @@ add_flow() 方法的內容將會在稍後進行說明。</p>
 
     <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
 
-    <span class="c"># install a flow to avoid packet_in next time</span>
+    <span class="c1"># install a flow to avoid packet_in next time</span>
     <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>若是找到了目的 MAC 位址，則在交換器的 Flow table 中新增。</p>
@@ -491,31 +491,31 @@ add_flow() 方法的內容將會在稍後進行說明。</p>
 </div>
 </div>
 <div class="section" id="flow-entry">
-<h4>新增 Flow Entry 的處理<a class="headerlink" href="#flow-entry" title="Permalink to this headline">¶</a></h4>
+<h4>新增 Flow Entry 的處理<a class="headerlink" href="#flow-entry" title="本標題的永久連結">¶</a></h4>
 <p>Packet-In handler 的處理尚未說明，在這之前我們先來看一看新增 Flow Entry 的方法。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
     <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
                                          <span class="n">actions</span><span class="p">)]</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>對於 Flow Entry 來說，設定 match 條件以分辨目標封包、設定 instruction 以處理封包以及 Entry 的優先權和有效時間。</p>
 <p>對於交換器的的實作，Apply Actions 是用來設定那些必須立即執行的 action 所使用。</p>
 <p>最後透過 Flow Mod 訊息將 Flow Entry 新增到 Flow table 中。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 
     <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
                             <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
     <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Flow Mod 訊息的類別為 <tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt> 。使用 OFPFlowMod 所產生的實體透過 Datapath.send_msg() 方法來發送訊息給 OpenFlow 交換器。</p>
+<p>Flow Mod 訊息的類別為 <code class="docutils literal"><span class="pre">OFPFlowMod</span></code> 。使用 OFPFlowMod 所產生的實體透過 Datapath.send_msg() 方法來發送訊息給 OpenFlow 交換器。</p>
 <p>OFPFlowMod 類別的建構子參數相當的多，但是在大多數的情況下都有其預設值，原始碼中括號內的部分即是預設值。</p>
 <p>datapath</p>
 <blockquote>
@@ -583,18 +583,18 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 <div><p>指定 OpenFlow 交換器上用來儲存封包的緩衝區 ID。
 緩衝區 ID 會放在通知 Controller 的 Packet-In 訊息中，並且和接下來的 OFPP_TABLE 所指定的輸出埠和 Flow Mod 訊息處理時可以被參照。
 當發送的命令訊息為 OFPFC_DELETE  或 OFPFC_DELETE_STRICT 時，會忽略本數值。</p>
-<p>如果不指定緩衝區 ID 的時候，必須使用 <tt class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></tt> 作為其設定值。</p>
+<p>如果不指定緩衝區 ID 的時候，必須使用 <code class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></code> 作為其設定值。</p>
 </div></blockquote>
 <p>out_port (0)</p>
 <blockquote>
 <div><p>OFPFC_DELETE 和 OFPFC_DELETE_STRICT 命令用來指定輸出埠的參數。
 命令為 OFPFC_ADD、OFPFC_MODIFY、OFPFC_MODIFY_STRICT 時則可以忽略。</p>
-<p>若要讓本參數無效則指定輸出埠為 <tt class="docutils literal"><span class="pre">OFPP_ANY</span></tt> 。</p>
+<p>若要讓本參數無效則指定輸出埠為 <code class="docutils literal"><span class="pre">OFPP_ANY</span></code> 。</p>
 </div></blockquote>
 <p>out_group (0)</p>
 <blockquote>
 <div><p>跟 out_port 一樣，作為一個輸出埠，但是轉到特定的 group。</p>
-<p>若要使其無效，則指定為 <tt class="docutils literal"><span class="pre">OFPG_ANY</span></tt> 。</p>
+<p>若要使其無效，則指定為 <code class="docutils literal"><span class="pre">OFPG_ANY</span></code> 。</p>
 </div></blockquote>
 <p>flags (0)</p>
 <blockquote>
@@ -637,14 +637,14 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 <div>設定 instruction 。</div></blockquote>
 </div>
 <div class="section" id="id4">
-<h4>轉送封包<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<h4>轉送封包<a class="headerlink" href="#id4" title="本標題的永久連結">¶</a></h4>
 <p>回到 Packet-In handler 並說明最後的流程。</p>
 <p>在 MAC 位址表中找尋目的 MAC 位址，若是有找到則發送 Packet-Out 訊息，並且轉送封包。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
 
@@ -653,7 +653,7 @@ hard_timeout 在超過時限後並不會重新歸零計算。
     <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Packet-Out 訊息相對應的類別是 <tt class="docutils literal"><span class="pre">OFPPacketOut</span></tt> 。</p>
+<p>Packet-Out 訊息相對應的類別是 <code class="docutils literal"><span class="pre">OFPPacketOut</span></code> 。</p>
 <p>OFPPacketOut 建構子的參數如下所示。</p>
 <p>datapath</p>
 <blockquote>
@@ -661,17 +661,17 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 <p>buffer_id</p>
 <blockquote>
 <div>指定 OpenFlow 交換器上封包對應的緩衝區。
-如果不想使用緩衝區，則指定為 <tt class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></tt> 。</div></blockquote>
+如果不想使用緩衝區，則指定為 <code class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></code> 。</div></blockquote>
 <p>in_port</p>
 <blockquote>
 <div>指定接收封包的連接埠號。
-如果不想使用的話就指定為 <tt class="docutils literal"><span class="pre">OFPP_CONTROLLER</span></tt> 。</div></blockquote>
+如果不想使用的話就指定為 <code class="docutils literal"><span class="pre">OFPP_CONTROLLER</span></code> 。</div></blockquote>
 <p>actions</p>
 <blockquote>
 <div>指定 actions list。</div></blockquote>
 <p>data</p>
 <blockquote>
-<div>設定封包的 binary data 。主要用在 buffer_id 為 <tt class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></tt> 的情況。
+<div>設定封包的 binary data 。主要用在 buffer_id 為 <code class="docutils literal"><span class="pre">OFP_NO_BUFFER</span></code> 的情況。
 如果使用了 OpenFlow 交換器的緩衝區則可以省略。</div></blockquote>
 <p>交換器的實作時，在 Packet-In 訊息中指定 buffer_id。若是 Packet-In 訊息中 buffer_id 被設定為無效時。Packet-In 的封包必須指定 data 以便傳送。</p>
 <p>交換器的原始碼說明就到這邊。
@@ -680,7 +680,7 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 </div>
 </div>
 <div class="section" id="id5">
-<h2>執行 Ryu 應用程式<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<h2>執行 Ryu 應用程式<a class="headerlink" href="#id5" title="本標題的永久連結">¶</a></h2>
 <p>為了執行交換器，OpenFlow 交換器採用 Open vSwitch，執行環境則是在 mininet 上。</p>
 <p>由於 Ryu 的 OpenFlow Tutorial VM 映像檔已經準備好了，有了該 VM 映像檔會讓準備工作較為簡單。</p>
 <p>VM 映像檔</p>
@@ -701,21 +701,21 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 <dt>Ryu 3.2</dt>
 <dd><a class="reference external" href="https://github.com/osrg/ryu/">https://github.com/osrg/ryu/</a></dd>
 </dl>
-<div class="console highlight-python"><div class="highlight"><pre>$ sudo pip install ryu
+<div class="console highlight-default"><div class="highlight"><pre>$ sudo pip install ryu
 </pre></div>
 </div>
 <p>但是在這邊我們使用 Ryu 的 OpenFlow Tutorial VM 映像檔。</p>
 <div class="section" id="mininet">
-<h3>執行 Mininet<a class="headerlink" href="#mininet" title="Permalink to this headline">¶</a></h3>
+<h3>執行 Mininet<a class="headerlink" href="#mininet" title="本標題的永久連結">¶</a></h3>
 <p>因為所需要的終端機 xterm 是從 mininet 中啟動，因此 X windows 的環境是必要的。</p>
 <p>為了使用 OpenFlow Tutorial 的 VM，請把 ssh 的 X11 Forwarding 功能打開並進行登入。</p>
 <blockquote>
-<div><div class="highlight-python"><div class="highlight"><pre>$ ssh -X ryu@&lt;VM 的 IP&gt;
+<div><div class="highlight-default"><div class="highlight"><pre>$ ssh -X ryu@&lt;VM 的 IP&gt;
 </pre></div>
 </div>
 </div></blockquote>
-<p>使用者名稱為 <tt class="docutils literal"><span class="pre">ryu</span></tt> 、密碼也是 <tt class="docutils literal"><span class="pre">ryu</span></tt> 。</p>
-<p>登入以後使用 <tt class="docutils literal"><span class="pre">mn</span></tt> 指令啟動 Mininet 環境。</p>
+<p>使用者名稱為 <code class="docutils literal"><span class="pre">ryu</span></code> 、密碼也是 <code class="docutils literal"><span class="pre">ryu</span></code> 。</p>
+<p>登入以後使用 <code class="docutils literal"><span class="pre">mn</span></code> 指令啟動 Mininet 環境。</p>
 <p>要建構的是 host 3 台，交換器 1 台的簡單環境。</p>
 <p>mn 命令的參數如下：</p>
 <table border="1" class="docutils">
@@ -754,7 +754,7 @@ hard_timeout 在超過時限後並不會重新歸零計算。
 </tbody>
 </table>
 <p>執行的方法如下：</p>
-<div class="console highlight-python"><div class="highlight"><pre>$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre>$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -779,100 +779,100 @@ mininet&gt;
 <p>在交換器的 xterm 視窗中設定 OpenFlow 的版本，視窗的標題為 「switch: s1 (root)」。</p>
 <p>首先查看 Open vSwitch 的狀態。</p>
 <p>switch: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl show
-fdec0957-12b6-4417-9d02-847654e9cc1f
-Bridge &quot;s1&quot;
-    Controller &quot;ptcp:6634&quot;
-    Controller &quot;tcp:127.0.0.1:6633&quot;
-    fail_mode: secure
-    Port &quot;s1-eth3&quot;
-        Interface &quot;s1-eth3&quot;
-    Port &quot;s1-eth2&quot;
-        Interface &quot;s1-eth2&quot;
-    Port &quot;s1-eth1&quot;
-        Interface &quot;s1-eth1&quot;
-    Port &quot;s1&quot;
-        Interface &quot;s1&quot;
-            type: internal
-ovs_version: &quot;1.11.0&quot;
-root@ryu-vm:~# ovs-dpctl show
-system@ovs-system:
-        lookups: hit:14 missed:14 lost:0
-        flows: 0
-        port 0: ovs-system (internal)
-        port 1: s1 (internal)
-        port 2: s1-eth1
-        port 3: s1-eth2
-        port 4: s1-eth3
-root@ryu-vm:~#
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl show</span>
+<span class="n">fdec0957</span><span class="o">-</span><span class="mi">12</span><span class="n">b6</span><span class="o">-</span><span class="mi">4417</span><span class="o">-</span><span class="mi">9</span><span class="n">d02</span><span class="o">-</span><span class="mi">847654</span><span class="n">e9cc1f</span>
+<span class="n">Bridge</span> <span class="s2">&quot;s1&quot;</span>
+    <span class="n">Controller</span> <span class="s2">&quot;ptcp:6634&quot;</span>
+    <span class="n">Controller</span> <span class="s2">&quot;tcp:127.0.0.1:6633&quot;</span>
+    <span class="n">fail_mode</span><span class="p">:</span> <span class="n">secure</span>
+    <span class="n">Port</span> <span class="s2">&quot;s1-eth3&quot;</span>
+        <span class="n">Interface</span> <span class="s2">&quot;s1-eth3&quot;</span>
+    <span class="n">Port</span> <span class="s2">&quot;s1-eth2&quot;</span>
+        <span class="n">Interface</span> <span class="s2">&quot;s1-eth2&quot;</span>
+    <span class="n">Port</span> <span class="s2">&quot;s1-eth1&quot;</span>
+        <span class="n">Interface</span> <span class="s2">&quot;s1-eth1&quot;</span>
+    <span class="n">Port</span> <span class="s2">&quot;s1&quot;</span>
+        <span class="n">Interface</span> <span class="s2">&quot;s1&quot;</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">internal</span>
+<span class="n">ovs_version</span><span class="p">:</span> <span class="s2">&quot;1.11.0&quot;</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-dpctl show</span>
+<span class="n">system</span><span class="nd">@ovs</span><span class="o">-</span><span class="n">system</span><span class="p">:</span>
+        <span class="n">lookups</span><span class="p">:</span> <span class="n">hit</span><span class="p">:</span><span class="mi">14</span> <span class="n">missed</span><span class="p">:</span><span class="mi">14</span> <span class="n">lost</span><span class="p">:</span><span class="mi">0</span>
+        <span class="n">flows</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="n">port</span> <span class="mi">0</span><span class="p">:</span> <span class="n">ovs</span><span class="o">-</span><span class="n">system</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>
+        <span class="n">port</span> <span class="mi">1</span><span class="p">:</span> <span class="n">s1</span> <span class="p">(</span><span class="n">internal</span><span class="p">)</span>
+        <span class="n">port</span> <span class="mi">2</span><span class="p">:</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth1</span>
+        <span class="n">port</span> <span class="mi">3</span><span class="p">:</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span>
+        <span class="n">port</span> <span class="mi">4</span><span class="p">:</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth3</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>交換器（ 橋接器 ） <em>s1</em> 被建立，並且增加 3 個連接埠分別連線到 3 個 host。</p>
 <p>接下來設定 OpenFlow 的版本為 1.3。</p>
 <p>switch: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-root@ryu-vm:~#
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>檢查空白的 Flow table。</p>
 <p>switch: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
-root@ryu-vm:~#
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O OpenFlow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>ovs-ofctl 命令選項是用來指定 OpenFlow 版本。預設值是 <em>OpenFlow10</em> 。</p>
 </div>
 <div class="section" id="id6">
-<h3>執行交換器<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<h3>執行交換器<a class="headerlink" href="#id6" title="本標題的永久連結">¶</a></h3>
 <p>準備工作到此已經結束，接下來開始執行 Ryu 應用程式。</p>
 <p>在視窗標題為 「controller: c0 (root)」 的 xterm 執行下列指令。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager --verbose ryu.app.simple_switch_13
-loading app ryu.app.simple_switch_13
-loading app ryu.controller.ofp_handler
-instantiating app ryu.app.simple_switch_13
-instantiating app ryu.controller.ofp_handler
-BRICK SimpleSwitch13
-  CONSUMES EventOFPSwitchFeatures
-  CONSUMES EventOFPPacketIn
-BRICK ofp_event
-  PROVIDES EventOFPSwitchFeatures TO {&#39;SimpleSwitch13&#39;: set([&#39;config&#39;])}
-  PROVIDES EventOFPPacketIn TO {&#39;SimpleSwitch13&#39;: set([&#39;main&#39;])}
-  CONSUMES EventOFPErrorMsg
-  CONSUMES EventOFPHello
-  CONSUMES EventOFPEchoRequest
-  CONSUMES EventOFPPortDescStatsReply
-  CONSUMES EventOFPSwitchFeatures
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x2e2c050&gt; address:(&#39;127.0.0.1&#39;, 53937)
-hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x2e2a550&gt;
-move onto config mode
-EVENT ofp_event-&gt;SimpleSwitch13 EventOFPSwitchFeatures
-switch features ev version: 0x4 msg_type 0x6 xid 0xff9ad15b OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
-move onto main mode
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ryu.app.simple_switch_13</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">simple_switch_13</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">simple_switch_13</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">BRICK</span> <span class="n">SimpleSwitch13</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPSwitchFeatures</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">BRICK</span> <span class="n">ofp_event</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPSwitchFeatures</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleSwitch13&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;config&#39;</span><span class="p">])}</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPPacketIn</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleSwitch13&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;main&#39;</span><span class="p">])}</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPErrorMsg</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPHello</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPEchoRequest</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPortDescStatsReply</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;</span><span class="n">eventlet</span><span class="o">.</span><span class="n">greenio</span><span class="o">.</span><span class="n">GreenSocket</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2e2c050</span><span class="o">&gt;</span> <span class="n">address</span><span class="p">:(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">53937</span><span class="p">)</span>
+<span class="n">hello</span> <span class="n">ev</span> <span class="o">&lt;</span><span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2e2a550</span><span class="o">&gt;</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">config</span> <span class="n">mode</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitch13</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">switch</span> <span class="n">features</span> <span class="n">ev</span> <span class="n">version</span><span class="p">:</span> <span class="mh">0x4</span> <span class="n">msg_type</span> <span class="mh">0x6</span> <span class="n">xid</span> <span class="mh">0xff9ad15b</span> <span class="n">OFPSwitchFeatures</span><span class="p">(</span><span class="n">auxiliary_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">capabilities</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span><span class="n">datapath_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n_buffers</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span><span class="n">n_tables</span><span class="o">=</span><span class="mi">254</span><span class="p">)</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
 </pre></div>
 </div>
 <p>正在進行 OVS 的連接動作，這需要花一點時間。</p>
-<div class="console highlight-python"><div class="highlight"><pre>connected socket:&lt;....
-hello ev ...
-...
-move onto main mode
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;....</span>
+<span class="n">hello</span> <span class="n">ev</span> <span class="o">...</span>
+<span class="o">...</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
 </pre></div>
 </div>
 <p>完成之後就會顯示上述的訊息。</p>
 <p>現在OVS已經連接，handshake 已經執行完畢，Table-miss Flow Entry 已經加入，正處於等待 Packet-In 的狀態。</p>
 <p>確認 Table-miss Flow Entry 已經被加入。</p>
 <p>switch: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=105.975s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:65535
-root@ryu-vm:~#
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">105.975</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>優先權為 0，沒有 matcth，action  為 CONTROLLER，重送的資料大小為 65535 (0xffff = OFPCML_NO_BUFFER ）。</p>
 </div>
 <div class="section" id="id7">
-<h3>確認操作<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<h3>確認操作<a class="headerlink" href="#id7" title="本標題的永久連結">¶</a></h3>
 <p>從 host 1 向 host 2 發送 ping。</p>
 <ol class="arabic">
 <li><p class="first">ARP request</p>
@@ -899,43 +899,43 @@ root@ryu-vm:~#
 <p>原則上動作流程應該如同描述一般。</p>
 <p>在 ping 命令執行之前，為了確認每一台 host 都可以收到，執行 tcpdump 以確認封包有確實被接收。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h1-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h1-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h2-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h2-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h2</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h3-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h3-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h3</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
 </pre></div>
 </div>
 <p>然後，在終端機執行 mn 命令，並從 host 1 發送 ping 到 host 2。</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c1 h2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=97.5 ms
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c1</span> <span class="n">h2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">97.5</span> <span class="n">ms</span>
 
---- 10.0.0.2 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 97.594/97.594/97.594/0.000 ms
-mininet&gt;
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">1</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">1</span> <span class="n">received</span><span class="p">,</span> <span class="mi">0</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">0</span><span class="n">ms</span>
+<span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">97.594</span><span class="o">/</span><span class="mf">97.594</span><span class="o">/</span><span class="mf">97.594</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
+<span class="n">mininet</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>ICMP echo reply 正常的被回覆。</p>
 <p>繼續下去之前先確認 Flow table。</p>
 <p>switch: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=417.838s, table=0, n_packets=3, n_bytes=182, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=48.444s, table=0, n_packets=2, n_bytes=140, priority=1,in_port=2,dl_dst=00:00:00:00:00:01 actions=output:1
- cookie=0x0, duration=48.402s, table=0, n_packets=1, n_bytes=42, priority=1,in_port=1,dl_dst=00:00:00:00:00:02 actions=output:2
-root@ryu-vm:~#
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">417.838</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">182</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">48.444</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">140</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">1</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">48.402</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>Table-miss Flow Entry 以外，另外加入兩個優先權為 1 的 Flow Entry。</p>
@@ -950,12 +950,12 @@ actions:host 2 轉送</li>
 (2) 是用來從 host 1 向 host 2 發送訊息，由於 ARP request 是採用廣播的方式，原則上透過 ICMP echo request 完成。</p>
 <p>然後檢查一下 simple_switch_13 log 的輸出。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;SimpleSwitch13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
-EVENT ofp_event-&gt;SimpleSwitch13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
-EVENT ofp_event-&gt;SimpleSwitch13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitch13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span> <span class="mi">1</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitch13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitch13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>第一個 Packet-In 是由 host 1 發送的 ARP request ，因為透過廣播的方式所以沒有 Flow Entry 存在，故發送 Packet-Out 。</p>
@@ -964,41 +964,41 @@ packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
 <p>host 2 向 host 1 回覆的 ICMP echo reply 則會和 Flow Entry (1) 發生 match，故直接轉送封包至 host 1 而不需要發送 Packet-In。</p>
 <p>最後讓我們看看每一個 host 上的 tcpdump 所呈現的結果。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h1-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-20:38:04.625473 00:00:00:00:00:01 &gt; ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
-20:38:04.678698 00:00:00:00:00:02 &gt; 00:00:00:00:00:01, ethertype ARP (0x0806), length 42: Reply 10.0.0.2 is-at 00:00:00:00:00:02, length 28
-20:38:04.678731 00:00:00:00:00:01 &gt; 00:00:00:00:00:02, ethertype IPv4 (0x0800), length 98: 10.0.0.1 &gt; 10.0.0.2: ICMP echo request, id 3940, seq 1, length 64
-20:38:04.722973 00:00:00:00:00:02 &gt; 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 &gt; 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h1-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.625473</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">&gt;</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">ARP</span> <span class="p">(</span><span class="mh">0x0806</span><span class="p">),</span> <span class="n">length</span> <span class="mi">42</span><span class="p">:</span> <span class="n">Request</span> <span class="n">who</span><span class="o">-</span><span class="n">has</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">tell</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">28</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.678698</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">ARP</span> <span class="p">(</span><span class="mh">0x0806</span><span class="p">),</span> <span class="n">length</span> <span class="mi">42</span><span class="p">:</span> <span class="n">Reply</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="ow">is</span><span class="o">-</span><span class="n">at</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span> <span class="n">length</span> <span class="mi">28</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.678731</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">IPv4</span> <span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">length</span> <span class="mi">98</span><span class="p">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">&gt;</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">ICMP</span> <span class="n">echo</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span> <span class="mi">3940</span><span class="p">,</span> <span class="n">seq</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">64</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.722973</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">IPv4</span> <span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">length</span> <span class="mi">98</span><span class="p">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="o">&gt;</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">ICMP</span> <span class="n">echo</span> <span class="n">reply</span><span class="p">,</span> <span class="nb">id</span> <span class="mi">3940</span><span class="p">,</span> <span class="n">seq</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">64</span>
 </pre></div>
 </div>
 <p>host 1 首先發送廣播 ARP request 封包，接著接收到 host 2 送來的 ARP reply 回覆。
 接著 host 1 發送 ICMP echo request，host 2 則回覆 ICMP echo reply 。</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h2-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-20:38:04.637987 00:00:00:00:00:01 &gt; ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
-20:38:04.638059 00:00:00:00:00:02 &gt; 00:00:00:00:00:01, ethertype ARP (0x0806), length 42: Reply 10.0.0.2 is-at 00:00:00:00:00:02, length 28
-20:38:04.722601 00:00:00:00:00:01 &gt; 00:00:00:00:00:02, ethertype IPv4 (0x0800), length 98: 10.0.0.1 &gt; 10.0.0.2: ICMP echo request, id 3940, seq 1, length 64
-20:38:04.722747 00:00:00:00:00:02 &gt; 00:00:00:00:00:01, ethertype IPv4 (0x0800), length 98: 10.0.0.2 &gt; 10.0.0.1: ICMP echo reply, id 3940, seq 1, length 64
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h2-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h2</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.637987</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">&gt;</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">ARP</span> <span class="p">(</span><span class="mh">0x0806</span><span class="p">),</span> <span class="n">length</span> <span class="mi">42</span><span class="p">:</span> <span class="n">Request</span> <span class="n">who</span><span class="o">-</span><span class="n">has</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">tell</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">28</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.638059</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">ARP</span> <span class="p">(</span><span class="mh">0x0806</span><span class="p">),</span> <span class="n">length</span> <span class="mi">42</span><span class="p">:</span> <span class="n">Reply</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="ow">is</span><span class="o">-</span><span class="n">at</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span> <span class="n">length</span> <span class="mi">28</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.722601</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">IPv4</span> <span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">length</span> <span class="mi">98</span><span class="p">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">&gt;</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">ICMP</span> <span class="n">echo</span> <span class="n">request</span><span class="p">,</span> <span class="nb">id</span> <span class="mi">3940</span><span class="p">,</span> <span class="n">seq</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">64</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.722747</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="o">&gt;</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">IPv4</span> <span class="p">(</span><span class="mh">0x0800</span><span class="p">),</span> <span class="n">length</span> <span class="mi">98</span><span class="p">:</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="o">&gt;</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">ICMP</span> <span class="n">echo</span> <span class="n">reply</span><span class="p">,</span> <span class="nb">id</span> <span class="mi">3940</span><span class="p">,</span> <span class="n">seq</span> <span class="mi">1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">64</span>
 </pre></div>
 </div>
 <p>對於 host 2 則是接收 host 1 發送的 ARP request 封包，接著對 host 1 發送 ARP reply 回覆。
 然後接收到 host 1 來的 ICMP echo request ，回覆 host 1 echo reply。</p>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# tcpdump -en -i h3-eth0
-tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
-20:38:04.637954 00:00:00:00:00:01 &gt; ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -en -i h3-eth0</span>
+<span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
+<span class="n">listening</span> <span class="n">on</span> <span class="n">h3</span><span class="o">-</span><span class="n">eth0</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
+<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mf">04.637954</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="o">&gt;</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">,</span> <span class="n">ethertype</span> <span class="n">ARP</span> <span class="p">(</span><span class="mh">0x0806</span><span class="p">),</span> <span class="n">length</span> <span class="mi">42</span><span class="p">:</span> <span class="n">Request</span> <span class="n">who</span><span class="o">-</span><span class="n">has</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">tell</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">length</span> <span class="mi">28</span>
 </pre></div>
 </div>
 <p>對 host 3 而言，僅有一開始接收到 host 1 的廣播 ARP request ，未做其他動作。</p>
 </div>
 </div>
 <div class="section" id="id8">
-<h2>本章總結<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<h2>本章總結<a class="headerlink" href="#id8" title="本標題的永久連結">¶</a></h2>
 <p>本章以簡單的交換器安裝為題，透過 Ryu 應用程式的基本安裝步驟和 OpenFlow 交換器的簡單操作方法進行說明。</p>
 </div>
 </div>
@@ -1007,9 +1007,9 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">內容目錄</a></h3>
+  <h3><a href="index.html">目錄</a></h3>
   <ul>
 <li><a class="reference internal" href="#">交換器（ Switching Hub ）</a><ul>
 <li><a class="reference internal" href="#id1">Switching Hub</a></li>
@@ -1044,29 +1044,28 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
   <h4>下一個主題</h4>
   <p class="topless"><a href="traffic_monitor.html"
                         title="下一章">流量監控（ Traffic Monitor ）</a></p>
-  <h3>本頁</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/switching_hub.txt"
-           rel="nofollow">顯示原始碼</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>本頁</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/switching_hub.txt"
+            rel="nofollow">顯示原始碼</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>快速搜尋</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="前往" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1078,12 +1077,12 @@ listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
         <li class="right" >
           <a href="preface.html" title="前言"
              >上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &copy; 版權所有 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
     </div>
   </body>
 </html>

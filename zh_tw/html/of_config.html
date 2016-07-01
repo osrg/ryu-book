@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_TW">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>OF-Config 函式庫 &mdash; Ryubook 1.0 documentation</title>
+    <title>OF-Config 函式庫 &mdash; Ryubook 1.0 說明文件</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="top" title="Ryubook 1.0 說明文件" href="index.html" />
     <link rel="next" title="防火牆（ Firewall ）" href="rest_firewall.html" />
     <link rel="prev" title="封包函式庫" href="packet_lib.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,27 +41,27 @@
         <li class="right" >
           <a href="packet_lib.html" title="封包函式庫"
              accesskey="P">上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="of-config">
-<h1>OF-Config 函式庫<a class="headerlink" href="#of-config" title="Permalink to this headline">¶</a></h1>
+<h1>OF-Config 函式庫<a class="headerlink" href="#of-config" title="本標題的永久連結">¶</a></h1>
 <p>本章將介紹 Ryu 內建的 OF-Config 客戶端函式庫。</p>
 <div class="section" id="id1">
-<h2>OF-Config 通訊協定<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>OF-Config 通訊協定<a class="headerlink" href="#id1" title="本標題的永久連結">¶</a></h2>
 <p>OF-Config 是用來管理 OpenFlow 交換器的一個通訊協定。
 OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可以對邏輯交換器的通訊埠（ Port ）和佇列（ Queue ）進行設定以及資料擷取。</p>
 <p>OF-Config 是被同樣制訂 OpenFlow 的 ONF（ Open Network Foundation ）所研擬，請參考下列資料以取得更詳盡的資訊。</p>
 <p><a class="reference external" href="https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config">https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config</a></p>
 <p>Ryu 提供的函式庫完全相容于 OF-Config 1.1.1 版本</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p>目前 Open vSwitch 並不支援 OF-Config，僅提供 OVSDB 作為替代使用。
 由於 OF-Config 還算是比較新的規格，因此 Open vSwitch 的 OVSDB 並不實作 OF-Config。</p>
 <p class="last">OVSDB 通訊協定雖然公開規範在 RFC 7047 作為標準，但事實上目前僅作為 Open vSwitch 專用的通訊協定。
@@ -69,85 +69,85 @@ OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可�
 </div>
 </div>
 <div class="section" id="id2">
-<h2>函式庫架構<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<h2>函式庫架構<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h2>
 <div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch-class">
-<h3>ryu.lib.of_config.capable_switch.OFCapableSwitch Class<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch-class" title="Permalink to this headline">¶</a></h3>
+<h3>ryu.lib.of_config.capable_switch.OFCapableSwitch Class<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch-class" title="本標題的永久連結">¶</a></h3>
 <p>本 Class 主要用來處理 NETCONF 會話（ Session ）。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="kn">import</span> <span class="n">OFCapableSwitch</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="k">import</span> <span class="n">OFCapableSwitch</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="ryu-lib-of-config-classes-module">
-<h3>ryu.lib.of_config.classes 模組（ Module ）<a class="headerlink" href="#ryu-lib-of-config-classes-module" title="Permalink to this headline">¶</a></h3>
+<h3>ryu.lib.of_config.classes 模組（ Module ）<a class="headerlink" href="#ryu-lib-of-config-classes-module" title="本標題的永久連結">¶</a></h3>
 <p>本模組用來將協定相關的設定對應至 Python 物件。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p>類別名稱基本上遵照 OF-Config 1.1.1 中 yang specification 的 Grouping 關鍵字名稱來命名。</p>
 <p class="last">例如：OFPortType</p>
 </div>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="kn">as</span> <span class="nn">ofc</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="k">as</span> <span class="nn">ofc</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="id3">
-<h2>使用範例<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<h2>使用範例<a class="headerlink" href="#id3" title="本標題的永久連結">¶</a></h2>
 <div class="section" id="id4">
-<h3>交換器的連結<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h3>交換器的連結<a class="headerlink" href="#id4" title="本標題的永久連結">¶</a></h3>
 <p>使用 SSH Transport 連線到交換器。
 回呼（ callback ）函式 unknown_host_cb 是用來對應未知的 SSH Host Key 時所被執行的函式。
 下面的範例中我們使用無條件信任對方並繼續進行連結。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
-    <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
     <span class="n">port</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span>
-    <span class="n">username</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
-    <span class="n">password</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
-    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">username</span><span class="o">=</span><span class="s1">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s1">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="get">
-<h3>GET<a class="headerlink" href="#get" title="Permalink to this headline">¶</a></h3>
+<h3>GET<a class="headerlink" href="#get" title="本標題的永久連結">¶</a></h3>
 <p>使用 NETCONF GET 來取得交換器的狀態。
 下面的範例將會用
 /resources/port/resource-id 和 /resources/port/current-rate 表示所有連接埠的狀態。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
+    <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="get-config">
-<h3>GET-CONFIG<a class="headerlink" href="#get-config" title="Permalink to this headline">¶</a></h3>
+<h3>GET-CONFIG<a class="headerlink" href="#get-config" title="本標題的永久連結">¶</a></h3>
 <p>下面的範例是使用 NETCONF GET-CONFIG 來取得目前的交換器設定值。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">running 用來表示現在儲存在 NETCONF 中目前的設定狀態。
 但這跟交換器的實作有關，或者你也可以儲存相關設定在 startup（ 設備啟動時 ）或 candidate（ Candidate set ）。</p>
 </div>
 <p>其結果會使用
 /resources/port/resource-id 和
 /resources/port/configuration/admin-state 表示所有連接埠的狀態。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
+    <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="edit-config">
-<h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="Permalink to this headline">¶</a></h3>
+<h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="本標題的永久連結">¶</a></h3>
 <p>這個範例說明如何使用 NETCONF EDIT-CONFIG 來對設定進行變更。
 首先使用 GET-CONFIG 取得交換器的設定，進行相關的編輯動作，最後使用 EDIT-CONFIG 將變更傳送至交換器。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">另外也可以使用 EDIT-CONFIG 直接修改部分的設定，這樣做將更為安全。</p>
 </div>
 <p>將全部的連接埠狀態在
 /resources/port/configuration/admin-state 中設定為 down。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
-<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s1">&#39;down&#39;</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -158,9 +158,9 @@ OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可�
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">內容目錄</a></h3>
+  <h3><a href="index.html">目錄</a></h3>
   <ul>
 <li><a class="reference internal" href="#">OF-Config 函式庫</a><ul>
 <li><a class="reference internal" href="#id1">OF-Config 通訊協定</a></li>
@@ -186,29 +186,28 @@ OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可�
   <h4>下一個主題</h4>
   <p class="topless"><a href="rest_firewall.html"
                         title="下一章">防火牆（ Firewall ）</a></p>
-  <h3>本頁</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/of_config.txt"
-           rel="nofollow">顯示原始碼</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>本頁</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/of_config.txt"
+            rel="nofollow">顯示原始碼</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>快速搜尋</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="前往" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -220,12 +219,12 @@ OF-Config 通訊協定被定義在 NETCONF（ RFC 6241 ）的標準中，它可�
         <li class="right" >
           <a href="packet_lib.html" title="封包函式庫"
              >上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &copy; 版權所有 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
     </div>
   </body>
 </html>

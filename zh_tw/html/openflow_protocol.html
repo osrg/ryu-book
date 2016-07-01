@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_TW">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>OpenFlow 通訊協定 &mdash; Ryubook 1.0 documentation</title>
+    <title>OpenFlow 通訊協定 &mdash; Ryubook 1.0 說明文件</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="top" title="Ryubook 1.0 說明文件" href="index.html" />
     <link rel="next" title="ofproto 函式庫" href="ofproto_lib.html" />
     <link rel="prev" title="生成樹（ Spanning Tree ）" href="spanning_tree.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,20 +41,20 @@
         <li class="right" >
           <a href="spanning_tree.html" title="生成樹（ Spanning Tree ）"
              accesskey="P">上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="openflow">
-<span id="ch-openflow-protocol"></span><h1>OpenFlow 通訊協定<a class="headerlink" href="#openflow" title="Permalink to this headline">¶</a></h1>
+<span id="ch-openflow-protocol"></span><h1>OpenFlow 通訊協定<a class="headerlink" href="#openflow" title="本標題的永久連結">¶</a></h1>
 <p>本章將描述 Match、Instructions 和 Action 在 OpenFlow 協定中的細節。</p>
 <div class="section" id="match">
-<h2>Match<a class="headerlink" href="#match" title="Permalink to this headline">¶</a></h2>
+<h2>Match<a class="headerlink" href="#match" title="本標題的永久連結">¶</a></h2>
 <p>有許多種類的指定條件可以用在 Match ，隨著 OpenFlow 版本的持續更新，數量也在持續增加中。
 在 OpenFlow 1.0 時僅有 12 種，OpenFlow 1.3 時數量就來到約 40 種。</p>
 <p>若想要了解每個指令的細節，請參考 OpenFlow 規格書。本章僅簡要列出 OpenFlow 1.3 的 Match 指令。</p>
@@ -194,7 +194,7 @@
 <p>可以針對 MAC 位址或 IP 位址，透過 Mask 來指定 field。</p>
 </div>
 <div class="section" id="instruction">
-<h2>Instruction<a class="headerlink" href="#instruction" title="Permalink to this headline">¶</a></h2>
+<h2>Instruction<a class="headerlink" href="#instruction" title="本標題的永久連結">¶</a></h2>
 <p>Instruction 是用來定義當封包滿足所規範的 Match 條件時，需要執行的動作。
 下面列出相關的定義。</p>
 <table border="1" class="docutils">
@@ -236,21 +236,21 @@
 </table>
 <p>以下的類別是對應各個 Instruction 的 Ryu 實作。</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">OFPInstructionGotoTable</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">OFPInstructionWriteMetadata</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">OFPInstructionActions</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">OFPInstructionMeter</span></tt></li>
+<li><code class="docutils literal"><span class="pre">OFPInstructionGotoTable</span></code></li>
+<li><code class="docutils literal"><span class="pre">OFPInstructionWriteMetadata</span></code></li>
+<li><code class="docutils literal"><span class="pre">OFPInstructionActions</span></code></li>
+<li><code class="docutils literal"><span class="pre">OFPInstructionMeter</span></code></li>
 </ul>
 <p>Write/Apply/Clear Actions 已經包含在 OPFInstructionActions 中，可以在安裝的時候進行選取。</p>
 <div class="admonition note">
-<p class="first admonition-title">註解</p>
+<p class="first admonition-title">備註</p>
 <p class="last">Write Actions 雖然在規格中被列為必要，但是目前的 Open vSwitch 並不支援該功能。
 Apply Actions 是目前 Open vSwitch 所提供的功能，所以可以用來替代 Write Actions。
 Write Actions 預計在 Open vSwitch 2.1.0 中支援。</p>
 </div>
 </div>
 <div class="section" id="action">
-<h2>Action<a class="headerlink" href="#action" title="Permalink to this headline">¶</a></h2>
+<h2>Action<a class="headerlink" href="#action" title="本標題的永久連結">¶</a></h2>
 <p>OFPActionOutput Class 是用來轉送指定封包，其中包含 Packet-Out 和 Flow Mod。
 設定好要傳送的最大封包容量（max_len）和要傳送的 Controller 目的地做為 Constructor 的參數。
 對於設定目的地，除了實體連接埠號之外還有一些其他的值可以進行定義。</p>
@@ -293,7 +293,7 @@ Write Actions 預計在 Open vSwitch 2.1.0 中支援。</p>
 </tbody>
 </table>
 <p>當指定 max_len 為 0 時，Binary data 將不會被加在 Packet-In 的訊息中。
-當 <tt class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></tt> 被指定時，所有的封包將會加入 Packet-In 訊息中而不會暫存在 OpenFlow 交換器。</p>
+當 <code class="docutils literal"><span class="pre">OFPCML_NO_BUFFER</span></code> 被指定時，所有的封包將會加入 Packet-In 訊息中而不會暫存在 OpenFlow 交換器。</p>
 </div>
 </div>
 
@@ -301,9 +301,9 @@ Write Actions 預計在 Open vSwitch 2.1.0 中支援。</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">內容目錄</a></h3>
+  <h3><a href="index.html">目錄</a></h3>
   <ul>
 <li><a class="reference internal" href="#">OpenFlow 通訊協定</a><ul>
 <li><a class="reference internal" href="#match">Match</a></li>
@@ -319,29 +319,28 @@ Write Actions 預計在 Open vSwitch 2.1.0 中支援。</p>
   <h4>下一個主題</h4>
   <p class="topless"><a href="ofproto_lib.html"
                         title="下一章">ofproto 函式庫</a></p>
-  <h3>本頁</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/openflow_protocol.txt"
-           rel="nofollow">顯示原始碼</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>本頁</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/openflow_protocol.txt"
+            rel="nofollow">顯示原始碼</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>快速搜尋</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="前往" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -353,12 +352,12 @@ Write Actions 預計在 Open vSwitch 2.1.0 中支援。</p>
         <li class="right" >
           <a href="spanning_tree.html" title="生成樹（ Spanning Tree ）"
              >上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &copy; 版權所有 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
     </div>
   </body>
 </html>

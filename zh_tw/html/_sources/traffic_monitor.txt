@@ -56,7 +56,7 @@
     # ...
 
 
-在 ``ryu.lib.hub`` 中實作了一些 eventlet wrapper 和基本的類別。這裡我們使用 ``hub.spawn()`` 建立執行緒。但實際上是使用 evernlet 的 green 執行緒。
+在 ``ryu.lib.hub`` 中實作了一些 eventlet wrapper 和基本的類別。這裡我們使用 ``hub.spawn()`` 建立執行緒。但實際上是使用 eventlet 的 green 執行緒。
 
 
 .. rst-class:: sourcecode

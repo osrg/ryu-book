@@ -750,9 +750,9 @@ ryu/tests/switch/run_mininet.py 建立測試環境的腳本
     \                                                                           (接受到錯誤的封包)
     Receiving timeout: [detail]                                                 封包接收錯誤
     \                                                                           (作業逾時)
-    Faild to send packet: barrier request timeout.                              封包傳送失敗
+    Failed to send packet: barrier request timeout.                              封包傳送失敗
     \                                                                           (Barrier Request 作業逾時)
-    Faild to send packet: [err_msg]                                             封包傳送失敗
+    Failed to send packet: [err_msg]                                             封包傳送失敗
     \                                                                           (Packet-Out 的錯誤訊息)
     Table-miss error: increment in matched_count.                               table-miss 錯誤
     \                                                                           (match flow)

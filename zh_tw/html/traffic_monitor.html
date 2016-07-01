@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh_TW">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>流量監控（ Traffic Monitor ） &mdash; Ryubook 1.0 documentation</title>
+    <title>流量監控（ Traffic Monitor ） &mdash; Ryubook 1.0 說明文件</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -24,12 +24,12 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/translations.js"></script>
-    <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
+    <link rel="top" title="Ryubook 1.0 說明文件" href="index.html" />
     <link rel="next" title="REST API" href="rest_api.html" />
     <link rel="prev" title="交換器（ Switching Hub ）" href="switching_hub.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,35 +41,35 @@
         <li class="right" >
           <a href="switching_hub.html" title="交換器（ Switching Hub ）"
              accesskey="P">上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="traffic-monitor">
-<span id="ch-traffic-monitor"></span><h1>流量監控（ Traffic Monitor ）<a class="headerlink" href="#traffic-monitor" title="Permalink to this headline">¶</a></h1>
-<p>本章針對 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」 提到的 OpenFlow 交換器加入流量監控的功能。</p>
+<span id="ch-traffic-monitor"></span><h1>流量監控（ Traffic Monitor ）<a class="headerlink" href="#traffic-monitor" title="本標題的永久連結">¶</a></h1>
+<p>本章針對 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」 提到的 OpenFlow 交換器加入流量監控的功能。</p>
 <div class="section" id="id1">
-<h2>定期檢查網路狀態<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>定期檢查網路狀態<a class="headerlink" href="#id1" title="本標題的永久連結">¶</a></h2>
 <p>網路已經成為許多服務或業務的基礎建設，所以維護一個穩定的網路環境是必要的。但是網路問題總是不斷地發生。</p>
 <p>網路發生異常的時候，必須快速的找到原因，並且儘速恢復原狀。
 這不需要多說，正在閱讀本書的人都知道，找出網路的錯誤、發現真正的原因需要清楚地知道網路的狀態。例如：假設網路中特定的連接埠正處於高流量的狀態，不論是因為他是一個不正常的狀態或是任何原因導致，變成一個由於沒有持續監控所發生的問題。</p>
 <p>因此，為了網路的安全以及業務的正常運作，持續注意網路的健康狀況是最基本的工作。當然，網路流量的監視並不能夠保證不會發生任何問題。本章將說明如何使用 OpenFlow 來取得相關的統計資訊。</p>
 </div>
 <div class="section" id="id2">
-<h2>安裝 Traffic Monitor<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<p>接著說明如何在 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」 中提到的交換器中加入流量監控的功能。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
+<h2>安裝 Traffic Monitor<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h2>
+<p>接著說明如何在 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」 中提到的交換器中加入流量監控的功能。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
-<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">hub</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">hub</span>
 
 
 <span class="k">class</span> <span class="nc">SimpleMonitor</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
@@ -85,21 +85,21 @@
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
         <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">MAIN_DISPATCHER</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;register datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;register datapath: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
         <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_request_stats</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
             <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_request_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;send stats request: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;send stats request: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
@@ -113,18 +113,18 @@
     <span class="k">def</span> <span class="nf">_flow_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
         <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;datapath         &#39;</span>
-                         <span class="s">&#39;in-port  eth-dst           &#39;</span>
-                         <span class="s">&#39;out-port packets  bytes&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;---------------- &#39;</span>
-                         <span class="s">&#39;-------- ----------------- &#39;</span>
-                         <span class="s">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;datapath         &#39;</span>
+                         <span class="s1">&#39;in-port  eth-dst           &#39;</span>
+                         <span class="s1">&#39;out-port packets  bytes&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---------------- &#39;</span>
+                         <span class="s1">&#39;-------- ----------------- &#39;</span>
+                         <span class="s1">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">flow</span> <span class="k">for</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">body</span> <span class="k">if</span> <span class="n">flow</span><span class="o">.</span><span class="n">priority</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span>
-                           <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">flow</span><span class="p">:</span> <span class="p">(</span><span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">],</span>
-                                             <span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_dst&#39;</span><span class="p">])):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%016x</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%17s</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s">&#39;</span><span class="p">,</span>
+                           <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">flow</span><span class="p">:</span> <span class="p">(</span><span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">],</span>
+                                             <span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;eth_dst&#39;</span><span class="p">])):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%016x</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%17s</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1">&#39;</span><span class="p">,</span>
                              <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                             <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">],</span> <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_dst&#39;</span><span class="p">],</span>
+                             <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">],</span> <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;eth_dst&#39;</span><span class="p">],</span>
                              <span class="n">stat</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
                              <span class="n">stat</span><span class="o">.</span><span class="n">packet_count</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">byte_count</span><span class="p">)</span>
 
@@ -132,14 +132,14 @@
     <span class="k">def</span> <span class="nf">_port_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
         <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;datapath         port     &#39;</span>
-                         <span class="s">&#39;rx-pkts  rx-bytes rx-error &#39;</span>
-                         <span class="s">&#39;tx-pkts  tx-bytes tx-error&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;---------------- -------- &#39;</span>
-                         <span class="s">&#39;-------- -------- -------- &#39;</span>
-                         <span class="s">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s">&#39;port_no&#39;</span><span class="p">)):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%016x</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s">&#39;</span><span class="p">,</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;datapath         port     &#39;</span>
+                         <span class="s1">&#39;rx-pkts  rx-bytes rx-error &#39;</span>
+                         <span class="s1">&#39;tx-pkts  tx-bytes tx-error&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---------------- -------- &#39;</span>
+                         <span class="s1">&#39;-------- -------- -------- &#39;</span>
+                         <span class="s1">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;port_no&#39;</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%016x</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1">&#39;</span><span class="p">,</span> 
                              <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
                              <span class="n">stat</span><span class="o">.</span><span class="n">rx_packets</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">rx_bytes</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">rx_errors</span><span class="p">,</span>
                              <span class="n">stat</span><span class="o">.</span><span class="n">tx_packets</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_bytes</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_errors</span><span class="p">)</span>
@@ -147,15 +147,15 @@
 </div>
 <p>事實上，流量監控功能已經被實作在 SimpleMonitor 類別中並繼承自 SimpleSwitch13 ，所以這邊已經沒有轉送相關的處理功能了。</p>
 <div class="section" id="id3">
-<h3>固定週期處理<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>固定週期處理<a class="headerlink" href="#id3" title="本標題的永久連結">¶</a></h3>
 <p>透過 Switching Hub 的平行處理，建立一個執行緒並定期的向交換器發出要求以取得統計的資料。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">attrgetter</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
-<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">hub</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">hub</span>
 
 <span class="k">class</span> <span class="nc">SimpleMonitor</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
@@ -164,11 +164,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monitor_thread</span> <span class="o">=</span> <span class="n">hub</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_monitor</span><span class="p">)</span>
 
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
-<p>在 <tt class="docutils literal"><span class="pre">ryu.lib.hub</span></tt> 中實作了一些 eventlet wrapper 和基本的類別。這裡我們使用 <tt class="docutils literal"><span class="pre">hub.spawn()</span></tt> 建立執行緒。但實際上是使用 evernlet 的 green 執行緒。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<p>在 <code class="docutils literal"><span class="pre">ryu.lib.hub</span></code> 中實作了一些 eventlet wrapper 和基本的類別。這裡我們使用 <code class="docutils literal"><span class="pre">hub.spawn()</span></code> 建立執行緒。但實際上是使用 eventlet 的 green 執行緒。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">,</span>
             <span class="p">[</span><span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span><span class="p">])</span>
@@ -176,29 +176,29 @@
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
     <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">MAIN_DISPATCHER</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;register datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;register datapath: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">datapath</span>
     <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">DEAD_DISPATCHER</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;unregister datapath: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datapaths</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_request_stats</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
         <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
-<p>在執行緒中 <tt class="docutils literal"><span class="pre">_monitor()</span></tt> 方法確保了執行緒可以在每 10 秒的間隔中，不斷地向註冊的交換器發送要求以取得統計資訊。</p>
-<p>為了確認連線中的交換器都可以被持續監控， <tt class="docutils literal"><span class="pre">EventOFPStateChange</span></tt> 就可以用來監測交換器的連線中斷。這個事件偵測是 Ryu 框架所提供的功能，會被觸發在 Datapath 的狀態改變時。</p>
-<p>當 Datapath 的狀態變成 <tt class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></tt> 時，代表交換器已經註冊並正處於被監視的狀態。而狀態變成  <tt class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></tt> 時代表已經從註冊狀態解除。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<p>在執行緒中 <code class="docutils literal"><span class="pre">_monitor()</span></code> 方法確保了執行緒可以在每 10 秒的間隔中，不斷地向註冊的交換器發送要求以取得統計資訊。</p>
+<p>為了確認連線中的交換器都可以被持續監控， <code class="docutils literal"><span class="pre">EventOFPStateChange</span></code> 就可以用來監測交換器的連線中斷。這個事件偵測是 Ryu 框架所提供的功能，會被觸發在 Datapath 的狀態改變時。</p>
+<p>當 Datapath 的狀態變成 <code class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></code> 時，代表交換器已經註冊並正處於被監視的狀態。而狀態變成  <code class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></code> 時代表已經從註冊狀態解除。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 
 <span class="k">def</span> <span class="nf">_request_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;send stats request: </span><span class="si">%016x</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;send stats request: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
@@ -208,263 +208,263 @@
     <span class="n">req</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPortStatsRequest</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">)</span>
     <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
 
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
-<p>定期呼叫 <tt class="docutils literal"><span class="pre">_request_stats()</span></tt> 以驅動 <tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt> 和 <tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt> 對交換器發出訊息。</p>
-<p><tt class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></tt> 主要用來對交換器的 Flow Entry 取得統計的資料。
+<p>定期呼叫 <code class="docutils literal"><span class="pre">_request_stats()</span></code> 以驅動 <code class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></code> 和 <code class="docutils literal"><span class="pre">OFPPortStatsRequest</span></code> 對交換器發出訊息。</p>
+<p><code class="docutils literal"><span class="pre">OFPFlowStatsRequest</span></code> 主要用來對交換器的 Flow Entry 取得統計的資料。
 對於交換器發出的要求可以使用 table ID、output port、cookie 值和 match 條件來限縮範圍，但是這邊的例子是取得所有的 Flow Entry。</p>
-<p><tt class="docutils literal"><span class="pre">OFPPortStatsRequest</span></tt> 是用來取得關於交換器的連接埠相關資訊以及統計訊息。
-使用的時候可以指定連接埠號，這邊使用 <tt class="docutils literal"><span class="pre">OFPP_ANY</span></tt> 目的是要取得所有的連接埠統計資料。</p>
+<p><code class="docutils literal"><span class="pre">OFPPortStatsRequest</span></code> 是用來取得關於交換器的連接埠相關資訊以及統計訊息。
+使用的時候可以指定連接埠號，這邊使用 <code class="docutils literal"><span class="pre">OFPP_ANY</span></code> 目的是要取得所有的連接埠統計資料。</p>
 </div>
 <div class="section" id="flowstats">
-<h3>FlowStats<a class="headerlink" href="#flowstats" title="Permalink to this headline">¶</a></h3>
+<h3>FlowStats<a class="headerlink" href="#flowstats" title="本標題的永久連結">¶</a></h3>
 <p>為了接收來自交換器的回應，建立一個 event handler 來接受從交換器發送的 FlowStatsReply 訊息。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_flow_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;datapath         &#39;</span>
-                     <span class="s">&#39;in-port  eth-dst           &#39;</span>
-                     <span class="s">&#39;out-port packets  bytes&#39;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;---------------- &#39;</span>
-                     <span class="s">&#39;-------- ----------------- &#39;</span>
-                     <span class="s">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;datapath         &#39;</span>
+                     <span class="s1">&#39;in-port  eth-dst           &#39;</span>
+                     <span class="s1">&#39;out-port packets  bytes&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---------------- &#39;</span>
+                     <span class="s1">&#39;-------- ----------------- &#39;</span>
+                     <span class="s1">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">flow</span> <span class="k">for</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">body</span> <span class="k">if</span> <span class="n">flow</span><span class="o">.</span><span class="n">priority</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span>
-                       <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">flow</span><span class="p">:</span> <span class="p">(</span><span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">],</span>
-                                         <span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_dst&#39;</span><span class="p">])):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%016x</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%17s</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s">&#39;</span><span class="p">,</span>
+                       <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">flow</span><span class="p">:</span> <span class="p">(</span><span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">],</span>
+                                         <span class="n">flow</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;eth_dst&#39;</span><span class="p">])):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%016x</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%17s</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1">&#39;</span><span class="p">,</span>
                          <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                         <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">],</span> <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_dst&#39;</span><span class="p">],</span>
+                         <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">],</span> <span class="n">stat</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;eth_dst&#39;</span><span class="p">],</span>
                          <span class="n">stat</span><span class="o">.</span><span class="n">instructions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">actions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">port</span><span class="p">,</span>
                          <span class="n">stat</span><span class="o">.</span><span class="n">packet_count</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">byte_count</span><span class="p">)</span>
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
-<p><tt class="docutils literal"><span class="pre">OPFFlowStatsReply</span></tt> 類別的屬性 <tt class="docutils literal"><span class="pre">body</span></tt> 是 <tt class="docutils literal"><span class="pre">OFPFlowStats</span></tt> 的列表，當中儲存了每一個 Flow Entry 的統計資訊，並做為 FlowStatsRequest 的回應。</p>
+<p><code class="docutils literal"><span class="pre">OPFFlowStatsReply</span></code> 類別的屬性 <code class="docutils literal"><span class="pre">body</span></code> 是 <code class="docutils literal"><span class="pre">OFPFlowStats</span></code> 的列表，當中儲存了每一個 Flow Entry 的統計資訊，並做為 FlowStatsRequest 的回應。</p>
 <p>權限為零的 Table-miss Flow 除外的全部 Flow Entry 將會被選擇，通過並符合該 Flow Entry 的封包數和位元數統計資料將會被回傳，並以接收埠號和目的 MAC 位址的方式排序。</p>
-<p>為了持續的收集以及分析，僅有一部份的資料會被輸出到 log。因此若要進行分析，連結到外部的程式是必須的。在這樣的情況下 <tt class="docutils literal"><span class="pre">OFPFlowStatsReply</span></tt> 的內容可以被轉換成為 JSON 的格式進行輸出。</p>
+<p>為了持續的收集以及分析，僅有一部份的資料會被輸出到 log。因此若要進行分析，連結到外部的程式是必須的。在這樣的情況下 <code class="docutils literal"><span class="pre">OFPFlowStatsReply</span></code> 的內容可以被轉換成為 JSON 的格式進行輸出。</p>
 <p>可以設定如下格式</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 
-<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">to_jsondict</span><span class="p">(),</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                  <span class="n">indent</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">to_jsondict</span><span class="p">(),</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">indent</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>上述的設定將會產生結果如下</p>
-<div class="console highlight-python"><div class="highlight"><pre><span class="p">{</span>
-   <span class="s">&quot;OFPFlowStatsReply&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">{</span>
+   <span class="s2">&quot;OFPFlowStatsReply&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
          <span class="p">{</span>
-            <span class="s">&quot;OFPFlowStats&quot;</span><span class="p">:</span> <span class="p">{</span>
-               <span class="s">&quot;byte_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;cookie&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;duration_nsec&quot;</span><span class="p">:</span> <span class="mi">680000000</span><span class="p">,</span>
-               <span class="s">&quot;duration_sec&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-               <span class="s">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;hard_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;idle_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;instructions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;OFPFlowStats&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="s2">&quot;byte_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;cookie&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;duration_nsec&quot;</span><span class="p">:</span> <span class="mi">680000000</span><span class="p">,</span>
+               <span class="s2">&quot;duration_sec&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+               <span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;hard_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;idle_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="p">[</span>
                   <span class="p">{</span>
-                     <span class="s">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
                            <span class="p">{</span>
-                              <span class="s">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                 <span class="s">&quot;len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-                                 <span class="s">&quot;max_len&quot;</span><span class="p">:</span> <span class="mi">65535</span><span class="p">,</span>
-                                 <span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="mi">4294967293</span><span class="p">,</span>
-                                 <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">0</span>
+                              <span class="s2">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                 <span class="s2">&quot;len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+                                 <span class="s2">&quot;max_len&quot;</span><span class="p">:</span> <span class="mi">65535</span><span class="p">,</span>
+                                 <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">4294967293</span><span class="p">,</span>
+                                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">0</span>
                               <span class="p">}</span>
                            <span class="p">}</span>
                         <span class="p">],</span>
-                        <span class="s">&quot;len&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
-                        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
+                        <span class="s2">&quot;len&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
                      <span class="p">}</span>
                   <span class="p">}</span>
                <span class="p">],</span>
-               <span class="s">&quot;length&quot;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
-               <span class="s">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
-                  <span class="s">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
-                     <span class="s">&quot;length&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-                     <span class="s">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                     <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
+               <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+               <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="s2">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                     <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                     <span class="s2">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
                   <span class="p">}</span>
                <span class="p">},</span>
-               <span class="s">&quot;packet_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span>
+               <span class="s2">&quot;packet_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span>
             <span class="p">}</span>
          <span class="p">},</span>
          <span class="p">{</span>
-            <span class="s">&quot;OFPFlowStats&quot;</span><span class="p">:</span> <span class="p">{</span>
-               <span class="s">&quot;byte_count&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
-               <span class="s">&quot;cookie&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;duration_nsec&quot;</span><span class="p">:</span> <span class="mi">72000000</span><span class="p">,</span>
-               <span class="s">&quot;duration_sec&quot;</span><span class="p">:</span> <span class="mi">57</span><span class="p">,</span>
-               <span class="s">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;hard_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;idle_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="s">&quot;instructions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;OFPFlowStats&quot;</span><span class="p">:</span> <span class="p">{</span>
+               <span class="s2">&quot;byte_count&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
+               <span class="s2">&quot;cookie&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;duration_nsec&quot;</span><span class="p">:</span> <span class="mi">72000000</span><span class="p">,</span>
+               <span class="s2">&quot;duration_sec&quot;</span><span class="p">:</span> <span class="mi">57</span><span class="p">,</span>
+               <span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;hard_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;idle_timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+               <span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="p">[</span>
                   <span class="p">{</span>
-                     <span class="s">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+                     <span class="s2">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
                            <span class="p">{</span>
-                              <span class="s">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                 <span class="s">&quot;len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-                                 <span class="s">&quot;max_len&quot;</span><span class="p">:</span> <span class="mi">65509</span><span class="p">,</span>
-                                 <span class="s">&quot;port&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                                 <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">0</span>
+                              <span class="s2">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                 <span class="s2">&quot;len&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+                                 <span class="s2">&quot;max_len&quot;</span><span class="p">:</span> <span class="mi">65509</span><span class="p">,</span>
+                                 <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                                 <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">0</span>
                               <span class="p">}</span>
                            <span class="p">}</span>
                         <span class="p">],</span>
-                        <span class="s">&quot;len&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
-                        <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
+                        <span class="s2">&quot;len&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
                      <span class="p">}</span>
                   <span class="p">}</span>
                <span class="p">],</span>
-               <span class="s">&quot;length&quot;</span><span class="p">:</span> <span class="mi">96</span><span class="p">,</span>
-               <span class="s">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
-                  <span class="s">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
-                     <span class="s">&quot;length&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
-                     <span class="s">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">96</span><span class="p">,</span>
+               <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
+                  <span class="s2">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                     <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">,</span>
+                     <span class="s2">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[</span>
                         <span class="p">{</span>
-                           <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
-                              <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;in_port&quot;</span><span class="p">,</span>
-                              <span class="s">&quot;mask&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-                              <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                           <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                              <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;in_port&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+                              <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">2</span>
                            <span class="p">}</span>
                         <span class="p">},</span>
                         <span class="p">{</span>
-                           <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
-                              <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;eth_dst&quot;</span><span class="p">,</span>
-                              <span class="s">&quot;mask&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
-                              <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="s">&quot;00:00:00:00:00:01&quot;</span>
+                           <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                              <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;eth_dst&quot;</span><span class="p">,</span>
+                              <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+                              <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;00:00:00:00:00:01&quot;</span>
                            <span class="p">}</span>
                         <span class="p">}</span>
                      <span class="p">],</span>
-                     <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
+                     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
                   <span class="p">}</span>
                <span class="p">},</span>
-               <span class="s">&quot;packet_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-               <span class="s">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-               <span class="s">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span>
+               <span class="s2">&quot;packet_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+               <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+               <span class="s2">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span>
             <span class="p">}</span>
          <span class="p">}</span>
       <span class="p">],</span>
-      <span class="s">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-      <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
+      <span class="s2">&quot;flags&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">1</span>
    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="portstats">
-<h3>PortStats<a class="headerlink" href="#portstats" title="Permalink to this headline">¶</a></h3>
+<h3>PortStats<a class="headerlink" href="#portstats" title="本標題的永久連結">¶</a></h3>
 <p>為了接收交換器所回覆的訊息，PortStatsReply 訊息接收的事件接收處理必須要被實作。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_port_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;datapath         port     &#39;</span>
-                     <span class="s">&#39;rx-pkts  rx-bytes rx-error &#39;</span>
-                     <span class="s">&#39;tx-pkts  tx-bytes tx-error&#39;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;---------------- -------- &#39;</span>
-                     <span class="s">&#39;-------- -------- -------- &#39;</span>
-                     <span class="s">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s">&#39;port_no&#39;</span><span class="p">)):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%016x</span><span class="s"> </span><span class="si">%8x</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s"> </span><span class="si">%8d</span><span class="s">&#39;</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;datapath         port     &#39;</span>
+                     <span class="s1">&#39;rx-pkts  rx-bytes rx-error &#39;</span>
+                     <span class="s1">&#39;tx-pkts  tx-bytes tx-error&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;---------------- -------- &#39;</span>
+                     <span class="s1">&#39;-------- -------- -------- &#39;</span>
+                     <span class="s1">&#39;-------- -------- --------&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">body</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s1">&#39;port_no&#39;</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%016x</span><span class="s1"> </span><span class="si">%8x</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1"> </span><span class="si">%8d</span><span class="s1">&#39;</span><span class="p">,</span>
                          <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
                          <span class="n">stat</span><span class="o">.</span><span class="n">rx_packets</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">rx_bytes</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">rx_errors</span><span class="p">,</span>
                          <span class="n">stat</span><span class="o">.</span><span class="n">tx_packets</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_bytes</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">tx_errors</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><tt class="docutils literal"><span class="pre">OPFPortStatsReply</span></tt> 類別的屬性 <tt class="docutils literal"><span class="pre">body</span></tt> 會列出在 <tt class="docutils literal"><span class="pre">OFPPortStats</span></tt> 中的資料列表。</p>
-<p><tt class="docutils literal"><span class="pre">OFPPortStats</span></tt> 連接埠號儲存接收端的封包數量、位元數量、丟棄封包數量、錯誤數量、frame錯誤數量、overrrun數量、CRC錯誤數量、collection數量等等的統計資訊。</p>
+<p><code class="docutils literal"><span class="pre">OPFPortStatsReply</span></code> 類別的屬性 <code class="docutils literal"><span class="pre">body</span></code> 會列出在 <code class="docutils literal"><span class="pre">OFPPortStats</span></code> 中的資料列表。</p>
+<p><code class="docutils literal"><span class="pre">OFPPortStats</span></code> 連接埠號儲存接收端的封包數量、位元數量、丟棄封包數量、錯誤數量、frame錯誤數量、overrrun數量、CRC錯誤數量、collection數量等等的統計資訊。</p>
 <p>依據連接埠號的排序列出接收的封包數量、接收位元數量、接收錯誤數量、發送封包數量、發送位元數、發送錯誤數量。</p>
 </div>
 </div>
 <div class="section" id="id4">
-<h2>執行 Traffic Monitor<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<h2>執行 Traffic Monitor<a class="headerlink" href="#id4" title="本標題的永久連結">¶</a></h2>
 <p>接下來實際的執行流量監控。</p>
-<p>首先，跟「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」一樣的執行 Mininet。這邊別忘了交換器的 OpenFlow 版本設定為 OpenFlow13。</p>
+<p>首先，跟「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」一樣的執行 Mininet。這邊別忘了交換器的 OpenFlow 版本設定為 OpenFlow13。</p>
 <p>下一步，執行流量監控程式。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
-loading app ./simple_monitor.py
-loading app ryu.controller.ofp_handler
-instantiating app ./simple_monitor.py
-instantiating app ryu.controller.ofp_handler
-BRICK SimpleMonitor
-  CONSUMES EventOFPStateChange
-  CONSUMES EventOFPFlowStatsReply
-  CONSUMES EventOFPPortStatsReply
-  CONSUMES EventOFPPacketIn
-  CONSUMES EventOFPSwitchFeatures
-BRICK ofp_event
-  PROVIDES EventOFPStateChange TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;, &#39;dead&#39;])}
-  PROVIDES EventOFPFlowStatsReply TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
-  PROVIDES EventOFPPortStatsReply TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
-  PROVIDES EventOFPPacketIn TO {&#39;SimpleMonitor&#39;: set([&#39;main&#39;])}
-  PROVIDES EventOFPSwitchFeatures TO {&#39;SimpleMonitor&#39;: set([&#39;config&#39;])}
-  CONSUMES EventOFPErrorMsg
-  CONSUMES EventOFPPortDescStatsReply
-  CONSUMES EventOFPHello
-  CONSUMES EventOFPEchoRequest
-  CONSUMES EventOFPSwitchFeatures
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x343fb10&gt; address:(&#39;127.0.0.1&#39;, 55598)
-hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x343fed0&gt;
-move onto config mode
-EVENT ofp_event-&gt;SimpleMonitor EventOFPSwitchFeatures
-switch features ev version: 0x4 msg_type 0x6 xid 0x7dd2dc58 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
-move onto main mode
-EVENT ofp_event-&gt;SimpleMonitor EventOFPStateChange
-register datapath: 0000000000000001
-send stats request: 0000000000000001
-EVENT ofp_event-&gt;SimpleMonitor EventOFPFlowStatsReply
-datapath         in-port  eth-dst           out-port packets  bytes
----------------- -------- ----------------- -------- -------- --------
-EVENT ofp_event-&gt;SimpleMonitor EventOFPPortStatsReply
-datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
----------------- -------- -------- -------- -------- -------- -------- --------
-0000000000000001        1        0        0        0        0        0        0
-0000000000000001        2        0        0        0        0        0        0
-0000000000000001        3        0        0        0        0        0        0
-0000000000000001 fffffffe        0        0        0        0        0        0
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">ryu</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ./simple_monitor.py</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">BRICK</span> <span class="n">SimpleMonitor</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPStateChange</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPFlowStatsReply</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPortStatsReply</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPacketIn</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">BRICK</span> <span class="n">ofp_event</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPStateChange</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleMonitor&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;main&#39;</span><span class="p">,</span> <span class="s1">&#39;dead&#39;</span><span class="p">])}</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPFlowStatsReply</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleMonitor&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;main&#39;</span><span class="p">])}</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPPortStatsReply</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleMonitor&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;main&#39;</span><span class="p">])}</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPPacketIn</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleMonitor&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;main&#39;</span><span class="p">])}</span>
+  <span class="n">PROVIDES</span> <span class="n">EventOFPSwitchFeatures</span> <span class="n">TO</span> <span class="p">{</span><span class="s1">&#39;SimpleMonitor&#39;</span><span class="p">:</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;config&#39;</span><span class="p">])}</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPErrorMsg</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPPortDescStatsReply</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPHello</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPEchoRequest</span>
+  <span class="n">CONSUMES</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;</span><span class="n">eventlet</span><span class="o">.</span><span class="n">greenio</span><span class="o">.</span><span class="n">GreenSocket</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x343fb10</span><span class="o">&gt;</span> <span class="n">address</span><span class="p">:(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">55598</span><span class="p">)</span>
+<span class="n">hello</span> <span class="n">ev</span> <span class="o">&lt;</span><span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x343fed0</span><span class="o">&gt;</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">config</span> <span class="n">mode</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleMonitor</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">switch</span> <span class="n">features</span> <span class="n">ev</span> <span class="n">version</span><span class="p">:</span> <span class="mh">0x4</span> <span class="n">msg_type</span> <span class="mh">0x6</span> <span class="n">xid</span> <span class="mh">0x7dd2dc58</span> <span class="n">OFPSwitchFeatures</span><span class="p">(</span><span class="n">auxiliary_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">capabilities</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span><span class="n">datapath_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n_buffers</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span><span class="n">n_tables</span><span class="o">=</span><span class="mi">254</span><span class="p">)</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleMonitor</span> <span class="n">EventOFPStateChange</span>
+<span class="n">register</span> <span class="n">datapath</span><span class="p">:</span> <span class="mi">0000000000000001</span>
+<span class="n">send</span> <span class="n">stats</span> <span class="n">request</span><span class="p">:</span> <span class="mi">0000000000000001</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleMonitor</span> <span class="n">EventOFPFlowStatsReply</span>
+<span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
+<span class="o">----------------</span> <span class="o">--------</span> <span class="o">-----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleMonitor</span> <span class="n">EventOFPPortStatsReply</span>
+<span class="n">datapath</span>         <span class="n">port</span>     <span class="n">rx</span><span class="o">-</span><span class="n">pkts</span>  <span class="n">rx</span><span class="o">-</span><span class="nb">bytes</span> <span class="n">rx</span><span class="o">-</span><span class="n">error</span> <span class="n">tx</span><span class="o">-</span><span class="n">pkts</span>  <span class="n">tx</span><span class="o">-</span><span class="nb">bytes</span> <span class="n">tx</span><span class="o">-</span><span class="n">error</span>
+<span class="o">----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
+<span class="mi">0000000000000001</span>        <span class="mi">1</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span>        <span class="mi">2</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span>        <span class="mi">3</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span> <span class="n">fffffffe</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>
 </pre></div>
 </div>
-<p>在「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>交換器（ Switching Hub ）</em></a> 」中，我們使用 ryu-manager 指令來設定 SimpleSwitch13 模組名稱（ ryu.app.simple_switch_13 ）。
+<p>在「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」中，我們使用 ryu-manager 指令來設定 SimpleSwitch13 模組名稱（ ryu.app.simple_switch_13 ）。
 至於這邊則自定 SimpleMonitor 的檔案名稱（ ./simple_monitor.py ）。</p>
 <p>在這個時候 Flow Entry 是空白的（ Table-miss Flow Entry 沒有被顯示出來 ），每個連接埠的計數器也都為零。</p>
 <p>從 host 1 向 host 2 執行 ping 的指令。</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping -c1 10.0.0.2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping -c1 10.0.0.2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">94.4</span> <span class="n">ms</span>
 
---- 10.0.0.2 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
-root@ryu-vm:~#
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">1</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">1</span> <span class="n">received</span><span class="p">,</span> <span class="mi">0</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">0</span><span class="n">ms</span>
+<span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">94.489</span><span class="o">/</span><span class="mf">94.489</span><span class="o">/</span><span class="mf">94.489</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
 </pre></div>
 </div>
 <p>封包的轉送、Flow Entry 的註冊狀況，統計資料開始有了變化。</p>
 <p>controller: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>datapath         in-port  eth-dst           out-port packets  bytes
----------------- -------- ----------------- -------- -------- --------
-0000000000000001        1 00:00:00:00:00:02        2        1       42
-0000000000000001        2 00:00:00:00:00:01        1        2      140
-datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
----------------- -------- -------- -------- -------- -------- -------- --------
-0000000000000001        1        3      182        0        3      182        0
-0000000000000001        2        3      182        0        3      182        0
-0000000000000001        3        0        0        0        1       42        0
-0000000000000001 fffffffe        0        0        0        1       42        0
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
+<span class="o">----------------</span> <span class="o">--------</span> <span class="o">-----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
+<span class="mi">0000000000000001</span>        <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span>        <span class="mi">2</span>        <span class="mi">1</span>       <span class="mi">42</span>
+<span class="mi">0000000000000001</span>        <span class="mi">2</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span>        <span class="mi">1</span>        <span class="mi">2</span>      <span class="mi">140</span>
+<span class="n">datapath</span>         <span class="n">port</span>     <span class="n">rx</span><span class="o">-</span><span class="n">pkts</span>  <span class="n">rx</span><span class="o">-</span><span class="nb">bytes</span> <span class="n">rx</span><span class="o">-</span><span class="n">error</span> <span class="n">tx</span><span class="o">-</span><span class="n">pkts</span>  <span class="n">tx</span><span class="o">-</span><span class="nb">bytes</span> <span class="n">tx</span><span class="o">-</span><span class="n">error</span>
+<span class="o">----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
+<span class="mi">0000000000000001</span>        <span class="mi">1</span>        <span class="mi">3</span>      <span class="mi">182</span>        <span class="mi">0</span>        <span class="mi">3</span>      <span class="mi">182</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span>        <span class="mi">2</span>        <span class="mi">3</span>      <span class="mi">182</span>        <span class="mi">0</span>        <span class="mi">3</span>      <span class="mi">182</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span>        <span class="mi">3</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">1</span>       <span class="mi">42</span>        <span class="mi">0</span>
+<span class="mi">0000000000000001</span> <span class="n">fffffffe</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">0</span>        <span class="mi">1</span>       <span class="mi">42</span>        <span class="mi">0</span>
 </pre></div>
 </div>
 <p>Flow Entry 的統計資訊中，在接收埠 1 的 Flow match 流量訊息中，1 個封包，42 個位元組的資訊被記錄下來。接收埠 2 則是 2 個封包，140 個位元組。</p>
@@ -474,7 +474,7 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
 因此連接埠的流量會遠大於 Flow Entry 的流量。</p>
 </div>
 <div class="section" id="id5">
-<h2>本章總結<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<h2>本章總結<a class="headerlink" href="#id5" title="本標題的永久連結">¶</a></h2>
 <p>本章藉由取得統計資料做為題目，嘗試說明下列事項。</p>
 <ul class="simple">
 <li>產生 Ryu 應用程式執行緒的方法</li>
@@ -488,9 +488,9 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">內容目錄</a></h3>
+  <h3><a href="index.html">目錄</a></h3>
   <ul>
 <li><a class="reference internal" href="#">流量監控（ Traffic Monitor ）</a><ul>
 <li><a class="reference internal" href="#id1">定期檢查網路狀態</a></li>
@@ -512,29 +512,28 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
   <h4>下一個主題</h4>
   <p class="topless"><a href="rest_api.html"
                         title="下一章">REST API</a></p>
-  <h3>本頁</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/traffic_monitor.txt"
-           rel="nofollow">顯示原始碼</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>本頁</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/traffic_monitor.txt"
+            rel="nofollow">顯示原始碼</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>快速搜尋</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="前往" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>瀏覽</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -546,12 +545,12 @@ datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
         <li class="right" >
           <a href="switching_hub.html" title="交換器（ Switching Hub ）"
              >上一頁</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    <div class="footer" role="contentinfo">
+        &copy; 版權所有 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
     </div>
   </body>
 </html>
