@@ -11,7 +11,8 @@ Overview of Test Tool
 
 This tool is used to verify the status of support by OpenFlow switch for the OpenFlow specification by conducting a flow entry and a meter entry registration/packet application to the test subject OpenFlow switch according to a test pattern file and comparing the result of processing by the OpenFlow switch of packet rewriting and transfer (or discard) against the expected processing result described in the test pattern file.
 
-This tool is compatible with FlowMod message, MeterMod message and GroupMod message test of OpenFlow version 1.3 and OpenFlow version 1.4.
+Currently, the supported OpenFlow versions are OpenFlow 1.0, OpenFlow 1.3 and OpenFlow 1.4.
+And this tool is compatible with FlowMod message, GroupMod message and MeterMod message tests.
 
 
 ============================= ===================================
@@ -150,6 +151,7 @@ The test tool is available on the source tree on Ryu.
     Source code                     Explanation
     =============================== ===============================
     ryu/tests/switch/tester.py      Test tool
+    ryu/tests/switch/of10           Sample of test pattern file (For OpenFlow 1.0)
     ryu/tests/switch/of13           Sample of test pattern file (For OpenFlow 1.3)
     ryu/tests/switch/of14           Sample of test pattern file (For OpenFlow 1.4)
     ryu/tests/switch/run_mininet.py Test environment build script
@@ -176,9 +178,11 @@ Option                            Explanation                                   
 ``--test-switch-target``          Data path ID of test target switch               0000000000000001
 ``--test-switch-tester``          Data path ID of auxiliary switch                 0000000000000002
 ``--test-switch-target-version``  OpenFlow version of test target switch           openflow13
-                                  ("openflow13" or "openflow14" can be specified)
+                                  ("openflow10", "openflow13" or "openflow14"
+                                  can be specified)
 ``--test-switch-tester-version``  OpenFlow version of auxiliary switch             openflow13
-                                  ("openflow13" or "openflow14" can be specified)
+                                  ("openflow10", "openflow13" or "openflow14"
+                                  can be specified)
 ``--test-switch-dir``             Directory path of test pattern file              ryu/tests/switch/of13
 ================================= ================================================ =====================
 
@@ -206,7 +210,9 @@ The following shows the procedure of using sample test pattern (ryu/tests/switch
 
 .. NOTE::
 
-    As a sample test pattern, the source tree of Ryu offers a test pattern file for OpenFlow 1.3 and OpenFlow 1.4 to check if each parameter that can be specified in the match/actions of FlowMod message, each parameter that in MeterMod messages and each parameter that in GroupMod messages works properly or not.
+    As a sample test pattern, the source tree of Ryu offers a test pattern file for OpenFlow 1.0, OpenFlow 1.3 and OpenFlow 1.4 to check if each parameter that can be specified in the match/actions of FlowMod message, each parameter that in MeterMod messages and each parameter that in GroupMod messages works properly or not.
+
+        ryu/tests/switch/of10
 
         ryu/tests/switch/of13
 
@@ -324,7 +330,7 @@ In this procedure, the test environment is constructed using the test environmen
 """"""""""""""""""""""""""""""""""""""""""""
 
 
-    Offers the following test patterns for each version of OpenFlow 1.3 / OpenFlow 1.4.
+    Offers the following test patterns for each version of OpenFlow 1.0, OpenFlow 1.3 and OpenFlow 1.4.
 
     1. registers flow entries corresponding to each setting in the match/actions and applies multiple patterns of packets that match (or do not match) flow entries.
 
@@ -332,6 +338,33 @@ In this procedure, the test environment is constructed using the test environmen
 
     3. registers group entries for flooding (type=ALL) or selecting output port automatically by a selection algorithm (type=SELECT) and applies packets continuously that match group entries.
 
+
+    For OpenFlow 1.0:
+
+    .. rst-class:: console
+
+    ::
+
+        ryu/tests/switch/of10/action:
+        00_OUTPUT.json        06_SET_NW_SRC.json           09_SET_TP_SRC_IPv6_TCP.json
+        01_SET_VLAN_VID.json  07_SET_NW_DST.json           09_SET_TP_SRC_IPv6_UDP.json
+        02_SET_VLAN_PCP.json  08_SET_NW_TOS_IPv4.json      10_SET_TP_DST_IPv4_TCP.json
+        03_STRIP_VLAN.json    08_SET_NW_TOS_IPv6.json      10_SET_TP_DST_IPv4_UDP.json
+        04_SET_DL_SRC.json    09_SET_TP_SRC_IPv4_TCP.json  10_SET_TP_DST_IPv6_TCP.json
+        05_SET_DL_DST.json    09_SET_TP_SRC_IPv4_UDP.json  10_SET_TP_DST_IPv6_UDP.json
+
+        ryu/tests/switch/of10/match:
+        00_IN_PORT.json      07_NW_PROTO_IPv4.json    10_TP_SRC_IPv6_TCP.json
+        01_DL_SRC.json       07_NW_PROTO_IPv6.json    10_TP_SRC_IPv6_UDP.json
+        02_DL_DST.json       08_NW_SRC.json           11_TP_DST_IPv4_TCP.json
+        03_DL_VLAN.json      08_NW_SRC_Mask.json      11_TP_DST_IPv4_UDP.json
+        04_DL_VLAN_PCP.json  09_NW_DST.json           11_TP_DST_IPv6_TCP.json
+        05_DL_TYPE.json      09_NW_DST_Mask.json      11_TP_DST_IPv6_UDP.json
+        06_NW_TOS_IPv4.json  10_TP_SRC_IPv4_TCP.json
+        06_NW_TOS_IPv6.json  10_TP_SRC_IPv4_UDP.json
+
+
+    For OpenFlow 1.3:
 
     .. rst-class:: console
 
@@ -401,6 +434,9 @@ In this procedure, the test environment is constructed using the test environmen
         01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
         01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
         01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+
+
+    For OpenFlow 1.4:
 
     .. rst-class:: console
 
