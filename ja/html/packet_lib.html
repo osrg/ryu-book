@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>パケットライブラリ &mdash; Ryubook 1.0 ドキュメント</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="OF-Configライブラリ" href="of_config.html" />
     <link rel="prev" title="ofprotoライブラリ" href="ofproto_lib.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,14 +41,14 @@
         <li class="right" >
           <a href="ofproto_lib.html" title="ofprotoライブラリ"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-packet-lib">
 <span id="id1"></span><h1>パケットライブラリ<a class="headerlink" href="#ch-packet-lib" title="このヘッドラインへのパーマリンク">¶</a></h1>
@@ -84,17 +84,17 @@
 </ul>
 <p>各プロトコルヘッダクラスの__init__引数名は、基本的にはRFCなどで使用されている名前と同じになっています。プロトコルヘッダクラスのインスタンス属性の命名規則も同様です。ただし、typeなど、Python built-inと衝突する名前のフィールドに対応する__init__引数名には、type_のように最後に_が付きます。</p>
 <p>いくつかの__init__引数にはデフォルト値が設定されており省略できます。以下の例ではversion=4等が省略されています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.ofproto</span> <span class="kn">import</span> <span class="n">inet</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ipv4</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib.ofproto</span> <span class="k">import</span> <span class="n">inet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ipv4</span>
 
-<span class="n">pkt_ipv4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s">&#39;192.0.2.1&#39;</span><span class="p">,</span>
-                     <span class="n">src</span><span class="o">=</span><span class="s">&#39;192.0.2.2&#39;</span><span class="p">,</span>
+<span class="n">pkt_ipv4</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.1&#39;</span><span class="p">,</span>
+                     <span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.2&#39;</span><span class="p">,</span>
                      <span class="n">proto</span><span class="o">=</span><span class="n">inet</span><span class="o">.</span><span class="n">IPPROTO_UDP</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">dst</span>
-<span class="k">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">src</span>
-<span class="k">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">proto</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">dst</span>
+<span class="nb">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">src</span>
+<span class="nb">print</span> <span class="n">pkt_ipv4</span><span class="o">.</span><span class="n">proto</span>
 </pre></div>
 </div>
 </div>
@@ -132,14 +132,14 @@
 <li>ryu.lib.packet.packet.Packetクラスのオブジェクトを生成(data引数に解析するバイト列を指定)</li>
 <li>1.のオブジェクトのget_protocolメソッド等を使用して、各プロトコルヘッダに対応するオブジェクトを取得</li>
 </ol>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">bin_packet</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">bin_packet</span><span class="p">)</span>
 <span class="n">pkt_ethernet</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">pkt_ethernet</span><span class="p">:</span>
-    <span class="c"># non ethernet</span>
+    <span class="c1"># non ethernet</span>
     <span class="k">return</span>
-<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">dst</span>
-<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">src</span>
-<span class="k">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">ethertype</span>
+<span class="nb">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">dst</span>
+<span class="nb">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">src</span>
+<span class="nb">print</span> <span class="n">pkt_ethernet</span><span class="o">.</span><span class="n">ethertype</span>
 </pre></div>
 </div>
 </div>
@@ -154,7 +154,7 @@
 <li>1.のオブジェクトのserializeメソッドを呼び出してバイト列を生成</li>
 </ol>
 <p>チェックサムやペイロード長などのいくつかのフィールドは、明示的に値を指定しなくてもserialize時に自動的に計算されます。詳細は各クラスのリファレンスをご参照ください。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">()</span>
 <span class="n">pkt</span><span class="o">.</span><span class="n">add_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=...</span><span class="p">,</span>
                                    <span class="n">dst</span><span class="o">=...</span><span class="p">,</span>
                                    <span class="n">src</span><span class="o">=...</span><span class="p">))</span>
@@ -170,7 +170,7 @@
 </pre></div>
 </div>
 <p>Scapyライクな代替APIも用意されていますので、お好みに応じてご使用ください。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">e</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">i</span> <span class="o">=</span> <span class="n">ipv4</span><span class="o">.</span><span class="n">ipv4</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">u</span> <span class="o">=</span> <span class="n">udp</span><span class="o">.</span><span class="n">udp</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">pkt</span> <span class="o">=</span> <span class="n">e</span><span class="o">/</span><span class="n">i</span><span class="o">/</span><span class="n">u</span>
@@ -182,37 +182,37 @@
 <h2>アプリケーション例<a class="headerlink" href="#id7" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>上記の例を使用して作成した、pingに返事をするアプリケーションを示します。</p>
 <p>ARP REQUESTとICMP ECHO REQUESTをPacket-Inで受けとり、返事をPacket-Outで送信します。IPアドレス等は__init__メソッド内にハードコードされています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.</span>
-<span class="c"># Copyright (C) 2013 YAMAMOTO Takashi &lt;yamamoto at valinux co jp&gt;</span>
-<span class="c">#</span>
-<span class="c"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
-<span class="c"># you may not use this file except in compliance with the License.</span>
-<span class="c"># You may obtain a copy of the License at</span>
-<span class="c">#</span>
-<span class="c">#    http://www.apache.org/licenses/LICENSE-2.0</span>
-<span class="c">#</span>
-<span class="c"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
-<span class="c"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
-<span class="c"># implied.</span>
-<span class="c"># See the License for the specific language governing permissions and</span>
-<span class="c"># limitations under the License.</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Copyright (C) 2013 Nippon Telegraph and Telephone Corporation.</span>
+<span class="c1"># Copyright (C) 2013 YAMAMOTO Takashi &lt;yamamoto at valinux co jp&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or</span>
+<span class="c1"># implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
 
-<span class="c"># a simple ICMP Echo Responder</span>
+<span class="c1"># a simple ICMP Echo Responder</span>
 
-<span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
 
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
 
-<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="k">import</span> <span class="n">ofproto_v1_3</span>
 
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">arp</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ipv4</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">icmp</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ethernet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">arp</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ipv4</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">icmp</span>
 
 
 <span class="k">class</span> <span class="nc">IcmpResponder</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
@@ -220,8 +220,8 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">IcmpResponder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span> <span class="o">=</span> <span class="s">&#39;0a:e4:1c:d1:3e:44&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ip_addr</span> <span class="o">=</span> <span class="s">&#39;192.0.2.9&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hw_addr</span> <span class="o">=</span> <span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_addr</span> <span class="o">=</span> <span class="s1">&#39;192.0.2.9&#39;</span>
 
     <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -243,9 +243,9 @@
     <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
         <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet-in </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;packet-in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
         <span class="n">pkt_ethernet</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocol</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">pkt_ethernet</span><span class="p">:</span>
             <span class="k">return</span>
@@ -293,7 +293,7 @@
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
         <span class="n">pkt</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet-out </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;packet-out </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pkt</span><span class="p">,))</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">data</span>
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)]</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span>
@@ -305,25 +305,25 @@
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p class="last">OpenFlow 1.2以降では、Packet-Inメッセージのmatchフィールドから、パース済みのパケットヘッダーの内容を取得できる場合があります。ただし、このフィールドにどれだけの情報を入れてくれるかは、スイッチの実装によります。例えばOpen vSwitchは最低限の情報しか入れてくれませんので、多くの場合コントローラー側でパケット内容を解析する必要があります。一方LINCは可能な限り多くの情報を入れてくれます。</p>
 </div>
 <p>以下はping -c 3を実行した場合のログの例です。</p>
-<div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;IcmpResponder EventOFPSwitchFeatures
-switch features ev version: 0x4 msg_type 0x6 xid 0xb63c802c OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=11974852296259,n_buffers=256,n_tables=254)
-move onto main mode
-EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
-packet-in ethernet(dst=&#39;ff:ff:ff:ff:ff:ff&#39;,ethertype=2054,src=&#39;0a:e4:1c:d1:3e:43&#39;), arp(dst_ip=&#39;192.0.2.9&#39;,dst_mac=&#39;00:00:00:00:00:00&#39;,hlen=6,hwtype=1,opcode=1,plen=4,proto=2048,src_ip=&#39;192.0.2.99&#39;,src_mac=&#39;0a:e4:1c:d1:3e:43&#39;), &#39;\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00&#39;
-packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2054,src=&#39;0a:e4:1c:d1:3e:44&#39;), arp(dst_ip=&#39;192.0.2.99&#39;,dst_mac=&#39;0a:e4:1c:d1:3e:43&#39;,hlen=6,hwtype=1,opcode=2,plen=4,proto=2048,src_ip=&#39;192.0.2.9&#39;,src_mac=&#39;0a:e4:1c:d1:3e:44&#39;)
-EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
-packet-in ethernet(dst=&#39;0a:e4:1c:d1:3e:44&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:43&#39;), ipv4(csum=47390,dst=&#39;192.0.2.9&#39;,flags=0,header_length=5,identification=32285,offset=0,option=None,proto=1,src=&#39;192.0.2.99&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=38471,data=echo(data=&#39;S,B\x00\x00\x00\x00\x00\x03L)(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=0),type=8)
-packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:44&#39;), ipv4(csum=14140,dst=&#39;192.0.2.99&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;192.0.2.9&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=40519,data=echo(data=&#39;S,B\x00\x00\x00\x00\x00\x03L)(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=0),type=0)
-EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
-packet-in ethernet(dst=&#39;0a:e4:1c:d1:3e:44&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:43&#39;), ipv4(csum=47383,dst=&#39;192.0.2.9&#39;,flags=0,header_length=5,identification=32292,offset=0,option=None,proto=1,src=&#39;192.0.2.99&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=12667,data=echo(data=&#39;T,B\x00\x00\x00\x00\x00Q\x17?(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=1),type=8)
-packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:44&#39;), ipv4(csum=14140,dst=&#39;192.0.2.99&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;192.0.2.9&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=14715,data=echo(data=&#39;T,B\x00\x00\x00\x00\x00Q\x17?(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=1),type=0)
-EVENT ofp_event-&gt;IcmpResponder EventOFPPacketIn
-packet-in ethernet(dst=&#39;0a:e4:1c:d1:3e:44&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:43&#39;), ipv4(csum=47379,dst=&#39;192.0.2.9&#39;,flags=0,header_length=5,identification=32296,offset=0,option=None,proto=1,src=&#39;192.0.2.99&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=26863,data=echo(data=&#39;U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=2),type=8)
-packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e4:1c:d1:3e:44&#39;), ipv4(csum=14140,dst=&#39;192.0.2.99&#39;,flags=0,header_length=5,identification=0,offset=0,option=None,proto=1,src=&#39;192.0.2.9&#39;,tos=0,total_length=84,ttl=255,version=4), icmp(code=0,csum=28911,data=echo(data=&#39;U,B\x00\x00\x00\x00\x00!\xa26(\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !&quot;#$%&amp;\&#39;()*+,-./\x00\x00\x00\x00\x00\x00\x00\x00&#39;,id=44565,seq=2),type=0)
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">IcmpResponder</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">switch</span> <span class="n">features</span> <span class="n">ev</span> <span class="n">version</span><span class="p">:</span> <span class="mh">0x4</span> <span class="n">msg_type</span> <span class="mh">0x6</span> <span class="n">xid</span> <span class="mh">0xb63c802c</span> <span class="n">OFPSwitchFeatures</span><span class="p">(</span><span class="n">auxiliary_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">capabilities</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span><span class="n">datapath_id</span><span class="o">=</span><span class="mi">11974852296259</span><span class="p">,</span><span class="n">n_buffers</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span><span class="n">n_tables</span><span class="o">=</span><span class="mi">254</span><span class="p">)</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">IcmpResponder</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span><span class="o">-</span><span class="ow">in</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;ff:ff:ff:ff:ff:ff&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2054</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">),</span> <span class="n">arp</span><span class="p">(</span><span class="n">dst_ip</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">dst_mac</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:00&#39;</span><span class="p">,</span><span class="n">hlen</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">hwtype</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">opcode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">plen</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src_ip</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">src_mac</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span>
+<span class="n">packet</span><span class="o">-</span><span class="n">out</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2054</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">),</span> <span class="n">arp</span><span class="p">(</span><span class="n">dst_ip</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">dst_mac</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">,</span><span class="n">hlen</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="n">hwtype</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">opcode</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">plen</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src_ip</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">src_mac</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">)</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">IcmpResponder</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span><span class="o">-</span><span class="ow">in</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">47390</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">32285</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">38471</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;S,B</span><span class="se">\x00\x00\x00\x00\x00\x03</span><span class="s1">L)(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">packet</span><span class="o">-</span><span class="n">out</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">14140</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">40519</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;S,B</span><span class="se">\x00\x00\x00\x00\x00\x03</span><span class="s1">L)(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">IcmpResponder</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span><span class="o">-</span><span class="ow">in</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">47383</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">32292</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">12667</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;T,B</span><span class="se">\x00\x00\x00\x00\x00</span><span class="s1">Q</span><span class="se">\x17</span><span class="s1">?(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">packet</span><span class="o">-</span><span class="n">out</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">14140</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">14715</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;T,B</span><span class="se">\x00\x00\x00\x00\x00</span><span class="s1">Q</span><span class="se">\x17</span><span class="s1">?(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">IcmpResponder</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span><span class="o">-</span><span class="ow">in</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">47379</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">32296</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">26863</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;U,B</span><span class="se">\x00\x00\x00\x00\x00</span><span class="s1">!</span><span class="se">\xa2</span><span class="s1">6(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">packet</span><span class="o">-</span><span class="n">out</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:43&#39;</span><span class="p">,</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;0a:e4:1c:d1:3e:44&#39;</span><span class="p">),</span> <span class="n">ipv4</span><span class="p">(</span><span class="n">csum</span><span class="o">=</span><span class="mi">14140</span><span class="p">,</span><span class="n">dst</span><span class="o">=</span><span class="s1">&#39;192.0.2.99&#39;</span><span class="p">,</span><span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">header_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">identification</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">option</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">proto</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">src</span><span class="o">=</span><span class="s1">&#39;192.0.2.9&#39;</span><span class="p">,</span><span class="n">tos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">total_length</span><span class="o">=</span><span class="mi">84</span><span class="p">,</span><span class="n">ttl</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span> <span class="n">icmp</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">csum</span><span class="o">=</span><span class="mi">28911</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">echo</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="s1">&#39;U,B</span><span class="se">\x00\x00\x00\x00\x00</span><span class="s1">!</span><span class="se">\xa2</span><span class="s1">6(</span><span class="se">\x00\x00\x00\x00\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f</span><span class="s1"> !&quot;#$%&amp;</span><span class="se">\&#39;</span><span class="s1">()*+,-./</span><span class="se">\x00\x00\x00\x00\x00\x00\x00\x00</span><span class="s1">&#39;</span><span class="p">,</span><span class="nb">id</span><span class="o">=</span><span class="mi">44565</span><span class="p">,</span><span class="n">seq</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span><span class="nb">type</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>IPフラグメント対応は読者への宿題とします。OpenFlowプロトコル自体にはMTUを取得する方法がありませんので、ハードコードするか、何らかの工夫が必要です。また、Ryuパケットライブラリは常にパケット全体をパース/シリアライズしますので、フラグメント化されたパケットを処理するためのAPI変更が必要です。</p>
@@ -334,7 +334,7 @@ packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -357,29 +357,28 @@ packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="of_config.html"
                         title="次の章へ">OF-Configライブラリ</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/packet_lib.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/packet_lib.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="検索" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="検索" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    モジュール、クラス、または関数名を入力してください
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -391,10 +390,10 @@ packet-out ethernet(dst=&#39;0a:e4:1c:d1:3e:43&#39;,ethertype=2048,src=&#39;0a:e
         <li class="right" >
           <a href="ofproto_lib.html" title="ofprotoライブラリ"
              >前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, RYU project team.
     </div>
   </body>

@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>REST連携 &mdash; Ryubook 1.0 ドキュメント</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="リンク・アグリゲーション" href="link_aggregation.html" />
     <link rel="prev" title="トラフィックモニター" href="traffic_monitor.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,29 +41,29 @@
         <li class="right" >
           <a href="traffic_monitor.html" title="トラフィックモニター"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="rest">
 <span id="ch-rest-api"></span><h1>REST連携<a class="headerlink" href="#rest" title="このヘッドラインへのパーマリンク">¶</a></h1>
-<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、REST連携の機能を追加します。</p>
+<p>本章では、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」で説明したスイッチングハブに、REST連携の機能を追加します。</p>
 <div class="section" id="rest-api">
 <h2>REST APIの組み込み<a class="headerlink" href="#rest-api" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>RyuにはWSGIに対応したWebサーバの機能があります。この機能を利用することで、他のシステムやブラウザなどとの連携をする際に役に立つ、REST APIを作成することができます。</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p class="last">WSGIとは、Pythonにおいて、WebアプリケーションとWebサーバをつなぐための統一されたフレームワークのことを指します。</p>
 </div>
 </div>
 <div class="section" id="id1">
 <h2>REST API付きスイッチングハブの実装<a class="headerlink" href="#id1" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」で説明したスイッチングハブに、次の二つのREST APIを追加してみましょう。</p>
+<p>「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」で説明したスイッチングハブに、次の二つのREST APIを追加してみましょう。</p>
 <ol class="arabic">
 <li><p class="first">MACアドレステーブル取得API</p>
 <blockquote>
@@ -77,28 +77,28 @@
 </li>
 </ol>
 <p>それではソースコードを見てみましょう。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="kn">import</span> <span class="n">simple_switch_13</span>
-<span class="kn">from</span> <span class="nn">webob</span> <span class="kn">import</span> <span class="n">Response</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.app.wsgi</span> <span class="kn">import</span> <span class="n">ControllerBase</span><span class="p">,</span> <span class="n">WSGIApplication</span><span class="p">,</span> <span class="n">route</span>
-<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
+<span class="kn">from</span> <span class="nn">webob</span> <span class="k">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.app.wsgi</span> <span class="k">import</span> <span class="n">ControllerBase</span><span class="p">,</span> <span class="n">WSGIApplication</span><span class="p">,</span> <span class="n">route</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
 
-<span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s">&#39;simple_switch_api_app&#39;</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s">&#39;/simpleswitch/mactable/{dpid}&#39;</span>
+<span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s1">&#39;simple_switch_api_app&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/simpleswitch/mactable/</span><span class="si">{dpid}</span><span class="s1">&#39;</span>
 
 <span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
+        <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wsgi&#39;</span><span class="p">]</span>
         <span class="n">wsgi</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="p">{</span><span class="n">simple_switch_instance_name</span> <span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
 
     <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
@@ -112,21 +112,21 @@
         <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
 
-        <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
-        <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;mac&#39;</span><span class="p">]</span>
+        <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+        <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;mac&#39;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
             <span class="k">if</span> <span class="n">entry_port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
 
                 <span class="k">for</span> <span class="n">mac</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
-                    <span class="c"># from known device to new device</span>
+                    <span class="c1"># from known device to new device</span>
                     <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">entry_port</span><span class="p">)]</span>
                     <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">entry_mac</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 
-                    <span class="c"># from new device to known device</span>
+                    <span class="c1"># from new device to known device</span>
                     <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
                     <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">entry_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
@@ -140,24 +140,24 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
 
-    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+    <span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
     <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dpid&#39;</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
 
         <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
         <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
 
-    <span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+    <span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
     <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
         <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+        <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dpid&#39;</span><span class="p">])</span>
         <span class="n">new_entry</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
@@ -166,35 +166,37 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">set_mac_to_port</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">new_entry</span><span class="p">)</span>
             <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+
 </pre></div>
 </div>
 <p>simple_switch_rest_13.pyでは、二つのクラスを定義しています。</p>
-<p>一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス<tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt>です。</p>
-<p>二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」を拡張し、MACアドレステーブルの更新を行えるようにしたクラス<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>です。</p>
-<p><tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>では、スイッチにフローエントリを追加するため、FeaturesReplyメソッドをオーバライドし、datapathオブジェクトを保持しています。</p>
+<p>一つ目は、HTTPリクエストを受けるURLとそれに対応するメソッドを定義するコントローラクラス<code class="docutils literal"><span class="pre">SimpleSwitchController</span></code>です。</p>
+<p>二つ目は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」を拡張し、MACアドレステーブルの更新を行えるようにしたクラス<code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>です。</p>
+<p><code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>では、スイッチにフローエントリを追加するため、FeaturesReplyメソッドをオーバライドし、datapathオブジェクトを保持しています。</p>
 </div>
 <div class="section" id="simpleswitchrest13">
 <h2>SimpleSwitchRest13クラスの実装<a class="headerlink" href="#simpleswitchrest13" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>クラス変数<tt class="docutils literal"><span class="pre">_CONTEXT</span></tt>で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、<tt class="docutils literal"><span class="pre">wsgi</span></tt>というキーで、WSGIのWebサーバインスタンスが取得できます。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<p>クラス変数<code class="docutils literal"><span class="pre">_CONTEXT</span></code>で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、<code class="docutils literal"><span class="pre">wsgi</span></code>というキーで、WSGIのWebサーバインスタンスが取得できます。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;wsgi&#39;</span><span class="p">]</span>
+    <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wsgi&#39;</span><span class="p">]</span>
     <span class="n">wsgi</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="p">{</span><span class="n">simple_switch_instance_name</span> <span class="p">:</span> <span class="bp">self</span><span class="p">})</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>コンストラクタでは、後述するコントローラクラスを登録するために、<tt class="docutils literal"><span class="pre">WSGIApplication</span></tt>のインスタンスを取得しています。登録には、<tt class="docutils literal"><span class="pre">register</span></tt>メソッドを使用します。<tt class="docutils literal"><span class="pre">register</span></tt>メソッド実行の際、コントローラのコンストラクタで<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>クラスのインスタンスにアクセスできるように、<tt class="docutils literal"><span class="pre">simple_switch_api_app</span></tt>というキー名でディクショナリオブジェクトを渡しています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+<p>コンストラクタでは、後述するコントローラクラスを登録するために、<code class="docutils literal"><span class="pre">WSGIApplication</span></code>のインスタンスを取得しています。登録には、<code class="docutils literal"><span class="pre">register</span></code>メソッドを使用します。<code class="docutils literal"><span class="pre">register</span></code>メソッド実行の際、コントローラのコンストラクタで<code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>クラスのインスタンスにアクセスできるように、<code class="docutils literal"><span class="pre">simple_switch_api_app</span></code>というキー名でディクショナリオブジェクトを渡しています。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
@@ -203,26 +205,26 @@
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>親クラスの<tt class="docutils literal"><span class="pre">switch_features_handler</span></tt>をオーバライドしています。このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、イベントオブジェクト<tt class="docutils literal"><span class="pre">ev</span></tt>に格納された<tt class="docutils literal"><span class="pre">datapath</span></tt>オブジェクトを取得し、インスタンス変数<tt class="docutils literal"><span class="pre">switches</span></tt>に保持しています。また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+<p>親クラスの<code class="docutils literal"><span class="pre">switch_features_handler</span></code>をオーバライドしています。このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、イベントオブジェクト<code class="docutils literal"><span class="pre">ev</span></code>に格納された<code class="docutils literal"><span class="pre">datapath</span></code>オブジェクトを取得し、インスタンス変数<code class="docutils literal"><span class="pre">switches</span></code>に保持しています。また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
     <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
 
-    <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;port&#39;</span><span class="p">]</span>
-    <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s">&#39;mac&#39;</span><span class="p">]</span>
+    <span class="n">entry_port</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;port&#39;</span><span class="p">]</span>
+    <span class="n">entry_mac</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;mac&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">datapath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
         <span class="k">if</span> <span class="n">entry_port</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
 
             <span class="k">for</span> <span class="n">mac</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">mac_table</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
-                <span class="c"># from known device to new device</span>
+                <span class="c1"># from known device to new device</span>
                 <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">entry_port</span><span class="p">)]</span>
                 <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">entry_mac</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 
-                <span class="c"># from new device to known device</span>
+                <span class="c1"># from new device to known device</span>
                 <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
                 <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">entry_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">mac</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
@@ -233,13 +235,13 @@
 </pre></div>
 </div>
 <p>指定のスイッチにMACアドレスとポートを登録するメソッドです。REST APIがPUTメソッドで呼ばれると実行されます。</p>
-<p>引数<tt class="docutils literal"><span class="pre">entry</span></tt>には、登録をしたいMACアドレスと接続ポートのペアが格納されています。</p>
-<p>MACアドレステーブル<tt class="docutils literal"><span class="pre">self.mac_to_port</span></tt>の情報を参照しながら、スイッチに登録するフローエントリを求めていきます。</p>
+<p>引数<code class="docutils literal"><span class="pre">entry</span></code>には、登録をしたいMACアドレスと接続ポートのペアが格納されています。</p>
+<p>MACアドレステーブル<code class="docutils literal"><span class="pre">self.mac_to_port</span></code>の情報を参照しながら、スイッチに登録するフローエントリを求めていきます。</p>
 <p>例えば、MACアドレステーブルに、次のMACアドレスと接続ポートのペアが登録されていて、</p>
 <ul class="simple">
 <li>00:00:00:00:00:01, 1</li>
 </ul>
-<p>引数<tt class="docutils literal"><span class="pre">entry</span></tt>で渡されたMACアドレスとポートのペアが、</p>
+<p>引数<code class="docutils literal"><span class="pre">entry</span></code>で渡されたMACアドレスとポートのペアが、</p>
 <ul class="simple">
 <li>00:00:00:00:00:02, 2</li>
 </ul>
@@ -248,35 +250,35 @@
 <li>マッチング条件：in_port = 1, dst_mac = 00:00:00:00:00:02  アクション：output=2</li>
 <li>マッチング条件：in_port = 2, dst_mac = 00:00:00:00:00:01  アクション：output=1</li>
 </ul>
-<p>フローエントリの登録は親クラスの<tt class="docutils literal"><span class="pre">add_flow</span></tt>メソッドを利用しています。最後に、引数<tt class="docutils literal"><span class="pre">entry</span></tt>で渡された情報をMACアドレステーブルに格納しています。</p>
+<p>フローエントリの登録は親クラスの<code class="docutils literal"><span class="pre">add_flow</span></code>メソッドを利用しています。最後に、引数<code class="docutils literal"><span class="pre">entry</span></code>で渡された情報をMACアドレステーブルに格納しています。</p>
 </div>
 <div class="section" id="simpleswitchcontroller">
 <h2>SimpleSwitchControllerクラスの実装<a class="headerlink" href="#simpleswitchcontroller" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。クラス名は<tt class="docutils literal"><span class="pre">SimpleSwitchController</span></tt>です。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
+<p>次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。クラス名は<code class="docutils literal"><span class="pre">SimpleSwitchController</span></code>です。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>コンストラクタで、<tt class="docutils literal"><span class="pre">SimpleSwitchRest13</span></tt>クラスのインスタンスを取得します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<p>コンストラクタで、<code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>クラスのインスタンスを取得します。</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dpid&#39;</span><span class="p">])</span>
 
     <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">404</span><span class="p">)</span>
 
     <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
 <span class="o">...</span>
 </pre></div>
 </div>
-<p>REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけにRyuで定義された<tt class="docutils literal"><span class="pre">route</span></tt>デコレータを用いています。</p>
+<p>REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけにRyuで定義された<code class="docutils literal"><span class="pre">route</span></code>デコレータを用いています。</p>
 <p>デコレータで指定する内容は、次の通りです。</p>
 <ul>
 <li><p class="first">第1引数</p>
@@ -296,17 +298,17 @@
 </li>
 <li><p class="first">第4引数</p>
 <blockquote>
-<div><p>指定箇所の形式を指定します。URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、ryu/lib/dpid.pyの<tt class="docutils literal"><span class="pre">DPID_PATTERN</span></tt>で定義された16桁の16進数値の表現に合致することを条件としています。</p>
+<div><p>指定箇所の形式を指定します。URL(/simpleswitch/mactable/{dpid})の{dpid}の部分が、ryu/lib/dpid.pyの<code class="docutils literal"><span class="pre">DPID_PATTERN</span></code>で定義された16桁の16進数値の表現に合致することを条件としています。</p>
 </div></blockquote>
 </li>
 </ul>
-<p>第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、<tt class="docutils literal"><span class="pre">list_mac_table</span></tt>メソッドが呼ばれます。このメソッドは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、JSON形式に変換し呼び出し元に返却しています。</p>
+<p>第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、<code class="docutils literal"><span class="pre">list_mac_table</span></code>メソッドが呼ばれます。このメソッドは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、JSON形式に変換し呼び出し元に返却しています。</p>
 <p>なお、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
-    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dpid&#39;</span><span class="p">])</span>
+    <span class="n">dpid</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;dpid&#39;</span><span class="p">])</span>
     <span class="n">new_entry</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dpid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
@@ -315,20 +317,20 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="n">mac_table</span> <span class="o">=</span> <span class="n">simple_switch</span><span class="o">.</span><span class="n">set_mac_to_port</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">new_entry</span><span class="p">)</span>
         <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">mac_table</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>次は、MACアドレステーブルを登録するREST APIです。</p>
-<p>URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合に<tt class="docutils literal"><span class="pre">put_mac_table</span></tt>メソッドが呼ばれます。このメソッドでは、内部でスイッチングハブインスタンスの<tt class="docutils literal"><span class="pre">set_mac_to_port</span></tt>メソッドを呼び出しています。なお、<tt class="docutils literal"><span class="pre">put_mac_table</span></tt>メソッド内で例外が発生した場合、レスポンスコード500を返却します。また、<tt class="docutils literal"><span class="pre">list_mac_table</span></tt>メソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
+<p>URLはMACアドレステーブル取得時のAPIと同じですが、HTTPメソッドがPUTの場合に<code class="docutils literal"><span class="pre">put_mac_table</span></code>メソッドが呼ばれます。このメソッドでは、内部でスイッチングハブインスタンスの<code class="docutils literal"><span class="pre">set_mac_to_port</span></code>メソッドを呼び出しています。なお、<code class="docutils literal"><span class="pre">put_mac_table</span></code>メソッド内で例外が発生した場合、レスポンスコード500を返却します。また、<code class="docutils literal"><span class="pre">list_mac_table</span></code>メソッドと同様、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
 </div>
 <div class="section" id="id2">
 <h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>REST APIを追加したスイッチングハブを実行してみましょう。</p>
-<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>スイッチングハブ</em></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
+<p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
 loading app ./simple_switch_rest_13.py
@@ -358,44 +360,44 @@ move onto main mode
 </div>
 <p>起動時のメッセージの中に、「(31135) wsgi starting up on<a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>」という行がありますが、これは、Webサーバがポート番号8080で起動したことを表しています。</p>
 <p>次にmininetのシェル上で、h1からh2へpingを発行します。</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=84.1 ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">84.1</span> <span class="n">ms</span>
 
---- 10.0.0.2 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 84.171/84.171/84.171/0.000 ms
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">1</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">1</span> <span class="n">received</span><span class="p">,</span> <span class="mi">0</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">0</span><span class="n">ms</span>
+<span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">84.171</span><span class="o">/</span><span class="mf">84.171</span><span class="o">/</span><span class="mf">84.171</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
 </pre></div>
 </div>
 <p>この時、RyuへのPacket-Inは3回発生しています。</p>
-<div class="console highlight-python"><div class="highlight"><pre>EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
-EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
-EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span> <span class="mi">1</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。今回は、REST APIの呼び出しにcurlコマンドを使用します。</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
 </pre></div>
 </div>
 <p>h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。</p>
 <p>今度は、h1,h2の2台のホストをあらかじめMACアドレステーブルに格納し、pingを実行してみます。いったんスイッチングハブとMininetを停止します。次に、再度Mininetを起動し、OpenFlowバージョンをOpenFlow13に設定後、スイッチングハブを起動します。</p>
-<div class="console highlight-python"><div class="highlight"><pre>...
-(26759) wsgi starting up on http://0.0.0.0:8080/
-connected socket:&lt;eventlet.greenio.GreenSocket object at 0x2afe6d0&gt; address:(&#39;127.0.0.1&#39;, 48818)
-hello ev &lt;ryu.controller.ofp_event.EventOFPHello object at 0x2afec10&gt;
-move onto config mode
-EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPSwitchFeatures
-switch features ev version: 0x4 msg_type 0x6 xid 0x96681337 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
-switch_features_handler inside sub class
-move onto main mode
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">(</span><span class="mi">26759</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
+<span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;</span><span class="n">eventlet</span><span class="o">.</span><span class="n">greenio</span><span class="o">.</span><span class="n">GreenSocket</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afe6d0</span><span class="o">&gt;</span> <span class="n">address</span><span class="p">:(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">48818</span><span class="p">)</span>
+<span class="n">hello</span> <span class="n">ev</span> <span class="o">&lt;</span><span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afec10</span><span class="o">&gt;</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">config</span> <span class="n">mode</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPSwitchFeatures</span>
+<span class="n">switch</span> <span class="n">features</span> <span class="n">ev</span> <span class="n">version</span><span class="p">:</span> <span class="mh">0x4</span> <span class="n">msg_type</span> <span class="mh">0x6</span> <span class="n">xid</span> <span class="mh">0x96681337</span> <span class="n">OFPSwitchFeatures</span><span class="p">(</span><span class="n">auxiliary_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">capabilities</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span><span class="n">datapath_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">n_buffers</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span><span class="n">n_tables</span><span class="o">=</span><span class="mi">254</span><span class="p">)</span>
+<span class="n">switch_features_handler</span> <span class="n">inside</span> <span class="n">sub</span> <span class="k">class</span>
+<span class="nc">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
 </pre></div>
 </div>
 <p>次に、MACアドレステーブル更新用のREST APIを1ホストごとに呼び出します。REST APIを呼び出す際のデータ形式は、{&#8220;mac&#8221; : &#8220;MACアドレス&#8221;, &#8220;port&#8221; : 接続ポート番号}となるようにします。</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:01&quot;: 1}
 ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quot;, &quot;port&quot; : 2}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
@@ -403,21 +405,21 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 </div>
 <p>これらのコマンドを実行すると、h1,h2に対応したフローエントリがスイッチに登録されます。</p>
 <p>続いて、h1からh2へpingを実行します。</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; h1 ping -c 1 h2
-PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
-64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=4.62 ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">4.62</span> <span class="n">ms</span>
 
---- 10.0.0.2 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 4.623/4.623/4.623/0.000 ms
+<span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">1</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">1</span> <span class="n">received</span><span class="p">,</span> <span class="mi">0</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">0</span><span class="n">ms</span>
+<span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
 </pre></div>
 </div>
-<div class="console highlight-python"><div class="highlight"><pre>...
-move onto main mode
-(28293) accepted (&#39;127.0.0.1&#39;, 44453)
-127.0.0.1 - - [19/Nov/2013 19:59:45] &quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot; 200 124 0.002734
-EVENT ofp_event-&gt;SimpleSwitchRest13 EventOFPPacketIn
-packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
+<span class="p">(</span><span class="mi">28293</span><span class="p">)</span> <span class="n">accepted</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">44453</span><span class="p">)</span>
+<span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">-</span> <span class="o">-</span> <span class="p">[</span><span class="mi">19</span><span class="o">/</span><span class="n">Nov</span><span class="o">/</span><span class="mi">2013</span> <span class="mi">19</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">45</span><span class="p">]</span> <span class="s2">&quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot;</span> <span class="mi">200</span> <span class="mi">124</span> <span class="mf">0.002734</span>
+<span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>この時、スイッチにはすでにフローエントリが存在するため、Packet-Inはh1からh2へのARPリクエストの時だけ発生し、それ以降のパケットのやりとりでは発生していません。</p>
@@ -432,7 +434,7 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -453,29 +455,28 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="link_aggregation.html"
                         title="次の章へ">リンク・アグリゲーション</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/rest_api.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rest_api.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="検索" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="検索" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    モジュール、クラス、または関数名を入力してください
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -487,10 +488,10 @@ packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
         <li class="right" >
           <a href="traffic_monitor.html" title="トラフィックモニター"
              >前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, RYU project team.
     </div>
   </body>

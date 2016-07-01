@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
     <title>OF-Configライブラリ &mdash; Ryubook 1.0 ドキュメント</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="ファイアウォール" href="rest_firewall.html" />
     <link rel="prev" title="パケットライブラリ" href="packet_lib.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,14 +41,14 @@
         <li class="right" >
           <a href="packet_lib.html" title="パケットライブラリ"
              accesskey="P">前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="of-config">
 <h1>OF-Configライブラリ<a class="headerlink" href="#of-config" title="このヘッドラインへのパーマリンク">¶</a></h1>
@@ -60,7 +60,7 @@
 <p><a class="reference external" href="https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config">https://www.opennetworking.org/sdn-resources/onf-specifications/openflow-config</a></p>
 <p>本ライブラリはOF-Config 1.1.1に準拠しています。</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p>現在Open vSwitchはOF-Configをサポートしていませんが、同じ目的のためにOVSDBというサービスを提供しています。OF-Configは比較的新しい規格で、Open vSwitchがOVSDBを実装したときにはまだ存在していませんでした。</p>
 <p class="last">OVSDBプロトコルはRFC 7047として仕様が公開されていますが、事実上Open vSwitch専用のプロトコルとなっています。OF-Configはまだ登場から日が浅いですが、将来的に多くのOpenFlowスイッチで実装されることが期待されます。</p>
 </div>
@@ -70,7 +70,7 @@
 <div class="section" id="ryu-lib-of-config-capable-switch-ofcapableswitch">
 <h3>ryu.lib.of_config.capable_switch.OFCapableSwitchクラス<a class="headerlink" href="#ryu-lib-of-config-capable-switch-ofcapableswitch" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>NETCONFセッションを扱うためのクラスです。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="kn">import</span> <span class="n">OFCapableSwitch</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib.of_config.capable_switch</span> <span class="k">import</span> <span class="n">OFCapableSwitch</span>
 </pre></div>
 </div>
 </div>
@@ -78,10 +78,10 @@
 <h3>ryu.lib.of_config.classesモジュール<a class="headerlink" href="#ryu-lib-of-config-classes" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>設定内容をpythonオブジェクトとして扱うためのクラス群を提供するモジュールです。</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p class="last">クラス名は基本的にOF-Config 1.1.1のyang specification上のgroupingキーワードで使われている名前と同じです。例. OFPortType</p>
 </div>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="kn">as</span> <span class="nn">ofc</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ryu.lib.of_config.classes</span> <span class="k">as</span> <span class="nn">ofc</span>
 </pre></div>
 </div>
 </div>
@@ -91,21 +91,21 @@
 <div class="section" id="id4">
 <h3>スイッチへの接続<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>SSHトランスポートを使用してスイッチに接続します。unknown_host_cbには、不明なSSHホスト鍵の処理を行なうコールバック関数を指定しますが、ここでは無条件に接続を継続するようにしています。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
-    <span class="n">host</span><span class="o">=</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">sess</span> <span class="o">=</span> <span class="n">OFCapableSwitch</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
     <span class="n">port</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span>
-    <span class="n">username</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
-    <span class="n">password</span><span class="o">=</span><span class="s">&#39;linc&#39;</span><span class="p">,</span>
-    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">username</span><span class="o">=</span><span class="s1">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="s1">&#39;linc&#39;</span><span class="p">,</span>
+    <span class="n">unknown_host_cb</span><span class="o">=</span><span class="k">lambda</span> <span class="n">host</span><span class="p">,</span> <span class="n">fingeprint</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="get">
 <h3>GET<a class="headerlink" href="#get" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>NETCONF GETを使用して状態を取得する例です。全てのポートの/resources/port/resource-idと/resources/port/current-rateを表示します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
+    <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">current_rate</span>
 </pre></div>
 </div>
 </div>
@@ -113,13 +113,13 @@
 <h3>GET-CONFIG<a class="headerlink" href="#get-config" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>NETCONF GET-CONFIGを使用して設定を取得する例です。</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p class="last">runningというのはNETCONFのデータストアで、現在動作している設定です。実装によりますが、他にもstartup(デバイスの起動時に読み込まれる設定)やcandidate(候補設定)などのデータストアが利用できます。</p>
 </div>
 <p>全てのポートの/resources/port/resource-idと/resources/port/configuration/admin-stateを表示します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="k">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
+    <span class="nb">print</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span>
 </pre></div>
 </div>
 </div>
@@ -127,14 +127,14 @@
 <h3>EDIT-CONFIG<a class="headerlink" href="#edit-config" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>NETCONF EDIT-CONFIGを使用して設定を変更する例です。基本的に、GET-CONFIGで取得した設定を編集してEDIT-CONFIGで送り返す、という手順になります。</p>
 <div class="admonition note">
-<p class="first admonition-title">ノート</p>
+<p class="first admonition-title">注釈</p>
 <p class="last">プロトコル上はEDIT-CONFIGで設定の部分的な編集を行なうこともできますが、このような使い方が無難です。</p>
 </div>
 <p>全てのポートの/resources/port/configuration/admin-stateをdownに設定します。</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">csw</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">csw</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">port</span><span class="p">:</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s">&#39;down&#39;</span>
-<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">configuration</span><span class="o">.</span><span class="n">admin_state</span> <span class="o">=</span> <span class="s1">&#39;down&#39;</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">edit_config</span><span class="p">(</span><span class="s1">&#39;running&#39;</span><span class="p">,</span> <span class="n">csw</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -145,7 +145,7 @@
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">目次</a></h3>
   <ul>
@@ -173,29 +173,28 @@
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="rest_firewall.html"
                         title="次の章へ">ファイアウォール</a></p>
-  <h3>このページ</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/of_config.txt"
-           rel="nofollow">ソースコードを表示</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>このページ</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/of_config.txt"
+            rel="nofollow">ソースコードを表示</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>クイック検索</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="検索" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="検索" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    モジュール、クラス、または関数名を入力してください
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>ナビゲーション</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -207,10 +206,10 @@
         <li class="right" >
           <a href="packet_lib.html" title="パケットライブラリ"
              >前へ</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2014, RYU project team.
     </div>
   </body>
