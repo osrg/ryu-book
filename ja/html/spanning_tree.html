@@ -180,7 +180,7 @@
 <p>スパニングツリーの機能をOpenFlowを用いて実現した、Ryuのスパニングツリーアプリケーションを実行してみます。</p>
 <p>Ryuのソースツリーに用意されているsimple_switch_stp.pyはOpenFlow 1.0専用のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応したsimple_switch_stp_13.pyを作成することとします。このプログラムは、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」にスパニングツリー機能を追加したアプリケーションです。</p>
 <p>ソース名：<code class="docutils literal"><span class="pre">simple_switch_stp_13.py</span></code></p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
 <span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span>
 <span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
@@ -320,13 +320,13 @@
 <p class="first admonition-title">注釈</p>
 <p>使用するスイッチがOpen vSwitchの場合、バージョンや設定によってはBPDUが転送されず、本アプリが正常に動作しないことがあります。Open vSwitchではスイッチ自身の機能としてSTPを実装していますが、この機能を無効(デフォルト設定)にしている場合、IEEE 802.1Dで規定されるスパニングツリーのマルチキャストMACアドレス&#8221;01:80:c2:00:00:00&#8221;を宛先とするパケットを転送しないためです。本アプリを動作させる際は、下記のようなソース修正を行うことで、この制約を回避できます。</p>
 <p>ryu/ryu/lib/packet/bpdu.py:</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># BPDU destination</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># BPDU destination</span>
 <span class="c1">#BRIDGE_GROUP_ADDRESS = &#39;01:80:c2:00:00:00&#39;</span>
 <span class="n">BRIDGE_GROUP_ADDRESS</span> <span class="o">=</span> <span class="s1">&#39;01:80:c2:00:00:0e&#39;</span>
 </pre></div>
 </div>
 <p>なお、ソース修正後は変更を反映させるため、下記のコマンドを実行してください。</p>
-<div class="console last highlight-default"><div class="highlight"><pre><span></span>$ cd ryu
+<div class="console last highlight-default"><div class="highlight"><pre>$ cd ryu
 $ sudo python setup.py install
 running install
 ...
@@ -343,7 +343,7 @@ Installing ryu script to /usr/local/bin
 <p>VMイメージ利用のための環境設定やログイン方法等は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」を参照してください。</p>
 <p>ループ構造を持つ特殊なトポロジで動作させるため、「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><span class="std std-ref">リンク・アグリゲーション</span></a>」と同様にトポロジ構築スクリプトによりmininet環境を構築します。</p>
 <p>ソース名：<code class="docutils literal"><span class="pre">spanning_tree.py</span></code></p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="ch">#!/usr/bin/env python</span>
 
 <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="k">import</span> <span class="n">CLI</span>
 <span class="kn">from</span> <span class="nn">mininet.net</span> <span class="k">import</span> <span class="n">Mininet</span>
@@ -387,7 +387,7 @@ Installing ryu script to /usr/local/bin
 <p>VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが存在するトポロジが作成されます。</p>
 <a class="reference internal image-reference" href="_images/fig43.png"><img alt="_images/fig43.png" class="align-center" src="_images/fig43.png" style="width: 407.5px; height: 285.5px;" /></a>
 <p>netコマンドの実行結果は以下の通りです。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo ./spanning_tree.py
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./spanning_tree.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -404,15 +404,15 @@ h3 h3-eth0:s3-eth1
 <h3>OpenFlowバージョンの設定<a class="headerlink" href="#openflow" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>使用するOpenFlowのバージョンを1.3に設定します。このコマンド入力は、スイッチs1、s2、s3のxterm上で行ってください。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 </div>
@@ -420,7 +420,7 @@ h3 h3-eth0:s3-eth1
 <h3>スイッチングハブの実行<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>準備が整ったので、Ryuアプリケーションを実行します。ウインドウタイトルが「Node: c0 (root)」となっている xterm から次のコマンドを実行します。</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
+<div class="console highlight-default"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
 loading app simple_switch_stp_13.py
 loading app ryu.controller.ofp_handler
 loading app ryu.controller.ofp_handler
@@ -433,7 +433,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <div class="section" id="openflowstp">
 <h4>OpenFlowスイッチ起動時のSTP計算<a class="headerlink" href="#openflowstp" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>各OpenFlowスイッチとコントローラの接続が完了すると、BPDUパケットの交換が始まり、ルートブリッジの選出・ポート役割の設定・ポート状態遷移が行われます。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">stp</span> <span class="n">bridge</span><span class="o">.</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">stp</span> <span class="n">bridge</span><span class="o">.</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">LISTEN</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">LISTEN</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000001</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">3</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">LISTEN</span>
@@ -526,19 +526,19 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>パケットがループしないことを確認するため、ホスト1からホスト2へpingを実行します。</p>
 <p>pingコマンドを実行する前に、tcpdumpコマンドを実行しておきます。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
 </pre></div>
 </div>
 <p>トポロジ構築スクリプトを実行したコンソールで、次のコマンドを実行してホスト1からホスト2へpingを発行します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="n">h2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="n">h2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">84.4</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.657</span> <span class="n">ms</span>
@@ -559,7 +559,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </div>
 <p>tcpdumpの出力結果から、ARPがループしていないことが確認できます。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -570,7 +570,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -581,7 +581,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s3</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s3</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -593,11 +593,11 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <h4>故障検出時のSTP再計算<a class="headerlink" href="#stp" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>次に、リンクダウンが起こった際のSTP再計算の動作を確認します。各OpenFlowスイッチ起動後のSTP計算が完了した状態で次のコマンドを実行し、ポートをダウンさせます。</p>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 down</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 down</span>
 </pre></div>
 </div>
 <p>リンクダウンが検出され、STP再計算が実行されます。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">Link</span> <span class="n">down</span><span class="o">.</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">Link</span> <span class="n">down</span><span class="o">.</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">DISABLE</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">1</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">BLOCK</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">3</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">BLOCK</span>
@@ -649,11 +649,11 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <h4>故障回復時のSTP再計算<a class="headerlink" href="#id5" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>続けて、リンクダウンが回復した際のSTP再計算の動作を確認します。リンクダウン中の状態で次のコマンドを実行し、ポートを起動させます。</p>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 up</span>
 </pre></div>
 </div>
 <p>リンク復旧が検出され、STP再計算が実行されます。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">Link</span> <span class="n">down</span><span class="o">.</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">Link</span> <span class="n">down</span><span class="o">.</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">DISABLE</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">Link</span> <span class="n">up</span><span class="o">.</span>
 <span class="p">[</span><span class="n">STP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">dpid</span><span class="o">=</span><span class="mi">0000000000000002</span><span class="p">:</span> <span class="p">[</span><span class="n">port</span><span class="o">=</span><span class="mi">2</span><span class="p">]</span> <span class="n">DESIGNATED_PORT</span>     <span class="o">/</span> <span class="n">LISTEN</span>
@@ -884,7 +884,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <div class="section" id="bpdu">
 <h4>BPDUパケット送信<a class="headerlink" href="#bpdu" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>BPDUパケット送信はPortクラスのBPDUパケット送信スレッド(<code class="docutils literal"><span class="pre">Port.send_bpdu_thread</span></code>)で行っています。ポートの役割が指定ポート(<code class="docutils literal"><span class="pre">DESIGNATED_PORT</span></code>)の場合、ルートブリッジから通知されたhello time(<code class="docutils literal"><span class="pre">Port.port_times.hello_time</span></code>：デフォルト2秒)間隔でBPDUパケット生成(<code class="docutils literal"><span class="pre">Port._generate_config_bpdu()</span></code>)およびBPDUパケット送信(<code class="docutils literal"><span class="pre">Port.ofctl.send_packet_out()</span></code>)を行います。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
                  <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
@@ -913,7 +913,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に収集したポート情報(<code class="docutils literal"><span class="pre">Port.ofport</span></code>)や受信したBPDUパケットに設定されたルートブリッジ情報(<code class="docutils literal"><span class="pre">Port.port_priority、Port.port_times</span></code>)などを元に構築されます。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_generate_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="n">src_mac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">hw_addr</span>
@@ -951,7 +951,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <h4>BPDUパケット受信<a class="headerlink" href="#id11" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>BPDUパケットの受信は、StpクラスのPacket-Inイベントハンドラによって検出され、Bridgeクラスインスタンスを経由してPortクラスインスタンスに通知されます。イベントハンドラの実装は「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」を参照してください。</p>
 <p>BPDUパケットを受信したポートは、以前に受信したBPDUパケットと今回受信したBPDUパケットのブリッジIDなどの比較(<code class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></code>)を行い、STP再計算の要否判定を行います。以前に受信したBPDUより優れたBPDU(<code class="docutils literal"><span class="pre">SUPERIOR</span></code>)を受信した場合、「新たなルートブリッジが追加された」などのネットワークトポロジ変更が発生したことを意味するため、STP再計算の契機となります。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
         <span class="c1"># Check received BPDU is superior to currently held BPDU.</span>
@@ -989,7 +989,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>リンク断はStpクラスのPortStatusイベントハンドラによって検出し、Bridgeクラスインスタンスへ通知されます。</p>
 <p>BPDUパケットの受信待ちタイムアウトはPortクラスのBPDUパケット受信待ちスレッド(<code class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></code>)で検出します。max age(デフォルト20秒)間、ルートブリッジからのBPDUパケットを受信できない場合に間接故障と判断し、Bridgeクラスインスタンスへ通知されます。</p>
 <p>BPDU受信待ちタイマーの更新とタイムアウトの検出にはhubモジュール(ryu.lib.hub)の<code class="docutils literal"><span class="pre">hub.Event</span></code>と<code class="docutils literal"><span class="pre">hub.Timeout</span></code>を用います。<code class="docutils literal"><span class="pre">hub.Event</span></code>は<code class="docutils literal"><span class="pre">hub.Event.wait()</span></code>でwait状態に入り<code class="docutils literal"><span class="pre">hub.Event.set()</span></code>が実行されるまでスレッドが中断されます。<code class="docutils literal"><span class="pre">hub.Timeout</span></code>は指定されたタイムアウト時間内に<code class="docutils literal"><span class="pre">try</span></code>節の処理が終了しない場合、<code class="docutils literal"><span class="pre">hub.Timeout</span></code>例外を発行します。<code class="docutils literal"><span class="pre">hub.Event</span></code>がwait状態に入り<code class="docutils literal"><span class="pre">hub.Timeout</span></code>で指定されたタイムアウト時間内に<code class="docutils literal"><span class="pre">hub.Event.set()</span></code>が実行されない場合に、BPDUパケットの受信待ちタイムアウトと判断しBridgeクラスのSTP再計算処理を呼び出します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
                  <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
@@ -1031,7 +1031,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>受信したBPDUパケットの比較処理(<code class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></code>)により<code class="docutils literal"><span class="pre">SUPERIOR</span></code>または<code class="docutils literal"><span class="pre">REPEATED</span></code>と判定された場合は、ルートブリッジからのBPDUパケットが受信出来ていることを意味するため、BPDU受信待ちタイマーの更新(<code class="docutils literal"><span class="pre">Port._update_wait_bpdu_timer()</span></code>)を行います。<code class="docutils literal"><span class="pre">hub.Event</span></code>である<code class="docutils literal"><span class="pre">Port.wait_timer_event</span></code>の<code class="docutils literal"><span class="pre">set()</span></code>処理により<code class="docutils literal"><span class="pre">Port.wait_timer_event</span></code>はwait状態から解放され、BPDUパケット受信待ちスレッド(<code class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></code>)は<code class="docutils literal"><span class="pre">except</span> <span class="pre">hub.Timeout</span></code>節のタイムアウト処理に入ることなくタイマーをキャンセルし、改めてタイマーをセットし直すことで次のBPDUパケットの受信待ちを開始します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
         <span class="c1"># ...</span>
@@ -1060,7 +1060,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>STP計算(ルートブリッジ選択・各ポートの役割選択)はBridgeクラスで実行します。</p>
 <p>STP計算が実行されるケースではネットワークトポロジの変更が発生しておりパケットがループする可能性があるため、一旦全てのポートをBLOCK状態に設定(<code class="docutils literal"><span class="pre">port.down</span></code>)し、かつトポロジ変更イベント(<code class="docutils literal"><span class="pre">EventTopologyChange</span></code>)を上位APLに対して通知することで学習済みのMACアドレス情報の初期化を促します。</p>
 <p>その後、<code class="docutils literal"><span class="pre">Bridge._spanning_tree_algorithm()</span></code>でルートブリッジとポートの役割を選択した上で、各ポートをLISTEN状態で起動(<code class="docutils literal"><span class="pre">port.up</span></code>)しポートの状態遷移を開始します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">recalculate_spanning_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Re-calculation of spanning tree. &quot;&quot;&quot;</span>
@@ -1097,7 +1097,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>ルートブリッジの選出のため、ブリッジIDなどの自身のブリッジ情報と各ポートが受信したBPDUパケットに設定された他ブリッジ情報を比較します(<code class="docutils literal"><span class="pre">Bridge._select_root_port</span></code>)。</p>
 <p>この結果、ルートポートが見つかった場合(自身のブリッジ情報よりもポートが受信した他ブリッジ情報が優れていた場合)、他ブリッジがルートブリッジであると判断し指定ポートの選出(<code class="docutils literal"><span class="pre">Bridge._select_designated_port</span></code>)と非指定ポートの選出(ルートポート／指定ポート以外のポートを非指定ポートとして選出)を行います。</p>
 <p>一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は自身をルートブリッジと判断し各ポートは全て指定ポートとなります。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_spanning_tree_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Update tree roles.</span>
@@ -1143,7 +1143,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <div class="section" id="id14">
 <h4>ポート状態遷移<a class="headerlink" href="#id14" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>ポートの状態遷移処理は、Portクラスの状態遷移制御スレッド(<code class="docutils literal"><span class="pre">Port.state_machine</span></code>)で実行しています。次の状態に遷移するまでのタイマーを<code class="docutils literal"><span class="pre">Port._get_timer()</span></code>で取得し、タイマー満了後に<code class="docutils literal"><span class="pre">Port._get_next_state()</span></code>で次状態を取得し、状態遷移を行います。また、STP再計算が発生しこれまでのポート状態に関係無くBLOCK状態に遷移させるケースなど、<code class="docutils literal"><span class="pre">Port._change_status()</span></code>が実行された場合にも状態遷移が行われます。これらの処理は「<a class="reference internal" href="#id12">故障検出</a>」と同様にhubモジュールの<code class="docutils literal"><span class="pre">hub.Event</span></code>と<code class="docutils literal"><span class="pre">hub.Timeout</span></code>を用いて実現しています。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Port state machine.</span>
@@ -1204,7 +1204,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <div class="section" id="contexts">
 <h4>「_CONTEXTS」の設定<a class="headerlink" href="#contexts" title="このヘッドラインへのパーマリンク">¶</a></h4>
 <p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><span class="std std-ref">リンク・アグリゲーション</span></a>」と同様にSTPライブラリを利用するためCONTEXTを登録します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">stplib</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">stplib</span>
 
 <span class="c1"># ...</span>
 
@@ -1247,7 +1247,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </tbody>
 </table>
 <p>この設定によりdpid=0000000000000001のOpenFlowスイッチのブリッジIDが常に最小の値となり、ルートブリッジに選択されることになります。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
     <span class="c1"># ...</span>
 
@@ -1273,7 +1273,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>「<a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><span class="std std-ref">リンク・アグリゲーション</span></a>」と同様にSTPライブラリから通知されるイベントを受信するイベントハンドラを用意します。</p>
 <p>STPライブラリで定義された<code class="docutils literal"><span class="pre">stplib.EventPacketIn</span></code>イベントを利用することで、BPDUパケットを除いたパケットを受信することが出来るため、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」と同様のパケットハンドリンクを行います。</p>
 <blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
     <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -1284,7 +1284,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </div></blockquote>
 <p>ネットワークトポロジの変更通知イベント(<code class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></code>)を受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。</p>
 <blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
@@ -1315,7 +1315,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </div></blockquote>
 <p>ポート状態の変更通知イベント(<code class="docutils literal"><span class="pre">stplib.EventPortStateChange</span></code>)を受け取り、ポート状態のデバッグログ出力を行っています。</p>
 <blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
 
     <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPortStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_port_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>

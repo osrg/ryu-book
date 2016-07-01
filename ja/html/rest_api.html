@@ -77,7 +77,7 @@
 </li>
 </ol>
 <p>それではソースコードを見てみましょう。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
@@ -89,7 +89,7 @@
 <span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
 
 <span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s1">&#39;simple_switch_api_app&#39;</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/simpleswitch/mactable/</span><span class="si">{dpid}</span><span class="s1">&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/simpleswitch/mactable/{dpid}&#39;</span>
 
 <span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
@@ -180,14 +180,14 @@
 </div>
 <div class="section" id="simpleswitchrest13">
 <h2>SimpleSwitchRest13クラスの実装<a class="headerlink" href="#simpleswitchrest13" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
     <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>クラス変数<code class="docutils literal"><span class="pre">_CONTEXT</span></code>で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、<code class="docutils literal"><span class="pre">wsgi</span></code>というキーで、WSGIのWebサーバインスタンスが取得できます。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wsgi&#39;</span><span class="p">]</span>
@@ -196,7 +196,7 @@
 </pre></div>
 </div>
 <p>コンストラクタでは、後述するコントローラクラスを登録するために、<code class="docutils literal"><span class="pre">WSGIApplication</span></code>のインスタンスを取得しています。登録には、<code class="docutils literal"><span class="pre">register</span></code>メソッドを使用します。<code class="docutils literal"><span class="pre">register</span></code>メソッド実行の際、コントローラのコンストラクタで<code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>クラスのインスタンスにアクセスできるように、<code class="docutils literal"><span class="pre">simple_switch_api_app</span></code>というキー名でディクショナリオブジェクトを渡しています。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
@@ -206,7 +206,7 @@
 </pre></div>
 </div>
 <p>親クラスの<code class="docutils literal"><span class="pre">switch_features_handler</span></code>をオーバライドしています。このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、イベントオブジェクト<code class="docutils literal"><span class="pre">ev</span></code>に格納された<code class="docutils literal"><span class="pre">datapath</span></code>オブジェクトを取得し、インスタンス変数<code class="docutils literal"><span class="pre">switches</span></code>に保持しています。また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
     <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
 
@@ -255,7 +255,7 @@
 <div class="section" id="simpleswitchcontroller">
 <h2>SimpleSwitchControllerクラスの実装<a class="headerlink" href="#simpleswitchcontroller" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>次はREST APIへのHTTPリクエストを受け付けるコントローラクラスです。クラス名は<code class="docutils literal"><span class="pre">SimpleSwitchController</span></code>です。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
@@ -263,7 +263,7 @@
 </pre></div>
 </div>
 <p>コンストラクタで、<code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code>クラスのインスタンスを取得します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
@@ -304,7 +304,7 @@
 </ul>
 <p>第2引数で指定したURLでREST APIが呼ばれ、その時のHTTPメソッドがGETの場合に、<code class="docutils literal"><span class="pre">list_mac_table</span></code>メソッドが呼ばれます。このメソッドは、{dpid}の部分で指定されたデータパスIDに該当するMACアドレステーブルを取得し、JSON形式に変換し呼び出し元に返却しています。</p>
 <p>なお、Ryuに接続していない未知のスイッチのデータパスIDを指定するとレスポンスコード404を返します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
@@ -330,7 +330,7 @@
 <h2>REST API搭載スイッチングハブの実行<a class="headerlink" href="#id2" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>REST APIを追加したスイッチングハブを実行してみましょう。</p>
 <p>最初に「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」と同様にMininetを実行します。ここでもスイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。続いて、REST APIを追加したスイッチングハブを起動します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
 loading app ./simple_switch_rest_13.py
@@ -360,7 +360,7 @@ move onto main mode
 </div>
 <p>起動時のメッセージの中に、「(31135) wsgi starting up on<a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>」という行がありますが、これは、Webサーバがポート番号8080で起動したことを表しています。</p>
 <p>次にmininetのシェル上で、h1からh2へpingを発行します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">84.1</span> <span class="n">ms</span>
 
@@ -370,7 +370,7 @@ move onto main mode
 </pre></div>
 </div>
 <p>この時、RyuへのPacket-Inは3回発生しています。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
 <span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span> <span class="mi">1</span>
 <span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
 <span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2</span>
@@ -379,13 +379,13 @@ move onto main mode
 </pre></div>
 </div>
 <p>ここで、スイッチングハブのMACテーブルを取得するREST APIを実行してみましょう。今回は、REST APIの呼び出しにcurlコマンドを使用します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
 </pre></div>
 </div>
 <p>h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。</p>
 <p>今度は、h1,h2の2台のホストをあらかじめMACアドレステーブルに格納し、pingを実行してみます。いったんスイッチングハブとMininetを停止します。次に、再度Mininetを起動し、OpenFlowバージョンをOpenFlow13に設定後、スイッチングハブを起動します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
 <span class="p">(</span><span class="mi">26759</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 <span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;</span><span class="n">eventlet</span><span class="o">.</span><span class="n">greenio</span><span class="o">.</span><span class="n">GreenSocket</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afe6d0</span><span class="o">&gt;</span> <span class="n">address</span><span class="p">:(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">48818</span><span class="p">)</span>
 <span class="n">hello</span> <span class="n">ev</span> <span class="o">&lt;</span><span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afec10</span><span class="o">&gt;</span>
@@ -397,7 +397,7 @@ move onto main mode
 </pre></div>
 </div>
 <p>次に、MACアドレステーブル更新用のREST APIを1ホストごとに呼び出します。REST APIを呼び出す際のデータ形式は、{&#8220;mac&#8221; : &#8220;MACアドレス&#8221;, &#8220;port&#8221; : 接続ポート番号}となるようにします。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:01&quot;: 1}
 ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quot;, &quot;port&quot; : 2}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
@@ -405,7 +405,7 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 </div>
 <p>これらのコマンドを実行すると、h1,h2に対応したフローエントリがスイッチに登録されます。</p>
 <p>続いて、h1からh2へpingを実行します。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">4.62</span> <span class="n">ms</span>
 
@@ -414,7 +414,7 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 <span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
 </pre></div>
 </div>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
 <span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
 <span class="p">(</span><span class="mi">28293</span><span class="p">)</span> <span class="n">accepted</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">44453</span><span class="p">)</span>
 <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">-</span> <span class="o">-</span> <span class="p">[</span><span class="mi">19</span><span class="o">/</span><span class="n">Nov</span><span class="o">/</span><span class="mi">2013</span> <span class="mi">19</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">45</span><span class="p">]</span> <span class="s2">&quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot;</span> <span class="mi">200</span> <span class="mi">124</span> <span class="mf">0.002734</span>

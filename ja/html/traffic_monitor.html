@@ -62,7 +62,7 @@
 <div class="section" id="id3">
 <h2>トラフィックモニターの実装<a class="headerlink" href="#id3" title="このヘッドラインへのパーマリンク">¶</a></h2>
 <p>早速ですが、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」で説明したスイッチングハブにトラフィックモニター機能を追加したソースコードです。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
@@ -148,7 +148,7 @@
 <div class="section" id="id4">
 <h3>定周期処理<a class="headerlink" href="#id4" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>スイッチングハブの処理と並行して、定期的に統計情報取得のリクエストをOpenFlowスイッチへ発行するために、スレッドを生成します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
@@ -167,7 +167,7 @@
 </pre></div>
 </div>
 <p><code class="docutils literal"><span class="pre">ryu.lib.hub</span></code>には、いくつかのeventletのラッパーや基本的なクラスの実装があります。ここではスレッドを生成する<code class="docutils literal"><span class="pre">hub.spawn()</span></code>を使用します。実際に生成されるスレッドはeventletのグリーンスレッドです。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">,</span>
             <span class="p">[</span><span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -192,7 +192,7 @@
 <p>スレッド関数<code class="docutils literal"><span class="pre">_monitor()</span></code>では、登録されたスイッチに対する統計情報取得リクエストの発行を10秒間隔で無限に繰り返します。</p>
 <p>接続中のスイッチを監視対象とするため、スイッチの接続および切断の検出に<code class="docutils literal"><span class="pre">EventOFPStateChange</span></code>イベントを利用しています。このイベントはRyuフレームワークが発行するもので、Datapathのステートが変わったときに発行されます。</p>
 <p>ここでは、Datapathのステートが<code class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></code>になった時にそのスイッチを監視対象に登録、<code class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></code>になった時に登録の削除を行っています。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 <span class="k">def</span> <span class="nf">_request_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;send stats request: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
@@ -213,7 +213,7 @@
 <div class="section" id="flowstats">
 <h3>FlowStats<a class="headerlink" href="#flowstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>スイッチからの応答を受け取るため、FlowStatsReplyメッセージを受信するイベントハンドラを作成します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_flow_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
@@ -239,7 +239,7 @@
 <p>プライオリティが0のTable-missフローを除いて、全てのフローエントリを選択しています。受信ポートと宛先MACアドレスでソートして、それぞれのフローエントリにマッチしたパケット数とバイト数を出力しています。</p>
 <p>なお、ここでは一部の数値をログに出しているだけですが、継続的に情報を収集、分析するには、外部プログラムとの連携が必要になるでしょう。そのような場合、<code class="docutils literal"><span class="pre">OFPFlowStatsReply</span></code>の内容をJSONフォーマットに変換することができます。</p>
 <p>例えば次のように書くことができます。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="c1"># ...</span>
 
@@ -248,7 +248,7 @@
 </pre></div>
 </div>
 <p>この場合、以下のように出力されます。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="p">{</span>
    <span class="s2">&quot;OFPFlowStatsReply&quot;</span><span class="p">:</span> <span class="p">{</span>
       <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
          <span class="p">{</span>
@@ -357,7 +357,7 @@
 <div class="section" id="portstats">
 <h3>PortStats<a class="headerlink" href="#portstats" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>スイッチからの応答を受け取るため、PortStatsReplyメッセージを受信するイベントハンドラを作成します。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_port_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">body</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">body</span>
@@ -386,7 +386,7 @@
 <p>まず、「<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">スイッチングハブ</span></a>」と同様にMininetを実行します。ここで、スイッチのOpenFlowバージョンにOpenFlow13を設定することを忘れないでください。</p>
 <p>次にいよいよトラフィックモニターの実行です。</p>
 <p>controller: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ./simple_monitor.py</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">ryu</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ./simple_monitor.py</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
@@ -433,7 +433,7 @@
 <p>この時点では、フローエントリが無く(Table-missフローエントリは表示していません)、各ポートのカウントもすべて0です。</p>
 <p>ホスト1からホスト2へpingを実行してみましょう。</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping -c1 10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping -c1 10.0.0.2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">94.4</span> <span class="n">ms</span>
 
@@ -445,7 +445,7 @@
 </div>
 <p>パケットの転送や、フローエントリが登録され、統計情報が変化します。</p>
 <p>controller: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
+<div class="console highlight-default"><div class="highlight"><pre><span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
 <span class="o">----------------</span> <span class="o">--------</span> <span class="o">-----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
 <span class="mi">0000000000000001</span>        <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span>        <span class="mi">2</span>        <span class="mi">1</span>       <span class="mi">42</span>
 <span class="mi">0000000000000001</span>        <span class="mi">2</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span>        <span class="mi">1</span>        <span class="mi">2</span>      <span class="mi">140</span>
