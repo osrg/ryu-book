@@ -174,7 +174,7 @@ Source name: ``simple_switch_stp_13.py``
 
 .. NOTE::
 
-    If using the Open vSwitch, this application dose not wrok well depending
+    If using the Open vSwitch, this application does not wrok well depending
     on the Open vSwitch's settings or version.
     Open vSwitch has the STP implementation, but if this option is disabled
     (by default), Open vSwitch drops the STP (BPDU) packets with the dest mac
