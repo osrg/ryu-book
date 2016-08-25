@@ -277,26 +277,14 @@ Ryuアプリケーションで利用する主な属性は以下のものです�
 ============== ==============================================================
 id             接続しているOpenFlowスイッチのID(データパスID)です。
 ofproto        使用しているOpenFlowバージョンに対応したofprotoモジュールを
-               示します。現時点では、以下のいずれかになります。
-
-               ``ryu.ofproto.ofproto_v1_0``
-
-               ``ryu.ofproto.ofproto_v1_2``
+               示します。OpenFlow 1.3 の場合は下記になります。
 
                ``ryu.ofproto.ofproto_v1_3``
 
-               ``ryu.ofproto.ofproto_v1_4``
-
 ofproto_parser ofprotoと同様に、ofproto_parserモジュールを示します。
-               現時点では、以下のいずれかになります。
-
-               ``ryu.ofproto.ofproto_v1_0_parser``
-
-               ``ryu.ofproto.ofproto_v1_2_parser``
+               OpenFlow 1.3 の場合は下記になります。
 
                ``ryu.ofproto.ofproto_v1_3_parser``
-
-               ``ryu.ofproto.ofproto_v1_4_parser``
 ============== ==============================================================
 
 Ryuアプリケーションで利用するDatapathクラスの主なメソッドは以下のものです。
