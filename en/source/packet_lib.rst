@@ -14,8 +14,10 @@ Protocol Header Class
 
 The Ryu packet library offers classes corresponding to various protocol headers.
 
-Protocols including the following are supported.
-For details of classes corresponding to each protocol, please refer to `API Reference <http://ryu.readthedocs.org/en/latest/>`_.
+The following protocols are used frequently.
+For details of classes corresponding to each protocol,
+please refer to
+`Packet library API Reference <http://ryu.readthedocs.io/en/latest/library_packet_ref.html>`_.
 
 - arp
 - bgp
