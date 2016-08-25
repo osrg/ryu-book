@@ -239,20 +239,12 @@ Attribute name         Explanation
 ============== ==============================================================
 id             ID (data path ID) of the connected OpenFlow switch.
 ofproto        Indicates the ofproto module that supports the OpenFlow version
-               in use. At this point, it is one of the following modules.
-
-               ``ryu.ofproto.ofproto_v1_0``
-
-               ``ryu.ofproto.ofproto_v1_2``
+               in use. In the case of OpenFlow 1.3 format will be following module.
 
                ``ryu.ofproto.ofproto_v1_3``
 
 ofproto_parser Same as ofproto, indicates the ofproto_parser module.
-               At this point, it is one of the following modules.
-
-               ``ryu.ofproto.ofproto_v1_0_parser``
-
-               ``ryu.ofproto.ofproto_v1_2_parser``
+               In the case of OpenFlow 1.3 format will be following module.
 
                ``ryu.ofproto.ofproto_v1_3_parser``
 ============== ==============================================================
