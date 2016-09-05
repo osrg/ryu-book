@@ -141,7 +141,7 @@ Implementation of Switching Hub Using Ryu
 
 The source code of the switching hub is in Ryu's source tree.
 
-    ryu/app/simple_switch_13.py
+    ryu/app/example_switch_13.py
 
 Other than the above, there are simple_switch.py(OpenFlow 1.0) and simple_switch_12.py(OpenFlow 1.2), depending on the version of OpenFlow but we take a look at implementation supporting OpenFlow 1.3.
 
@@ -149,7 +149,7 @@ The source code is short thus we shown the entire source code below.
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_13.py
+.. literalinclude:: ../../ryu/app/example_switch_13.py
 
 
 Let's examine the respective implementation content.
