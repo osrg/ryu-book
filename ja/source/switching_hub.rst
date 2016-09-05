@@ -161,7 +161,7 @@ Ryuによるスイッチングハブの実装
 
 スイッチングハブのソースコードは、Ryuのソースツリーにあります。
 
-    ryu/app/simple_switch_13.py
+    ryu/app/example_switch_13.py
 
 OpenFlowのバージョンに応じて、他にもsimple_switch.py(OpenFlow 1.0)、
 simple_switch_12.py(OpenFlow 1.2)がありますが、ここではOpenFlow 1.3に対応した
@@ -171,7 +171,7 @@ simple_switch_12.py(OpenFlow 1.2)がありますが、ここではOpenFlow 1.3�
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_13.py
+.. literalinclude:: ../../ryu/app/example_switch_13.py
 
 
 それでは、それぞれの実装内容について見ていきます。
