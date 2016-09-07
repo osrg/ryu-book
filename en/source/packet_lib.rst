@@ -153,7 +153,8 @@ IP addresses, etc. are hard-coded in the __init__ method.
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/ping_responder.py
+.. literalinclude:: ../../sources/ping_responder.py
+    :lines: 19-
 
 
 .. NOTE::

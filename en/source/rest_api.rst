@@ -35,7 +35,8 @@ Let's take a look at the source code.
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_rest_13.py
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :lines: 16-
 
 With simple_switch_rest_13.py, two classes are defined.
 
@@ -47,78 +48,41 @@ With ``SimpleSwitchRest13``, because flow entry is added to the switch, the Feat
 
 Implementing SimpleSwitchRest13 Class
 -------------------------------------
+
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
-
-        _CONTEXTS = { 'wsgi': WSGIApplication }
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :pyobject: SimpleSwitchRest13
+    :end-before: __init__
+    :append: # ...
 
 Class variable ``_CONTEXT`` is used to specify Ryu's WSGI-compatible Web server class. By doing so, WSGI's Web server instance can be acquired by a key called the ``wsgi`` key.
 
 .. rst-class:: sourcecode
 
-::
-
-    def __init__(self, *args, **kwargs):
-        super(SimpleSwitchRest13, self).__init__(*args, **kwargs)
-        self.switches = {}
-        wsgi = kwargs['wsgi']
-        wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchRest13.__init__
 
 Constructor acquires the instance of ``WSGIApplication`` in order to register the controller class, which is explained in a later section. For registration, the ``register`` method is used.
 When executing the ``register`` method, the dictionary object is passed in the key name ``simple_switch_api_app`` so that the constructor of the controller can access the instance of the ``SimpleSwitchRest13`` class.
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        super(SimpleSwitchRest13, self).switch_features_handler(ev)
-        datapath = ev.msg.datapath
-        self.switches[datapath.id] = datapath
-        self.mac_to_port.setdefault(datapath.id, {})
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    :pyobject: SimpleSwitchRest13.switch_features_handler
 
 Parent class ``switch_features_handler`` is overridden.
 This method, upon rising of the SwitchFeatures event, acquires the ``datapath`` object stored in event object ``ev`` and stores it in instance variable ``switches``.
 Also, at this time, an empty dictionary is set as the initial value in the MAC address table.
 
-
 .. rst-class:: sourcecode
 
-::
-
-    def set_mac_to_port(self, dpid, entry):
-        mac_table = self.mac_to_port.setdefault(dpid, {})
-        datapath = self.switches.get(dpid)
-
-        entry_port = entry['port']
-        entry_mac = entry['mac']
-
-        if datapath is not None:
-            parser = datapath.ofproto_parser
-            if entry_port not in mac_table.values():
-
-                for mac, port in mac_table.items():
-
-                    # from known device to new device
-                    actions = [parser.OFPActionOutput(entry_port)]
-                    match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
-                    self.add_flow(datapath, 1, match, actions)
-
-                    # from new device to known device
-                    actions = [parser.OFPActionOutput(port)]
-                    match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
-                    self.add_flow(datapath, 1, match, actions)
-
-                mac_table.update({entry_mac : entry_port})
-        return mac_table
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchRest13.set_mac_to_port
 
 This method registers the MAC address and port to the specified switch.
 The method is executed when REST API is called by the PUT method.
@@ -150,33 +114,19 @@ The class name is ``SimpleSwitchController``.
 
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitchController(ControllerBase):
-        def __init__(self, req, link, data, **config):
-            super(SimpleSwitchController, self).__init__(req, link, data, **config)
-            self.simpl_switch_spp = data[simple_switch_instance_name]
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :pyobject: SimpleSwitchController
+    :end-before: @route
+    :append: # ...
 
 The instance of the ``SimpleSwitchRest13`` class is acquired by the contractor.
 
 .. rst-class:: sourcecode
 
-::
-
-    @route('simpleswitch', url, methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def list_mac_table(self, req, **kwargs):
-
-        simple_switch = self.simpl_switch_spp
-        dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-
-        if dpid not in simple_switch.mac_to_port:
-            return Response(status=404)
-
-        mac_table = simple_switch.mac_to_port.get(dpid, {})
-        body = json.dumps(mac_table)
-        return Response(content_type='application/json', body=body)
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @route('simpleswitch', url, methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
+    :pyobject: SimpleSwitchController.list_mac_table
 
 This part is to implement REST API's URL and its corresponding processing. To associate this method and URL, the ``route`` decorator defined in Ryu is used.
 
@@ -208,25 +158,10 @@ If the data path ID of an unknown switch, which is not connected to Ryu, is spec
 
 .. rst-class:: sourcecode
 
-::
-
-    @route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def put_mac_table(self, req, **kwargs):
-
-        simple_switch = self.simpl_switch_spp
-        dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        new_entry = eval(req.body)
-
-        if dpid not in simple_switch.mac_to_port:
-            return Response(status=404)
-
-        try:
-            mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
-            body = json.dumps(mac_table)
-            return Response(content_type='application/json', body=body)
-        except Exception as e:
-            return Response(status=500)
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
+    :pyobject: SimpleSwitchController.put_mac_table
 
 Let's talk about REST API that registers MAC address table.
 

@@ -150,7 +150,7 @@ The source code is short thus we shown the entire source code below.
 .. rst-class:: sourcecode
 
 .. literalinclude:: ../../ryu/app/example_switch_13.py
-
+    :lines: 16-
 
 Let's examine the respective implementation content.
 
@@ -164,20 +164,12 @@ Also, MAC address table mac_to_port is defined.
 
 In the OpenFlow protocol, some procedures such as handshake required for communication between the OpenFlow switch and the controller have been defined. However, because Ryu's framework takes care of those procedures thus it is not necessary to be aware of those in Ryu applications.
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitch13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitch13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :pyobject: ExampleSwitch13
+    :end-before: set_ev_cls
+    :append: # ...
 
 Event Handler
 ^^^^^^^^^^^^^^^^
@@ -213,15 +205,12 @@ Specifically, upon receiving the Switch Features(Features Reply) message, the Ta
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        datapath = ev.msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :end-before: #
+    :append: # ...
 
 In ``ev.msg``, the instance of the OpenFlow message class corresponding to the event is stored. In this case, it is 
 ``ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures``.
@@ -261,22 +250,12 @@ The switching hub does not particularly use the received Switch Features message
 
 .. rst-class:: sourcecode
 
-::
-
-    def switch_features_handler(self, ev):
-        # ...
-
-        # install table-miss flow entry
-        #
-        # We specify NO BUFFER to max_len of the output action due to
-        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-        # 128, OVS will send Packet-In with invalid buffer_id and
-        # truncated packet data. In that case, we cannot output packets
-        # correctly.
-        match = parser.OFPMatch()
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
-                                          ofproto.OFPCML_NO_BUFFER)]
-        self.add_flow(datapath, 0, match, actions)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def switch_features_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :start-after: parser = datapath.ofproto_parser
 
 The Table-miss flow entry has the lowest (0) priority and this entry matches all packets. In the instruction of this entry, by specifying the output action to output to the controller port, in case the received packet does not match any of the normal flow entries, Packet-In is issued.
 
@@ -304,17 +283,12 @@ Create the handler of the Packet-In event handler in order to accept received pa
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def _packet_in_handler(self, ev):
-        msg = ev.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :end-before: #
+    :append: # ...
 
 Frequently used OFPPacketIn class attributes are as follows:
 
@@ -335,28 +309,14 @@ Updating the MAC Address Table
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        in_port = msg.match['in_port']
-
-        pkt = packet.Packet(msg.data)
-        eth = pkt.get_protocols(ethernet.ethernet)[0]
-
-        dst = eth.dst
-        src = eth.src
-
-        dpid = datapath.id
-        self.mac_to_port.setdefault(dpid, {})
-
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
-
-        # learn a mac address to avoid FLOOD next time.
-        self.mac_to_port[dpid][src] = in_port
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: src = eth_pkt.src
+    :end-before: # if the destination mac address is already learned,
+    :append: # ...
 
 Get the receive port (``in_port``) from the OFPPacketIn match.
 The destination MAC address and sender MAC address are obtained from the Ethernet header of the received packets using Ryu's packet library.
@@ -373,25 +333,14 @@ The corresponding port number is used when the destination MAC address exists in
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        if dst in self.mac_to_port[dpid]:
-            out_port = self.mac_to_port[dpid][dst]
-        else:
-            out_port = ofproto.OFPP_FLOOD
-
-        actions = [parser.OFPActionOutput(out_port)]
-
-        # install a flow to avoid packet_in next time
-        if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            self.add_flow(datapath, 1, match, actions)
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.mac_to_port[dpid][src] = in_port
+    :end-before: # construct packet_out message and send it.
+    :append: # ...
 
 If the destination MAC address is found, an entry is added to the flow table of the OpenFlow switch.
 
@@ -418,16 +367,11 @@ Processing of the Packet-In handler has not been done yet but here take a look a
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, priority, match, actions):
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
-                                             actions)]
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :pyobject: ExampleSwitch13.add_flow
+    :end-before: mod = parser.OFPFlowMod
+    :append: # ...
 
 For flow entries, set match that indicates the target packet conditions, and instruction that indicates the operation on the packet, entry priority level, and effective time.
 
@@ -437,14 +381,12 @@ Finally, add an entry to the flow table by issuing the Flow Mod message.
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, port, dst, actions):
-        # ...
-
-        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
-                                match=match, instructions=inst)
-        datapath.send_msg(mod)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def add_flow(self, datapath, priority, match, actions):
+              # ...
+    :pyobject: ExampleSwitch13.add_flow
+    :start-after: actions)]
 
 The class corresponding to the Flow Mod message is the ``OFPFlowMod`` class. The instance of the OFPFlowMod class is generated and the message is sent to the OpenFlow switch using the Datapath.send_msg() method.
 
@@ -551,18 +493,12 @@ Regardless whether the destination MAC address is found from the MAC address tab
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        data = None
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data
-
-        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                                  in_port=in_port, actions=actions, data=data)
-        datapath.send_msg(out)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.add_flow(datapath, 1, match, actions)
 
 The class corresponding to the Packet-Out message is ``OFPPacketOut`` class.
 

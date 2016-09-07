@@ -1126,7 +1126,7 @@ source code: ``qos_sample_topology.py``
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/qos_sample_topology.py
+.. literalinclude:: ../../sources/qos_sample_topology.py
 
 .. NOTE::
 

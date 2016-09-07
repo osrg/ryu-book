@@ -47,7 +47,8 @@ Source name: ``simple_switch_lacp_13.py``
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_lacp_13.py
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :lines: 16-
 
 
 Configuring an Experimental Environment
@@ -82,7 +83,7 @@ Source name: ``link_aggregation.py``
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/link_aggregation.py
+.. literalinclude:: ../../sources/link_aggregation.py
 
 By executing this script, a topology is created in which two links exist between host h1 and switch s1. It is possible to use the net command to check the created topology.
 
@@ -708,18 +709,9 @@ In order to use the link aggregation function, it is necessary to configure befo
 
 .. rst-class:: sourcecode
 
-::
-
-    def add(self, dpid, ports):
-        # ...
-        assert isinstance(ports, list)
-        assert 2 <= len(ports)
-        ifs = {}
-        for port in ports:
-            ifs[port] = {'enabled': False, 'timeout': 0}
-        bond = {}
-        bond[dpid] = ifs
-        self._bonds.append(bond)
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :pyobject: LacpLib.add
 
 The content of the arguments are as follows:
 
@@ -746,19 +738,10 @@ Packet-In Processing
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def packet_in_handler(self, evt):
-        """PacketIn event handler. when the received packet was LACP,
-        proceed it. otherwise, send a event."""
-        req_pkt = packet.Packet(evt.msg.data)
-        if slow.lacp in req_pkt:
-            (req_lacp, ) = req_pkt.get_protocols(slow.lacp)
-            (req_eth, ) = req_pkt.get_protocols(ethernet.ethernet)
-            self._do_lacp(req_lacp, req_eth.src, evt.msg)
-        else:
-            self.send_event_to_observers(EventPacketIn(evt.msg))
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    :pyobject: LacpLib.packet_in_handler
 
 The event handler itself is the same as ":ref:`ch_switching_hub`". Processing is branched depending on whether or not the LACP data unit is included in the received massage.
 
@@ -769,14 +752,8 @@ The event called ``EventPacketIn``, which is sent in the above source, is a user
 
 .. rst-class:: sourcecode
 
-::
-
-    class EventPacketIn(event.EventBase):
-        """a PacketIn event class using except LACP."""
-        def __init__(self, msg):
-            """initialization."""
-            super(EventPacketIn, self).__init__()
-            self.msg = msg
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :pyobject: EventPacketIn
 
 User-defined events are created by inheriting the ryu.controller.event.EventBase class. There is no limit on data enclosed in the event class. In the ``EventPacketIn`` class, the ryu.ofproto.OFPPacketIn instance received by the Packet-In message is used as is.
 
@@ -796,20 +773,14 @@ The processing of 2 above is explained in `Registering Flow Entry Sending Packet
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_lacp(self, req_lacp, src, msg):
-        # ...
-
-        # when LACP arrived at disabled port, update the state of
-        # the slave i/f to enabled, and send a event.
-        if not self._get_slave_enabled(dpid, port):
-            self.logger.info(
-                "SW=%s PORT=%d the slave i/f has just been up.",
-                dpid_to_str(dpid), port)
-            self._set_slave_enabled(dpid, port, True)
-            self.send_event_to_observers(
-                EventSlaveStateChanged(datapath, port, True))
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: def _do_lacp(self, req_lacp, src, msg):
+              # ...
+    :pyobject: LacpLib._do_lacp
+    :start-after: self.logger.debug(str(req_lacp))
+    :end-before: # set the idle_timeout time using the actor state of the
+    :append: # ...
 
 The _get_slave_enabled() method acquires information as to whether or not the port specified by the specified switch is enabled. The _set_slave_enabled() method sets the enable/disable state of the port specified by the specified switch.
 
@@ -817,17 +788,8 @@ In the above source, when an LACP data unit is received by a port in the disable
 
 .. rst-class:: sourcecode
 
-::
-
-    class EventSlaveStateChanged(event.EventBase):
-        """a event class that notifies the changes of the statuses of the
-        slave i/fs."""
-        def __init__(self, datapath, port, enabled):
-            """initialization."""
-            super(EventSlaveStateChanged, self).__init__()
-            self.datapath = datapath
-            self.port = port
-            self.enabled = enabled
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :pyobject: EventSlaveStateChanged
 
 Other than when a port is enabled, the ``EventSlaveStateChanged`` event is also sent when a port is disabled. Processing when disabled is implemented in "`Receive Processing of FlowRemoved Message`_".
 
@@ -849,32 +811,14 @@ If the exchange interval was changed, it is necessary to re-set the idle_timeout
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_lacp(self, req_lacp, src, msg):
-        # ...
-
-        # set the idle_timeout time using the actor state of the
-        # received packet.
-        if req_lacp.LACP_STATE_SHORT_TIMEOUT == \
-           req_lacp.actor_state_timeout:
-            idle_timeout = req_lacp.SHORT_TIMEOUT_TIME
-        else:
-            idle_timeout = req_lacp.LONG_TIMEOUT_TIME
-
-        # when the timeout time has changed, update the timeout time of
-        # the slave i/f and re-enter a flow entry for the packet from
-        # the slave i/f with idle_timeout.
-        if idle_timeout != self._get_slave_timeout(dpid, port):
-            self.logger.info(
-                "SW=%s PORT=%d the timeout time has changed.",
-                dpid_to_str(dpid), port)
-            self._set_slave_timeout(dpid, port, idle_timeout)
-            func = self._add_flow.get(ofproto.OFP_VERSION)
-            assert func
-            func(src, port, idle_timeout, datapath)
-
-        # ...
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: def _do_lacp(self, req_lacp, src, msg):
+              # ...
+    :pyobject: LacpLib._do_lacp
+    :start-after: EventSlaveStateChanged(datapath, port, True))
+    :end-before: # create a response packet.
+    :append: # ...
 
 The _get_slave_timeout() method acquires the current idle_timeout value of the port specified by the specified switch. The _set_slave_timeout() method registers the idle_timeout value of the port specified by the specified switch. In initial status or when the port is removed from the link aggregation group, because the idle_timeout value is set to 0, if a new LACP data unit is received, the flow entry is registered regardless of which exchange interval is used.
 
@@ -882,26 +826,9 @@ Depending on the OpenFlow version used, the argument of the constructor of the `
 
 .. rst-class:: sourcecode
 
-::
-
-    def _add_flow_v1_2(self, src, port, timeout, datapath):
-        """enter a flow entry for the packet from the slave i/f
-        with idle_timeout. for OpenFlow ver1.2 and ver1.3."""
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        match = parser.OFPMatch(
-            in_port=port, eth_src=src, eth_type=ether.ETH_TYPE_SLOW)
-        actions = [parser.OFPActionOutput(
-            ofproto.OFPP_CONTROLLER, ofproto.OFPCML_MAX)]
-        inst = [parser.OFPInstructionActions(
-            ofproto.OFPIT_APPLY_ACTIONS, actions)]
-        mod = parser.OFPFlowMod(
-            datapath=datapath, command=ofproto.OFPFC_ADD,
-            idle_timeout=timeout, priority=65535,
-            flags=ofproto.OFPFF_SEND_FLOW_REM, match=match,
-            instructions=inst)
-        datapath.send_msg(mod)
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :pyobject: LacpLib._add_flow_v1_2
 
 In the above source, the flow entry that "sends Packet-In when the LACP data unit is received form the counterpart interface" is set with the highest priority with no communication monitoring time.
 
@@ -913,21 +840,12 @@ When an LACP data unit is received, after performing "`Processing Accompanying P
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_lacp(self, req_lacp, src, msg):
-        # ...
-
-        # create a response packet.
-        res_pkt = self._create_response(datapath, port, req_lacp)
-
-        # packet-out the response packet.
-        out_port = ofproto.OFPP_IN_PORT
-        actions = [parser.OFPActionOutput(out_port)]
-        out = datapath.ofproto_parser.OFPPacketOut(
-            datapath=datapath, buffer_id=ofproto.OFP_NO_BUFFER,
-            data=res_pkt.data, in_port=port, actions=actions)
-        datapath.send_msg(out)
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: def _do_lacp(self, req_lacp, src, msg):
+              # ...
+    :pyobject: LacpLib._do_lacp
+    :start-after: func(src, port, idle_timeout, datapath)
 
 The _create_response() method called in the above source is response packet creation processing. Using the _create_lacp() method called there, a response LACP data unit is created. The created response packet is Packet-Out from the port that received the LACP data unit.
 
@@ -935,32 +853,10 @@ In the LACP data unit, the send side (Actor) information and receive side (Partn
 
 .. rst-class:: sourcecode
 
-::
-
-    def _create_lacp(self, datapath, port, req):
-        """create a LACP packet."""
-        actor_system = datapath.ports[datapath.ofproto.OFPP_LOCAL].hw_addr
-        res = slow.lacp(
-            # ...
-            partner_system_priority=req.actor_system_priority,
-            partner_system=req.actor_system,
-            partner_key=req.actor_key,
-            partner_port_priority=req.actor_port_priority,
-            partner_port=req.actor_port,
-            partner_state_activity=req.actor_state_activity,
-            partner_state_timeout=req.actor_state_timeout,
-            partner_state_aggregation=req.actor_state_aggregation,
-            partner_state_synchronization=req.actor_state_synchronization,
-            partner_state_collecting=req.actor_state_collecting,
-            partner_state_distributing=req.actor_state_distributing,
-            partner_state_defaulted=req.actor_state_defaulted,
-            partner_state_expired=req.actor_state_expired,
-            collector_max_delay=0)
-        self.logger.info("SW=%s PORT=%d LACP sent.",
-                         dpid_to_str(datapath.id), port)
-        self.logger.debug(str(res))
-        return res
-
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
+    :pyobject: LacpLib._create_lacp
 
 Receive Processing of FlowRemoved Message
 """""""""""""""""""""""""""""""""""""""""
@@ -969,33 +865,10 @@ When LACP data units are not exchanged during the specified period, the OpenFlow
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
-    def flow_removed_handler(self, evt):
-        """FlowRemoved event handler. when the removed flow entry was
-        for LACP, set the status of the slave i/f to disabled, and
-        send a event."""
-        msg = evt.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        dpid = datapath.id
-        match = msg.match
-        if ofproto.OFP_VERSION == ofproto_v1_0.OFP_VERSION:
-            port = match.in_port
-            dl_type = match.dl_type
-        else:
-            port = match['in_port']
-            dl_type = match['eth_type']
-        if ether.ETH_TYPE_SLOW != dl_type:
-            return
-        self.logger.info(
-            "SW=%s PORT=%d LACP exchange timeout has occurred.",
-            dpid_to_str(dpid), port)
-        self._set_slave_enabled(dpid, port, False)
-        self._set_slave_timeout(dpid, port, 0)
-        self.send_event_to_observers(
-            EventSlaveStateChanged(datapath, port, False))
+.. literalinclude:: ../../ryu/lib/lacplib.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPFlowRemoved, MAIN_DISPATCHER)
+    :pyobject: LacpLib.flow_removed_handler
 
 When a FlowRemoved message is received, the OpenFlow controller uses the _set_slave_enabled() method to set port disabled state, uses the _set_slave_timeout() method to set the idle_timeout value to 0, and uses the send_event_to_observers() method to send an ``EventSlaveStateChanged`` event.
 
@@ -1013,33 +886,22 @@ A Ryu application that inherits ryu.base.app_manager.RyuApp starts other applica
 
 .. rst-class:: sourcecode
 
-::
-
-    from ryu.lib import lacplib
-
-    # ...
-
-    class SimpleSwitchLacp13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-        _CONTEXTS = {'lacplib': lacplib.LacpLib}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :prepend: from ryu.lib import lacplib
+              # ...
+    :pyobject: SimpleSwitchLacp13
+    :end-before: __init__
+    :append: # ...
 
 Applications set in "_CONTEXTS" can acquire instances from the kwargs of the __init__() method.
 
-
 .. rst-class:: sourcecode
 
-::
-
-        # ...
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitchLacp13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-            self._lacp = kwargs['lacplib']
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchLacp13.__init__
+    :end-before: self._lacp.add
+    :append: # ...
 
 Initial Setting of the Library
 """"""""""""""""""""""""""""""
@@ -1055,17 +917,14 @@ ports        [1, 2]                            List of port to be grouped
 
 With this setting, part 1 and port 2 of the OpenFlow switch of data path ID "0000000000000001" operate as one link aggregation group.
 
-
 .. rst-class:: sourcecode
 
-::
-
-        # ...
-            self._lacp = kwargs['lacplib']
-            self._lacp.add(
-                dpid=str_to_dpid('0000000000000001'), ports=[1, 2])
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :dedent: 4
+    :prepend: def __init__(self, *args, **kwargs):
+              # ...
+    :pyobject: SimpleSwitchLacp13.__init__
+    :start-after: self.mac_to_port = {}
 
 Receiving User-defined Events
 """""""""""""""""""""""""""""
@@ -1074,53 +933,30 @@ As explained in `Implementing the LACP Library`_, the LACP library sends a Packe
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(lacplib.EventPacketIn, MAIN_DISPATCHER)
-    def _packet_in_handler(self, ev):
-        msg = ev.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-        in_port = msg.match['in_port']
-
-        # ...
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(lacplib.EventPacketIn, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitchLacp13._packet_in_handler
+    :end-before: pkt = packet.Packet(msg.data)
+    :append: # ...
 
 Also, when the enable/disable condition of a port is changed, the LACP library sends an ``EventSlaveStateChanged`` event, therefore, create an event handler for this as well.
 
 .. rst-class:: sourcecode
 
-::
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(lacplib.EventSlaveStateChanged, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitchLacp13._slave_state_changed_handler
 
-    @set_ev_cls(lacplib.EventSlaveStateChanged, lacplib.LAG_EV_DISPATCHER)
-    def _slave_state_changed_handler(self, ev):
-        datapath = ev.datapath
-        dpid = datapath.id
-        port_no = ev.port
-        enabled = ev.enabled
-        self.logger.info("slave state changed port: %d enabled: %s",
-                         port_no, enabled)
-        if dpid in self.mac_to_port:
-            for mac in self.mac_to_port[dpid]:
-                match = datapath.ofproto_parser.OFPMatch(eth_dst=mac)
-                self.del_flow(datapath, match)
-            del self.mac_to_port[dpid]
-        self.mac_to_port.setdefault(dpid, {})
 
 As explained at the beginning of this document, when the enable/disable state of a port is changed, the actual physical interface used by the packet that passes through the logical interface may be changed. For that reason, all registered flow entries are deleted.
 
 .. rst-class:: sourcecode
 
-::
-
-    def del_flow(self, datapath, match):
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        mod = parser.OFPFlowMod(datapath=datapath,
-                                command=ofproto.OFPFC_DELETE,
-                                match=match)
-        datapath.send_msg(mod)
+.. literalinclude:: ../../ryu/app/simple_switch_lacp_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchLacp13.del_flow
 
 Flow entries are deleted by the instance of the ``OFPFlowMod`` class.
 
