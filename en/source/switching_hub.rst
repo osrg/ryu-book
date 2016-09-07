@@ -259,13 +259,6 @@ The switching hub does not particularly use the received Switch Features message
 
 The Table-miss flow entry has the lowest (0) priority and this entry matches all packets. In the instruction of this entry, by specifying the output action to output to the controller port, in case the received packet does not match any of the normal flow entries, Packet-In is issued.
 
-.. NOTE::
-
-        As of January 2014, Open vSwitch does not fully support OpenFlow 1.3
-        and as with versions prior to OpenFlow1.3, Packet-In is issued by
-        default. Also, the Table-miss flow entry is not supported at this
-        time and is handled as a normal flow entry.
-
 An empty match is generated to match all packets. Match is expressed in the ``OFPMatch`` class.
 
 Next, an instance of the OUTPUT action class (``OFPActionOutput``) is generated to transfer to the controller port.
