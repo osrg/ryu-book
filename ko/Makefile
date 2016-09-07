@@ -117,13 +117,13 @@ latex: $(IMG_EPS)
 	@echo "Run \`make' in that directory to run these through (pdf)latex" \
 	      "(use \`make latexpdf' here to do that automatically)."
 
-latexpdf: $(IMG_EPS)
+latexpdf: $(IMG_EPS) $(IMG_PNG)
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
-latexpdfko: $(IMG_EPS)
+latexpdfko: $(IMG_EPS) $(IMG_PNG)
 	$(SPHINXBUILD) -b ryulatex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through platex and dvipdfmx..."
 	cd $(BUILDDIR)/latex ; xelatex *.tex ; xelatex *.tex
