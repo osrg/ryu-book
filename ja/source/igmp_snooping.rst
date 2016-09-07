@@ -129,7 +129,8 @@ simple_switch_igmp_13.pyを作成することとします。このプログラ�
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_igmp_13.py
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :lines: 16-
 
 .. NOTE:: 以降の例では、マルチキャストパケットの送受信にVLC
           (http://www.videolan.org/vlc/)を使用します。VLCのインストール、
@@ -1126,54 +1127,28 @@ IGMPスヌーピングライブラリの実装
 
 .. rst-class:: sourcecode
 
-::
-
-    def __init__(self):
-        """initialization."""
-        super(IgmpLib, self).__init__()
-        self.name = 'igmplib'
-        self._querier = IgmpQuerier()
-        self._snooper = IgmpSnooper(self.send_event_to_observers)
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpLib.__init__
 
 擬似クエリアインスタンスへの、クエリアとして動作するスイッチの設定とマルチキャ
 ストサーバの接続されているポートの設定は、ライブラリのメソッドで行います。
 
 .. rst-class:: sourcecode
 
-::
-
-    def set_querier_mode(self, dpid, server_port):
-        """set a datapath id and server port number to the instance
-        of IgmpQuerier.
-
-        ============ ==================================================
-        Attribute    Description
-        ============ ==================================================
-        dpid         the datapath id that will operate as a querier.
-        server_port  the port number linked to the multicasting server.
-        ============ ==================================================
-        """
-        self._querier.set_querier_mode(dpid, server_port)
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpLib.set_querier_mode
 
 擬似クエリアインスタンスにスイッチとポート番号が指定されている場合、指定された
 スイッチがアプリケーションと接続した際に擬似クエリア処理を開始します。
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPStateChange,
-                [MAIN_DISPATCHER, DEAD_DISPATCHER])
-    def state_change_handler(self, evt):
-        """StateChange event handler."""
-        datapath = evt.datapath
-        assert datapath is not None
-        if datapath.id == self._querier.dpid:
-            if evt.state == MAIN_DISPATCHER:
-                self._querier.start_loop(datapath)
-            elif evt.state == DEAD_DISPATCHER:
-                self._querier.stop_loop()
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :prepend:  @set_ev_cls(ofp_event.EventOFPStateChange, [MAIN_DISPATCHER, DEAD_DISPATCHER])
+    :pyobject: IgmpLib.state_change_handler
 
 Packet-In処理
 """""""""""""
@@ -1185,63 +1160,28 @@ Packet-In処理
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def packet_in_handler(self, evt):
-        """PacketIn event handler. when the received packet was IGMP,
-        proceed it. otherwise, send a event."""
-        msg = evt.msg
-        dpid = msg.datapath.id
-
-        req_pkt = packet.Packet(msg.data)
-        req_igmp = req_pkt.get_protocol(igmp.igmp)
-        if req_igmp:
-            if self._querier.dpid == dpid:
-                self._querier.packet_in_handler(req_igmp, msg)
-            else:
-                self._snooper.packet_in_handler(req_pkt, req_igmp, msg)
-        else:
-            self.send_event_to_observers(EventPacketIn(msg))
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    :pyobject: IgmpLib.packet_in_handler
 
 スヌーピングインスタンスのPacket-In処理では、受信したIGMPパケットの種別に応じ
 て処理を行います。
 
 .. rst-class:: sourcecode
 
-::
-
-    def packet_in_handler(self, req_pkt, req_igmp, msg):
-        # ...
-        if igmp.IGMP_TYPE_QUERY == req_igmp.msgtype:
-            self.logger.info(log + "[QUERY]")
-            (req_ipv4, ) = req_pkt.get_protocols(ipv4.ipv4)
-            (req_eth, ) = req_pkt.get_protocols(ethernet.ethernet)
-            self._do_query(req_igmp, req_ipv4, req_eth, in_port, msg)
-        elif (igmp.IGMP_TYPE_REPORT_V1 == req_igmp.msgtype or
-              igmp.IGMP_TYPE_REPORT_V2 == req_igmp.msgtype):
-            self.logger.info(log + "[REPORT]")
-            self._do_report(req_igmp, in_port, msg)
-        elif igmp.IGMP_TYPE_LEAVE == req_igmp.msgtype:
-            self.logger.info(log + "[LEAVE]")
-            self._do_leave(req_igmp, in_port, msg)
-        # ...
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper.packet_in_handler
 
 擬似クエリアインスタンスのPacket-In処理でも、受信したIGMPパケットの種別に応
 じて処理を行います。
 
 .. rst-class:: sourcecode
 
-::
-
-    def packet_in_handler(self, req_igmp, msg):
-        # ...
-        if (igmp.IGMP_TYPE_REPORT_V1 == req_igmp.msgtype or
-                igmp.IGMP_TYPE_REPORT_V2 == req_igmp.msgtype):
-            self._do_report(req_igmp, in_port, msg)
-        elif igmp.IGMP_TYPE_LEAVE == req_igmp.msgtype:
-            self._do_leave(req_igmp, in_port, msg)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpQuerier.packet_in_handler
 
 スヌーピングインスタンスでのIGMP Query Message処理
 """"""""""""""""""""""""""""""""""""""""""""""""""
@@ -1261,33 +1201,9 @@ IGMP Report Message受信タイムアウト処理を行います。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_query(self, query, iph, eth, in_port, msg):
-        # ...
-
-        # learn the querier.
-        self._to_querier[dpid] = {
-            'port': in_port,
-            'ip': iph.src,
-            'mac': eth.src
-        }
-
-        # ...
-        if '0.0.0.0' == query.address:
-            # general query. reset all reply status.
-            for group in self._to_hosts[dpid].values():
-                group['replied'] = False
-                group['leave'] = None
-        # ...
-
-        actions = [parser.OFPActionOutput(ofproto.OFPP_FLOOD)]
-        self._do_packet_out(
-            datapath, msg.data, in_port, actions)
-
-        # wait for REPORT messages.
-        hub.spawn(self._do_timeout_for_query, timeout, datapath)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._do_query
 
 スヌーピングインスタンスでのIGMP Report Message処理
 """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1306,56 +1222,12 @@ IGMP Report Messageを受信した際、そのマルチキャストアドレス�
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_report(self, report, in_port, msg):
-        # ...
-        if not self._to_hosts[dpid].get(report.address):
-            self._send_event(
-                EventMulticastGroupStateChanged(
-                    MG_GROUP_ADDED, report.address, outport, []))
-            self._to_hosts[dpid].setdefault(
-                report.address,
-                {'replied': False, 'leave': None, 'ports': {}})
-
-        # ...
-        if not self._to_hosts[dpid][report.address]['ports'].get(
-                in_port):
-            self._to_hosts[dpid][report.address]['ports'][
-                in_port] = {'out': False, 'in': False}
-            self._set_flow_entry(
-                datapath,
-                [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, size)],
-                in_port, report.address)
-
-        if not self._to_hosts[dpid][report.address]['ports'][
-                in_port]['out']:
-            self._to_hosts[dpid][report.address]['ports'][
-                in_port]['out'] = True
-
-        # ...
-        if not self._to_hosts[dpid][report.address]['ports'][
-                in_port]['in']:
-            actions = []
-            ports = []
-            for port in self._to_hosts[dpid][report.address]['ports']:
-                actions.append(parser.OFPActionOutput(port))
-                ports.append(port)
-            self._send_event(
-                EventMulticastGroupStateChanged(
-                    MG_MEMBER_CHANGED, report.address, outport, ports))
-            self._set_flow_entry(
-                datapath, actions, outport, report.address)
-            self._to_hosts[dpid][report.address]['ports'][
-                in_port]['in'] = True
-
-        # send a REPORT message to the querier if this message arrived
-        # first after a QUERY message was sent.
-        if not self._to_hosts[dpid][report.address]['replied']:
-            actions = [parser.OFPActionOutput(outport, size)]
-            self._do_packet_out(datapath, msg.data, in_port, actions)
-            self._to_hosts[dpid][report.address]['replied'] = True
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :prepend:  def _do_report(self, report, in_port, msg):
+               # ...
+    :pyobject: IgmpSnooper._do_report
+    :start-after: # send a event when the multicast group address is new.
 
 スヌーピングインスタンスでのIGMP Report Message受信タイムアウト処理
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1372,40 +1244,15 @@ IGMP Report Messageを受信していなかった場合、当該マルチキャ�
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_timeout_for_query(self, timeout, datapath):
-        # ...
-        hub.sleep(timeout)
-        # ...
-
-        remove_dsts = []
-        for dst in self._to_hosts[dpid]:
-            if not self._to_hosts[dpid][dst]['replied']:
-                # if no REPORT message sent from any members of
-                # the group, remove flow entries about the group and
-                # send a LEAVE message if exists.
-                self._remove_multicast_group(datapath, outport, dst)
-                remove_dsts.append(dst)
-
-        for dst in remove_dsts:
-            del self._to_hosts[dpid][dst]
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._do_timeout_for_query
 
 .. rst-class:: sourcecode
 
-::
-
-    def _remove_multicast_group(self, datapath, outport, dst):
-        # ...
-
-        self._send_event(
-            EventMulticastGroupStateChanged(
-                MG_GROUP_REMOVED, dst, outport, []))
-        self._del_flow_entry(datapath, outport, dst)
-        for port in self._to_hosts[dpid][dst]['ports']:
-            self._del_flow_entry(datapath, port, dst)
-        #...
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._remove_multicast_group
 
 スヌーピングインスタンスでのIGMP Leave Message処理
 """"""""""""""""""""""""""""""""""""""""""""""""""
@@ -1418,28 +1265,9 @@ IGMP Leave Messageを受信した際、情報保持領域に受信したメッ�
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_leave(self, leave, in_port, msg):
-        # ...
-
-        self._to_hosts.setdefault(dpid, {})
-        self._to_hosts[dpid].setdefault(
-            leave.address,
-            {'replied': False, 'leave': None, 'ports': {}})
-        self._to_hosts[dpid][leave.address]['leave'] = msg
-        self._to_hosts[dpid][leave.address]['ports'][in_port] = {
-            'out': False, 'in': False}
-
-        # ...
-        # send a specific query to the host that sent this message.
-        actions = [parser.OFPActionOutput(ofproto.OFPP_IN_PORT)]
-        self._do_packet_out(datapath, res_pkt.data, in_port, actions)
-
-        # wait for REPORT messages.
-        hub.spawn(self._do_timeout_for_leave, timeout, datapath,
-                  leave.address, in_port)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._do_leave
 
 スヌーピングインスタンスでのIGMP Report Message(Leave応答)受信タイムアウト処理
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1461,49 +1289,15 @@ IGMP Leave Messageがあれば、クエリアに送信します。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_timeout_for_leave(self, timeout, datapath, dst, in_port):
-        # ...
-        hub.sleep(timeout)
-        # ...
-
-        if self._to_hosts[dpid][dst]['ports'][in_port]['out']:
-            return
-
-        del self._to_hosts[dpid][dst]['ports'][in_port]
-        self._del_flow_entry(datapath, in_port, dst)
-
-        # ...
-
-        if len(actions):
-            self._send_event(
-                EventMulticastGroupStateChanged(
-                    MG_MEMBER_CHANGED, dst, outport, ports))
-            self._set_flow_entry(
-                datapath, actions, outport, dst)
-            self._to_hosts[dpid][dst]['leave'] = None
-        else:
-            self._remove_multicast_group(datapath, outport, dst)
-            del self._to_hosts[dpid][dst]
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._do_timeout_for_leave
 
 .. rst-class:: sourcecode
 
-::
-
-    def _remove_multicast_group(self, datapath, outport, dst):
-        # ...
-
-        leave = self._to_hosts[dpid][dst]['leave']
-        if leave:
-            if ofproto.OFP_VERSION == ofproto_v1_0.OFP_VERSION:
-                in_port = leave.in_port
-            else:
-                in_port = leave.match['in_port']
-            actions = [parser.OFPActionOutput(outport)]
-            self._do_packet_out(
-                datapath, leave.data, in_port, actions)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpSnooper._remove_multicast_group
 
 擬似クエリアインスタンスでのIGMP Query Message定期送信処理
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1514,19 +1308,9 @@ IGMP Leave Messageがあれば、クエリアに送信します。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _send_query(self):
-        # ...
-        timeout = 60
-        # ...
-        while True:
-            # ...
-            self._do_packet_out(
-                self._datapath, res_pkt.data, send_port, flood)
-            hub.sleep(igmp.QUERY_RESPONSE_INTERVAL)
-            # ...
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpQuerier._send_query
 
 擬似クエリアインスタンスでのIGMP Report Message処理
 """""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1538,27 +1322,9 @@ IGMP Leave Messageがあれば、クエリアに送信します。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_report(self, report, in_port, msg):
-        # ...
-        update = False
-        self._mcast.setdefault(report.address, {})
-        if not in_port in self._mcast[report.address]:
-            update = True
-        self._mcast[report.address][in_port] = True
-
-        if update:
-            actions = []
-            for port in self._mcast[report.address]:
-                actions.append(parser.OFPActionOutput(port))
-            self._set_flow_entry(
-                datapath, actions, self.server_port, report.address)
-            self._set_flow_entry(
-                datapath,
-                [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, size)],
-                in_port, report.address)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpQuerier._do_report
 
 擬似クエリアインスタンスでのIGMP Report Message受信タイムアウト処理
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1570,38 +1336,12 @@ IGMP Query Message定期送信後、一定時間後にIGMP Report Message受信�
 
 .. rst-class:: sourcecode
 
-::
-
-    def _send_query(self):
-        # ...
-        while True:
-            # ...
-            hub.sleep(igmp.QUERY_RESPONSE_INTERVAL)
-            # ...
-            del_groups = []
-            for group, status in self._mcast.items():
-                del_ports = []
-                actions = []
-                for port in status.keys():
-                    if not status[port]:
-                        del_ports.append(port)
-                    else:
-                        actions.append(parser.OFPActionOutput(port))
-                if len(actions) and len(del_ports):
-                    self._set_flow_entry(
-                        self._datapath, actions, self.server_port, group)
-                if not len(actions):
-                    self._del_flow_entry(
-                        self._datapath, self.server_port, group)
-                    del_groups.append(group)
-                if len(del_ports):
-                    for port in del_ports:
-                        self._del_flow_entry(self._datapath, port, group)
-                for port in del_ports:
-                    del status[port]
-            for group in del_groups:
-                del self._mcast[group]
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :prepend: def _send_query(self):
+              # ...
+    :pyobject: IgmpQuerier._send_query
+    :start-after: flood = [parser.OFPActionOutput(ofproto.OFPP_FLOOD)]
 
 擬似クエリアインスタンスでのIGMP Leave Message処理
 """"""""""""""""""""""""""""""""""""""""""""""""""
@@ -1612,28 +1352,9 @@ IGMP Leave Messageを受信した際、記憶した情報の更新とフロー�
 
 .. rst-class:: sourcecode
 
-::
-
-    def _do_leave(self, leave, in_port, msg):
-        """the process when the querier received a LEAVE message."""
-        datapath = msg.datapath
-        parser = datapath.ofproto_parser
-
-        self._mcast.setdefault(leave.address, {})
-        if in_port in self._mcast[leave.address]:
-            self._del_flow_entry(
-                datapath, in_port, leave.address)
-            del self._mcast[leave.address][in_port]
-            actions = []
-            for port in self._mcast[leave.address]:
-                actions.append(parser.OFPActionOutput(port))
-            if len(actions):
-                self._set_flow_entry(
-                    datapath, actions, self.server_port, leave.address)
-            else:
-                self._del_flow_entry(
-                    datapath, self.server_port, leave.address)
-
+.. literalinclude:: ../../ryu/lib/igmplib.py
+    :dedent: 4
+    :pyobject: IgmpQuerier._do_leave
 
 アプリケーションの実装
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1654,34 +1375,23 @@ ryu.base.app_manager.RyuAppを継承したRyuアプリケーションは、「_C
 
 .. rst-class:: sourcecode
 
-::
-
-    from ryu.lib import igmplib
-
-    # ...
-
-    class SimpleSwitchIgmp13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-        _CONTEXTS = {'igmplib': igmplib.IgmpLib}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :prepend: from ryu.lib import igmplib
+              # ...
+    :pyobject: SimpleSwitchIgmp13
+    :end-before: __init__
+    :append: # ...
 
 「_CONTEXTS」に設定したアプリケーションは、__init__()メソッドのkwargsから
 インスタンスを取得することができます。
 
-
 .. rst-class:: sourcecode
 
-::
-
-        # ...
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitchIgmp13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-            self._snoop = kwargs['igmplib']
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchIgmp13.__init__
+    :end-before: self._snoop.set_querier_mode
+    :append: # ...
 
 ライブラリの初期設定
 """"""""""""""""""""
@@ -1706,14 +1416,12 @@ server_port  2                                 マルチキャストサーバが
 
 .. rst-class:: sourcecode
 
-::
-
-        # ...
-            self._snoop = kwargs['igmplib']
-            self._snoop.set_querier_mode(
-                dpid=str_to_dpid('0000000000000001'), server_port=2)
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :dedent: 4
+    :prepend: def __init__(self, *args, **kwargs):
+              # ...
+    :pyobject: SimpleSwitchIgmp13.__init__
+    :start-after: self.mac_to_port = {}
 
 ユーザ定義イベントの受信方法
 """"""""""""""""""""""""""""
@@ -1726,17 +1434,12 @@ server_port  2                                 マルチキャストサーバが
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(igmplib.EventPacketIn, MAIN_DISPATCHER)
-    def _packet_in_handler(self, ev):
-        msg = ev.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-        in_port = msg.match['in_port']
-
-        # ...
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(igmplib.EventPacketIn, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitchIgmp13._packet_in_handler
+    :end-before: pkt = packet.Packet(msg.data)
+    :append: # ...
 
 また、IGMPスヌーピングライブラリはマルチキャストグループの追加/変更/削除が行わ
 れると ``EventMulticastGroupStateChanged`` イベントを送信しますので、こちら
@@ -1744,20 +1447,11 @@ server_port  2                                 マルチキャストサーバが
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(igmplib.EventMulticastGroupStateChanged,
-                MAIN_DISPATCHER)
-    def _status_changed(self, ev):
-        msg = {
-            igmplib.MG_GROUP_ADDED: 'Multicast Group Added',
-            igmplib.MG_MEMBER_CHANGED: 'Multicast Group Member Changed',
-            igmplib.MG_GROUP_REMOVED: 'Multicast Group Removed',
-        }
-        self.logger.info("%s: [%s] querier:[%s] hosts:%s",
-                         msg.get(ev.reason), ev.address, ev.src,
-                         ev.dsts)
-
+.. literalinclude:: ../../ryu/app/simple_switch_igmp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(igmplib.EventMulticastGroupStateChanged,
+                          MAIN_DISPATCHER)
+    :pyobject: SimpleSwitchIgmp13._status_changed
 
 以上のように、IGMPスヌーピング機能を提供するライブラリと、ライブラリを利用する
 アプリケーションによって、IGMPスヌーピング機能を持つスイッチングハブのアプリ

@@ -172,7 +172,7 @@ simple_switch_12.py(OpenFlow 1.2)がありますが、ここではOpenFlow 1.3�
 .. rst-class:: sourcecode
 
 .. literalinclude:: ../../ryu/app/example_switch_13.py
-
+    :lines: 16-
 
 それでは、それぞれの実装内容について見ていきます。
 
@@ -191,20 +191,12 @@ OpenFlowプロトコルでは、OpenFlowスイッチとコントローラが通�
 フレームワークが処理してくれるため、Ryuアプリケーションでは意識する必要は
 ありません。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitch13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitch13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :pyobject: ExampleSwitch13
+    :end-before: set_ev_cls
+    :append: # ...
 
 イベントハンドラ
 ^^^^^^^^^^^^^^^^
@@ -248,15 +240,12 @@ Table-missフローエントリの追加を行います。
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        datapath = ev.msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :end-before: #
+    :append: # ...
 
 ``ev.msg`` には、イベントに対応するOpenFlowメッセージクラスのインスタンスが
 格納されています。この場合は、
@@ -302,22 +291,12 @@ send_msg(msg)
 
 .. rst-class:: sourcecode
 
-::
-
-    def switch_features_handler(self, ev):
-        # ...
-
-        # install table-miss flow entry
-        #
-        # We specify NO BUFFER to max_len of the output action due to
-        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-        # 128, OVS will send Packet-In with invalid buffer_id and
-        # truncated packet data. In that case, we cannot output packets
-        # correctly.
-        match = parser.OFPMatch()
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
-                                          ofproto.OFPCML_NO_BUFFER)]
-        self.add_flow(datapath, 0, match, actions)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def switch_features_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :start-after: parser = datapath.ofproto_parser
 
 Table-missフローエントリは、優先度が最低(0)で、すべてのパケットにマッチ
 するエントリです。このエントリのインストラクションにコントローラポート
@@ -359,17 +338,12 @@ Packet-inメッセージ
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def _packet_in_handler(self, ev):
-        msg = ev.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :end-before: #
+    :append: # ...
 
 OFPPacketInクラスのよく使われる属性には以下のようなものがあります。
 
@@ -393,28 +367,14 @@ MACアドレステーブルの更新
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        in_port = msg.match['in_port']
-
-        pkt = packet.Packet(msg.data)
-        eth = pkt.get_protocols(ethernet.ethernet)[0]
-
-        dst = eth.dst
-        src = eth.src
-
-        dpid = datapath.id
-        self.mac_to_port.setdefault(dpid, {})
-
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
-
-        # learn a mac address to avoid FLOOD next time.
-        self.mac_to_port[dpid][src] = in_port
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: src = eth_pkt.src
+    :end-before: # if the destination mac address is already learned,
+    :append: # ...
 
 OFPPacketInクラスのmatchから、受信ポート(``in_port``)を取得します。
 宛先MACアドレスと送信元MACアドレスは、Ryuのパケットライブラリを使って、
@@ -436,25 +396,14 @@ OUTPUTアクションクラスのインスタンスを生成します。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        if dst in self.mac_to_port[dpid]:
-            out_port = self.mac_to_port[dpid][dst]
-        else:
-            out_port = ofproto.OFPP_FLOOD
-
-        actions = [parser.OFPActionOutput(out_port)]
-
-        # install a flow to avoid packet_in next time
-        if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            self.add_flow(datapath, 1, match, actions)
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.mac_to_port[dpid][src] = in_port
+    :end-before: # construct packet_out message and send it.
+    :append: # ...
 
 宛先MACアドレスが見つかった場合は、OpenFlowスイッチのフローテーブルに
 エントリを追加します。
@@ -494,16 +443,11 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, priority, match, actions):
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
-                                             actions)]
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :pyobject: ExampleSwitch13.add_flow
+    :end-before: mod = parser.OFPFlowMod
+    :append: # ...
 
 フローエントリには、対象となるパケットの条件を示すマッチと、そのパケット
 に対する操作を示すインストラクション、エントリの優先度、有効時間などを
@@ -516,14 +460,12 @@ Packet-Inハンドラの処理がまだ終わっていませんが、ここで�
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, port, dst, actions):
-        # ...
-
-        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
-                                match=match, instructions=inst)
-        datapath.send_msg(mod)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def add_flow(self, datapath, priority, match, actions):
+              # ...
+    :pyobject: ExampleSwitch13.add_flow
+    :start-after: actions)]
 
 Flow Modメッセージに対応するクラスは ``OFPFlowMod`` クラスです。OFPFlowMod
 クラスのインスタンスを生成して、Datapath.send_msg() メソッドでOpenFlow
@@ -653,18 +595,12 @@ Packet-Inハンドラに戻り、最後の処理の説明です。
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        data = None
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data
-
-        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                                  in_port=in_port, actions=actions, data=data)
-        datapath.send_msg(out)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.add_flow(datapath, 1, match, actions)
 
 Packet-Outメッセージに対応するクラスは ``OFPPacketOut`` クラスです。
 

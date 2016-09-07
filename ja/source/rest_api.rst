@@ -39,7 +39,8 @@ REST API付きスイッチングハブの実装
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_rest_13.py
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :lines: 16-
 
 simple_switch_rest_13.pyでは、二つのクラスを定義しています。
 
@@ -55,28 +56,22 @@ FeaturesReplyメソッドをオーバライドし、datapathオブジェクト�
 
 SimpleSwitchRest13クラスの実装
 ----------------------
+
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitchRest13(simple_switch_13.SimpleSwitch13):
-
-        _CONTEXTS = { 'wsgi': WSGIApplication }
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :pyobject: SimpleSwitchRest13
+    :end-before: __init__
+    :append: # ...
 
 クラス変数 ``_CONTEXT`` で、RyuのWSGI対応Webサーバのクラスを指定しています。これにより、
 ``wsgi`` というキーで、WSGIのWebサーバインスタンスが取得できます。
 
 .. rst-class:: sourcecode
 
-::
-
-    def __init__(self, *args, **kwargs):
-        super(SimpleSwitchRest13, self).__init__(*args, **kwargs)
-        self.switches = {}
-        wsgi = kwargs['wsgi']
-        wsgi.register(SimpleSwitchController, {simple_switch_instance_name : self})
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchRest13.__init__
 
 コンストラクタでは、後述するコントローラクラスを登録するために、
 ``WSGIApplication`` のインスタンスを取得しています。登録には、 ``register`` メソッドを使用します。
@@ -86,15 +81,10 @@ SimpleSwitchRest13クラスの実装
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        super(SimpleSwitchRest13, self).switch_features_handler(ev)
-        datapath = ev.msg.datapath
-        self.switches[datapath.id] = datapath
-        self.mac_to_port.setdefault(datapath.id, {})
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    :pyobject: SimpleSwitchRest13.switch_features_handler
 
 親クラスの ``switch_features_handler`` をオーバライドしています。
 このメソッドでは、SwitchFeaturesイベントが発生したタイミングで、
@@ -102,37 +92,11 @@ SimpleSwitchRest13クラスの実装
 インスタンス変数 ``switches`` に保持しています。
 また、このタイミングで、MACアドレステーブルに初期値として空のディクショナリをセットしています。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    def set_mac_to_port(self, dpid, entry):
-        mac_table = self.mac_to_port.setdefault(dpid, {})
-        datapath = self.switches.get(dpid)
-
-        entry_port = entry['port']
-        entry_mac = entry['mac']
-
-        if datapath is not None:
-            parser = datapath.ofproto_parser
-            if entry_port not in mac_table.values():
-
-                for mac, port in mac_table.items():
-
-                    # from known device to new device
-                    actions = [parser.OFPActionOutput(entry_port)]
-                    match = parser.OFPMatch(in_port=port, eth_dst=entry_mac)
-                    self.add_flow(datapath, 1, match, actions)
-
-                    # from new device to known device
-                    actions = [parser.OFPActionOutput(port)]
-                    match = parser.OFPMatch(in_port=entry_port, eth_dst=mac)
-                    self.add_flow(datapath, 1, match, actions)
-
-                mac_table.update({entry_mac : entry_port})
-        return mac_table
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitchRest13.set_mac_to_port
 
 指定のスイッチにMACアドレスとポートを登録するメソッドです。
 REST APIがPUTメソッドで呼ばれると実行されます。
@@ -166,33 +130,19 @@ SimpleSwitchControllerクラスの実装
 
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitchController(ControllerBase):
-        def __init__(self, req, link, data, **config):
-            super(SimpleSwitchController, self).__init__(req, link, data, **config)
-            self.simpl_switch_spp = data[simple_switch_instance_name]
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :pyobject: SimpleSwitchController
+    :end-before: @route
+    :append: # ...
 
 コンストラクタで、 ``SimpleSwitchRest13`` クラスのインスタンスを取得します。
 
 .. rst-class:: sourcecode
 
-::
-
-    @route('simpleswitch', url, methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def list_mac_table(self, req, **kwargs):
-
-        simple_switch = self.simpl_switch_spp
-        dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-
-        if dpid not in simple_switch.mac_to_port:
-            return Response(status=404)
-
-        mac_table = simple_switch.mac_to_port.get(dpid, {})
-        body = json.dumps(mac_table)
-        return Response(content_type='application/json', body=body)
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @route('simpleswitch', url, methods=['GET'], requirements={'dpid': dpid_lib.DPID_PATTERN})
+    :pyobject: SimpleSwitchController.list_mac_table
 
 REST APIのURLとそれに対応する処理を実装する部分です。このメソッドとURLとの対応づけに
 Ryuで定義された ``route`` デコレータを用いています。
@@ -229,25 +179,10 @@ JSON形式に変換し呼び出し元に返却しています。
 
 .. rst-class:: sourcecode
 
-::
-
-    @route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
-    def put_mac_table(self, req, **kwargs):
-
-        simple_switch = self.simpl_switch_spp
-        dpid = dpid_lib.str_to_dpid(kwargs['dpid'])
-        new_entry = eval(req.body)
-
-        if dpid not in simple_switch.mac_to_port:
-            return Response(status=404)
-
-        try:
-            mac_table = simple_switch.set_mac_to_port(dpid, new_entry)
-            body = json.dumps(mac_table)
-            return Response(content_type='application/json', body=body)
-        except Exception as e:
-            return Response(status=500)
-    ...
+.. literalinclude:: ../../ryu/app/simple_switch_rest_13.py
+    :dedent: 4
+    :prepend: @route('simpleswitch', url, methods=['PUT'], requirements={'dpid': dpid_lib.DPID_PATTERN})
+    :pyobject: SimpleSwitchController.put_mac_table
 
 次は、MACアドレステーブルを登録するREST APIです。
 

@@ -199,8 +199,8 @@ simple_switch_stp_13.pyを作成することとします。このプログラム
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_stp_13.py
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :lines: 16-
 
 .. NOTE::
 
@@ -255,7 +255,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/spanning_tree.py
+.. literalinclude:: ../../sources/spanning_tree.py
 
 
 VM環境でこのプログラムを実行することにより、スイッチs1、s2、s3の間でループが
@@ -945,81 +945,31 @@ BPDUパケット送信はPortクラスのBPDUパケット送信スレッド
 ( ``Port._generate_config_bpdu()`` )およびBPDUパケット送信
 ( ``Port.ofctl.send_packet_out()`` )を行います。
 
+.. rst-class:: sourcecode
+
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port.__init__
 
 .. rst-class:: sourcecode
 
-::
-
-    class Port(object):
-
-        def __init__(self, dp, logger, config, send_ev_func, timeout_func,
-                     topology_change_func, bridge_id, bridge_times, ofport):
-            super(Port, self).__init__()
-
-            # ...
-
-            # BPDU handling threads
-            self.send_bpdu_thread = PortThread(self._transmit_bpdu)
-
-        # ...
-
-        def _transmit_bpdu(self):
-            while True:
-                # Send config BPDU packet if port role is DESIGNATED_PORT.
-                if self.role == DESIGNATED_PORT:
-                
-                    # ...
-                
-                    bpdu_data = self._generate_config_bpdu(flags)
-                    self.ofctl.send_packet_out(self.ofport.port_no, bpdu_data)
-                    
-                    # ...
-
-                hub.sleep(self.port_times.hello_time)
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._transmit_bpdu
 
 送信するBPDUパケットは、OpenFlowスイッチのコントローラ接続時に収集した
 ポート情報( ``Port.ofport`` )や受信したBPDUパケットに設定された
 ルートブリッジ情報( ``Port.port_priority、Port.port_times`` )などを元に
 構築されます。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class Port(object):
-
-        def _generate_config_bpdu(self, flags):
-            src_mac = self.ofport.hw_addr
-            dst_mac = bpdu.BRIDGE_GROUP_ADDRESS
-            length = (bpdu.bpdu._PACK_LEN + bpdu.ConfigurationBPDUs.PACK_LEN
-                      + llc.llc._PACK_LEN + llc.ControlFormatU._PACK_LEN)
-
-            e = ethernet.ethernet(dst_mac, src_mac, length)
-            l = llc.llc(llc.SAP_BPDU, llc.SAP_BPDU, llc.ControlFormatU())
-            b = bpdu.ConfigurationBPDUs(
-                flags=flags,
-                root_priority=self.port_priority.root_id.priority,
-                root_mac_address=self.port_priority.root_id.mac_addr,
-                root_path_cost=self.port_priority.root_path_cost+self.path_cost,
-                bridge_priority=self.bridge_id.priority,
-                bridge_mac_address=self.bridge_id.mac_addr,
-                port_priority=self.port_id.priority,
-                port_number=self.ofport.port_no,
-                message_age=self.port_times.message_age+1,
-                max_age=self.port_times.max_age,
-                hello_time=self.port_times.hello_time,
-                forward_delay=self.port_times.forward_delay)
-
-            pkt = packet.Packet()
-            pkt.add_protocol(e)
-            pkt.add_protocol(l)
-            pkt.add_protocol(b)
-            pkt.serialize()
-
-            return pkt.data
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._generate_config_bpdu
 
 BPDUパケット受信
 """"""""""""""""
@@ -1034,42 +984,12 @@ STP再計算の要否判定を行います。以前に受信したBPDUより優�
 を受信した場合、「新たなルートブリッジが追加された」などのネットワーク
 トポロジ変更が発生したことを意味するため、STP再計算の契機となります。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class Port(object):
-
-        def rcv_config_bpdu(self, bpdu_pkt):
-            # Check received BPDU is superior to currently held BPDU.
-            root_id = BridgeId(bpdu_pkt.root_priority,
-                               bpdu_pkt.root_system_id_extension,
-                               bpdu_pkt.root_mac_address)
-            root_path_cost = bpdu_pkt.root_path_cost
-            designated_bridge_id = BridgeId(bpdu_pkt.bridge_priority,
-                                            bpdu_pkt.bridge_system_id_extension,
-                                            bpdu_pkt.bridge_mac_address)
-            designated_port_id = PortId(bpdu_pkt.port_priority,
-                                        bpdu_pkt.port_number)
-
-            msg_priority = Priority(root_id, root_path_cost,
-                                    designated_bridge_id,
-                                    designated_port_id)
-            msg_times = Times(bpdu_pkt.message_age,
-                              bpdu_pkt.max_age,
-                              bpdu_pkt.hello_time,
-                              bpdu_pkt.forward_delay)
-
-            rcv_info = Stp.compare_bpdu_info(self.designated_priority,
-                                             self.designated_times,
-                                             msg_priority, msg_times)
-
-            # ...
-
-            return rcv_info, rcv_tc
-
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port.rcv_config_bpdu
 
 故障検出
 """"""""
@@ -1094,51 +1014,12 @@ BPDU受信待ちタイマーの更新とタイムアウトの検出にはhubモ�
 ``hub.Event.set()`` が実行されない場合に、BPDUパケットの受信待ちタイムアウト
 と判断しBridgeクラスのSTP再計算処理を呼び出します。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class Port(object):
-
-        def __init__(self, dp, logger, config, send_ev_func, timeout_func,
-                     topology_change_func, bridge_id, bridge_times, ofport):
-            super(Port, self).__init__()
-            # ...
-            self.wait_bpdu_timeout = timeout_func
-            # ...
-            self.wait_bpdu_thread = PortThread(self._wait_bpdu_timer)
-
-        # ...
-
-        def _wait_bpdu_timer(self):
-            time_exceed = False
-
-            while True:
-                self.wait_timer_event = hub.Event()
-                message_age = (self.designated_times.message_age
-                               if self.designated_times else 0)
-                timer = self.port_times.max_age - message_age
-                timeout = hub.Timeout(timer)
-                try:
-                    self.wait_timer_event.wait()
-                except hub.Timeout as t:
-                    if t is not timeout:
-                        err_msg = 'Internal error. Not my timeout.'
-                        raise RyuException(msg=err_msg)
-                    self.logger.info('[port=%d] Wait BPDU timer is exceeded.',
-                                     self.ofport.port_no, extra=self.dpid_str)
-                    time_exceed = True
-                finally:
-                    timeout.cancel()
-                    self.wait_timer_event = None
-
-                if time_exceed:
-                    break
-
-            if time_exceed:  # Bridge.recalculate_spanning_tree
-                hub.spawn(self.wait_bpdu_timeout)
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._wait_bpdu_timer
 
 受信したBPDUパケットの比較処理( ``Stp.compare_bpdu_info()`` )により
 ``SUPERIOR`` または ``REPEATED`` と判定された場合は、ルートブリッジからの
@@ -1150,33 +1031,19 @@ BPDUパケットが受信出来ていることを意味するため、BPDU受信
 キャンセルし、改めてタイマーをセットし直すことで次のBPDUパケットの受信待ち
 を開始します。
 
+.. rst-class:: sourcecode
+
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port.rcv_config_bpdu
 
 .. rst-class:: sourcecode
 
-::
-
-    class Port(object):
-
-        def rcv_config_bpdu(self, bpdu_pkt):
-            # ...
-
-            rcv_info = Stp.compare_bpdu_info(self.designated_priority,
-                                             self.designated_times,
-                                             msg_priority, msg_times)
-            # ...
-
-            if ((rcv_info is SUPERIOR or rcv_info is REPEATED)
-                    and (self.role is ROOT_PORT
-                         or self.role is NON_DESIGNATED_PORT)):
-                self._update_wait_bpdu_timer()
-
-            # ...
-
-        def _update_wait_bpdu_timer(self):
-            if self.wait_timer_event is not None:
-                self.wait_timer_event.set()
-                self.wait_timer_event = None
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._update_wait_bpdu_timer
 
 STP計算
 """""""
@@ -1192,44 +1059,12 @@ STP計算が実行されるケースではネットワークトポロジの変�
 役割を選択した上で、各ポートをLISTEN状態で起動( ``port.up`` )しポートの
 状態遷移を開始します。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class Bridge(object):
-
-        def recalculate_spanning_tree(self, init=True):
-            """ Re-calculation of spanning tree. """
-            # All port down.
-            for port in self.ports.values():
-                if port.state is not PORT_STATE_DISABLE:
-                    port.down(PORT_STATE_BLOCK, msg_init=init)
-
-            # Send topology change event.
-            if init:
-                self.send_event(EventTopologyChange(self.dp))
-
-            # Update tree roles.
-            port_roles = {}
-            self.root_priority = Priority(self.bridge_id, 0, None, None)
-            self.root_times = self.bridge_times
-
-            if init:
-                self.logger.info('Root bridge.', extra=self.dpid_str)
-                for port_no in self.ports.keys():
-                    port_roles[port_no] = DESIGNATED_PORT
-            else:
-                (port_roles,
-                 self.root_priority,
-                 self.root_times) = self._spanning_tree_algorithm()
-
-            # All port up.
-            for port_no, role in port_roles.items():
-                if self.ports[port_no].state is not PORT_STATE_DISABLE:
-                    self.ports[port_no].up(role, self.root_priority,
-                                           self.root_times)
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Bridge(object):
+              # ...
+    :pyobject: Bridge.recalculate_spanning_tree
 
 ルートブリッジの選出のため、ブリッジIDなどの自身のブリッジ情報と
 各ポートが受信したBPDUパケットに設定された他ブリッジ情報を比較します
@@ -1243,55 +1078,12 @@ STP計算が実行されるケースではネットワークトポロジの変�
 一方、ルートポートが見つからなかった場合(自身のブリッジ情報が最も優れていた場合)は
 自身をルートブリッジと判断し各ポートは全て指定ポートとなります。
 
-
-
 .. rst-class:: sourcecode
 
-::
-
-    class Bridge(object):
-
-        def _spanning_tree_algorithm(self):
-            """ Update tree roles.
-                 - Root bridge:
-                    all port is DESIGNATED_PORT.
-                 - Non root bridge:
-                    select one ROOT_PORT and some DESIGNATED_PORT,
-                    and the other port is set to NON_DESIGNATED_PORT."""
-            port_roles = {}
-
-            root_port = self._select_root_port()
-
-            if root_port is None:
-                # My bridge is a root bridge.
-                self.logger.info('Root bridge.', extra=self.dpid_str)
-                root_priority = self.root_priority
-                root_times = self.root_times
-
-                for port_no in self.ports.keys():
-                    if self.ports[port_no].state is not PORT_STATE_DISABLE:
-                        port_roles[port_no] = DESIGNATED_PORT
-            else:
-                # Other bridge is a root bridge.
-                self.logger.info('Non root bridge.', extra=self.dpid_str)
-                root_priority = root_port.designated_priority
-                root_times = root_port.designated_times
-
-                port_roles[root_port.ofport.port_no] = ROOT_PORT
-
-                d_ports = self._select_designated_port(root_port)
-                for port_no in d_ports:
-                    port_roles[port_no] = DESIGNATED_PORT
-
-                for port in self.ports.values():
-                    if port.state is not PORT_STATE_DISABLE:
-                        port_roles.setdefault(port.ofport.port_no,
-                                              NON_DESIGNATED_PORT)
-
-            return port_roles, root_priority, root_times
-
-
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Bridge(object):
+              # ...
+    :pyobject: Bridge._spanning_tree_algorithm
 
 ポート状態遷移
 """"""""""""""
@@ -1304,64 +1096,26 @@ BLOCK状態に遷移させるケースなど、 ``Port._change_status()`` が実
 にも状態遷移が行われます。これらの処理は「 `故障検出`_ 」と同様に
 hubモジュールの ``hub.Event`` と ``hub.Timeout`` を用いて実現しています。
 
+.. rst-class:: sourcecode
+
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._state_machine
 
 .. rst-class:: sourcecode
 
-::
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._get_timer
 
-    class Port(object):
+.. rst-class:: sourcecode
 
-        def _state_machine(self):
-            """ Port state machine.
-                 Change next status when timer is exceeded
-                 or _change_status() method is called."""
-
-            # ...
-
-            while True:
-                self.logger.info('[port=%d] %s / %s', self.ofport.port_no,
-                                 role_str[self.role], state_str[self.state],
-                                 extra=self.dpid_str)
-
-                self.state_event = hub.Event()
-                timer = self._get_timer()
-                if timer:
-                    timeout = hub.Timeout(timer)
-                    try:
-                        self.state_event.wait()
-                    except hub.Timeout as t:
-                        if t is not timeout:
-                            err_msg = 'Internal error. Not my timeout.'
-                            raise RyuException(msg=err_msg)
-                        new_state = self._get_next_state()
-                        self._change_status(new_state, thread_switch=False)
-                    finally:
-                        timeout.cancel()
-                else:
-                    self.state_event.wait()
-
-                self.state_event = None
-
-        def _get_timer(self):
-            timer = {PORT_STATE_DISABLE: None,
-                     PORT_STATE_BLOCK: None,
-                     PORT_STATE_LISTEN: self.port_times.forward_delay,
-                     PORT_STATE_LEARN: self.port_times.forward_delay,
-                     PORT_STATE_FORWARD: None}
-            return timer[self.state]
-
-        def _get_next_state(self):
-            next_state = {PORT_STATE_DISABLE: None,
-                          PORT_STATE_BLOCK: None,
-                          PORT_STATE_LISTEN: PORT_STATE_LEARN,
-                          PORT_STATE_LEARN: (PORT_STATE_FORWARD
-                                             if (self.role is ROOT_PORT or
-                                                 self.role is DESIGNATED_PORT)
-                                             else PORT_STATE_BLOCK),
-                          PORT_STATE_FORWARD: None}
-            return next_state[self.state]
-
-
+.. literalinclude:: ../../ryu/lib/stplib.py
+    :prepend: class Port(object):
+              # ...
+    :pyobject: Port._get_next_state
 
 アプリケーションの実装
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -1377,21 +1131,13 @@ hubモジュールの ``hub.Event`` と ``hub.Timeout`` を用いて実現して
 「 :ref:`ch_link_aggregation` 」と同様にSTPライブラリを利用するため
 CONTEXTを登録します。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    from ryu.lib import stplib
-
-    # ...
-
-    class SimpleSwitch13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-        _CONTEXTS = {'stplib': stplib.Stp}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :prepend: from ryu.lib import stplib
+              # ...
+    :pyobject: SimpleSwitch13
+    :end-before: __init__
 
 コンフィグ設定
 """"""""""""""
@@ -1410,30 +1156,11 @@ dpid=0000000000000003 bridge.priority 0xa000
 この設定によりdpid=0000000000000001のOpenFlowスイッチのブリッジIDが
 常に最小の値となり、ルートブリッジに選択されることになります。
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitch13(app_manager.RyuApp):
-
-        # ...
-
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitch13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-            self.stp = kwargs['stplib']
-
-            # Sample of stplib config.
-            #  please refer to stplib.Stp.set_config() for details.
-            config = {dpid_lib.str_to_dpid('0000000000000001'):
-                         {'bridge': {'priority': 0x8000}},
-                      dpid_lib.str_to_dpid('0000000000000002'):
-                         {'bridge': {'priority': 0x9000}},
-                      dpid_lib.str_to_dpid('0000000000000003'):
-                         {'bridge': {'priority': 0xa000}}}
-            self.stp.set_config(config)
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitch13.__init__
 
 STPイベント処理
 """""""""""""""
@@ -1447,75 +1174,40 @@ STPライブラリで定義された ``stplib.EventPacketIn`` イベントを利
 BPDUパケットを除いたパケットを受信することが出来るため、
 「 :ref:`ch_switching_hub` 」と同様のパケットハンドリンクを行います。
 
-    .. rst-class:: sourcecode
+.. rst-class:: sourcecode
 
-    ::
-
-        class SimpleSwitch13(app_manager.RyuApp):
-
-            @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
-            def _packet_in_handler(self, ev):
-
-                # ...
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(stplib.EventPacketIn, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitch13._packet_in_handler
+    :end-before:  pkt = packet.Packet(msg.data)
+    :append: # ...
 
 ネットワークトポロジの変更通知イベント( ``stplib.EventTopologyChange`` )を
 受け取り、学習したMACアドレスおよび登録済みのフローエントリを初期化しています。
 
+.. rst-class:: sourcecode
 
-    .. rst-class:: sourcecode
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :dedent: 4
+    :pyobject: SimpleSwitch13.delete_flow
 
-    ::
+.. rst-class:: sourcecode
 
-        class SimpleSwitch13(app_manager.RyuApp):
-
-            def delete_flow(self, datapath):
-                ofproto = datapath.ofproto
-                parser = datapath.ofproto_parser
-
-                for dst in self.mac_to_port[datapath.id].keys():
-                    match = parser.OFPMatch(eth_dst=dst)
-                    mod = parser.OFPFlowMod(
-                        datapath, command=ofproto.OFPFC_DELETE,
-                        out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY,
-                        priority=1, match=match)
-                    datapath.send_msg(mod)
-
-            # ...
-
-            @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
-            def _topology_change_handler(self, ev):
-                dp = ev.dp
-                dpid_str = dpid_lib.dpid_to_str(dp.id)
-                msg = 'Receive topology change event. Flush MAC table.'
-                self.logger.debug("[dpid=%s] %s", dpid_str, msg)
-
-                if dp.id in self.mac_to_port:
-                    self.delete_flow(dp)
-                    del self.mac_to_port[dp.id]
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(stplib.EventTopologyChange, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitch13._topology_change_handler
 
 ポート状態の変更通知イベント( ``stplib.EventPortStateChange`` )を受け取り、
 ポート状態のデバッグログ出力を行っています。
 
-    .. rst-class:: sourcecode
+.. rst-class:: sourcecode
 
-    ::
-
-        class SimpleSwitch13(app_manager.RyuApp):
-
-            @set_ev_cls(stplib.EventPortStateChange, MAIN_DISPATCHER)
-            def _port_state_change_handler(self, ev):
-                dpid_str = dpid_lib.dpid_to_str(ev.dp.id)
-                of_state = {stplib.PORT_STATE_DISABLE: 'DISABLE',
-                            stplib.PORT_STATE_BLOCK: 'BLOCK',
-                            stplib.PORT_STATE_LISTEN: 'LISTEN',
-                            stplib.PORT_STATE_LEARN: 'LEARN',
-                            stplib.PORT_STATE_FORWARD: 'FORWARD'}
-                self.logger.debug("[dpid=%s][port=%d] state=%s",
-                                  dpid_str, ev.port_no, of_state[ev.port_state])
-
-
+.. literalinclude:: ../../ryu/app/simple_switch_stp_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(stplib.EventPortStateChange, MAIN_DISPATCHER)
+    :pyobject: SimpleSwitch13._port_state_change_handler
 
 以上のように、スパニングツリー機能を提供するライブラリと、ライブラリを
 利用するアプリケーションによって、スパニングツリー機能を持つスイッチングハブの
