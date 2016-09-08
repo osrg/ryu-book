@@ -188,10 +188,7 @@ Ryuアプリケーションの実行
 スパニングツリーの機能をOpenFlowを用いて実現した、Ryuのスパニングツリー
 アプリケーションを実行してみます。
 
-Ryuのソースツリーに用意されているsimple_switch_stp.pyはOpenFlow 1.0専用
-のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応した
-simple_switch_stp_13.pyを作成することとします。このプログラムは、
-「 :ref:`ch_switching_hub` 」にスパニングツリー機能を
+このプログラムは、「 :ref:`ch_switching_hub` 」にスパニングツリー機能を
 追加したアプリケーションです。
 
 
@@ -350,13 +347,12 @@ Node: c0:
 
 ::
 
-    root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py 
-    loading app simple_switch_stp_13.py
-    loading app ryu.controller.ofp_handler
+    root@ryu-vm:~$ ryu-manager ryu.app.simple_switch_stp_13
+    loading app ryu.app.simple_switch_stp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of Stp
     creating context stplib
-    instantiating app simple_switch_stp_13.py of SimpleSwitch13
+    instantiating app ryu.app.simple_switch_stp_13 of SimpleSwitch13
     instantiating app ryu.controller.ofp_handler of OFPHandler
 
 
@@ -848,23 +844,14 @@ Ryuによるスパニングツリーの実装
 
     ryu/lib/stplib.py
 
-    ryu/app/simple_switch_stp.py
+    ryu/app/simple_switch_stp_13.py
 
 
 stplib.pyはBPDUパケットの交換や各ポートの役割・状態の管理などの
 スパニングツリー機能を提供するライブラリです。
-simple_switch_stp.pyはスパニングツリーライブラリを適用することで
+simple_switch_stp_13.pyはスパニングツリーライブラリを適用することで
 スイッチングハブのアプリケーションにスパニングツリー機能を追加した
 アプリケーションプログラムです。
-
-.. ATTENTION::
-
-    simple_switch_stp.pyはOpenFlow 1.0専用のアプリケーション
-    であるため、本章では「 `Ryuアプリケーションの実行`_ 」に示した
-    OpenFlow 1.3に対応したsimple_switch_stp_13.pyを元にアプリケーションの
-    詳細を説明します。
-
-
 
 ライブラリの実装
 ^^^^^^^^^^^^^^^^

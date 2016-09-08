@@ -39,7 +39,7 @@
 .. literalinclude:: ../../ryu/app/simple_monitor_13.py
     :lines: 16-
 
-SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモニター機能を
+SimpleSwitch13を継承したSimpleMonitor13クラスに、トラフィックモニター機能を
 実装していますので、ここにはパケット転送に関する処理は出てきません。
 
 
@@ -283,41 +283,43 @@ controller: c0:
 
 ::
 
-    ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
-    loading app ./simple_monitor.py
+    ryu@ryu-vm:~# ryu-manager --verbose ryu.app.simple_monitor_13
+    loading app ryu.app.simple_monitor_13
     loading app ryu.controller.ofp_handler
-    instantiating app ./simple_monitor.py
-    instantiating app ryu.controller.ofp_handler
-    BRICK SimpleMonitor
+    instantiating app ryu.app.simple_monitor_13 of SimpleMonitor13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    BRICK SimpleMonitor13
+      CONSUMES EventOFPPacketIn
+      CONSUMES EventOFPPortStatsReply
       CONSUMES EventOFPStateChange
       CONSUMES EventOFPFlowStatsReply
-      CONSUMES EventOFPPortStatsReply
-      CONSUMES EventOFPPacketIn
       CONSUMES EventOFPSwitchFeatures
     BRICK ofp_event
-      PROVIDES EventOFPStateChange TO {'SimpleMonitor': set(['main', 'dead'])}
-      PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPPacketIn TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor': set(['config'])}
-      CONSUMES EventOFPErrorMsg
-      CONSUMES EventOFPPortDescStatsReply
-      CONSUMES EventOFPHello
-      CONSUMES EventOFPEchoRequest
+      PROVIDES EventOFPPacketIn TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPStateChange TO {'SimpleMonitor13': set(['main', 'dead'])}
+      PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor13': set(['config'])}
+      CONSUMES EventOFPPortStatus
       CONSUMES EventOFPSwitchFeatures
-    connected socket:<eventlet.greenio.GreenSocket object at 0x343fb10> address:('127.0.0.1', 55598)
-    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x343fed0>
+      CONSUMES EventOFPEchoReply
+      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPErrorMsg
+      CONSUMES EventOFPEchoRequest
+      CONSUMES EventOFPHello
+    connected socket:<eventlet.greenio.base.GreenSocket object at 0x7fbab7189750> address:('127.0.0.1', 37934)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7fbab7179a90>
     move onto config mode
-    EVENT ofp_event->SimpleMonitor EventOFPSwitchFeatures
-    switch features ev version: 0x4 msg_type 0x6 xid 0x7dd2dc58 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    EVENT ofp_event->SimpleMonitor13 EventOFPSwitchFeatures
+    switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0x21014c5c,OFPSwitchFeatures(auxiliary_id=0,capabilities=79,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
-    EVENT ofp_event->SimpleMonitor EventOFPStateChange
+    EVENT ofp_event->SimpleMonitor13 EventOFPStateChange
     register datapath: 0000000000000001
     send stats request: 0000000000000001
-    EVENT ofp_event->SimpleMonitor EventOFPFlowStatsReply
+    EVENT ofp_event->SimpleMonitor13 EventOFPFlowStatsReply
+    EVENT ofp_event->SimpleMonitor13 EventOFPPortStatsReply
     datapath         in-port  eth-dst           out-port packets  bytes
     ---------------- -------- ----------------- -------- -------- --------
-    EVENT ofp_event->SimpleMonitor EventOFPPortStatsReply
     datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
     ---------------- -------- -------- -------- -------- -------- -------- --------
     0000000000000001        1        0        0        0        0        0        0
@@ -326,8 +328,8 @@ controller: c0:
     0000000000000001 fffffffe        0        0        0        0        0        0
 
 「 :ref:`ch_switching_hub` 」では、ryu-managerコマンド
-にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
-ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
+にSimpleSwitch13のモジュール名(ryu.app.example_switch_13)を指定しましたが、
+ここでは、SimpleMonitor13のモジュール名(ryu.app.simple_monitor_13)を指定しています。
 
 この時点では、フローエントリが無く(Table-missフローエントリは表示して
 いません)、各ポートのカウントもすべて0です。

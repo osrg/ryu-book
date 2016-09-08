@@ -58,10 +58,7 @@ Ryuアプリケーションの実行
 ソースの説明は後回しにして、まずはRyuのリンク・アグリゲーション・アプリケー
 ションを実行してみます。
 
-Ryuのソースツリーに用意されているsimple_switch_lacp.pyはOpenFlow 1.0専用
-のアプリケーションであるため、ここでは新たにOpenFlow 1.3に対応した
-simple_switch_lacp_13.pyを作成することとします。このプログラムは、
-「 :ref:`ch_switching_hub` 」のスイッチングハブにリンク・アグリゲーション機能を
+このプログラムは、「 :ref:`ch_switching_hub` 」のスイッチングハブにリンク・アグリゲーション機能を
 追加したアプリケーションです。
 
 ソース名： ``simple_switch_lacp_13.py``
@@ -342,12 +339,13 @@ Node: c0:
 
 ::
 
-    ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
-    loading app ./simple_switch_lacp_13.py
+    ryu@ryu-vm:~$ ryu-manager ryu.app.simple_switch_lacp_13
+    loading app ryu.app.simple_switch_lacp_13
     loading app ryu.controller.ofp_handler
+    instantiating app None of LacpLib
     creating context lacplib
-    instantiating app ./simple_switch_lacp_13.py
-    instantiating app ryu.controller.ofp_handler
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    instantiating app ryu.app.simple_switch_lacp_13 of SimpleSwitchLacp13
     ...
 
 ホストh1は30秒に1回LACPデータユニットを送信しています。起動してからしば
@@ -801,14 +799,7 @@ LACPライブラリおよびスイッチングハブのソースコードは、R
 
     ryu/lib/lacplib.py
 
-    ryu/app/simple_switch_lacp.py
-
-.. NOTE::
-
-    simple_switch_lacp.pyはOpenFlow 1.0専用のアプリケーション
-    であるため、本章では「 `Ryuアプリケーションの実行`_ 」に示した
-    OpenFlow 1.3に対応したsimple_switch_lacp_13.pyを元にアプリケーションの
-    詳細を説明します。
+    ryu/app/simple_switch_lacp_13.py
 
 
 LACPライブラリの実装

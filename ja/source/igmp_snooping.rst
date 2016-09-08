@@ -117,11 +117,8 @@ Ryuアプリケーションの実行
 IGMPスヌーピングの機能をOpenFlowを用いて実現した、RyuのIGMPスヌーピングアプリ
 ケーションを実行してみます。
 
-Ryuのソースツリーに用意されているsimple_switch_igmp.pyはOpenFlow 1.0専用の
-アプリケーションであるため、ここでは新たにOpenFlow 1.3に対応した
-simple_switch_igmp_13.pyを作成することとします。このプログラムは、
-「 :ref:`ch_switching_hub` 」にIGMPスヌーピング機能を追加したアプリケーショ
-ンです。なおこのプログラムでは、dpid=0000000000000001のスイッチをマルチキャス
+このプログラムは、「 :ref:`ch_switching_hub` 」にIGMPスヌーピング機能を追加したアプリケーションです。
+なおこのプログラムでは、dpid=0000000000000001のスイッチをマルチキャス
 トルータとして扱い、そのポート2に接続されているホストをマルチキャストサーバと
 して扱うよう設定されています。
 
@@ -431,13 +428,12 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ./simple_switch_igmp_13.py
-    loading app ./simple_switch_igmp_13.py
-    loading app ryu.controller.ofp_handler
+    root@ryu-vm:~# ryu-manager ryu.app.simple_switch_igmp_13
+    loading app ryu.app.simple_switch_igmp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of IgmpLib
     creating context igmplib
-    instantiating app ./simple_switch_igmp_13.py of SimpleSwitchIgmp13
+    instantiating app ryu.app.simple_switch_igmp_13 of SimpleSwitchIgmp13
     instantiating app ryu.controller.ofp_handler of OFPHandler
     ...
 
@@ -1101,14 +1097,7 @@ IGMPスヌーピングライブラリおよびアプリケーションのソー�
 
     ryu/lib/igmplib.py
 
-    ryu/app/simple_switch_igmp.py
-
-.. NOTE::
-
-    simple_switch_igmp.pyはOpenFlow 1.0専用のアプリケーション
-    であるため、本章では「 `Ryuアプリケーションの実行`_ 」に示した
-    OpenFlow 1.3に対応したsimple_switch_igmp_13.pyを元にアプリケーションの
-    詳細を説明します。
+    ryu/app/simple_switch_igmp_13.py
 
 
 IGMPスヌーピングライブラリの実装
