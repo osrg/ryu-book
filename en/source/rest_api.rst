@@ -181,31 +181,32 @@ Then, start the switching hub added with REST API.
 
 ::
 
-    ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
     ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
-    loading app ./simple_switch_rest_13.py
+    ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ryu.app.simple_switch_rest_13
+    loading app ryu.app.simple_switch_rest_13
     loading app ryu.controller.ofp_handler
     creating context wsgi
-    instantiating app ryu.controller.ofp_handler
-    instantiating app ./simple_switch_rest_13.py
+    instantiating app ryu.app.simple_switch_rest_13 of SimpleSwitchRest13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
     BRICK SimpleSwitchRest13
       CONSUMES EventOFPPacketIn
       CONSUMES EventOFPSwitchFeatures
     BRICK ofp_event
       PROVIDES EventOFPPacketIn TO {'SimpleSwitchRest13': set(['main'])}
       PROVIDES EventOFPSwitchFeatures TO {'SimpleSwitchRest13': set(['config'])}
-      CONSUMES EventOFPErrorMsg
-      CONSUMES EventOFPPortDescStatsReply
-      CONSUMES EventOFPEchoRequest
       CONSUMES EventOFPSwitchFeatures
+      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPErrorMsg
+      CONSUMES EventOFPEchoRequest
+      CONSUMES EventOFPEchoReply
       CONSUMES EventOFPHello
-    (31135) wsgi starting up on http://0.0.0.0:8080/
-    connected socket:<eventlet.greenio.GreenSocket object at 0x318c6d0> address:('127.0.0.1', 48914)
-    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x318cc10>
+      CONSUMES EventOFPPortStatus
+    (24728) wsgi starting up on http://0.0.0.0:8080
+    connected socket:<eventlet.greenio.base.GreenSocket object at 0x7f2daf3d7850> address:('127.0.0.1', 37968)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7f2daf38c890>
     move onto config mode
     EVENT ofp_event->SimpleSwitchRest13 EventOFPSwitchFeatures
-    switch features ev version: 0x4 msg_type 0x6 xid 0x78dd7a72 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0x86fc9d2f,OFPSwitchFeatures(auxiliary_id=0,capabilities=79,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
 In the message at the time of start, there is a line stating "(31135) wsgi starting up on http://0.0.0.0:8080/" and this indicates that the Web server started at port number 8080.

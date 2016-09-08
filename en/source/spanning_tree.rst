@@ -162,7 +162,7 @@ Executing the Ryu Application
 
 Let's execute the Ryu's spanning tree application for which the spanning function is achieved using OpenFlow.
 
-simple_switch_stp.py provided in Ryu's source tree is an application dedicated to OpenFlow 1.0, therefore, we will create simple_switch_stp_13.py, which supports OpenFlow 1.3. This program is an application to which the spanning tree function has been added to the switching hub of " :ref:`ch_switching_hub` .
+This program is an application to which the spanning tree function has been added to the switching hub of " :ref:`ch_switching_hub` .
 
 
 Source name: ``simple_switch_stp_13.py``
@@ -315,13 +315,12 @@ Node: c0:
 
 ::
 
-    root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py 
-    loading app simple_switch_stp_13.py
-    loading app ryu.controller.ofp_handler
+    root@ryu-vm:~$ ryu-manager ryu.app.simple_switch_stp_13
+    loading app ryu.app.simple_switch_stp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of Stp
     creating context stplib
-    instantiating app simple_switch_stp_13.py of SimpleSwitch13
+    instantiating app ryu.app.simple_switch_stp_13 of SimpleSwitch13
     instantiating app ryu.controller.ofp_handler of OFPHandler
 
 
@@ -793,16 +792,11 @@ The spanning tree source code is in the Ryu's source tree.
 
     ryu/lib/stplib.py
 
-    ryu/app/simple_switch_stp.py
+    ryu/app/simple_switch_stp_13.py
 
 
 stplib.py is a library that provides spanning tree functions such as BPDU packet exchange and management of rules, and the status of each port.
-The simple_switch_stp.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.
-
-.. ATTENTION::
-
-    simple_switch_stp.py is an application dedicated to OpenFlow 1.0; this section describes details of the application based on simple_switch_stp_13.py, which supports OpenFlow 1.3, indicated in "`Executing the Ryu Application`_ ".
-
+The simple_switch_stp_13.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.
 
 
 Implementing the Library

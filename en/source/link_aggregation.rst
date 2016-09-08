@@ -41,7 +41,7 @@ Executing the Ryu Application
 
 Let's put off explaining the source and first execute Ryu's link aggregation application.
 
-simple_switch_lacp.py provided in Ryu's source tree is an application dedicated to OpenFlow 1.0, therefore, we will create simple_switch_lacp_13.py, which supports OpenFlow 1.3. This program is an application to which the link aggregation function has been added to the switching hub of " :ref:`ch_switching_hub`."
+This program is an application to which the link aggregation function has been added to the switching hub of " :ref:`ch_switching_hub`."
 
 Source name: ``simple_switch_lacp_13.py``
 
@@ -300,12 +300,13 @@ Node: c0:
 
 ::
 
-    ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
-    loading app ./simple_switch_lacp_13.py
+    ryu@ryu-vm:~$ ryu-manager ryu.app.simple_switch_lacp_13
+    loading app ryu.app.simple_switch_lacp_13
     loading app ryu.controller.ofp_handler
+    instantiating app None of LacpLib
     creating context lacplib
-    instantiating app ./simple_switch_lacp_13.py
-    instantiating app ryu.controller.ofp_handler
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    instantiating app ryu.app.simple_switch_lacp_13 of SimpleSwitchLacp13
     ...
 
 Host h1 sends one LACP data unit every 30 seconds. A while after start, the switch receives the LACP data unit from host h1 and outputs it to the operation log.
@@ -689,11 +690,7 @@ The source code of the LACP library and switching hub are in Ryu's source tree.
 
     ryu/lib/lacplib.py
 
-    ryu/app/simple_switch_lacp.py
-
-.. NOTE::
-
-    Because simple_switch_lacp.py is an application dedicated to OpenFlow 1.0, this section describes details of the application based on simple_switch_lacp_13.py, which supports OpenFlow 1.3 indicated in "`Executing the Ryu Application`_".
+    ryu/app/simple_switch_lacp_13.py
 
 
 Implementing the LACP Library

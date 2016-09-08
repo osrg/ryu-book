@@ -714,27 +714,29 @@ controller: c0:
 
 ::
 
-    root@ryu-vm:~# ryu-manager --verbose ryu.app.simple_switch_13
-    loading app ryu.app.simple_switch_13
+    root@ryu-vm:~# ryu-manager --verbose ryu.app.example_switch_13
+    loading app ryu.app.example_switch_13
     loading app ryu.controller.ofp_handler
-    instantiating app ryu.app.simple_switch_13
-    instantiating app ryu.controller.ofp_handler
-    BRICK SimpleSwitch13
-      CONSUMES EventOFPSwitchFeatures
+    instantiating app ryu.app.example_switch_13 of ExampleSwitch13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    BRICK ExampleSwitch13
       CONSUMES EventOFPPacketIn
+      CONSUMES EventOFPSwitchFeatures
     BRICK ofp_event
-      PROVIDES EventOFPSwitchFeatures TO {'SimpleSwitch13': set(['config'])}
-      PROVIDES EventOFPPacketIn TO {'SimpleSwitch13': set(['main'])}
+      PROVIDES EventOFPPacketIn TO {'ExampleSwitch13': set(['main'])}
+      PROVIDES EventOFPSwitchFeatures TO {'ExampleSwitch13': set(['config'])}
       CONSUMES EventOFPErrorMsg
       CONSUMES EventOFPHello
       CONSUMES EventOFPEchoRequest
-      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPEchoReply
+      CONSUMES EventOFPPortStatus
       CONSUMES EventOFPSwitchFeatures
-    connected socket:<eventlet.greenio.GreenSocket object at 0x2e2c050> address:('127.0.0.1', 53937)
-    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x2e2a550>
+      CONSUMES EventOFPPortDescStatsReply
+    connected socket:<eventlet.greenio.base.GreenSocket object at 0x7f1239937a90> address:('127.0.0.1', 37898)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7f1239927d50>
     move onto config mode
-    EVENT ofp_event->SimpleSwitch13 EventOFPSwitchFeatures
-    switch features ev version: 0x4 msg_type 0x6 xid 0xff9ad15b OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    EVENT ofp_event->ExampleSwitch13 EventOFPSwitchFeatures
+    switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0xea43ed30,OFPSwitchFeatures(auxiliary_id=0,capabilities=79,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
 It may take time to connect to OVS but after you wait for a while, as shown above...
@@ -869,7 +871,7 @@ Because (1) is a communication from host 2 to host 1, ARP reply and ICMP echo re
 (2) is a communication from host 1 to host 2 and because ARP request is broadcast, this is supposed to be by ICMP echo request.
 
 
-Now, let's look at the log output of simple_switch_13.
+Now, let's look at the log output of example_switch_13.
 
 controller: c0:
 
@@ -877,13 +879,12 @@ controller: c0:
 
 ::
 
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
-
 
 The first Packet-In is the ARP request issued by host 1 and is a broadcast, the flow entry is not registered and only Packet-Out is issued.
 
