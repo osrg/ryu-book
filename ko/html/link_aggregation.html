@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>링크 어그리게이션 &mdash; Ryubook 1.0 documentation</title>
+    <title>링크 어그리게이션 &#8212; Ryubook 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="스패닝 트리" href="spanning_tree.html" />
     <link rel="prev" title="REST 연동" href="rest_api.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,14 +41,14 @@
         <li class="right" >
           <a href="rest_api.html" title="REST 연동"
              accesskey="P">이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-link-aggregation">
 <span id="id1"></span><h1>링크 어그리게이션<a class="headerlink" href="#ch-link-aggregation" title="제목 주소">¶</a></h1>
@@ -59,7 +59,7 @@
 회선을 묶어 하나의 논리적 링크로 처리하는 기술입니다. 링크 어그리게이션
 기능은 특정 네트워크 장치 간의 통신 속도를 향상시킬 수 있으며 동시에
 중복성을 확보함으로써 결함 포용(fault tolerance)을 향상시킬 수 있습니다.</p>
-<a class="reference internal image-reference" href="_images/fig13.png"><img alt="_images/fig13.png" class="align-center" src="_images/fig13.png" /></a>
+<a class="reference internal image-reference" href="_images/fig13.png"><img alt="_images/fig13.png" class="align-center" src="_images/fig13.png" style="width: 320.0px; height: 140.0px;" /></a>
 <p>링크 어그리게이션 기능을 사용하려면 각 네트워크 장비에서
 어떤 인터페이스를 어떤 그룹으로 묶을 것인가하는 설정을 미리 해두어야
 합니다.</p>
@@ -83,31 +83,31 @@ LACP 데이터 유닛을 정기적으로 교환하여 통신이 가능하다는
 <p>Ryu 소스 트리에 포함되어 있는 simple_switch_lacp.py는 OpenFlow 1.0 전용
 응용 프로그램이기 때문에 여기에서는 새롭게 OpenFlow 1.3에 대응하는
 simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
-「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」스위칭 허브 링크 어그리게이션 기능을
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」스위칭 허브 링크 어그리게이션 기능을
 추가한 응용 프로그램입니다.</p>
-<p>소스 이름： <tt class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></tt></p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="kn">import</span> <span class="n">app_manager</span>
-<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="kn">import</span> <span class="n">ofp_event</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">CONFIG_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">MAIN_DISPATCHER</span>
-<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="kn">import</span> <span class="n">set_ev_cls</span>
-<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="kn">import</span> <span class="n">ofproto_v1_3</span>
-<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.dpid</span> <span class="kn">import</span> <span class="n">str_to_dpid</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">packet</span>
-<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="kn">import</span> <span class="n">ethernet</span>
+<p>소스 이름： <code class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></code></p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
+<span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">MAIN_DISPATCHER</span>
+<span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">set_ev_cls</span>
+<span class="kn">from</span> <span class="nn">ryu.ofproto</span> <span class="k">import</span> <span class="n">ofproto_v1_3</span>
+<span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">lacplib</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.dpid</span> <span class="k">import</span> <span class="n">str_to_dpid</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">packet</span>
+<span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ethernet</span>
 
 
 <span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lacplib&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-            <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">ports</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+            <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">ports</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 
     <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -115,13 +115,13 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
-        <span class="c"># install table-miss flow entry</span>
-        <span class="c">#</span>
-        <span class="c"># We specify NO BUFFER to max_len of the output action due to</span>
-        <span class="c"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-        <span class="c"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-        <span class="c"># truncated packet data. In that case, we cannot output packets</span>
-        <span class="c"># correctly.</span>
+        <span class="c1"># install table-miss flow entry</span>
+        <span class="c1">#</span>
+        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
+        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
+        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
+        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
+        <span class="c1"># correctly.</span>
         <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
                                           <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
@@ -155,7 +155,7 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
         <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
 
         <span class="n">pkt</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">Packet</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="n">eth</span> <span class="o">=</span> <span class="n">pkt</span><span class="o">.</span><span class="n">get_protocols</span><span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">ethernet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -166,9 +166,9 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
         <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;packet in </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;packet in </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">in_port</span><span class="p">)</span>
 
-        <span class="c"># learn a mac address to avoid FLOOD next time.</span>
+        <span class="c1"># learn a mac address to avoid FLOOD next time.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">in_port</span>
 
         <span class="k">if</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
@@ -178,12 +178,12 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
 
         <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
 
-        <span class="c"># install a flow to avoid packet_in next time</span>
+        <span class="c1"># install a flow to avoid packet_in next time</span>
         <span class="k">if</span> <span class="n">out_port</span> <span class="o">!=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_FLOOD</span><span class="p">:</span>
             <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">in_port</span><span class="o">=</span><span class="n">in_port</span><span class="p">,</span> <span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
 
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">buffer_id</span> <span class="o">==</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_NO_BUFFER</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span>
 
@@ -197,7 +197,7 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
         <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
         <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
         <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;slave state changed port: </span><span class="si">%d</span><span class="s2"> enabled: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                          <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
@@ -210,32 +210,32 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
 <div class="section" id="id3">
 <h3>실험 환경 구성<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
 <p>OpenFlow 스위치 및 Linux 호스트 사이에서 링크 어그리게이션을 구성하여 봅시다.</p>
-<p>VM 이미지 사용을 위한 환경설정 및 로그인 방법 등은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」
+<p>VM 이미지 사용을 위한 환경설정 및 로그인 방법 등은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」
 을 참조하십시오.</p>
 <p>먼저 Mininet를 이용하여 아래 그림과 같은 토폴로지를 만듭니다.</p>
-<a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" /></a>
+<a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 330.8px; height: 258.4px;" /></a>
 <p>Mininet API를 호출하는 스크립트를 작성하고 필요한 토폴로지를 구축
 합니다.</p>
-<p>소스 이름： <tt class="docutils literal"><span class="pre">link_aggregation.py</span></tt></p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<p>소스 이름： <code class="docutils literal"><span class="pre">link_aggregation.py</span></code></p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 
-<span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="kn">import</span> <span class="n">CLI</span>
-<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="kn">import</span> <span class="n">Link</span>
-<span class="kn">from</span> <span class="nn">mininet.net</span> <span class="kn">import</span> <span class="n">Mininet</span>
-<span class="kn">from</span> <span class="nn">mininet.node</span> <span class="kn">import</span> <span class="n">RemoteController</span>
-<span class="kn">from</span> <span class="nn">mininet.term</span> <span class="kn">import</span> <span class="n">makeTerm</span>
+<span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="k">import</span> <span class="n">CLI</span>
+<span class="kn">from</span> <span class="nn">mininet.link</span> <span class="k">import</span> <span class="n">Link</span>
+<span class="kn">from</span> <span class="nn">mininet.net</span> <span class="k">import</span> <span class="n">Mininet</span>
+<span class="kn">from</span> <span class="nn">mininet.node</span> <span class="k">import</span> <span class="n">RemoteController</span>
+<span class="kn">from</span> <span class="nn">mininet.term</span> <span class="k">import</span> <span class="n">makeTerm</span>
 
-<span class="k">if</span> <span class="s">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
+<span class="k">if</span> <span class="s1">&#39;__main__&#39;</span> <span class="o">==</span> <span class="n">__name__</span><span class="p">:</span>
     <span class="n">net</span> <span class="o">=</span> <span class="n">Mininet</span><span class="p">(</span><span class="n">controller</span><span class="o">=</span><span class="n">RemoteController</span><span class="p">)</span>
 
-    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s">&#39;c0&#39;</span><span class="p">)</span>
+    <span class="n">c0</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addController</span><span class="p">(</span><span class="s1">&#39;c0&#39;</span><span class="p">)</span>
 
-    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s">&#39;s1&#39;</span><span class="p">)</span>
+    <span class="n">s1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addSwitch</span><span class="p">(</span><span class="s1">&#39;s1&#39;</span><span class="p">)</span>
 
-    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h1&#39;</span><span class="p">)</span>
-    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h2&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:22&#39;</span><span class="p">)</span>
-    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h3&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:23&#39;</span><span class="p">)</span>
-    <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s">&#39;h4&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s">&#39;00:00:00:00:00:24&#39;</span><span class="p">)</span>
+    <span class="n">h1</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s1">&#39;h1&#39;</span><span class="p">)</span>
+    <span class="n">h2</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s1">&#39;h2&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:22&#39;</span><span class="p">)</span>
+    <span class="n">h3</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s1">&#39;h3&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:23&#39;</span><span class="p">)</span>
+    <span class="n">h4</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">addHost</span><span class="p">(</span><span class="s1">&#39;h4&#39;</span><span class="p">,</span> <span class="n">mac</span><span class="o">=</span><span class="s1">&#39;00:00:00:00:00:24&#39;</span><span class="p">)</span>
 
     <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
     <span class="n">Link</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="n">h1</span><span class="p">)</span>
@@ -257,7 +257,7 @@ simple_switch_lacp_13.py을 만듭니다. 이 프로그램은
 <p>이 스크립트를 실행하여 호스트 h1과 스위치 s1 사이에 2개의 링크가
 존재하는 토폴로지를 만듭니다. net 명령으로 생성된 토폴로지를 확인할
 수 있습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -277,13 +277,13 @@ mininet&gt;
 <p>먼저 링크 어그리게이션을 위한 드라이버 모듈을 로드합니다.
 Linux에서는 링크 어그리게이션 기능을 본딩 드라이버에서 담당하고 있습니다.
 미리 드라이버의 구성 파일을 /etc/modprobe.d/bonding.conf로 작성합니다.</p>
-<p>파일 이름: <tt class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></tt></p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>alias bond0 bonding
-options bonding mode=4
+<p>파일 이름: <code class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></code></p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">alias</span> <span class="n">bond0</span> <span class="n">bonding</span>
+<span class="n">options</span> <span class="n">bonding</span> <span class="n">mode</span><span class="o">=</span><span class="mi">4</span>
 </pre></div>
 </div>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# modprobe bonding
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># modprobe bonding</span>
 </pre></div>
 </div>
 <p>mode = 4는 LACP를 이용한 동적 링크 어그리게이션 할 것을 나타냅니다.
@@ -293,8 +293,8 @@ options bonding mode=4
 <p>이어 bond0이라는 논리 인터페이스를 새로 만듭니다. 또한 bond0
 MAC 주소로 적당한 값을 설정합니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link add bond0 type bond
-root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add bond0 type bond</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set bond0 address 02:01:02:03:04:08</span>
 </pre></div>
 </div>
 <p>만든 논리 인터페이스의 그룹에 h1-eth0와 h1-eth1의 물리적 인터페이스를
@@ -302,59 +302,59 @@ root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
 또한 랜덤으로 결정되는 물리적 인터페이스의 MAC 주소를
 알기 쉬운 값으로 갱신해야 합니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 down
-root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
-root@ryu-vm:~# ip link set h1-eth0 master bond0
-root@ryu-vm:~# ip link set h1-eth1 down
-root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
-root@ryu-vm:~# ip link set h1-eth1 master bond0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 down</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 address 00:00:00:00:00:11</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 master bond0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth1 down</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth1 address 00:00:00:00:00:12</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth1 master bond0</span>
 </pre></div>
 </div>
 <p>논리 인터페이스에 IP 주소를 할당합니다.
 여기에 10.0.0.1를 할당합니다. 또한 h1-eth0에 IP 주소가
 할당되어 있으므로 이를 제거합니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
-root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.1/8 dev bond0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
 </pre></div>
 </div>
 <p>마지막으로, 논리 인터페이스를 활성화시킵니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set bond0 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set bond0 up</span>
 </pre></div>
 </div>
 <p>이제, 각 인터페이스의 상태를 확인합시다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ifconfig
-bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
-          inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
-          UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:10 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:1240 (1.2 KB)
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig</span>
+<span class="n">bond0</span>     <span class="n">Link</span> <span class="n">encap</span><span class="p">:</span><span class="n">Ethernet</span>  <span class="n">HWaddr</span> <span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span>
+          <span class="n">inet</span> <span class="n">addr</span><span class="p">:</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span>  <span class="n">Bcast</span><span class="p">:</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span>  <span class="n">Mask</span><span class="p">:</span><span class="mf">255.0</span><span class="o">.</span><span class="mf">0.0</span>
+          <span class="n">UP</span> <span class="n">BROADCAST</span> <span class="n">RUNNING</span> <span class="n">MASTER</span> <span class="n">MULTICAST</span>  <span class="n">MTU</span><span class="p">:</span><span class="mi">1500</span>  <span class="n">Metric</span><span class="p">:</span><span class="mi">1</span>
+          <span class="n">RX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">0</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">frame</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">TX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">10</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">carrier</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">collisions</span><span class="p">:</span><span class="mi">0</span> <span class="n">txqueuelen</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">RX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">0</span> <span class="p">(</span><span class="mf">0.0</span> <span class="n">B</span><span class="p">)</span>  <span class="n">TX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">1240</span> <span class="p">(</span><span class="mf">1.2</span> <span class="n">KB</span><span class="p">)</span>
 
-h1-eth0   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
-          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+<span class="n">h1</span><span class="o">-</span><span class="n">eth0</span>   <span class="n">Link</span> <span class="n">encap</span><span class="p">:</span><span class="n">Ethernet</span>  <span class="n">HWaddr</span> <span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span>
+          <span class="n">UP</span> <span class="n">BROADCAST</span> <span class="n">RUNNING</span> <span class="n">SLAVE</span> <span class="n">MULTICAST</span>  <span class="n">MTU</span><span class="p">:</span><span class="mi">1500</span>  <span class="n">Metric</span><span class="p">:</span><span class="mi">1</span>
+          <span class="n">RX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">0</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">frame</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">TX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">5</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">carrier</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">collisions</span><span class="p">:</span><span class="mi">0</span> <span class="n">txqueuelen</span><span class="p">:</span><span class="mi">1000</span>
+          <span class="n">RX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">0</span> <span class="p">(</span><span class="mf">0.0</span> <span class="n">B</span><span class="p">)</span>  <span class="n">TX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">620</span> <span class="p">(</span><span class="mf">620.0</span> <span class="n">B</span><span class="p">)</span>
 
-h1-eth1   Link encap:Ethernet  HWaddr 02:01:02:03:04:08
-          UP BROADCAST RUNNING SLAVE MULTICAST  MTU:1500  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:5 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 B)  TX bytes:620 (620.0 B)
+<span class="n">h1</span><span class="o">-</span><span class="n">eth1</span>   <span class="n">Link</span> <span class="n">encap</span><span class="p">:</span><span class="n">Ethernet</span>  <span class="n">HWaddr</span> <span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span>
+          <span class="n">UP</span> <span class="n">BROADCAST</span> <span class="n">RUNNING</span> <span class="n">SLAVE</span> <span class="n">MULTICAST</span>  <span class="n">MTU</span><span class="p">:</span><span class="mi">1500</span>  <span class="n">Metric</span><span class="p">:</span><span class="mi">1</span>
+          <span class="n">RX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">0</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">frame</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">TX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">5</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">carrier</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">collisions</span><span class="p">:</span><span class="mi">0</span> <span class="n">txqueuelen</span><span class="p">:</span><span class="mi">1000</span>
+          <span class="n">RX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">0</span> <span class="p">(</span><span class="mf">0.0</span> <span class="n">B</span><span class="p">)</span>  <span class="n">TX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">620</span> <span class="p">(</span><span class="mf">620.0</span> <span class="n">B</span><span class="p">)</span>
 
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+<span class="n">lo</span>        <span class="n">Link</span> <span class="n">encap</span><span class="p">:</span><span class="n">Local</span> <span class="n">Loopback</span>
+          <span class="n">inet</span> <span class="n">addr</span><span class="p">:</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span>  <span class="n">Mask</span><span class="p">:</span><span class="mf">255.0</span><span class="o">.</span><span class="mf">0.0</span>
+          <span class="n">UP</span> <span class="n">LOOPBACK</span> <span class="n">RUNNING</span>  <span class="n">MTU</span><span class="p">:</span><span class="mi">16436</span>  <span class="n">Metric</span><span class="p">:</span><span class="mi">1</span>
+          <span class="n">RX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">0</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">frame</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">TX</span> <span class="n">packets</span><span class="p">:</span><span class="mi">0</span> <span class="n">errors</span><span class="p">:</span><span class="mi">0</span> <span class="n">dropped</span><span class="p">:</span><span class="mi">0</span> <span class="n">overruns</span><span class="p">:</span><span class="mi">0</span> <span class="n">carrier</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">collisions</span><span class="p">:</span><span class="mi">0</span> <span class="n">txqueuelen</span><span class="p">:</span><span class="mi">0</span>
+          <span class="n">RX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">0</span> <span class="p">(</span><span class="mf">0.0</span> <span class="n">B</span><span class="p">)</span>  <span class="n">TX</span> <span class="nb">bytes</span><span class="p">:</span><span class="mi">0</span> <span class="p">(</span><span class="mf">0.0</span> <span class="n">B</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>논리적 인터페이스 bond0가 MASTER이고, 물리 인터페이스 h1-eth0와 h1-eth1이
@@ -362,44 +362,44 @@ SLAVE로 되어있는 것을 알 수 있습니다. 또한 bond0, h1-eth0, h1-eth
 모두 동일하게 되어있는 것을 알 수 있습니다.</p>
 <p>본딩 드라이버의 상태도 확인해야 합니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# cat /proc/net/bonding/bond0
-Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cat /proc/net/bonding/bond0</span>
+<span class="n">Ethernet</span> <span class="n">Channel</span> <span class="n">Bonding</span> <span class="n">Driver</span><span class="p">:</span> <span class="n">v3</span><span class="o">.</span><span class="mf">7.1</span> <span class="p">(</span><span class="n">April</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">2011</span><span class="p">)</span>
 
-Bonding Mode: IEEE 802.3ad Dynamic link aggregation
-Transmit Hash Policy: layer2 (0)
-MII Status: up
-MII Polling Interval (ms): 100
-Up Delay (ms): 0
-Down Delay (ms): 0
+<span class="n">Bonding</span> <span class="n">Mode</span><span class="p">:</span> <span class="n">IEEE</span> <span class="mf">802.3</span><span class="n">ad</span> <span class="n">Dynamic</span> <span class="n">link</span> <span class="n">aggregation</span>
+<span class="n">Transmit</span> <span class="n">Hash</span> <span class="n">Policy</span><span class="p">:</span> <span class="n">layer2</span> <span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">MII</span> <span class="n">Status</span><span class="p">:</span> <span class="n">up</span>
+<span class="n">MII</span> <span class="n">Polling</span> <span class="n">Interval</span> <span class="p">(</span><span class="n">ms</span><span class="p">):</span> <span class="mi">100</span>
+<span class="n">Up</span> <span class="n">Delay</span> <span class="p">(</span><span class="n">ms</span><span class="p">):</span> <span class="mi">0</span>
+<span class="n">Down</span> <span class="n">Delay</span> <span class="p">(</span><span class="n">ms</span><span class="p">):</span> <span class="mi">0</span>
 
-802.3ad info
-LACP rate: slow
-Min links: 0
-Aggregator selection policy (ad_select): stable
-Active Aggregator Info:
-        Aggregator ID: 1
-        Number of ports: 1
-        Actor Key: 33
-        Partner Key: 1
-        Partner Mac Address: 00:00:00:00:00:00
+<span class="mf">802.3</span><span class="n">ad</span> <span class="n">info</span>
+<span class="n">LACP</span> <span class="n">rate</span><span class="p">:</span> <span class="n">slow</span>
+<span class="n">Min</span> <span class="n">links</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">Aggregator</span> <span class="n">selection</span> <span class="n">policy</span> <span class="p">(</span><span class="n">ad_select</span><span class="p">):</span> <span class="n">stable</span>
+<span class="n">Active</span> <span class="n">Aggregator</span> <span class="n">Info</span><span class="p">:</span>
+        <span class="n">Aggregator</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="n">Number</span> <span class="n">of</span> <span class="n">ports</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="n">Actor</span> <span class="n">Key</span><span class="p">:</span> <span class="mi">33</span>
+        <span class="n">Partner</span> <span class="n">Key</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="n">Partner</span> <span class="n">Mac</span> <span class="n">Address</span><span class="p">:</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 
-Slave Interface: h1-eth0
-MII Status: up
-Speed: 10000 Mbps
-Duplex: full
-Link Failure Count: 0
-Permanent HW addr: 00:00:00:00:00:11
-Aggregator ID: 1
-Slave queue ID: 0
+<span class="n">Slave</span> <span class="n">Interface</span><span class="p">:</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span>
+<span class="n">MII</span> <span class="n">Status</span><span class="p">:</span> <span class="n">up</span>
+<span class="n">Speed</span><span class="p">:</span> <span class="mi">10000</span> <span class="n">Mbps</span>
+<span class="n">Duplex</span><span class="p">:</span> <span class="n">full</span>
+<span class="n">Link</span> <span class="n">Failure</span> <span class="n">Count</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">Permanent</span> <span class="n">HW</span> <span class="n">addr</span><span class="p">:</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span>
+<span class="n">Aggregator</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">Slave</span> <span class="n">queue</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">0</span>
 
-Slave Interface: h1-eth1
-MII Status: up
-Speed: 10000 Mbps
-Duplex: full
-Link Failure Count: 0
-Permanent HW addr: 00:00:00:00:00:12
-Aggregator ID: 2
-Slave queue ID: 0
+<span class="n">Slave</span> <span class="n">Interface</span><span class="p">:</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth1</span>
+<span class="n">MII</span> <span class="n">Status</span><span class="p">:</span> <span class="n">up</span>
+<span class="n">Speed</span><span class="p">:</span> <span class="mi">10000</span> <span class="n">Mbps</span>
+<span class="n">Duplex</span><span class="p">:</span> <span class="n">full</span>
+<span class="n">Link</span> <span class="n">Failure</span> <span class="n">Count</span><span class="p">:</span> <span class="mi">0</span>
+<span class="n">Permanent</span> <span class="n">HW</span> <span class="n">addr</span><span class="p">:</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span>
+<span class="n">Aggregator</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">2</span>
+<span class="n">Slave</span> <span class="n">queue</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p>LACP 데이터 유닛의 교환주기 (LACP rate : slow)와 분배 로직 설정
@@ -413,7 +413,7 @@ Slave queue ID: 0
 버전을 1.3으로 설정합니다. 이 명령 입력 스위치 s1의 xterm에서 실행
 하십시오.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 </div>
@@ -423,7 +423,7 @@ Slave queue ID: 0
 <p>윈도우 제목이 「Node: c0 (root)」인 xterm에서 다음 명령
 을 실행합니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
 loading app ./simple_switch_lacp_13.py
 loading app ryu.controller.ofp_handler
 creating context lacplib
@@ -436,18 +436,18 @@ instantiating app ryu.controller.ofp_handler
 스위치는 호스트 h1에서 LACP 데이터 유닛을 수신하여 실행 로그에
 출력합니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>...
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=1 the slave i/f has just been up.
-[LACP][INFO] SW=0000000000000001 PORT=1 the timeout time has changed.
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
-slave state changed port: 1 enabled: True
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=2 the slave i/f has just been up.
-[LACP][INFO] SW=0000000000000001 PORT=2 the timeout time has changed.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-slave state changed port: 2 enabled: True
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">the</span> <span class="n">slave</span> <span class="n">i</span><span class="o">/</span><span class="n">f</span> <span class="n">has</span> <span class="n">just</span> <span class="n">been</span> <span class="n">up</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">the</span> <span class="n">timeout</span> <span class="n">time</span> <span class="n">has</span> <span class="n">changed</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="n">slave</span> <span class="n">state</span> <span class="n">changed</span> <span class="n">port</span><span class="p">:</span> <span class="mi">1</span> <span class="n">enabled</span><span class="p">:</span> <span class="kc">True</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">the</span> <span class="n">slave</span> <span class="n">i</span><span class="o">/</span><span class="n">f</span> <span class="n">has</span> <span class="n">just</span> <span class="n">been</span> <span class="n">up</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">the</span> <span class="n">timeout</span> <span class="n">time</span> <span class="n">has</span> <span class="n">changed</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="n">slave</span> <span class="n">state</span> <span class="n">changed</span> <span class="n">port</span><span class="p">:</span> <span class="mi">2</span> <span class="n">enabled</span><span class="p">:</span> <span class="kc">True</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>로그는 다음을 나타냅니다.</p>
@@ -483,21 +483,21 @@ slave state changed port: 2 enabled: True
 <p>스위치는 호스트 h1에서 LACP 데이터 유닛을 수신할 때마다 LACP 데이터 유닛을
 응답으로 전송합니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>...
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>플로우 항목을 확인하여 봅시다.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=24.821s, table=0, n_packets=2, n_bytes=248, priority=0 actions=CONTROLLER:65535
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">14.565</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">14.562</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">24.821</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">248</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
 </pre></div>
 </div>
 <p>스위치는</p>
@@ -508,7 +508,7 @@ LACP 데이터 유닛 (ethertype가 0x8809)이 전송되면 Packet-In 메시지
 <li>h1의 h1-eth0 (입력 포트가 s1-eth1에서 MAC 주소가 00:00:00:00:00:11)에서
 LACP 데이터 유닛 (ethertype가 0x8809)이 전송되면 Packet-In 메시지
 를 보냄</li>
-<li>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같은 Table-miss 플로우 항목</li>
+<li>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」와 같은 Table-miss 플로우 항목</li>
 </ul>
 <p>세 가지 플로우 항목이 등록되어 있습니다.</p>
 </div>
@@ -520,24 +520,24 @@ LACP 데이터 유닛 (ethertype가 0x8809)이 전송되면 Packet-In 메시지
 통신에 따라 여러 링크를 사용하는 모습을 살펴봅시다.</p>
 <p>먼저 호스트 h2에서 호스트 h1에 대해 ping을 실행합니다.</p>
 <p>Node: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
-PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
-64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
-64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
-64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.075 ms
-64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.065 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">93.0</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.266</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.075</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.065</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>ping을 계속 보내는 동안, 스위치 s1의 플로우 항목을 확인합니다.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=33.046s, table=0, n_packets=6, n_bytes=472, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=3.259s, table=0, n_packets=3, n_bytes=294, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=3.262s, table=0, n_packets=4, n_bytes=392, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">22.05</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">22.046</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">33.046</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">472</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.259</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">294</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">1</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">3.262</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">392</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">22</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">3</span>
 </pre></div>
 </div>
 <p>방금 확인한 시점에서 두 플로우 항목이 추가되어 있습니다.
@@ -553,26 +553,26 @@ duration 값이 작은 4 번째와 5 번째 항목입니다.</p>
 있습니다.</p>
 <p>그런 다음 호스트 h3에서 호스트 h1 대해 ping을 실행합니다.</p>
 <p>Node: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 10.0.0.1
-PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
-64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
-64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
-64 bytes from 10.0.0.1: icmp_req=3 ttl=64 time=0.057 ms
-64 bytes from 10.0.0.1: icmp_req=4 ttl=64 time=0.073 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
+<span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">91.2</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.256</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.057</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.073</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>ping을 계속 보내는 동안, 스위치 s1의 플로우 항목을 확인합니다.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=110.761s, table=0, n_packets=10, n_bytes=696, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=80.974s, table=0, n_packets=82, n_bytes=7924, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:1
- cookie=0x0, duration=2.677s, table=0, n_packets=2, n_bytes=196, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:4
- cookie=0x0, duration=2.675s, table=0, n_packets=1, n_bytes=98, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=80.977s, table=0, n_packets=83, n_bytes=8022, priority=1,in_port=1,dl_dst=00:00:00:00:00:22 actions=output:3
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">99.765</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">496</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">99.761</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">496</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">110.761</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">696</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">80.974</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">82</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">7924</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">1</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">2.677</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">196</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">23</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">4</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">2.675</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">98</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">80.977</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">83</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">8022</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">22</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">3</span>
 </pre></div>
 </div>
 <p>방금 확인한 시점에서 두 플로우 항목이 추가되어 있습니다.
@@ -611,7 +611,7 @@ h4와 h1 사이의 통신에는 s1-eth1이 사용됩니다.</p>
 </tr>
 </tbody>
 </table>
-<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" /></a>
+<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 328.8px; height: 294.0px;" /></a>
 <p>이와 같이 통신에 따라 여러 링크를 사용하는 모습을 확인할 수 있었습니다.</p>
 </div>
 <div class="section" id="id7">
@@ -621,25 +621,25 @@ h2와 h4가 h1와 통신할 때 s1-eth2를 사용하고, h3이 h1와 통신할 �
 <p>여기서 s1-eth1 인터페이스에 대응하는 h1-eth0를 링크 어그리게이션
 그룹에서 분리시킵니다.</p>
 <p>Node: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip link set h1-eth0 nomaster
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 nomaster</span>
 </pre></div>
 </div>
 <p>h1-eth0이 중지되었기에, 호스트 h3에서 호스트 h1에 ping이 보내지지
 않습니다. 통신이 되지 않는 모니터링 시간이 90 초가 경과하면 컨트롤러의 동작
 로그에 다음과 같은 메시지가 출력됩니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>...
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP sent.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP received.
-[LACP][INFO] SW=0000000000000001 PORT=2 LACP sent.
-[LACP][INFO] SW=0000000000000001 PORT=1 LACP exchange timeout has occurred.
-slave state changed port: 1 enabled: False
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
+<span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">exchange</span> <span class="n">timeout</span> <span class="n">has</span> <span class="n">occurred</span><span class="o">.</span>
+<span class="n">slave</span> <span class="n">state</span> <span class="n">changed</span> <span class="n">port</span><span class="p">:</span> <span class="mi">1</span> <span class="n">enabled</span><span class="p">:</span> <span class="kc">False</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>「LACP exchange timeout has occurred.」은 통신이 되지 않는 모니터링
@@ -651,30 +651,30 @@ MAC 주소 전송의 플로우 항목을 삭제를 하는 과정을 통해,
 살아있는 링크만을 이용하여 플로우 항목이 다시 등록됩니다.</p>
 <p>호스트 h3와 호스트 h1 사이에서도 새로운 플로우 항목이 등록됩니다.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
- cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535
- cookie=0x0, duration=5.738s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=3,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=6.279s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:23 actions=output:5
- cookie=0x0, duration=6.281s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=5,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=5.506s, table=0, n_packets=5, n_bytes=434, priority=1,in_port=4,dl_dst=02:01:02:03:04:08 actions=output:2
- cookie=0x0, duration=5.736s, table=0, n_packets=5, n_bytes=490, priority=1,in_port=2,dl_dst=00:00:00:00:00:21 actions=output:3
- cookie=0x0, duration=6.504s, table=0, n_packets=6, n_bytes=532, priority=1,in_port=2,dl_dst=00:00:00:00:00:22 actions=output:4
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">364.265</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1612</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">374.521</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.738</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">490</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">6.279</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">490</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">23</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">5</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">6.281</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">490</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.506</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">434</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">5.736</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">490</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">21</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">3</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">6.504</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">532</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_dst</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">22</span> <span class="n">actions</span><span class="o">=</span><span class="n">output</span><span class="p">:</span><span class="mi">4</span>
 </pre></div>
 </div>
 <p>호스트 h3 에 대한 ping이 중단 되었다가 계속됩니다.</p>
 <p>Node: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>...
-64 bytes from 10.0.0.1: icmp_req=144 ttl=64 time=0.193 ms
-64 bytes from 10.0.0.1: icmp_req=145 ttl=64 time=0.081 ms
-64 bytes from 10.0.0.1: icmp_req=146 ttl=64 time=0.095 ms
-64 bytes from 10.0.0.1: icmp_req=237 ttl=64 time=44.1 ms
-64 bytes from 10.0.0.1: icmp_req=238 ttl=64 time=2.52 ms
-64 bytes from 10.0.0.1: icmp_req=239 ttl=64 time=0.371 ms
-64 bytes from 10.0.0.1: icmp_req=240 ttl=64 time=0.103 ms
-64 bytes from 10.0.0.1: icmp_req=241 ttl=64 time=0.067 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">144</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.193</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">145</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.081</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">146</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.095</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">237</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">44.1</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">238</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">2.52</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">239</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.371</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">240</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.103</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">241</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.067</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>이와 같이 일부 링크에 고장이 발생한 경우에도 다른 링크
@@ -697,13 +697,13 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 항목에 등록</li>
 <li>무효가 된 물리적 인터페이스에서 LACP 데이터 유닛을 받은 경우 해당
 인터페이스를 다시 활성화</li>
-<li>LACP 데이터 유닛 이외의 패킷은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」처럼
+<li>LACP 데이터 유닛 이외의 패킷은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」처럼
 학습 · 전송</li>
 </ul>
 <p>하는 처리를 구현하면 링크 어그리게이션의 기본 동작이 가능해집니다.
 LACP에 관련되는 부분과 그렇지 않은 부분이 명확하게 나뉘어 있기 때문에 LACP에 관한
 부분을 LACP 라이브러리로 분리하고, 그렇지 않은 부분은
-「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」스위칭 허브를 확장하는 형태로 구현합니다.</p>
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」스위칭 허브를 확장하는 형태로 구현합니다.</p>
 <p>LACP 데이터 유닛 수신시 응답 작성 · 전송 플로우 항목만으로는 실현 불가능하기
 때문에 Packet-In 메시지를 사용하여 OpenFlow 컨트롤러에서 처리를 수행합니다.</p>
 <div class="admonition note">
@@ -883,13 +883,13 @@ OpenFlow 1.3에 대응하는 simple_switch_lacp_13.py 를 기반으로 응용
 기기에서 어떤 인터페이스를 어떤 그룹으로 묶을 것인가하는 설정을 미리
 해야 합니다. LACP 라이브러리는 다음과 같은 방법으로 이 설정을
 합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
-    <span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
+    <span class="c1"># ...</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
     <span class="k">assert</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span>
     <span class="n">ifs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
-        <span class="n">ifs</span><span class="p">[</span><span class="n">port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;enabled&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span> <span class="s">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="n">ifs</span><span class="p">[</span><span class="n">port</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;enabled&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
     <span class="n">bond</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">bond</span><span class="p">[</span><span class="n">dpid</span><span class="p">]</span> <span class="o">=</span> <span class="n">ifs</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_bonds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bond</span><span class="p">)</span>
@@ -917,14 +917,14 @@ OpenFlow 스위치의 지정된 포트를 하나의 그룹으로 간주합니다
 </div>
 <div class="section" id="packet-in">
 <h4>Packet-In 처리<a class="headerlink" href="#packet-in" title="제목 주소">¶</a></h4>
-<p>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」은 대상 MAC 주소가 학습되지 않은 경우
+<p>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」은 대상 MAC 주소가 학습되지 않은 경우
 받은 패킷을 flooding합니다. LACP 데이터 유닛은 인접한
 네트워크 장비간에서만 교환 되어야 하며, 다른 기기에 전송되면 링크
 어그리게이션 기능이 제대로 동작하지 않습니다. 그래서 &#8220;Packet-In 수신
 패킷이 LACP 데이터 유닛이면 차단하고 LACP 데이터 유닛
 이외의 패킷이면 스위칭 허브의 동작에 맡긴다&#8221; 라는 처리를 실행하여,
 스위칭 허브에서는 LACP 데이터 유닛을 보이지 않도록 합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
 <span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
@@ -937,18 +937,18 @@ OpenFlow 스위치의 지정된 포트를 하나의 그룹으로 간주합니다
         <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span><span class="n">EventPacketIn</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">msg</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>이벤트 핸들러 자체는 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」와 같습니다. 받은 메시지에
+<p>이벤트 핸들러 자체는 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」와 같습니다. 받은 메시지에
 LACP 데이터 유닛이 포함되어 있는지 여부에 따라 구분하여 처리하고 있습니다.</p>
 <p>LACP 데이터 유닛이 포함된 경우 LACP 라이브러리가 수신한 LACP 데이터 유닛을
 처리합니다. LACP 데이터 유닛이 포함되지 않은 경우
 send_event_to_observers()라는 메서드를 호출하고 있습니다. 이것은
 ryu.base.app_manager.RyuApp 클래스에 정의된 이벤트를 전송하기 위한
 방법입니다.</p>
-<p>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」에서 Ryu에 정의된 OpenFlow 메시지 수신
+<p>「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」에서 Ryu에 정의된 OpenFlow 메시지 수신
 이벤트에 대해 언급하였지만, 사용자가 직접 이벤트를 정의할 수도 있습니다.
-아래 소스에서 처리하는 <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt> 이벤트는 LACP 라이브러리에서
+아래 소스에서 처리하는 <code class="docutils literal"><span class="pre">EventPacketIn</span></code> 이벤트는 LACP 라이브러리에서
 생성된 사용자 정의 이벤트입니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
@@ -958,7 +958,7 @@ ryu.base.app_manager.RyuApp 클래스에 정의된 이벤트를 전송하기 위
 </div>
 <p>사용자 정의 이벤트는 ryu.controller.event.EventBase 클래스를 상속하여
 만듭니다. 이벤트 클래스에서 포함하는 데이터에 대한 제한은 없습니다.
-<tt class="docutils literal"><span class="pre">EventPacketIn</span></tt> 클래스는 Packet-In 메시지에 의해 받은
+<code class="docutils literal"><span class="pre">EventPacketIn</span></code> 클래스는 Packet-In 메시지에 의해 받은
 ryu.ofproto.OFPPacketIn 인스턴스를 그대로 사용하고 있습니다.</p>
 <p>사용자 정의 이벤트를 수신하는 방법에 대해서는 뒤에서 설명합니다.</p>
 </div>
@@ -977,27 +977,27 @@ ryu.ofproto.OFPPacketIn 인스턴스를 그대로 사용하고 있습니다.</p>
 그리고, 3에 대한 처리 내용은 아래의
 「 <a class="reference internal" href="#id11">LACP 데이터 유닛에 대한 송수신 처리</a> 」
 에서 각각 설명합니다. 여기에서는 1에 대한 처리 부분을 설명합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c1"># ...</span>
 
-    <span class="c"># when LACP arrived at disabled port, update the status of</span>
-    <span class="c"># the slave i/f to enabled, and send a event.</span>
+    <span class="c1"># when LACP arrived at disabled port, update the status of</span>
+    <span class="c1"># the slave i/f to enabled, and send a event.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the slave i/f has just been up.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SW=</span><span class="si">%s</span><span class="s2"> PORT=</span><span class="si">%d</span><span class="s2"> the slave i/f has just been up.&quot;</span><span class="p">,</span>
             <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
-            <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
+            <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>_get_slave_enabled() 메서드는 지정된 스위치의 해당 포트가 유효한지 여부를
 가져옵니다. _set_slave_enabled() 메서드는 지정된 스위치의 해당
 포트에 대한 활성화 / 비활성화 상태를 설정합니다.</p>
 <p>위 소스에서 비활성 상태의 포트에서 LACP 데이터 유닛을 받은 경우 포트
-상태가 변경되었다는 것을 나타내는 <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> 라는 사용자
+상태가 변경되었다는 것을 나타내는 <code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 라는 사용자
 정의 이벤트를 전송합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;a event class that notifies the changes of the statuses of the</span>
 <span class="sd">    slave i/fs.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
@@ -1008,10 +1008,10 @@ ryu.ofproto.OFPPacketIn 인스턴스를 그대로 사용하고 있습니다.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">enabled</span> <span class="o">=</span> <span class="n">enabled</span>
 </pre></div>
 </div>
-<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> 이벤트는 포트가 활성화되었을 때 다른 포트가
+<p><code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 이벤트는 포트가 활성화되었을 때 다른 포트가
 비활성화된 경우에도 전송됩니다. 비활성화했을 때의 처리는
 「 <a class="reference internal" href="#flowremoved">FlowRemoved 메시지의 수신 처리</a> 」에서 구현되어 있습니다.</p>
-<p><tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> 클래스에는 다음 정보가 포함됩니다.</p>
+<p><code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 클래스에는 다음 정보가 포함됩니다.</p>
 <ul class="simple">
 <li>포트를 활성화 / 비활성화 상태 변경이 발생한 OpenFlow 스위치</li>
 <li>활성화 / 비활성화 상태 변경이 발생한 포트 번호</li>
@@ -1030,30 +1030,30 @@ LONG_TIMEOUT_TIME는 90 초)을 idle_timeout로 설정하여
 비활성화에 대한 모니터링을 수행하고 있습니다.</p>
 <p>교환주기가 변경된 경우 idle_timeout 시간도 다시 설정해야 하므로
 LACP 라이브러리는 다음과 같이 구현되어 있습니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c1"># ...</span>
 
-    <span class="c"># set the idle_timeout time using the actor state of the</span>
-    <span class="c"># received packet.</span>
+    <span class="c1"># set the idle_timeout time using the actor state of the</span>
+    <span class="c1"># received packet.</span>
     <span class="k">if</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LACP_STATE_SHORT_TIMEOUT</span> <span class="o">==</span> \
        <span class="n">req_lacp</span><span class="o">.</span><span class="n">actor_state_timeout</span><span class="p">:</span>
         <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">SHORT_TIMEOUT_TIME</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">idle_timeout</span> <span class="o">=</span> <span class="n">req_lacp</span><span class="o">.</span><span class="n">LONG_TIMEOUT_TIME</span>
 
-    <span class="c"># when the timeout time has changed, update the timeout time of</span>
-    <span class="c"># the slave i/f and re-enter a flow entry for the packet from</span>
-    <span class="c"># the slave i/f with idle_timeout.</span>
+    <span class="c1"># when the timeout time has changed, update the timeout time of</span>
+    <span class="c1"># the slave i/f and re-enter a flow entry for the packet from</span>
+    <span class="c1"># the slave i/f with idle_timeout.</span>
     <span class="k">if</span> <span class="n">idle_timeout</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> the timeout time has changed.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SW=</span><span class="si">%s</span><span class="s2"> PORT=</span><span class="si">%d</span><span class="s2"> the timeout time has changed.&quot;</span><span class="p">,</span>
             <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">)</span>
         <span class="n">func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_flow</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">func</span>
         <span class="n">func</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">)</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>_get_slave_timeout() 메서드는 지정된 스위치의 해당 포트의 현재
@@ -1062,10 +1062,10 @@ idle_timeout 값을 가져옵니다. _set_slave_timeout() 메서드는 지정된
 링크 어그리게이션 그룹에서 제외 된 경우에는 idle_timeout 값은 0으로
 설정되어 있기 때문에 새로운 LACP 데이터 유닛을 받은 경우 설정된 교환주기에
 관계없이 플로우 항목을 등록합니다.</p>
-<p>사용하는 OpenFlow 버전에 따라 <tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt> 클래스의 생성자
+<p>사용하는 OpenFlow 버전에 따라 <code class="docutils literal"><span class="pre">OFPFlowMod</span></code> 클래스의 생성자
 인수가 다르기 때문에 버전에 따라 적절한 플로우 항목 등록 방법을 필요로
 합니다. 다음은 OpenFlow 1.2 이상에서 사용하는 플로우 항목 등록 방법입니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;enter a flow entry for the packet from the slave i/f</span>
 <span class="sd">    with idle_timeout. for OpenFlow ver1.2 and ver1.3.&quot;&quot;&quot;</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
@@ -1093,13 +1093,13 @@ Packet-In을 보냄」에 해당하는 플로우 항목을 통신이 발생하�
 <p>LACP 데이터 유닛을 받을 때 「 <a class="reference internal" href="#id10">포트 활성화 / 비활성화 상태 변경에 따른 처리</a> 」
 또는 「 <a class="reference internal" href="#lacp-packet-in">LACP 데이터 유닛에 대한 Packet-In을 보내는 플로우 항목 등록</a> 」을
 실행한 후 응답에 대한 LACP 데이터 유닛을 만들어 전송합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-    <span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="c1"># ...</span>
 
-    <span class="c"># create a response packet.</span>
+    <span class="c1"># create a response packet.</span>
     <span class="n">res_pkt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_response</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">)</span>
 
-    <span class="c"># packet-out the response packet.</span>
+    <span class="c1"># packet-out the response packet.</span>
     <span class="n">out_port</span> <span class="o">=</span> <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_IN_PORT</span>
     <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">out_port</span><span class="p">)]</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span><span class="o">.</span><span class="n">OFPPacketOut</span><span class="p">(</span>
@@ -1116,11 +1116,11 @@ Packet-In을 보냄」에 해당하는 플로우 항목을 통신이 발생하�
 받은 LACP 데이터 유닛에 있는 전송측 정보에는 대응하는 인터페이스 정보가
 기록되어 있으므로, OpenFlow 스위치에서 응답을 반환할 때 그것을 받는 정보로
 설정합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;create a LACP packet.&quot;&quot;&quot;</span>
     <span class="n">actor_system</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span><span class="p">]</span><span class="o">.</span><span class="n">hw_addr</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">(</span>
-        <span class="c"># ...</span>
+        <span class="c1"># ...</span>
         <span class="n">partner_system_priority</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system_priority</span><span class="p">,</span>
         <span class="n">partner_system</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_system</span><span class="p">,</span>
         <span class="n">partner_key</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_key</span><span class="p">,</span>
@@ -1135,7 +1135,7 @@ Packet-In을 보냄」에 해당하는 플로우 항목을 통신이 발생하�
         <span class="n">partner_state_defaulted</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_defaulted</span><span class="p">,</span>
         <span class="n">partner_state_expired</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">actor_state_expired</span><span class="p">,</span>
         <span class="n">collector_max_delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP sent.&quot;</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SW=</span><span class="si">%s</span><span class="s2"> PORT=</span><span class="si">%d</span><span class="s2"> LACP sent.&quot;</span><span class="p">,</span>
                      <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">res</span>
@@ -1146,7 +1146,7 @@ Packet-In을 보냄」에 해당하는 플로우 항목을 통신이 발생하�
 <h4>FlowRemoved 메시지의 수신 처리<a class="headerlink" href="#flowremoved" title="제목 주소">¶</a></h4>
 <p>지정된 시간 동안 LACP 데이터 유닛의 교환이 이루어지지 않으면 OpenFlow 스위치는
 FlowRemoved 메시지를 OpenFlow 컨트롤러에 보냅니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">flow_removed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;FlowRemoved event handler. when the removed flow entry was</span>
 <span class="sd">    for LACP, set the status of the slave i/f to disabled, and</span>
@@ -1160,23 +1160,23 @@ FlowRemoved 메시지를 OpenFlow 컨트롤러에 보냅니다.</p>
         <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">in_port</span>
         <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">dl_type</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
-        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s">&#39;eth_type&#39;</span><span class="p">]</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
+        <span class="n">dl_type</span> <span class="o">=</span> <span class="n">match</span><span class="p">[</span><span class="s1">&#39;eth_type&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ether</span><span class="o">.</span><span class="n">ETH_TYPE_SLOW</span> <span class="o">!=</span> <span class="n">dl_type</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s">&quot;SW=</span><span class="si">%s</span><span class="s"> PORT=</span><span class="si">%d</span><span class="s"> LACP exchange timeout has occurred.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SW=</span><span class="si">%s</span><span class="s2"> PORT=</span><span class="si">%d</span><span class="s2"> LACP exchange timeout has occurred.&quot;</span><span class="p">,</span>
         <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dpid</span><span class="p">),</span> <span class="n">port</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_enabled</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_set_slave_timeout</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">send_event_to_observers</span><span class="p">(</span>
-        <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+        <span class="n">EventSlaveStateChanged</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>FlowRemoved 메시지를 수신하면 OpenFlow 컨트롤러에서는
 _set_slave_enabled() 메서드를 사용하여 포트의 비활성화 상태를 설정하고
 _set_slave_timeout() 메서드를 사용하여 idle_timeout 값을 0으로 설정한 후
-send_event_to_observers() 메서드를 사용하여 <tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt>
+send_event_to_observers() 메서드를 사용하여 <code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code>
 이벤트를 보냅니다.</p>
 </div>
 </div>
@@ -1184,32 +1184,32 @@ send_event_to_observers() 메서드를 사용하여 <tt class="docutils literal"
 <h3>응용 프로그램 구현<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
 <p>「 <a class="reference internal" href="#ryu">Ryu 응용 프로그램 실행</a> 」에 나와있는 OpenFlow 1.3 에 대응하는 링크
 어그리게이션 응용 프로그램 (simple_switch_lacp_13.py)와
-「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」스위칭 허브와의 차이를 차례로 설명합니다.</p>
+「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」스위칭 허브와의 차이를 차례로 설명합니다.</p>
 <div class="section" id="contexts">
 <h4>「_CONTEXTS」 설정<a class="headerlink" href="#contexts" title="제목 주소">¶</a></h4>
 <p>ryu.base.app_manager.RyuApp을 상속받는 Ryu 응용 프로그램은 「_CONTEXTS」
 dictionary에 다른 Ryu 응용 프로그램을 설정하여 다른 응용
 프로그램을 별도의 스레드에서 실행시킬 수 있습니다. 여기에서는 LACP 라이브러리
 LacpLib 클래스를 「lacplib」라는 이름으로 「_CONTEXTS」를 설정합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="kn">import</span> <span class="n">lacplib</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">lacplib</span>
 
-<span class="c"># ...</span>
+<span class="c1"># ...</span>
 
 <span class="k">class</span> <span class="nc">SimpleSwitchLacp13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
-    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
+    <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lacplib&#39;</span><span class="p">:</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LacpLib</span><span class="p">}</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>「_CONTEXTS」로 설정한 응용 프로그램은 __init__() 메서드 kwargs에서
 인스턴스로 얻을 수 있습니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;lacplib&#39;</span><span class="p">]</span>
-<span class="c"># ...</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lacplib&#39;</span><span class="p">]</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
 </div>
@@ -1242,41 +1242,41 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
 </table>
 <p>이 설정은 데이터 경로 ID 「0000000000000001」의 OpenFlow 스위치의 포트1과
 포트 2가 하나의 링크 어그리게이션 그룹으로 작동합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre># ...
-    self._lacp = kwargs[&#39;lacplib&#39;]
-    self._lacp.add(
-        dpid=str_to_dpid(&#39;0000000000000001&#39;), ports=[1, 2])
-# ...
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lacplib&#39;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+        <span class="n">dpid</span><span class="o">=</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000001&#39;</span><span class="p">),</span> <span class="n">ports</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id14">
 <h4>사용자 정의 이벤트를 수신하는 방법<a class="headerlink" href="#id14" title="제목 주소">¶</a></h4>
 <p><a class="reference internal" href="#lacp">LACP 라이브러리 구현</a> 에서 설명한대로 LACP 라이브러리는 LACP 데이터 유닛이
-포함되지 않은 Packet-In 메시지를 <tt class="docutils literal"><span class="pre">EventPacketIn</span></tt> 라는 사용자 정의
+포함되지 않은 Packet-In 메시지를 <code class="docutils literal"><span class="pre">EventPacketIn</span></code> 라는 사용자 정의
 이벤트로 보냅니다. 사용자 정의 이벤트의 이벤트 처리기 또한 Ryu에서 제공합니다
-이벤트 처리기처럼 <tt class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></tt> 데코레이터로 장식합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+이벤트 처리기처럼 <code class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></code> 데코레이터로 장식합니다.</p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s">&#39;in_port&#39;</span><span class="p">]</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
 
-    <span class="c"># ...</span>
+    <span class="c1"># ...</span>
 </pre></div>
 </div>
 <p>또한 LACP 라이브러리는 포트 활성화 / 비활성화 상태가 변경되면
-<tt class="docutils literal"><span class="pre">EventSlaveStateChanged</span></tt> 이벤트를 송신하기 때문에, 해당 부분에서도
+<code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 이벤트를 송신하기 때문에, 해당 부분에서도
 이벤트 핸들러를 만들어 줍니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
     <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
     <span class="n">port_no</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">port</span>
     <span class="n">enabled</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">enabled</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;slave state changed port: </span><span class="si">%d</span><span class="s"> enabled: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;slave state changed port: </span><span class="si">%d</span><span class="s2"> enabled: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                      <span class="n">port_no</span><span class="p">,</span> <span class="n">enabled</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">dpid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">mac</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dpid</span><span class="p">]:</span>
@@ -1289,7 +1289,7 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
 <p>이 절 시작 부분에서 설명한대로 포트 활성화 / 비활성화 상태가 변경될 때,
 논리 인터페이스를 통과하는 패킷에 의해 실제 물리 인터페이스가 변경될 수도
 있습니다. 이러한 이유로 등록된 플로우 항목을 모두 삭제하고 있습니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
@@ -1299,7 +1299,7 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
     <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><tt class="docutils literal"><span class="pre">OFPFlowMod</span></tt> 클래스의 인스턴스에서 플로우 항목을 삭제합니다.</p>
+<p><code class="docutils literal"><span class="pre">OFPFlowMod</span></code> 클래스의 인스턴스에서 플로우 항목을 삭제합니다.</p>
 <p>이와 같이, 링크 어그리게이션 기능을 제공하는 라이브러리와 라이브러리를
 사용하는 응용 프로그램에서 링크 어그리게이션 기능을 가진 스위칭
 허브 응용 프로그램을 구현하고 있습니다.</p>
@@ -1321,7 +1321,7 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">목차</a></h3>
   <ul>
@@ -1368,29 +1368,28 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
   <h4>다음 항목</h4>
   <p class="topless"><a href="spanning_tree.html"
                         title="다음 장">스패닝 트리</a></p>
-  <h3>현재 문서</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/link_aggregation.txt"
-           rel="nofollow">소스 코드를 보려면</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>현재 문서</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/link_aggregation.txt"
+            rel="nofollow">소스 코드를 보려면</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>빠른 검색</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="바로 가기" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="바로 가기" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    모듈, 클래스 또는 함수 이름을 입력하십시오.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1402,11 +1401,11 @@ LACP 라이브러리가 제공하는 add() 메서드를 실행합니다. 다음 
         <li class="right" >
           <a href="rest_api.html" title="REST 연동"
              >이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, RYU project team.
     </div>
   </body>
 </html>

@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>OpenFlow 스위치 테스트 도구 &mdash; Ryubook 1.0 documentation</title>
+    <title>OpenFlow 스위치 테스트 도구 &#8212; Ryubook 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="아키텍처" href="arch.html" />
     <link rel="prev" title="QoS" href="rest_qos.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,14 +41,14 @@
         <li class="right" >
           <a href="rest_qos.html" title="QoS"
              accesskey="P">이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="openflow">
 <span id="ch-switch-test-tool"></span><h1>OpenFlow 스위치 테스트 도구<a class="headerlink" href="#openflow" title="제목 주소">¶</a></h1>
@@ -87,49 +87,49 @@ OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스
 </tr>
 </tbody>
 </table>
-<p>적용하는 패킷의 생성과 패킷 재 작성 결과의 확인 등은 「 <a class="reference internal" href="packet_lib.html#ch-packet-lib"><em>패킷 라이브러리</em></a> 」 를 사용하고 있습니다.</p>
+<p>적용하는 패킷의 생성과 패킷 재 작성 결과의 확인 등은 「 <a class="reference internal" href="packet_lib.html#ch-packet-lib"><span class="std std-ref">패킷 라이브러리</span></a> 」 를 사용하고 있습니다.</p>
 <div class="section" id="id2">
 <h3>시험 실행 이미지<a class="headerlink" href="#id2" title="제목 주소">¶</a></h3>
 <p>테스트 도구를 실행했을 때의 동작 이미지를 보여줍니다. 테스트 패턴 파일
 에는 「적용 플로우 항목 또는 미터 항목」,  「적용 패킷」,
 「기대하는 처리 결과」가 설명됩니다. 또한 도구 실행을 위한 환경 설정
 내용은 뒤에 설명합니다 (<a class="reference internal" href="#id5">도구 실행 환경</a> 참조).</p>
-<a class="reference internal image-reference" href="_images/fig18.png"><img alt="_images/fig18.png" class="align-center" src="_images/fig18.png" /></a>
+<a class="reference internal image-reference" href="_images/fig18.png"><img alt="_images/fig18.png" class="align-center" src="_images/fig18.png" style="width: 657.0px; height: 246.6px;" /></a>
 </div>
 <div class="section" id="id3">
 <h3>시험 결과의 출력 이미지<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
 <p>지정된 테스트 패턴 테스트 항목을 순서대로 수행하고 시험 결과
 (OK/ERROR)를 출력합니다. 시험 결과가 ERROR인 경우 오류 정보를 함께 출력합니다.
 또한 시험 전체의 OK/ERROR 개수 및 발생한 ERROR 내역도 출력합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>--- Test start ---
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">---</span> <span class="n">Test</span> <span class="n">start</span> <span class="o">---</span>
 
-match: 29_ICMPV6_TYPE
-    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
-    ethernet/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;      OK
-    ethernet/ipv6/icmpv6(type=135)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;               OK
-    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;          ERROR
-        Received incorrect packet-in: ethernet(ethertype=34525)
-    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39; ERROR
-        Received incorrect packet-in: ethernet(ethertype=34525)
-match: 30_ICMPV6_CODE
-    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
-    ethernet/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;          OK
-    ethernet/ipv6/icmpv6(code=1)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;                   OK
-    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;              ERROR
-        Received incorrect packet-in: ethernet(ethertype=34525)
-    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;     ERROR
-        Received incorrect packet-in: ethernet(ethertype=34525)
+<span class="n">match</span><span class="p">:</span> <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:2&#39;</span>               <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;</span>      <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">135</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:2&#39;</span>               <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:2&#39;</span>          <span class="n">ERROR</span>
+        <span class="n">Received</span> <span class="n">incorrect</span> <span class="n">packet</span><span class="o">-</span><span class="ow">in</span><span class="p">:</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">34525</span><span class="p">)</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;</span> <span class="n">ERROR</span>
+        <span class="n">Received</span> <span class="n">incorrect</span> <span class="n">packet</span><span class="o">-</span><span class="ow">in</span><span class="p">:</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">34525</span><span class="p">)</span>
+<span class="n">match</span><span class="p">:</span> <span class="mi">30</span><span class="n">_ICMPV6_CODE</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:2&#39;</span>                   <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;</span>          <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:2&#39;</span>                   <span class="n">OK</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:2&#39;</span>              <span class="n">ERROR</span>
+        <span class="n">Received</span> <span class="n">incorrect</span> <span class="n">packet</span><span class="o">-</span><span class="ow">in</span><span class="p">:</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">34525</span><span class="p">)</span>
+    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;</span>     <span class="n">ERROR</span>
+        <span class="n">Received</span> <span class="n">incorrect</span> <span class="n">packet</span><span class="o">-</span><span class="ow">in</span><span class="p">:</span> <span class="n">ethernet</span><span class="p">(</span><span class="n">ethertype</span><span class="o">=</span><span class="mi">34525</span><span class="p">)</span>
 
----  Test end  ---
+<span class="o">---</span>  <span class="n">Test</span> <span class="n">end</span>  <span class="o">---</span>
 
---- Test report ---
-Received incorrect packet-in(4)
-    match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:2&#39;
-    match: 29_ICMPV6_TYPE                    ethernet/vlan/ipv6/icmpv6(type=128)--&gt;&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;
-    match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:2&#39;
-    match: 30_ICMPV6_CODE                    ethernet/vlan/ipv6/icmpv6(code=0)--&gt;&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;
+<span class="o">---</span> <span class="n">Test</span> <span class="n">report</span> <span class="o">---</span>
+<span class="n">Received</span> <span class="n">incorrect</span> <span class="n">packet</span><span class="o">-</span><span class="ow">in</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">match</span><span class="p">:</span> <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span>                    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:2&#39;</span>
+    <span class="n">match</span><span class="p">:</span> <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span>                    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_type=128,actions=output:CONTROLLER&#39;</span>
+    <span class="n">match</span><span class="p">:</span> <span class="mi">30</span><span class="n">_ICMPV6_CODE</span>                    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:2&#39;</span>
+    <span class="n">match</span><span class="p">:</span> <span class="mi">30</span><span class="n">_ICMPV6_CODE</span>                    <span class="n">ethernet</span><span class="o">/</span><span class="n">vlan</span><span class="o">/</span><span class="n">ipv6</span><span class="o">/</span><span class="n">icmpv6</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">--&gt;</span><span class="s1">&#39;icmpv6_code=0,actions=output:CONTROLLER&#39;</span>
 
-OK(6) / ERROR(4)
+<span class="n">OK</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="o">/</span> <span class="n">ERROR</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -140,7 +140,7 @@ OK(6) / ERROR(4)
 <div class="section" id="id5">
 <h3>도구 실행 환경<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
 <p>테스트 도구 실행을 위한 환경은 다음과 같습니다.</p>
-<a class="reference internal image-reference" href="_images/fig25.png"><img alt="_images/fig25.png" class="align-center" src="_images/fig25.png" /></a>
+<a class="reference internal image-reference" href="_images/fig25.png"><img alt="_images/fig25.png" class="align-center" src="_images/fig25.png" style="width: 592.2px; height: 277.8px;" /></a>
 <p>보조 스위치로 다음 동작을 완료 할 수 있는 OpenFlow 스위치가 필요합니다.</p>
 <ul class="simple">
 <li>actions=CONTROLLER의 플로우 항목 등록</li>
@@ -188,7 +188,7 @@ OK(6) / ERROR(4)
 </table>
 </div></blockquote>
 <p>테스트 도구는 다음 명령을 실행합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ ryu-manager [--test-switch-target DPID] [--test-switch-tester DPID]
  [--test-switch-target-version VERSION] [--test-switch-tester-version VERSION]
  [--test-switch-dir DIRECTORY] ryu/tests/switch/tester.py
 </pre></div>
@@ -206,25 +206,25 @@ OK(6) / ERROR(4)
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-target</span></code></td>
 <td>시험 대상 스위치의 데이터 경로 ID</td>
 <td>0000000000000001</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-tester</span></code></td>
 <td>보조 스위치의 데이터 경로 ID</td>
 <td>0000000000000002</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target-version</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-target-version</span></code></td>
 <td>시험 대상 스위치의 OpenFlow 버전
 (&#8220;openflow13&#8221;,&#8221;openflow14&#8221; 지정 가능)</td>
 <td>openflow13</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester-version</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-tester-version</span></code></td>
 <td>보조 스위치의 OpenFlow 버전
 (&#8220;openflow13&#8221;,&#8221;openflow14&#8221; 지정 가능)</td>
 <td>openflow13</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-dir</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-dir</span></code></td>
 <td>테스트 패턴 파일의 디렉토리 경로</td>
 <td>ryu/tests/switch/of13</td>
 </tr>
@@ -263,20 +263,20 @@ match/actions로 지정 가능한 각 매개 변수 및 MeterMod 메시지의
 </div>
 <p>이 단계에서는 시험 환경 구축 스크립트 (ryu/tests/switch/run_mininet.py)
 를 이용하여 구축합니다. 따라서 시험 대상 스위치는 Open vSwitch입니다.
-VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><em>스위칭 허브</em></a> 」
+VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">스위칭 허브</span></a> 」
 을 참조하십시오.</p>
 <ol class="arabic">
 <li><p class="first">시험 환경 구축</p>
 <blockquote>
 <div><p>VM 환경에 로그인하고 시험 환경 구축 스크립트를 실행합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
 </pre></div>
 </div>
 <p>net 명령의 실행 결과는 다음과 같습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; net
-c0
-s1 lo:  s1-eth1:s2-eth1 s1-eth2:s2-eth2 s1-eth3:s2-eth3
-s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">net</span>
+<span class="n">c0</span>
+<span class="n">s1</span> <span class="n">lo</span><span class="p">:</span>  <span class="n">s1</span><span class="o">-</span><span class="n">eth1</span><span class="p">:</span><span class="n">s2</span><span class="o">-</span><span class="n">eth1</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span><span class="n">s2</span><span class="o">-</span><span class="n">eth2</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth3</span><span class="p">:</span><span class="n">s2</span><span class="o">-</span><span class="n">eth3</span>
+<span class="n">s2</span> <span class="n">lo</span><span class="p">:</span>  <span class="n">s2</span><span class="o">-</span><span class="n">eth1</span><span class="p">:</span><span class="n">s1</span><span class="o">-</span><span class="n">eth1</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span><span class="n">s1</span><span class="o">-</span><span class="n">eth2</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth3</span><span class="p">:</span><span class="n">s1</span><span class="o">-</span><span class="n">eth3</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -284,7 +284,7 @@ s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 <li><p class="first">테스트 도구 실행</p>
 <blockquote>
 <div><p>테스트 도구 실행을 위한 컨트롤러의 xterm을 엽니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">xterm</span> <span class="n">c0</span>
 </pre></div>
 </div>
 <p>「Node: c0 (root)」의 xterm에서 테스트 도구를 실행합니다.
@@ -297,12 +297,12 @@ s2 lo:  s2-eth1:s1-eth1 s2-eth2:s1-eth2 s2-eth3:s1-eth3
 &#8211;test-switch-tester-version 옵션의 기본값으로 되어 있기 때문에
 해당 옵션 또한 생략합니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
 </pre></div>
 </div>
 <p>도구를 실행하면 다음과 같이 표시되고 시험되는 스위치와 보조 스위치가
 컨트롤러에 연결될 때까지 기다립니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
 loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -316,7 +316,7 @@ waiting for switches connection...
 </div>
 <p>시험 대상 스위치와 보조 스위치가 컨트롤러에 연결되면
 시험이 시작됩니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
 loading app ryu/ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -358,138 +358,138 @@ type=ALL인 그룹 항목과 분류 조건에 따라 출력 포트를 자동으�
 변경하는 type=SELECT인 그룹 항목을 등록하여 그룹 항목에
 match 패킷을 연속적으로 적용하는 테스트 패턴이 OpenFlow 1.3용과
 OpenFlow 1.4용으로 각각 준비되어 있습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of13/action:
-00_OUTPUT.json              20_POP_MPLS.json
-11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
-12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
-15_SET_MPLS_TTL.json        24_DEC_NW_TTL_IPv4.json
-16_DEC_MPLS_TTL.json        24_DEC_NW_TTL_IPv6.json
-17_PUSH_VLAN.json           25_SET_FIELD
-17_PUSH_VLAN_multiple.json  26_PUSH_PBB.json
-18_POP_VLAN.json            26_PUSH_PBB_multiple.json
-19_PUSH_MPLS.json           27_POP_PBB.json
-19_PUSH_MPLS_multiple.json
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">action</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_OUTPUT</span><span class="o">.</span><span class="n">json</span>              <span class="mi">20</span><span class="n">_POP_MPLS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_COPY_TTL_OUT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">23</span><span class="n">_SET_NW_TTL_IPv4</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_COPY_TTL_IN</span><span class="o">.</span><span class="n">json</span>         <span class="mi">23</span><span class="n">_SET_NW_TTL_IPv6</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">15</span><span class="n">_SET_MPLS_TTL</span><span class="o">.</span><span class="n">json</span>        <span class="mi">24</span><span class="n">_DEC_NW_TTL_IPv4</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">16</span><span class="n">_DEC_MPLS_TTL</span><span class="o">.</span><span class="n">json</span>        <span class="mi">24</span><span class="n">_DEC_NW_TTL_IPv6</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">17</span><span class="n">_PUSH_VLAN</span><span class="o">.</span><span class="n">json</span>           <span class="mi">25</span><span class="n">_SET_FIELD</span>
+<span class="mi">17</span><span class="n">_PUSH_VLAN_multiple</span><span class="o">.</span><span class="n">json</span>  <span class="mi">26</span><span class="n">_PUSH_PBB</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">18</span><span class="n">_POP_VLAN</span><span class="o">.</span><span class="n">json</span>            <span class="mi">26</span><span class="n">_PUSH_PBB_multiple</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">19</span><span class="n">_PUSH_MPLS</span><span class="o">.</span><span class="n">json</span>           <span class="mi">27</span><span class="n">_POP_PBB</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">19</span><span class="n">_PUSH_MPLS_multiple</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of13/action/25_SET_FIELD:
-03_ETH_DST.json        14_TCP_DST_IPv4.json   24_ARP_SHA.json
-04_ETH_SRC.json        14_TCP_DST_IPv6.json   25_ARP_THA.json
-05_ETH_TYPE.json       15_UDP_SRC_IPv4.json   26_IPV6_SRC.json
-06_VLAN_VID.json       15_UDP_SRC_IPv6.json   27_IPV6_DST.json
-07_VLAN_PCP.json       16_UDP_DST_IPv4.json   28_IPV6_FLABEL.json
-08_IP_DSCP_IPv4.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
-08_IP_DSCP_IPv6.json   17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
-09_IP_ECN_IPv4.json    17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
-09_IP_ECN_IPv6.json    18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
-10_IP_PROTO_IPv4.json  18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
-10_IP_PROTO_IPv6.json  19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
-11_IPV4_SRC.json       20_ICMPV4_CODE.json    35_MPLS_TC.json
-12_IPV4_DST.json       21_ARP_OP.json         36_MPLS_BOS.json
-13_TCP_SRC_IPv4.json   22_ARP_SPA.json        37_PBB_ISID.json
-13_TCP_SRC_IPv6.json   23_ARP_TPA.json        38_TUNNEL_ID.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">action</span><span class="o">/</span><span class="mi">25</span><span class="n">_SET_FIELD</span><span class="p">:</span>
+<span class="mi">03</span><span class="n">_ETH_DST</span><span class="o">.</span><span class="n">json</span>        <span class="mi">14</span><span class="n">_TCP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">24</span><span class="n">_ARP_SHA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC</span><span class="o">.</span><span class="n">json</span>        <span class="mi">14</span><span class="n">_TCP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">25</span><span class="n">_ARP_THA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_ETH_TYPE</span><span class="o">.</span><span class="n">json</span>       <span class="mi">15</span><span class="n">_UDP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID</span><span class="o">.</span><span class="n">json</span>       <span class="mi">15</span><span class="n">_UDP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">07</span><span class="n">_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>       <span class="mi">16</span><span class="n">_UDP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">16</span><span class="n">_UDP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">17</span><span class="n">_SCTP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">30</span><span class="n">_ICMPV6_CODE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv4</span><span class="o">.</span><span class="n">json</span>    <span class="mi">17</span><span class="n">_SCTP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">31</span><span class="n">_IPV6_ND_TARGET</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv6</span><span class="o">.</span><span class="n">json</span>    <span class="mi">18</span><span class="n">_SCTP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">32</span><span class="n">_IPV6_ND_SLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">18</span><span class="n">_SCTP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">33</span><span class="n">_IPV6_ND_TLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">19</span><span class="n">_ICMPV4_TYPE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">34</span><span class="n">_MPLS_LABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC</span><span class="o">.</span><span class="n">json</span>       <span class="mi">20</span><span class="n">_ICMPV4_CODE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">35</span><span class="n">_MPLS_TC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST</span><span class="o">.</span><span class="n">json</span>       <span class="mi">21</span><span class="n">_ARP_OP</span><span class="o">.</span><span class="n">json</span>         <span class="mi">36</span><span class="n">_MPLS_BOS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">22</span><span class="n">_ARP_SPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">37</span><span class="n">_PBB_ISID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">23</span><span class="n">_ARP_TPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">38</span><span class="n">_TUNNEL_ID</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of13/group:
-00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
-01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">group</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_ALL</span><span class="o">.</span><span class="n">json</span>           <span class="mi">01</span><span class="n">_SELECT_IP</span><span class="o">.</span><span class="n">json</span>            <span class="mi">01</span><span class="n">_SELECT_Weight_IP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_SELECT_Ether</span><span class="o">.</span><span class="n">json</span>  <span class="mi">01</span><span class="n">_SELECT_Weight_Ether</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of13/match:
-00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
-02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
-02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
-03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
-03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
-04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
-04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
-05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
-06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
-06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
-07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
-08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
-08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
-09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
-09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
-10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
-10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
-11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
-11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
-12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
-12_IPV4_DST_Mask.json  25_ARP_THA.json
-13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">match</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_IN_PORT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">13</span><span class="n">_TCP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_METADATA</span><span class="o">.</span><span class="n">json</span>       <span class="mi">14</span><span class="n">_TCP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_METADATA_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">14</span><span class="n">_TCP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_ETH_DST</span><span class="o">.</span><span class="n">json</span>        <span class="mi">15</span><span class="n">_UDP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_ETH_DST_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">15</span><span class="n">_UDP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC</span><span class="o">.</span><span class="n">json</span>        <span class="mi">16</span><span class="n">_UDP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">16</span><span class="n">_UDP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_ETH_TYPE</span><span class="o">.</span><span class="n">json</span>       <span class="mi">17</span><span class="n">_SCTP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">30</span><span class="n">_ICMPV6_CODE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID</span><span class="o">.</span><span class="n">json</span>       <span class="mi">17</span><span class="n">_SCTP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">31</span><span class="n">_IPV6_ND_TARGET</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">18</span><span class="n">_SCTP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">32</span><span class="n">_IPV6_ND_SLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">07</span><span class="n">_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>       <span class="mi">18</span><span class="n">_SCTP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">33</span><span class="n">_IPV6_ND_TLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">19</span><span class="n">_ICMPV4_TYPE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">34</span><span class="n">_MPLS_LABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">20</span><span class="n">_ICMPV4_CODE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">35</span><span class="n">_MPLS_TC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv4</span><span class="o">.</span><span class="n">json</span>    <span class="mi">21</span><span class="n">_ARP_OP</span><span class="o">.</span><span class="n">json</span>         <span class="mi">36</span><span class="n">_MPLS_BOS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv6</span><span class="o">.</span><span class="n">json</span>    <span class="mi">22</span><span class="n">_ARP_SPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">37</span><span class="n">_PBB_ISID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">22</span><span class="n">_ARP_SPA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">37</span><span class="n">_PBB_ISID_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">23</span><span class="n">_ARP_TPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">38</span><span class="n">_TUNNEL_ID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC</span><span class="o">.</span><span class="n">json</span>       <span class="mi">23</span><span class="n">_ARP_TPA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">38</span><span class="n">_TUNNEL_ID_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">24</span><span class="n">_ARP_SHA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">39</span><span class="n">_IPV6_EXTHDR</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST</span><span class="o">.</span><span class="n">json</span>       <span class="mi">24</span><span class="n">_ARP_SHA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">39</span><span class="n">_IPV6_EXTHDR_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">25</span><span class="n">_ARP_THA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">25</span><span class="n">_ARP_THA_Mask</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of13/meter:
-01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
-01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
-01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
-01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
-01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
-01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">meter</span><span class="p">:</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_00_1M</span><span class="o">.</span><span class="n">json</span>      <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_00_1M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_01_10M</span><span class="o">.</span><span class="n">json</span>     <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_01_10M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_02_100M</span><span class="o">.</span><span class="n">json</span>    <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_02_100M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_00_100</span><span class="o">.</span><span class="n">json</span>    <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_00_100</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_01_1000</span><span class="o">.</span><span class="n">json</span>   <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_01_1000</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>  <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 </div></blockquote>
-<div class="console highlight-python"><div class="highlight"><pre>ryu/tests/switch/of14/action:
-00_OUTPUT.json              20_POP_MPLS.json
-11_COPY_TTL_OUT.json        23_SET_NW_TTL_IPv4.json
-12_COPY_TTL_IN.json         23_SET_NW_TTL_IPv6.json
-15_SET_MPLS_TTL.json        24_DEC_NW_TTL_IPv4.json
-16_DEC_MPLS_TTL.json        24_DEC_NW_TTL_IPv6.json
-17_PUSH_VLAN.json           25_SET_FIELD
-17_PUSH_VLAN_multiple.json  26_PUSH_PBB.json
-18_POP_VLAN.json            26_PUSH_PBB_multiple.json
-19_PUSH_MPLS.json           27_POP_PBB.json
-19_PUSH_MPLS_multiple.json
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">action</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_OUTPUT</span><span class="o">.</span><span class="n">json</span>              <span class="mi">20</span><span class="n">_POP_MPLS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_COPY_TTL_OUT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">23</span><span class="n">_SET_NW_TTL_IPv4</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_COPY_TTL_IN</span><span class="o">.</span><span class="n">json</span>         <span class="mi">23</span><span class="n">_SET_NW_TTL_IPv6</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">15</span><span class="n">_SET_MPLS_TTL</span><span class="o">.</span><span class="n">json</span>        <span class="mi">24</span><span class="n">_DEC_NW_TTL_IPv4</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">16</span><span class="n">_DEC_MPLS_TTL</span><span class="o">.</span><span class="n">json</span>        <span class="mi">24</span><span class="n">_DEC_NW_TTL_IPv6</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">17</span><span class="n">_PUSH_VLAN</span><span class="o">.</span><span class="n">json</span>           <span class="mi">25</span><span class="n">_SET_FIELD</span>
+<span class="mi">17</span><span class="n">_PUSH_VLAN_multiple</span><span class="o">.</span><span class="n">json</span>  <span class="mi">26</span><span class="n">_PUSH_PBB</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">18</span><span class="n">_POP_VLAN</span><span class="o">.</span><span class="n">json</span>            <span class="mi">26</span><span class="n">_PUSH_PBB_multiple</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">19</span><span class="n">_PUSH_MPLS</span><span class="o">.</span><span class="n">json</span>           <span class="mi">27</span><span class="n">_POP_PBB</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">19</span><span class="n">_PUSH_MPLS_multiple</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of14/action/25_SET_FIELD:
-03_ETH_DST.json        14_TCP_DST_IPv6.json   26_IPV6_SRC.json
-04_ETH_SRC.json        15_UDP_SRC_IPv4.json   27_IPV6_DST.json
-05_ETH_TYPE.json       15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
-06_VLAN_VID.json       16_UDP_DST_IPv4.json   29_ICMPV6_TYPE.json
-07_VLAN_PCP.json       16_UDP_DST_IPv6.json   30_ICMPV6_CODE.json
-08_IP_DSCP_IPv4.json   17_SCTP_SRC_IPv4.json  31_IPV6_ND_TARGET.json
-08_IP_DSCP_IPv6.json   17_SCTP_SRC_IPv6.json  32_IPV6_ND_SLL.json
-09_IP_ECN_IPv4.json    18_SCTP_DST_IPv4.json  33_IPV6_ND_TLL.json
-09_IP_ECN_IPv6.json    18_SCTP_DST_IPv6.json  34_MPLS_LABEL.json
-10_IP_PROTO_IPv4.json  19_ICMPV4_TYPE.json    35_MPLS_TC.json
-10_IP_PROTO_IPv6.json  20_ICMPV4_CODE.json    36_MPLS_BOS.json
-11_IPV4_SRC.json       21_ARP_OP.json         37_PBB_ISID.json
-12_IPV4_DST.json       22_ARP_SPA.json        38_TUNNEL_ID.json
-13_TCP_SRC_IPv4.json   23_ARP_TPA.json        41_PBB_UCA.json
-13_TCP_SRC_IPv6.json   24_ARP_SHA.json
-14_TCP_DST_IPv4.json   25_ARP_THA.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">action</span><span class="o">/</span><span class="mi">25</span><span class="n">_SET_FIELD</span><span class="p">:</span>
+<span class="mi">03</span><span class="n">_ETH_DST</span><span class="o">.</span><span class="n">json</span>        <span class="mi">14</span><span class="n">_TCP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC</span><span class="o">.</span><span class="n">json</span>        <span class="mi">15</span><span class="n">_UDP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_ETH_TYPE</span><span class="o">.</span><span class="n">json</span>       <span class="mi">15</span><span class="n">_UDP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID</span><span class="o">.</span><span class="n">json</span>       <span class="mi">16</span><span class="n">_UDP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">07</span><span class="n">_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>       <span class="mi">16</span><span class="n">_UDP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">30</span><span class="n">_ICMPV6_CODE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">17</span><span class="n">_SCTP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">31</span><span class="n">_IPV6_ND_TARGET</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">17</span><span class="n">_SCTP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">32</span><span class="n">_IPV6_ND_SLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv4</span><span class="o">.</span><span class="n">json</span>    <span class="mi">18</span><span class="n">_SCTP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">33</span><span class="n">_IPV6_ND_TLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv6</span><span class="o">.</span><span class="n">json</span>    <span class="mi">18</span><span class="n">_SCTP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">34</span><span class="n">_MPLS_LABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">19</span><span class="n">_ICMPV4_TYPE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">35</span><span class="n">_MPLS_TC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">20</span><span class="n">_ICMPV4_CODE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">36</span><span class="n">_MPLS_BOS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC</span><span class="o">.</span><span class="n">json</span>       <span class="mi">21</span><span class="n">_ARP_OP</span><span class="o">.</span><span class="n">json</span>         <span class="mi">37</span><span class="n">_PBB_ISID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST</span><span class="o">.</span><span class="n">json</span>       <span class="mi">22</span><span class="n">_ARP_SPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">38</span><span class="n">_TUNNEL_ID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">23</span><span class="n">_ARP_TPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">41</span><span class="n">_PBB_UCA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">24</span><span class="n">_ARP_SHA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">14</span><span class="n">_TCP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">25</span><span class="n">_ARP_THA</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of14/group:
-00_ALL.json           01_SELECT_IP.json            01_SELECT_Weight_IP.json
-01_SELECT_Ether.json  01_SELECT_Weight_Ether.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">group</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_ALL</span><span class="o">.</span><span class="n">json</span>           <span class="mi">01</span><span class="n">_SELECT_IP</span><span class="o">.</span><span class="n">json</span>            <span class="mi">01</span><span class="n">_SELECT_Weight_IP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_SELECT_Ether</span><span class="o">.</span><span class="n">json</span>  <span class="mi">01</span><span class="n">_SELECT_Weight_Ether</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of14/match:
-00_IN_PORT.json        13_TCP_SRC_IPv6.json   26_IPV6_SRC.json
-02_METADATA.json       14_TCP_DST_IPv4.json   26_IPV6_SRC_Mask.json
-02_METADATA_Mask.json  14_TCP_DST_IPv6.json   27_IPV6_DST.json
-03_ETH_DST.json        15_UDP_SRC_IPv4.json   27_IPV6_DST_Mask.json
-03_ETH_DST_Mask.json   15_UDP_SRC_IPv6.json   28_IPV6_FLABEL.json
-04_ETH_SRC.json        16_UDP_DST_IPv4.json   28_IPV6_FLABEL_Mask.json
-04_ETH_SRC_Mask.json   16_UDP_DST_IPv6.json   29_ICMPV6_TYPE.json
-05_ETH_TYPE.json       17_SCTP_SRC_IPv4.json  30_ICMPV6_CODE.json
-06_VLAN_VID.json       17_SCTP_SRC_IPv6.json  31_IPV6_ND_TARGET.json
-06_VLAN_VID_Mask.json  18_SCTP_DST_IPv4.json  32_IPV6_ND_SLL.json
-07_VLAN_PCP.json       18_SCTP_DST_IPv6.json  33_IPV6_ND_TLL.json
-08_IP_DSCP_IPv4.json   19_ICMPV4_TYPE.json    34_MPLS_LABEL.json
-08_IP_DSCP_IPv6.json   20_ICMPV4_CODE.json    35_MPLS_TC.json
-09_IP_ECN_IPv4.json    21_ARP_OP.json         36_MPLS_BOS.json
-09_IP_ECN_IPv6.json    22_ARP_SPA.json        37_PBB_ISID.json
-10_IP_PROTO_IPv4.json  22_ARP_SPA_Mask.json   37_PBB_ISID_Mask.json
-10_IP_PROTO_IPv6.json  23_ARP_TPA.json        38_TUNNEL_ID.json
-11_IPV4_SRC.json       23_ARP_TPA_Mask.json   38_TUNNEL_ID_Mask.json
-11_IPV4_SRC_Mask.json  24_ARP_SHA.json        39_IPV6_EXTHDR.json
-12_IPV4_DST.json       24_ARP_SHA_Mask.json   39_IPV6_EXTHDR_Mask.json
-12_IPV4_DST_Mask.json  25_ARP_THA.json        41_PBB_UCA.json
-13_TCP_SRC_IPv4.json   25_ARP_THA_Mask.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">match</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_IN_PORT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">13</span><span class="n">_TCP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_METADATA</span><span class="o">.</span><span class="n">json</span>       <span class="mi">14</span><span class="n">_TCP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">26</span><span class="n">_IPV6_SRC_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_METADATA_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">14</span><span class="n">_TCP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_ETH_DST</span><span class="o">.</span><span class="n">json</span>        <span class="mi">15</span><span class="n">_UDP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">27</span><span class="n">_IPV6_DST_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_ETH_DST_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">15</span><span class="n">_UDP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC</span><span class="o">.</span><span class="n">json</span>        <span class="mi">16</span><span class="n">_UDP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">28</span><span class="n">_IPV6_FLABEL_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_ETH_SRC_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">16</span><span class="n">_UDP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">29</span><span class="n">_ICMPV6_TYPE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_ETH_TYPE</span><span class="o">.</span><span class="n">json</span>       <span class="mi">17</span><span class="n">_SCTP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">30</span><span class="n">_ICMPV6_CODE</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID</span><span class="o">.</span><span class="n">json</span>       <span class="mi">17</span><span class="n">_SCTP_SRC_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">31</span><span class="n">_IPV6_ND_TARGET</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_VLAN_VID_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">18</span><span class="n">_SCTP_DST_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">32</span><span class="n">_IPV6_ND_SLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">07</span><span class="n">_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>       <span class="mi">18</span><span class="n">_SCTP_DST_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">33</span><span class="n">_IPV6_ND_TLL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">19</span><span class="n">_ICMPV4_TYPE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">34</span><span class="n">_MPLS_LABEL</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">08</span><span class="n">_IP_DSCP_IPv6</span><span class="o">.</span><span class="n">json</span>   <span class="mi">20</span><span class="n">_ICMPV4_CODE</span><span class="o">.</span><span class="n">json</span>    <span class="mi">35</span><span class="n">_MPLS_TC</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv4</span><span class="o">.</span><span class="n">json</span>    <span class="mi">21</span><span class="n">_ARP_OP</span><span class="o">.</span><span class="n">json</span>         <span class="mi">36</span><span class="n">_MPLS_BOS</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">09</span><span class="n">_IP_ECN_IPv6</span><span class="o">.</span><span class="n">json</span>    <span class="mi">22</span><span class="n">_ARP_SPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">37</span><span class="n">_PBB_ISID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">22</span><span class="n">_ARP_SPA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">37</span><span class="n">_PBB_ISID_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">10</span><span class="n">_IP_PROTO_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">23</span><span class="n">_ARP_TPA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">38</span><span class="n">_TUNNEL_ID</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC</span><span class="o">.</span><span class="n">json</span>       <span class="mi">23</span><span class="n">_ARP_TPA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">38</span><span class="n">_TUNNEL_ID_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">11</span><span class="n">_IPV4_SRC_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">24</span><span class="n">_ARP_SHA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">39</span><span class="n">_IPV6_EXTHDR</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST</span><span class="o">.</span><span class="n">json</span>       <span class="mi">24</span><span class="n">_ARP_SHA_Mask</span><span class="o">.</span><span class="n">json</span>   <span class="mi">39</span><span class="n">_IPV6_EXTHDR_Mask</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">12</span><span class="n">_IPV4_DST_Mask</span><span class="o">.</span><span class="n">json</span>  <span class="mi">25</span><span class="n">_ARP_THA</span><span class="o">.</span><span class="n">json</span>        <span class="mi">41</span><span class="n">_PBB_UCA</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">13</span><span class="n">_TCP_SRC_IPv4</span><span class="o">.</span><span class="n">json</span>   <span class="mi">25</span><span class="n">_ARP_THA_Mask</span><span class="o">.</span><span class="n">json</span>
 
-ryu/tests/switch/of14/meter:
-01_DROP_00_KBPS_00_1M.json      02_DSCP_REMARK_00_KBPS_00_1M.json
-01_DROP_00_KBPS_01_10M.json     02_DSCP_REMARK_00_KBPS_01_10M.json
-01_DROP_00_KBPS_02_100M.json    02_DSCP_REMARK_00_KBPS_02_100M.json
-01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
-01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
-01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">meter</span><span class="p">:</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_00_1M</span><span class="o">.</span><span class="n">json</span>      <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_00_1M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_01_10M</span><span class="o">.</span><span class="n">json</span>     <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_01_10M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_00_KBPS_02_100M</span><span class="o">.</span><span class="n">json</span>    <span class="mi">02</span><span class="n">_DSCP_REMARK_00_KBPS_02_100M</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_00_100</span><span class="o">.</span><span class="n">json</span>    <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_00_100</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_01_1000</span><span class="o">.</span><span class="n">json</span>   <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_01_1000</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DROP_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>  <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -531,87 +531,87 @@ ryu/tests/switch/of14/meter:
 <p class="last">테스트 패턴 파일의 구체적인 작성 방법은 「 <a class="reference internal" href="#id11">테스트 패턴 파일 작성 방법</a> 」을 참고하시기 바랍니다.</p>
 </div>
 </div></blockquote>
-<p>파일 이름： <tt class="docutils literal"><span class="pre">sample_test_pattern.json</span></tt></p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre><span class="p">[</span>
-   <span class="s">&quot;sample: Router test&quot;</span><span class="p">,</span>
+<p>파일 이름： <code class="docutils literal"><span class="pre">sample_test_pattern.json</span></code></p>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span>
+   <span class="s2">&quot;sample: Router test&quot;</span><span class="p">,</span>
    <span class="p">{</span>
-       <span class="s">&quot;description&quot;</span><span class="p">:</span> <span class="s">&quot;static routing table&quot;</span><span class="p">,</span>
-       <span class="s">&quot;prerequisite&quot;</span><span class="p">:</span> <span class="p">[</span>
+       <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;static routing table&quot;</span><span class="p">,</span>
+       <span class="s2">&quot;prerequisite&quot;</span><span class="p">:</span> <span class="p">[</span>
            <span class="p">{</span>
-               <span class="s">&quot;OFPFlowMod&quot;</span><span class="p">:</span> <span class="p">{</span>
-                   <span class="s">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                   <span class="s">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
-                       <span class="s">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
-                           <span class="s">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[</span>
+               <span class="s2">&quot;OFPFlowMod&quot;</span><span class="p">:</span> <span class="p">{</span>
+                   <span class="s2">&quot;table_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="p">{</span>
+                       <span class="s2">&quot;OFPMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                           <span class="s2">&quot;oxm_fields&quot;</span><span class="p">:</span> <span class="p">[</span>
                                <span class="p">{</span>
-                                   <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                       <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;eth_type&quot;</span><span class="p">,</span>
-                                       <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="mi">2048</span>
+                                   <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                       <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;eth_type&quot;</span><span class="p">,</span>
+                                       <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mi">2048</span>
                                    <span class="p">}</span>
                                <span class="p">},</span>
                                <span class="p">{</span>
-                                   <span class="s">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                       <span class="s">&quot;field&quot;</span><span class="p">:</span> <span class="s">&quot;ipv4_dst&quot;</span><span class="p">,</span>
-                                       <span class="s">&quot;mask&quot;</span><span class="p">:</span> <span class="mi">4294967040</span><span class="p">,</span>
-                                       <span class="s">&quot;value&quot;</span><span class="p">:</span> <span class="s">&quot;192.168.30.0&quot;</span>
+                                   <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                       <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;ipv4_dst&quot;</span><span class="p">,</span>
+                                       <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="mi">4294967040</span><span class="p">,</span>
+                                       <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.30.0&quot;</span>
                                    <span class="p">}</span>
                                <span class="p">}</span>
                           <span class="p">]</span>
                        <span class="p">}</span>
                    <span class="p">},</span>
-                   <span class="s">&quot;instructions&quot;</span><span class="p">:[</span>
+                   <span class="s2">&quot;instructions&quot;</span><span class="p">:[</span>
                        <span class="p">{</span>
-                           <span class="s">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
-                               <span class="s">&quot;actions&quot;</span><span class="p">:[</span>
+                           <span class="s2">&quot;OFPInstructionActions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                               <span class="s2">&quot;actions&quot;</span><span class="p">:[</span>
                                    <span class="p">{</span>
-                                       <span class="s">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
-                                           <span class="s">&quot;field&quot;</span><span class="p">:{</span>
-                                               <span class="s">&quot;OXMTlv&quot;</span><span class="p">:{</span>
-                                                   <span class="s">&quot;field&quot;</span><span class="p">:</span><span class="s">&quot;eth_src&quot;</span><span class="p">,</span>
-                                                   <span class="s">&quot;value&quot;</span><span class="p">:</span><span class="s">&quot;aa:aa:aa:aa:aa:aa&quot;</span>
+                                       <span class="s2">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
+                                           <span class="s2">&quot;field&quot;</span><span class="p">:{</span>
+                                               <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:{</span>
+                                                   <span class="s2">&quot;field&quot;</span><span class="p">:</span><span class="s2">&quot;eth_src&quot;</span><span class="p">,</span>
+                                                   <span class="s2">&quot;value&quot;</span><span class="p">:</span><span class="s2">&quot;aa:aa:aa:aa:aa:aa&quot;</span>
                                                <span class="p">}</span>
                                            <span class="p">}</span>
                                        <span class="p">}</span>
                                    <span class="p">},</span>
                                    <span class="p">{</span>
-                                       <span class="s">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
-                                           <span class="s">&quot;field&quot;</span><span class="p">:{</span>
-                                               <span class="s">&quot;OXMTlv&quot;</span><span class="p">:{</span>
-                                                   <span class="s">&quot;field&quot;</span><span class="p">:</span><span class="s">&quot;eth_dst&quot;</span><span class="p">,</span>
-                                                   <span class="s">&quot;value&quot;</span><span class="p">:</span><span class="s">&quot;bb:bb:bb:bb:bb:bb&quot;</span>
+                                       <span class="s2">&quot;OFPActionSetField&quot;</span><span class="p">:{</span>
+                                           <span class="s2">&quot;field&quot;</span><span class="p">:{</span>
+                                               <span class="s2">&quot;OXMTlv&quot;</span><span class="p">:{</span>
+                                                   <span class="s2">&quot;field&quot;</span><span class="p">:</span><span class="s2">&quot;eth_dst&quot;</span><span class="p">,</span>
+                                                   <span class="s2">&quot;value&quot;</span><span class="p">:</span><span class="s2">&quot;bb:bb:bb:bb:bb:bb&quot;</span>
                                                <span class="p">}</span>
                                            <span class="p">}</span>
                                        <span class="p">}</span>
                                    <span class="p">},</span>
                                    <span class="p">{</span>
-                                       <span class="s">&quot;OFPActionDecNwTtl&quot;</span><span class="p">:{}</span>
+                                       <span class="s2">&quot;OFPActionDecNwTtl&quot;</span><span class="p">:{}</span>
                                    <span class="p">},</span>
                                    <span class="p">{</span>
-                                       <span class="s">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                           <span class="s">&quot;port&quot;</span><span class="p">:</span><span class="mi">2</span>
+                                       <span class="s2">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                           <span class="s2">&quot;port&quot;</span><span class="p">:</span><span class="mi">2</span>
                                        <span class="p">}</span>
                                    <span class="p">}</span>
                                <span class="p">],</span>
-                               <span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
+                               <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="mi">4</span>
                            <span class="p">}</span>
                        <span class="p">}</span>
                    <span class="p">]</span>
                <span class="p">}</span>
            <span class="p">}</span>
        <span class="p">],</span>
-       <span class="s">&quot;tests&quot;</span><span class="p">:[</span>
+       <span class="s2">&quot;tests&quot;</span><span class="p">:[</span>
            <span class="p">{</span>
-               <span class="s">&quot;ingress&quot;</span><span class="p">:[</span>
-                   <span class="s">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;,src=&#39;11:11:11:11:11:11&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=64)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e</span><span class="se">\\</span><span class="s">x0f&#39;&quot;</span>
+               <span class="s2">&quot;ingress&quot;</span><span class="p">:[</span>
+                   <span class="s2">&quot;ethernet(dst=&#39;22:22:22:22:22:22&#39;,src=&#39;11:11:11:11:11:11&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=64)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;&#39;</span><span class="se">\\</span><span class="s2">x01</span><span class="se">\\</span><span class="s2">x02</span><span class="se">\\</span><span class="s2">x03</span><span class="se">\\</span><span class="s2">x04</span><span class="se">\\</span><span class="s2">x05</span><span class="se">\\</span><span class="s2">x06</span><span class="se">\\</span><span class="s2">x07</span><span class="se">\\</span><span class="s2">x08</span><span class="se">\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">n</span><span class="se">\\</span><span class="s2">x0b</span><span class="se">\\</span><span class="s2">x0c</span><span class="se">\\</span><span class="s2">r</span><span class="se">\\</span><span class="s2">x0e</span><span class="se">\\</span><span class="s2">x0f&#39;&quot;</span>
                <span class="p">],</span>
-               <span class="s">&quot;egress&quot;</span><span class="p">:[</span>
-                   <span class="s">&quot;ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,src=&#39;aa:aa:aa:aa:aa:aa&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=63)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00</span><span class="se">\\</span><span class="s">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
-                   <span class="s">&quot;&#39;</span><span class="se">\\</span><span class="s">x01</span><span class="se">\\</span><span class="s">x02</span><span class="se">\\</span><span class="s">x03</span><span class="se">\\</span><span class="s">x04</span><span class="se">\\</span><span class="s">x05</span><span class="se">\\</span><span class="s">x06</span><span class="se">\\</span><span class="s">x07</span><span class="se">\\</span><span class="s">x08</span><span class="se">\\</span><span class="s">t</span><span class="se">\\</span><span class="s">n</span><span class="se">\\</span><span class="s">x0b</span><span class="se">\\</span><span class="s">x0c</span><span class="se">\\</span><span class="s">r</span><span class="se">\\</span><span class="s">x0e</span><span class="se">\\</span><span class="s">x0f&#39;&quot;</span>
+               <span class="s2">&quot;egress&quot;</span><span class="p">:[</span>
+                   <span class="s2">&quot;ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,src=&#39;aa:aa:aa:aa:aa:aa&#39;,ethertype=2048)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;ipv4(tos=32, proto=6, src=&#39;192.168.10.10&#39;, dst=&#39;192.168.30.10&#39;, ttl=63)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;tcp(dst_port=2222, option=&#39;</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00</span><span class="se">\\</span><span class="s2">x00&#39;, src_port=11111)&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;&#39;</span><span class="se">\\</span><span class="s2">x01</span><span class="se">\\</span><span class="s2">x02</span><span class="se">\\</span><span class="s2">x03</span><span class="se">\\</span><span class="s2">x04</span><span class="se">\\</span><span class="s2">x05</span><span class="se">\\</span><span class="s2">x06</span><span class="se">\\</span><span class="s2">x07</span><span class="se">\\</span><span class="s2">x08</span><span class="se">\\</span><span class="s2">t</span><span class="se">\\</span><span class="s2">n</span><span class="se">\\</span><span class="s2">x0b</span><span class="se">\\</span><span class="s2">x0c</span><span class="se">\\</span><span class="s2">r</span><span class="se">\\</span><span class="s2">x0e</span><span class="se">\\</span><span class="s2">x0f&#39;&quot;</span>
                <span class="p">]</span>
            <span class="p">}</span>
        <span class="p">]</span>
@@ -631,7 +631,7 @@ ryu/tests/switch/of14/meter:
 지정할 수 있습니다. 또한 송수신 패킷의 내용을 확인하기 위해
 &#8211;verbose 옵션을 지정합니다.</p>
 <p>Node: c0:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 </pre></div>
 </div>
 <p>시험 대상 스위치와 보조 스위치가 컨트롤러에 연결되면 시험이
@@ -640,7 +640,7 @@ ryu/tests/switch/of14/meter:
 패턴 파일 egress 패킷으로 설정한 예상 출력 패킷이
 전송된 것을 알 수 있습니다.
 또한, 여기에서는 테스트 도구가 출력한 로그만을 발췌하였습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 loading app ryu/tests/switch/tester.py
 loading app ryu.controller.ofp_handler
 instantiating app ryu.controller.ofp_handler of OFPHandler
@@ -669,9 +669,9 @@ dpid=0000000000000002 : receive_packet[ethernet(dst=&#39;bb:bb:bb:bb:bb:bb&#39;,
 테스트 도구에 의해 등록된 패킷 플로우 항목에 match하고
 n_packets가 올라가는 것을 알 수 있습니다.</p>
 <p>Node: s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
-OFPST_FLOW reply (OF1.3) (xid=0x2):
- cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa-&gt;eth_src,set_field:bb:bb:bb:bb:bb:bb-&gt;eth_dst,dec_ttl,output:2
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O OpenFlow13 dump-flows s1</span>
+<span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
+ <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">56.217</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">73</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">30.0</span><span class="o">/</span><span class="mi">24</span> <span class="n">actions</span><span class="o">=</span><span class="n">set_field</span><span class="p">:</span><span class="n">aa</span><span class="p">:</span><span class="n">aa</span><span class="p">:</span><span class="n">aa</span><span class="p">:</span><span class="n">aa</span><span class="p">:</span><span class="n">aa</span><span class="p">:</span><span class="n">aa</span><span class="o">-&gt;</span><span class="n">eth_src</span><span class="p">,</span><span class="n">set_field</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="n">bb</span><span class="p">:</span><span class="n">bb</span><span class="o">-&gt;</span><span class="n">eth_dst</span><span class="p">,</span><span class="n">dec_ttl</span><span class="p">,</span><span class="n">output</span><span class="p">:</span><span class="mi">2</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -680,85 +680,85 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <h3>테스트 패턴 파일 작성 방법<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
 <p>테스트 패턴 파일 확장자는 「. json」에 해당하는 텍스트 파일입니다.
 다음 형식과 같이 작성합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>[
-    &quot;xxxxxxxxxx&quot;,                    # 시험 항목 이름
-    {
-        &quot;description&quot;: &quot;xxxxxxxxxx&quot;, # 시험 내용 설명
-        &quot;prerequisite&quot;: [
-            {
-                &quot;OFPFlowMod&quot;: {...}  # 등록하는 플로우 항목, 미터 항목, 그룹 항목
-            },                       # (Ryu의 OFPFlowMod, OFPMeterMod, OFPGroupMod를
-            {                        #  json 형식으로 작성)
-                &quot;OFPMeterMod&quot;: {...} #  플로우 항목에서 기대하는 처리 결과가
-            },                       #  패킷 전송 (actions = output)의 경우
-            {                        #  출력 포트 번호에 「2」를 지정하십시오
-                &quot;OFPGroupMod&quot;: {...} #  그룹 항목에서 패킷 전송을 할 경우
-            },                       #  출력 포트 번호는 「2」또는 「3」을
-            {...}                    #  지정하십시오
-        ],
-        &quot;tests&quot;: [
-            {
-                # 적용 패킷
-                # 1 번만 적용할지 일정 시간 연속하여 적용 계속 여부에 따라
-                # (A)(B) 중 하나를 설명
-                #  (A) 1번 적용
-                &quot;ingress&quot;: [
-                    &quot;ethernet(...)&quot;, # (Ryu 패킷 라이브러리 생성자의 형식으로 작성)
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ],
-                #  (B) 일정 시간 연속 적용
-                &quot;ingress&quot;: {
-                    &quot;packets&quot;:{
-                        &quot;data&quot;:[
-                            &quot;ethernet(...)&quot;, # (A)와 동일
-                            &quot;ipv4(...)&quot;,
-                            &quot;tcp(...)&quot;
-                        ],
-                        &quot;pktps&quot;: 1000,       # 초당 적용하는 패킷 수를 지정
-                        &quot;duration_time&quot;: 30  # 연속 적용 시간을 초 단위로 지정
-                    }
-                },
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="s2">&quot;xxxxxxxxxx&quot;</span><span class="p">,</span>                    <span class="c1"># 시험 항목 이름</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;xxxxxxxxxx&quot;</span><span class="p">,</span> <span class="c1"># 시험 내용 설명</span>
+        <span class="s2">&quot;prerequisite&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;OFPFlowMod&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>  <span class="c1"># 등록하는 플로우 항목, 미터 항목, 그룹 항목</span>
+            <span class="p">},</span>                       <span class="c1"># (Ryu의 OFPFlowMod, OFPMeterMod, OFPGroupMod를</span>
+            <span class="p">{</span>                        <span class="c1">#  json 형식으로 작성)</span>
+                <span class="s2">&quot;OFPMeterMod&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span> <span class="c1">#  플로우 항목에서 기대하는 처리 결과가</span>
+            <span class="p">},</span>                       <span class="c1">#  패킷 전송 (actions = output)의 경우</span>
+            <span class="p">{</span>                        <span class="c1">#  출력 포트 번호에 「2」를 지정하십시오</span>
+                <span class="s2">&quot;OFPGroupMod&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span> <span class="c1">#  그룹 항목에서 패킷 전송을 할 경우</span>
+            <span class="p">},</span>                       <span class="c1">#  출력 포트 번호는 「2」또는 「3」을</span>
+            <span class="p">{</span><span class="o">...</span><span class="p">}</span>                    <span class="c1">#  지정하십시오</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="c1"># 적용 패킷</span>
+                <span class="c1"># 1 번만 적용할지 일정 시간 연속하여 적용 계속 여부에 따라</span>
+                <span class="c1"># (A)(B) 중 하나를 설명</span>
+                <span class="c1">#  (A) 1번 적용</span>
+                <span class="s2">&quot;ingress&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;ethernet(...)&quot;</span><span class="p">,</span> <span class="c1"># (Ryu 패킷 라이브러리 생성자의 형식으로 작성)</span>
+                    <span class="s2">&quot;ipv4(...)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;tcp(...)&quot;</span>
+                <span class="p">],</span>
+                <span class="c1">#  (B) 일정 시간 연속 적용</span>
+                <span class="s2">&quot;ingress&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;packets&quot;</span><span class="p">:{</span>
+                        <span class="s2">&quot;data&quot;</span><span class="p">:[</span>
+                            <span class="s2">&quot;ethernet(...)&quot;</span><span class="p">,</span> <span class="c1"># (A)와 동일</span>
+                            <span class="s2">&quot;ipv4(...)&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;tcp(...)&quot;</span>
+                        <span class="p">],</span>
+                        <span class="s2">&quot;pktps&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>       <span class="c1"># 초당 적용하는 패킷 수를 지정</span>
+                        <span class="s2">&quot;duration_time&quot;</span><span class="p">:</span> <span class="mi">30</span>  <span class="c1"># 연속 적용 시간을 초 단위로 지정</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
 
-                # 기대할 처리 결과
-                # 처리 결과의 종별에 따라 (a) (b) (c) (d) 중 하나를 설명
-                # (a) 패킷 전송 (actions = output : X)의 확인 시험
-                &quot;egress&quot;: [          # 기대할 전송 패킷
-                    &quot;ethernet(...)&quot;,
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ]
-                #  (b) 패킷 인 (actions = CONTROLLER)의 확인 시험
-                &quot;PACKET_IN&quot;: [       # 기대할 Packet-In 데이터
-                    &quot;ethernet(...)&quot;,
-                    &quot;ipv4(...)&quot;,
-                    &quot;tcp(...)&quot;
-                ]
-                #  (c) table-miss 확인 시험
-                &quot;table-miss&quot;: [      # table-miss이되는 것을 기대하는 플로우 테이블 ID
-                    0
-                ]
-                #  (d) 패킷 전송 (actions = output : X) 때 처리량의 확인 시험
-                &quot;egress&quot;:[
-                    &quot;throughput&quot;:[
-                        {
-                            &quot;OFPMatch&quot;:{   # 처리량 측정에
-                              ...          # 보조 SW에 등록 된
-                            },             # 플로우 항목 Match 조건
-                            &quot;kbps&quot;:1000    # 예상 처리량을 Kbps 단위로 지정
-                        },
-                        {...},
-                        {...}
-                    ]
-                ]
-            },
-            {...},
-            {...}
-        ]
-    },                               # 시험1
-    {...},                           # 시험2
-    {...}                            # 시험3
-]
+                <span class="c1"># 기대할 처리 결과</span>
+                <span class="c1"># 처리 결과의 종별에 따라 (a) (b) (c) (d) 중 하나를 설명</span>
+                <span class="c1"># (a) 패킷 전송 (actions = output : X)의 확인 시험</span>
+                <span class="s2">&quot;egress&quot;</span><span class="p">:</span> <span class="p">[</span>          <span class="c1"># 기대할 전송 패킷</span>
+                    <span class="s2">&quot;ethernet(...)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ipv4(...)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;tcp(...)&quot;</span>
+                <span class="p">]</span>
+                <span class="c1">#  (b) 패킷 인 (actions = CONTROLLER)의 확인 시험</span>
+                <span class="s2">&quot;PACKET_IN&quot;</span><span class="p">:</span> <span class="p">[</span>       <span class="c1"># 기대할 Packet-In 데이터</span>
+                    <span class="s2">&quot;ethernet(...)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ipv4(...)&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;tcp(...)&quot;</span>
+                <span class="p">]</span>
+                <span class="c1">#  (c) table-miss 확인 시험</span>
+                <span class="s2">&quot;table-miss&quot;</span><span class="p">:</span> <span class="p">[</span>      <span class="c1"># table-miss이되는 것을 기대하는 플로우 테이블 ID</span>
+                    <span class="mi">0</span>
+                <span class="p">]</span>
+                <span class="c1">#  (d) 패킷 전송 (actions = output : X) 때 처리량의 확인 시험</span>
+                <span class="s2">&quot;egress&quot;</span><span class="p">:[</span>
+                    <span class="s2">&quot;throughput&quot;</span><span class="p">:[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;OFPMatch&quot;</span><span class="p">:{</span>   <span class="c1"># 처리량 측정에</span>
+                              <span class="o">...</span>          <span class="c1"># 보조 SW에 등록 된</span>
+                            <span class="p">},</span>             <span class="c1"># 플로우 항목 Match 조건</span>
+                            <span class="s2">&quot;kbps&quot;</span><span class="p">:</span><span class="mi">1000</span>    <span class="c1"># 예상 처리량을 Kbps 단위로 지정</span>
+                        <span class="p">},</span>
+                        <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+                        <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+                    <span class="p">]</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+            <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">},</span>                               <span class="c1"># 시험1</span>
+    <span class="p">{</span><span class="o">...</span><span class="p">},</span>                           <span class="c1"># 시험2</span>
+    <span class="p">{</span><span class="o">...</span><span class="p">}</span>                            <span class="c1"># 시험3</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 <p>적용 패킷으로 「(B) 일정 시간 연속 여부」를,
@@ -768,7 +768,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <div class="section" id="id12">
 <h4>＜참고＞적용 패킷의 전송 이미지<a class="headerlink" href="#id12" title="제목 주소">¶</a></h4>
 <p>시험 대상 SW 및 보조 SW 포트는 다음 용도로 이용합니다.</p>
-<a class="reference internal image-reference" href="_images/fig35.png"><img alt="_images/fig35.png" class="align-center" src="_images/fig35.png" /></a>
+<a class="reference internal image-reference" href="_images/fig35.png"><img alt="_images/fig35.png" class="align-center" src="_images/fig35.png" style="width: 683.4px; height: 279.6px;" /></a>
 <p>Flow_mod 메시지 / Meter_mod 메시지 테스트를 수행하는 경우 적용 패킷의 전송 이미지는 다음과 같습니다.</p>
 <ol class="arabic simple">
 <li>보조 SW의 패킷 송신 포트 (포트 번호 1)에서 패킷 전송</li>
@@ -776,7 +776,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <li>시험 대상 SW의 패킷 송신 포트 1 (포트 번호 2)에서 패킷 전송</li>
 <li>보조 SW의 패킷 수신 포트 1 (포트 번호 2)에서 패킷을 수신</li>
 </ol>
-<a class="reference internal image-reference" href="_images/fig44.png"><img alt="_images/fig44.png" class="align-center" src="_images/fig44.png" /></a>
+<a class="reference internal image-reference" href="_images/fig44.png"><img alt="_images/fig44.png" class="align-center" src="_images/fig44.png" style="width: 592.2px; height: 279.6px;" /></a>
 <p>Group_mod 메시지 테스트를 수행하는 경우 적용 패킷의 전송 이미지는 다음과 같습니다.</p>
 <ol class="arabic simple">
 <li>보조 SW의 패킷 송신 포트 (포트 번호 1)에서 패킷 전송</li>
@@ -784,7 +784,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <li>시험 대상 SW의 패킷 송신 포트 1 (포트 번호 2) 또는 시험 대상 SW의 패킷 송신 포트 2 (포트 번호 3)에서 패킷 전송</li>
 <li>보조 SW의 패킷 수신 포트 1 (포트 번호 2) 또는 보조 SW 패킷 수신 포트 2 (포트 번호 3)에서 패킷을 수신</li>
 </ol>
-<a class="reference internal image-reference" href="_images/fig53.png"><img alt="_images/fig53.png" class="align-center" src="_images/fig53.png" /></a>
+<a class="reference internal image-reference" href="_images/fig53.png"><img alt="_images/fig53.png" class="align-center" src="_images/fig53.png" style="width: 592.2px; height: 279.6px;" /></a>
 <p>그림과 같이, Group_mod 테스트를 수행하는 경우에만 시험 대상 SW의 패킷 포트 2 및 보조 SW 패킷 수신 포트 2를 이용하는 경우가 있습니다.</p>
 </div>
 </div>
@@ -805,27 +805,27 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target_recv_port</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-target_recv_port</span></code></td>
 <td>시험 대상 스위치에서 패킷 수신 포트의 포트 번호</td>
 <td>1</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-target_send_port_1</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-target_send_port_1</span></code></td>
 <td>시험 대상 스위치에서 패킷 송신 포트 1의 포트 번호</td>
 <td>2</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-target_send_port_2</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-target_send_port_2</span></code></td>
 <td>시험 대상 스위치에서 패킷 송신 포트 2의 포트 번호</td>
 <td>3</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_send_port</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-tester_send_port</span></code></td>
 <td>보조 스위치에서 패킷 송신 포트의 포트 번호</td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_recv_port_1</span></tt></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-tester_recv_port_1</span></code></td>
 <td>보조 스위치에서 패킷 수신 포트 1의 포트 번호</td>
 <td>2</td>
 </tr>
-<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">--test-switch-tester_recv_port_2</span></tt></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-tester_recv_port_2</span></code></td>
 <td>보조 스위치에서 패킷 수신 포트 2의 포트 번호</td>
 <td>3</td>
 </tr>
@@ -838,19 +838,19 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
 <div><p>테스트 패턴 파일의 포트 번호 값을 지정하는 부분에 옵션 인수의 이름을 지정하면
 테스트 도구 실행시 해당 값이 옵션 값으로 대체됩니다.
 예를 들어, 다음과 같이 테스트 패턴 파일을 작성합니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>&quot;OFPActionOutput&quot;: {
-    &quot;port&quot;:&quot;target_send_port_1&quot;
-}
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span><span class="s2">&quot;target_send_port_1&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>그 다음, 다음과 같이 테스트 도구를 실행합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
 </pre></div>
 </div>
 <p>그 결과, 테스트 패턴 파일의 해당 부분이 다음과 같이 테스트 도구에서 해석됩니다.</p>
-<div class="sourcecode highlight-python"><div class="highlight"><pre>&quot;OFPActionOutput&quot;: {
-    &quot;port&quot;:30
-}
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="s2">&quot;OFPActionOutput&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span><span class="mi">30</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>이렇게하여, 테스트 패턴 파일의 포트 번호 값을
@@ -1002,7 +1002,7 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">목차</a></h3>
   <ul>
@@ -1044,29 +1044,28 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
   <h4>다음 항목</h4>
   <p class="topless"><a href="arch.html"
                         title="다음 장">아키텍처</a></p>
-  <h3>현재 문서</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/switch_test_tool.txt"
-           rel="nofollow">소스 코드를 보려면</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>현재 문서</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/switch_test_tool.txt"
+            rel="nofollow">소스 코드를 보려면</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>빠른 검색</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="바로 가기" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="바로 가기" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    모듈, 클래스 또는 함수 이름을 입력하십시오.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1078,11 +1077,11 @@ OFPST_FLOW reply (OF1.3) (xid=0x2):
         <li class="right" >
           <a href="rest_qos.html" title="QoS"
              >이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, RYU project team.
     </div>
   </body>
 </html>

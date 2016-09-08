@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>流量監控（ Traffic Monitor ） &mdash; Ryubook 1.0 說明文件</title>
+    <title>流量監控（ Traffic Monitor ） &#8212; Ryubook 1.0 說明文件</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="switching_hub.html" title="交換器（ Switching Hub ）"
              accesskey="P">上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -63,7 +63,7 @@
 <div class="section" id="id2">
 <h2>安裝 Traffic Monitor<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h2>
 <p>接著說明如何在 「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」 中提到的交換器中加入流量監控的功能。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
@@ -149,7 +149,7 @@
 <div class="section" id="id3">
 <h3>固定週期處理<a class="headerlink" href="#id3" title="本標題的永久連結">¶</a></h3>
 <p>透過 Switching Hub 的平行處理，建立一個執行緒並定期的向交換器發出要求以取得統計的資料。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">operator</span> <span class="k">import</span> <span class="n">attrgetter</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
@@ -168,7 +168,7 @@
 </pre></div>
 </div>
 <p>在 <code class="docutils literal"><span class="pre">ryu.lib.hub</span></code> 中實作了一些 eventlet wrapper 和基本的類別。這裡我們使用 <code class="docutils literal"><span class="pre">hub.spawn()</span></code> 建立執行緒。但實際上是使用 eventlet 的 green 執行緒。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPStateChange</span><span class="p">,</span>
             <span class="p">[</span><span class="n">MAIN_DISPATCHER</span><span class="p">,</span> <span class="n">DEAD_DISPATCHER</span><span class="p">])</span>
@@ -195,7 +195,7 @@
 <p>在執行緒中 <code class="docutils literal"><span class="pre">_monitor()</span></code> 方法確保了執行緒可以在每 10 秒的間隔中，不斷地向註冊的交換器發送要求以取得統計資訊。</p>
 <p>為了確認連線中的交換器都可以被持續監控， <code class="docutils literal"><span class="pre">EventOFPStateChange</span></code> 就可以用來監測交換器的連線中斷。這個事件偵測是 Ryu 框架所提供的功能，會被觸發在 Datapath 的狀態改變時。</p>
 <p>當 Datapath 的狀態變成 <code class="docutils literal"><span class="pre">MAIN_DISPATCHER</span></code> 時，代表交換器已經註冊並正處於被監視的狀態。而狀態變成  <code class="docutils literal"><span class="pre">DEAD_DISPATCHER</span></code> 時代表已經從註冊狀態解除。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
 <span class="k">def</span> <span class="nf">_request_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;send stats request: </span><span class="si">%016x</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -220,7 +220,7 @@
 <div class="section" id="flowstats">
 <h3>FlowStats<a class="headerlink" href="#flowstats" title="本標題的永久連結">¶</a></h3>
 <p>為了接收來自交換器的回應，建立一個 event handler 來接受從交換器發送的 FlowStatsReply 訊息。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_flow_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -247,7 +247,7 @@
 <p>權限為零的 Table-miss Flow 除外的全部 Flow Entry 將會被選擇，通過並符合該 Flow Entry 的封包數和位元數統計資料將會被回傳，並以接收埠號和目的 MAC 位址的方式排序。</p>
 <p>為了持續的收集以及分析，僅有一部份的資料會被輸出到 log。因此若要進行分析，連結到外部的程式是必須的。在這樣的情況下 <code class="docutils literal"><span class="pre">OFPFlowStatsReply</span></code> 的內容可以被轉換成為 JSON 的格式進行輸出。</p>
 <p>可以設定如下格式</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="c1"># ...</span>
 
@@ -256,7 +256,7 @@
 </pre></div>
 </div>
 <p>上述的設定將會產生結果如下</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="p">{</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
    <span class="s2">&quot;OFPFlowStatsReply&quot;</span><span class="p">:</span> <span class="p">{</span>
       <span class="s2">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
          <span class="p">{</span>
@@ -365,7 +365,7 @@
 <div class="section" id="portstats">
 <h3>PortStats<a class="headerlink" href="#portstats" title="本標題的永久連結">¶</a></h3>
 <p>為了接收交換器所回覆的訊息，PortStatsReply 訊息接收的事件接收處理必須要被實作。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
 <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPortStatsReply</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_port_stats_reply_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
@@ -395,7 +395,7 @@
 <p>首先，跟「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」一樣的執行 Mininet。這邊別忘了交換器的 OpenFlow 版本設定為 OpenFlow13。</p>
 <p>下一步，執行流量監控程式。</p>
 <p>controller: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">ryu</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ./simple_monitor.py</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager --verbose ./simple_monitor.py</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="o">./</span><span class="n">simple_monitor</span><span class="o">.</span><span class="n">py</span>
@@ -443,7 +443,7 @@
 <p>在這個時候 Flow Entry 是空白的（ Table-miss Flow Entry 沒有被顯示出來 ），每個連接埠的計數器也都為零。</p>
 <p>從 host 1 向 host 2 執行 ping 的指令。</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping -c1 10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping -c1 10.0.0.2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">94.4</span> <span class="n">ms</span>
 
@@ -455,7 +455,7 @@
 </div>
 <p>封包的轉送、Flow Entry 的註冊狀況，統計資料開始有了變化。</p>
 <p>controller: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">datapath</span>         <span class="ow">in</span><span class="o">-</span><span class="n">port</span>  <span class="n">eth</span><span class="o">-</span><span class="n">dst</span>           <span class="n">out</span><span class="o">-</span><span class="n">port</span> <span class="n">packets</span>  <span class="nb">bytes</span>
 <span class="o">----------------</span> <span class="o">--------</span> <span class="o">-----------------</span> <span class="o">--------</span> <span class="o">--------</span> <span class="o">--------</span>
 <span class="mi">0000000000000001</span>        <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span>        <span class="mi">2</span>        <span class="mi">1</span>       <span class="mi">42</span>
 <span class="mi">0000000000000001</span>        <span class="mi">2</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span>        <span class="mi">1</span>        <span class="mi">2</span>      <span class="mi">140</span>
@@ -545,12 +545,12 @@
         <li class="right" >
           <a href="switching_hub.html" title="交換器（ Switching Hub ）"
              >上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; 版權所有 2014, RYU project team.
-      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
+        &#169; Copyright 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6 創建。
     </div>
   </body>
 </html>

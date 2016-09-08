@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>網路聚合（ Link Aggregation ） &mdash; Ryubook 1.0 說明文件</title>
+    <title>網路聚合（ Link Aggregation ） &#8212; Ryubook 1.0 說明文件</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="rest_api.html" title="REST API"
              accesskey="P">上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -70,7 +70,7 @@
 在這邊我們要建立新的 OpenFlow 1.3 版本，即 simple_switch_lacp_13.py。
 此應用程式可以為「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」中的交換器新增網路聚合功能。</p>
 <p>原始碼名稱： <code class="docutils literal"><span class="pre">simple_switch_lacp_13.py</span></code></p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
 <span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">CONFIG_DISPATCHER</span>
 <span class="kn">from</span> <span class="nn">ryu.controller.handler</span> <span class="k">import</span> <span class="n">MAIN_DISPATCHER</span>
@@ -199,7 +199,7 @@
 <a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 330.8px; height: 258.4px;" /></a>
 <p>使用 script 來呼叫 Mininet 的 API 進而完成網路拓璞的建構。</p>
 <p>原始碼名稱： <code class="docutils literal"><span class="pre">link_aggregation.py</span></code></p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="ch">#!/usr/bin/env python</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 
 <span class="kn">from</span> <span class="nn">mininet.cli</span> <span class="k">import</span> <span class="n">CLI</span>
 <span class="kn">from</span> <span class="nn">mininet.link</span> <span class="k">import</span> <span class="n">Link</span>
@@ -242,7 +242,7 @@
 </pre></div>
 </div>
 <p>執行該 script 之後會形成 host 1 和交換器 s1 之間有兩條連線的拓璞結構。這時後可以使用 net 命令來進行確認。</p>
-<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo ./link_aggregation.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo ./link_aggregation.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -262,24 +262,24 @@ mininet&gt;
 <p>首先載入 drive module 以完成網路聚合。在 Linux 之中，網路聚合功能是由 bonding drive 所處理。
 預先建立 drive 的設定檔 /etc/modprobe.d/bonding.conf 以完成該功能。</p>
 <p>檔案名稱: <code class="docutils literal"><span class="pre">/etc/modprobe.d/bonding.conf</span></code></p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="n">alias</span> <span class="n">bond0</span> <span class="n">bonding</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="n">alias</span> <span class="n">bond0</span> <span class="n">bonding</span>
 <span class="n">options</span> <span class="n">bonding</span> <span class="n">mode</span><span class="o">=</span><span class="mi">4</span>
 </pre></div>
 </div>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># modprobe bonding</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># modprobe bonding</span>
 </pre></div>
 </div>
 <p>mode = 4 是 LACP 中代表使用動態網路聚合（ dynamic link aggregation ），由於是預設值的關係這邊可以省略。而 LACP data unit 的交換間隔為 SLOW（ 30 秒 ），並且排序的方式是使用目的 MAC 位址來進行。</p>
 <p>接著建立一個名為 bond0 的邏輯界面，然後設定 bond0 的 MAC 位址。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add bond0 type bond</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add bond0 type bond</span>
 <span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set bond0 address 02:01:02:03:04:08</span>
 </pre></div>
 </div>
 <p>把 h1-eth0 和 h1-eth1 的實體網路界面加到已經建立好的邏輯界面群組中。此時先將實體界面設定為 down，然後亂數決定該實體界面成為比較簡單的 MAC 位址之後更新它。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 down</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 down</span>
 <span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 address 00:00:00:00:00:11</span>
 <span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 master bond0</span>
 <span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth1 down</span>
@@ -289,18 +289,18 @@ mininet&gt;
 </div>
 <p>指定邏輯界面的 IP 位址，這邊指定為 10.0.0.1。由於 h1-eth0 的 IP 位址已經被自動指定所以我們刪除它。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.1/8 dev bond0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.1/8 dev bond0</span>
 <span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
 </pre></div>
 </div>
 <p>最後設定邏輯界面為 UP。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set bond0 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set bond0 up</span>
 </pre></div>
 </div>
 <p>接著確認每一個界面的狀態。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig</span>
 <span class="n">bond0</span>     <span class="n">Link</span> <span class="n">encap</span><span class="p">:</span><span class="n">Ethernet</span>  <span class="n">HWaddr</span> <span class="mi">02</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">03</span><span class="p">:</span><span class="mi">04</span><span class="p">:</span><span class="mi">08</span>
           <span class="n">inet</span> <span class="n">addr</span><span class="p">:</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span>  <span class="n">Bcast</span><span class="p">:</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span>  <span class="n">Mask</span><span class="p">:</span><span class="mf">255.0</span><span class="o">.</span><span class="mf">0.0</span>
           <span class="n">UP</span> <span class="n">BROADCAST</span> <span class="n">RUNNING</span> <span class="n">MASTER</span> <span class="n">MULTICAST</span>  <span class="n">MTU</span><span class="p">:</span><span class="mi">1500</span>  <span class="n">Metric</span><span class="p">:</span><span class="mi">1</span>
@@ -336,7 +336,7 @@ mininet&gt;
 而且你可以看到 bond0、h1-eth0 和 h1-eth1 的 MAC 位址全部都是相同的。</p>
 <p>確認 bonding driver 的狀態。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cat /proc/net/bonding/bond0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cat /proc/net/bonding/bond0</span>
 <span class="n">Ethernet</span> <span class="n">Channel</span> <span class="n">Bonding</span> <span class="n">Driver</span><span class="p">:</span> <span class="n">v3</span><span class="o">.</span><span class="mf">7.1</span> <span class="p">(</span><span class="n">April</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">2011</span><span class="p">)</span>
 
 <span class="n">Bonding</span> <span class="n">Mode</span><span class="p">:</span> <span class="n">IEEE</span> <span class="mf">802.3</span><span class="n">ad</span> <span class="n">Dynamic</span> <span class="n">link</span> <span class="n">aggregation</span>
@@ -383,7 +383,7 @@ mininet&gt;
 <h3>設定 OpenFlow 版本<a class="headerlink" href="#openflow" title="本標題的永久連結">¶</a></h3>
 <p>交換器 s1 的 OpenFlow 版本設定為 1.3。請在交換器 s1 的 xterm 終端機上輸入下面的指令。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 </div>
@@ -392,7 +392,7 @@ mininet&gt;
 <p>準備完成，接著開始執行 Ryu 應用程式。</p>
 <p>在視窗標題為 「Node: c0 (root)」 的 xterm 終端機中執行下列的命令。</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ ryu-manager ./simple_switch_lacp_13.py
 loading app ./simple_switch_lacp_13.py
 loading app ryu.controller.ofp_handler
 creating context lacplib
@@ -403,7 +403,7 @@ instantiating app ryu.controller.ofp_handler
 </div>
 <p>host h1 會每 30 秒發送一次 LACP data unit。啟動之後，交換器馬上就會收到 host h1 發送的 LACP data unit，並輸出記錄在 log 之中。</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">the</span> <span class="n">slave</span> <span class="n">i</span><span class="o">/</span><span class="n">f</span> <span class="n">has</span> <span class="n">just</span> <span class="n">been</span> <span class="n">up</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">the</span> <span class="n">timeout</span> <span class="n">time</span> <span class="n">has</span> <span class="n">changed</span><span class="o">.</span>
@@ -447,7 +447,7 @@ instantiating app ryu.controller.ofp_handler
 </ul>
 <p>交換器對於每一次從 host h1 收到的 LACP data unit 傳送回覆用的 LACP data unit 。</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
@@ -457,7 +457,7 @@ instantiating app ryu.controller.ofp_handler
 </div>
 <p>確認 Flow Entry 。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">14.565</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">14.562</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
@@ -479,7 +479,7 @@ instantiating app ryu.controller.ofp_handler
 <p>首先是確認網路聚合的傳送速度。讓我們來看看使用不同的線路來進行通訊的狀況。</p>
 <p>首先，從 host h2 向 host h1 發送 ping 封包。</p>
 <p>Node: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">93.0</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.266</span> <span class="n">ms</span>
@@ -490,7 +490,7 @@ instantiating app ryu.controller.ofp_handler
 </div>
 <p>當 ping 訊息持續發送的同時，確認交換器 s1 的 Flow Entry 。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">22.05</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">22.046</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">124</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
@@ -509,7 +509,7 @@ instantiating app ryu.controller.ofp_handler
 <p>接著你可以看到 h2 和 h1 之間的通訊是使用 s1-eth1 來完成。</p>
 <p>接著從 host h3 向 host h1 發送 ping 訊息。</p>
 <p>Node: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.1</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">91.2</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.256</span> <span class="n">ms</span>
@@ -520,7 +520,7 @@ instantiating app ryu.controller.ofp_handler
 </div>
 <p>在 ping 持續發送時，確認交換器 s1 的 Flow Entry。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">99.765</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">496</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">99.761</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">496</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
@@ -562,7 +562,7 @@ instantiating app ryu.controller.ofp_handler
 </tr>
 </tbody>
 </table>
-<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 328.8px; height: 293.6px;" /></a>
+<a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 328.8px; height: 294.0px;" /></a>
 <p>經過以上的動作，可以確認多條線路的通訊狀態。</p>
 </div>
 <div class="section" id="id6">
@@ -571,13 +571,13 @@ instantiating app ryu.controller.ofp_handler
 現在的狀況是 h2、h4 和 h1 之間的通訊是使用 s1-eth2 連接埠， h3 和 h1 的通訊是使用 s1-eth1 連接埠。</p>
 <p>在這邊我們把 s1-eth1 從所屬的 s1-eth0 網路聚合群組中分離出來。</p>
 <p>Node: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 nomaster</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set h1-eth0 nomaster</span>
 </pre></div>
 </div>
 <p>當 h1-eth0 停用時，host h3 向 host h1 的 ping 是無法連通的。
 在停止通訊的狀態下經過了 90 秒之後，下面的 log 上會出現 Controller 的動作訊息。</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">1</span> <span class="n">LACP</span> <span class="n">sent</span><span class="o">.</span>
 <span class="p">[</span><span class="n">LACP</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">SW</span><span class="o">=</span><span class="mi">0000000000000001</span> <span class="n">PORT</span><span class="o">=</span><span class="mi">2</span> <span class="n">LACP</span> <span class="n">received</span><span class="o">.</span>
@@ -597,7 +597,7 @@ instantiating app ryu.controller.ofp_handler
 <p>當新的通訊發生時，新的 MAC 位址將會被學習，已存在的線路連結 Flow Entry 將會再次被新增。</p>
 <p>host h3 和 host h1 之間的新 Flow Entry 會被新增。</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">364.265</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1612</span><span class="p">,</span> <span class="n">idle_timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">send_flow_rem</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65535</span><span class="p">,</span><span class="n">in_port</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">dl_src</span><span class="o">=</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="n">dl_type</span><span class="o">=</span><span class="mh">0x8809</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65509</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">374.521</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1830</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">65535</span>
@@ -611,7 +611,7 @@ instantiating app ryu.controller.ofp_handler
 </div>
 <p>host h3 的 ping 恢復正常。</p>
 <p>Node: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">144</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.193</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">145</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.081</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">146</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.095</span> <span class="n">ms</span>
@@ -800,7 +800,7 @@ Ryu 的網路聚合應用程式是自行處理排序的部分，
 <h4>製作邏輯界面<a class="headerlink" href="#id8" title="本標題的永久連結">¶</a></h4>
 <p>若要使用網路聚合功能，必須要事先設定好哪一個網路是歸屬于哪一個群組。
 LACP 函式庫使用下列的方法來進行設定。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
     <span class="c1"># ...</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ports</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
     <span class="k">assert</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span>
@@ -831,7 +831,7 @@ LACP 函式庫使用下列的方法來進行設定。</p>
 <h4>處理 Packet-In<a class="headerlink" href="#packet-in" title="本標題的永久連結">¶</a></h4>
 <p>在「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」中，目的 MAC 位址在尚未被學習的狀況下，會將接收到的封包進行 Flooding。由於 LACP data unit 僅會在相鄰的網路間進行交換，若是將該封包轉送至其他的網路時網路聚合將會出現異常。
 所以 Controller 就進行這樣的處理「若是接收到 Packet-In 來自 LACP data unit 的封包就阻止，LACP data unit 以外的封包就交給交換器繼續後續的動作」，在這樣的操作下 LACP data unit 就會不會出現在交換器上。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;PacketIn event handler. when the received packet was LACP,</span>
 <span class="sd">    proceed it. otherwise, send a event.&quot;&quot;&quot;</span>
@@ -849,7 +849,7 @@ LACP 函式庫使用下列的方法來進行設定。</p>
 在不包含 LACP data unit 的狀況下，則呼叫 send_event_to_observers() 方法。
 這是定義在 ryu.base.app_manager.RyuApp 類別中，為了發送事件訊息的方法。</p>
 <p>在「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」當中，我們提到了可以被使用者自行定義由 Ryu 所提供的 OpenFlow 訊息接收事件。上述的原始碼當中有個事件叫做 <code class="docutils literal"><span class="pre">EventPacketIn</span></code> 即是由 LACP 函式庫提供來讓使用者自行定義。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EventPacketIn</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;a PacketIn event class using except LACP.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;initialization.&quot;&quot;&quot;</span>
@@ -871,7 +871,7 @@ LACP 函式庫使用下列的方法來進行設定。</p>
 <p>第二點的處理會在稍後的 「 <a class="reference internal" href="#flow-entry-lacp-data-unit-packet-in">新增 Flow Entry - 收到 LACP data unit 時發送 Packet-In</a> 」 描述，
 第三點的處理會在稍後的 「 <a class="reference internal" href="#lacp-data-unit">傳送/接收 LACP data unit 的處理</a> 」說明。
 接下來說明第一點的處理流程。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
     <span class="c1"># ...</span>
 
     <span class="c1"># when LACP arrived at disabled port, update the status of</span>
@@ -888,7 +888,7 @@ LACP 函式庫使用下列的方法來進行設定。</p>
 <p>_get_slave_enabled() 方法是用來取得指定的交換器和指定的連接埠狀態為有效或無效。
 _set_slave_enabled() 方法是用來設定指定的交換器和指定的連接埠狀態為有效或無效。</p>
 <p>在上述的原始碼中，當無效狀態的連接埠接收到了 LACP data unit 時，連接埠的狀態會進行改變並且呼叫 <code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 發送訊息，意即表示連接埠狀態已經改變。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EventSlaveStateChanged</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventBase</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;a event class that notifies the changes of the statuses of the</span>
 <span class="sd">    slave i/fs.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">enabled</span><span class="p">):</span>
@@ -914,7 +914,7 @@ _set_slave_enabled() 方法是用來設定指定的交換器和指定的連接�
 在網路聚合的規格中，傳送間隔的 3 倍時間若是無任何通訊發生時，則該界面將自該群組移除，不再使用于封包的傳送。</p>
 <p>LACP 函式庫中透過設定 Flow Entry 來達到監視通訊的狀態，即當接受到 LACP data unit 時觸發 Packet-In 並進行 Flow Entry 設定，即為 3 倍傳送間隔（ SHORT_TIMEOUT_TIME 3 秒、LONG_TIMEOUT_TIME 90 秒 ）的 idle_timeout。</p>
 <p>當傳送間隔的設定值改變時，就必須要重新設定 idle_timeout 的時間，因此實作 LACP 函式庫如下。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
     <span class="c1"># ...</span>
 
     <span class="c1"># set the idle_timeout time using the actor state of the</span>
@@ -944,7 +944,7 @@ _set_slave_enabled() 方法是用來設定指定的交換器和指定的連接�
 _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接埠的 idle_timeout 數值。</p>
 <p>由於初始狀態和移除自網路聚合群組的情況下 idle_timeout 為 0，因此接收到新的 LACP data unit 時，傳送間隔將會根據設定被新增到 Flow Entry 中。</p>
 <p>依據所使用的 OpenFlow 版本不同 <code class="docutils literal"><span class="pre">OFPFlowMod</span></code> 類別建構子的參數也不盡相同，因此必須取得所對應版本 Flow Entry 的方法。以下是採用 OpenFlow 1.2 之後所使用的 Flow Entry 新增方法。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_add_flow_v1_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;enter a flow entry for the packet from the slave i/f</span>
 <span class="sd">    with idle_timeout. for OpenFlow ver1.2 and ver1.3.&quot;&quot;&quot;</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
@@ -969,7 +969,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 <div class="section" id="lacp-data-unit">
 <h4>傳送/接收 LACP data unit 的處理<a class="headerlink" href="#lacp-data-unit" title="本標題的永久連結">¶</a></h4>
 <p>接收到 LACP data unit 時，進行「 <a class="reference internal" href="#id9">連接埠有效/無效狀態的處理</a> 」或 「 <a class="reference internal" href="#flow-entry-lacp-data-unit-packet-in">新增 Flow Entry - 收到 LACP data unit 時發送 Packet-In</a> 」處理以及回覆用的 LACP data unit 產生及發送。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_do_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_lacp</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
     <span class="c1"># ...</span>
 
     <span class="c1"># create a response packet.</span>
@@ -989,7 +989,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 已經完成的回覆用封包則根據所接收的 LACP data unit 發送 Packet-Out。</p>
 <p>LACP data unit 中發送端（ Actor ）的資訊和接收端（ Partner ）的資訊已經被設定完成。
 從接收到的 LACP data unit 可以得到發送端的資訊，因此在製作回覆用的封包時，可以設定在接收端。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_create_lacp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;create a LACP packet.&quot;&quot;&quot;</span>
     <span class="n">actor_system</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_LOCAL</span><span class="p">]</span><span class="o">.</span><span class="n">hw_addr</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">slow</span><span class="o">.</span><span class="n">lacp</span><span class="p">(</span>
@@ -1018,7 +1018,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 <div class="section" id="flowremoved">
 <h4>接收 FlowRemoved 訊息時的處理<a class="headerlink" href="#flowremoved" title="本標題的永久連結">¶</a></h4>
 <p>在指定的傳送間隔時間中沒有進行 LACP data unit 的收送時，OpenFlow 交換器會發送 FlowRemoved 方法通知 OpenFlow Controller。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPFlowRemoved</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">flow_removed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evt</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;FlowRemoved event handler. when the removed flow entry was</span>
 <span class="sd">    for LACP, set the status of the slave i/f to disabled, and</span>
@@ -1054,7 +1054,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 <div class="section" id="contexts">
 <h4>設定「_CONTEXTS」<a class="headerlink" href="#contexts" title="本標題的永久連結">¶</a></h4>
 <p>繼承自 ryu.base.app_manager.RyuApp 的 Ryu 應用程式若要啟動其他的應用程式的話，就必須在 「_CONTEXTS」目錄中設定。在啟動其他的應用程式時，會使用另外的執行緒。在這邊我們設定 LACP 函式庫中的 LacpLib 類別名稱為「lacplib」並放在 「_CONTEXTS」當中。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">lacplib</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">lacplib</span>
 
 <span class="c1"># ...</span>
 
@@ -1066,7 +1066,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 </pre></div>
 </div>
 <p>被設定在 「_CONTEXTS」 中的應用程式可以從 __init__() 方法中的 kwargs 取得實體。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
 <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchLacp13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -1104,7 +1104,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 </tbody>
 </table>
 <p>根據以上的設定，data path ID 為 「0000000000000001」 的 OpenFlow 交換器的連接埠 1 和連接埠 2 整合為一個網路聚合群組。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="c1"># ...</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ...</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;lacplib&#39;</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_lacp</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
@@ -1117,7 +1117,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 <div class="section" id="id12">
 <h4>使用者自行定義事件的接收方法<a class="headerlink" href="#id12" title="本標題的永久連結">¶</a></h4>
 <p>在`實作 LACP 函式庫`_ 我們已經說明，在 LACP 函式庫中處理發送 Packet-In 方法時，LACP data unit  不包含使用者定義的 <code class="docutils literal"><span class="pre">EventPacketIn</span></code> 。使用者定義的事件管理是在 Ryu 當中提供 <code class="docutils literal"><span class="pre">ryu.controller.handler.set_ev_cls</span></code> 作為裝飾子用來裝飾事件管理。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
@@ -1129,7 +1129,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 </pre></div>
 </div>
 <p>接著， 當連接埠的狀態變更為有效或無效時，會透過 LACP 函式庫發送 <code class="docutils literal"><span class="pre">EventSlaveStateChanged</span></code> 事件，因此我們必須建立一個事件管理來處理。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">lacplib</span><span class="o">.</span><span class="n">EventSlaveStateChanged</span><span class="p">,</span> <span class="n">lacplib</span><span class="o">.</span><span class="n">LAG_EV_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_slave_state_changed_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">datapath</span>
     <span class="n">dpid</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">id</span>
@@ -1146,7 +1146,7 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
 </pre></div>
 </div>
 <p>在本節開始的時候就有提到，連接埠的有效/無效狀態變更時，被邏輯界面所使用的實體界面會因為封包的通過而變更狀態。為了這個原因，已經被記錄的 Flow Entry 將會被全部刪除。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">del_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
     <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
@@ -1255,12 +1255,12 @@ _set_slave_timeout() 方法可以用來設定指定的交換器之指定連接�
         <li class="right" >
           <a href="rest_api.html" title="REST API"
              >上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; 版權所有 2014, RYU project team.
-      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
+        &#169; Copyright 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6 創建。
     </div>
   </body>
 </html>

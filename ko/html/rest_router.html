@@ -2,13 +2,13 @@
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>라우터 &mdash; Ryubook 1.0 documentation</title>
+    <title>라우터 &#8212; Ryubook 1.0 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -28,8 +28,8 @@
     <link rel="next" title="QoS" href="rest_qos.html" />
     <link rel="prev" title="방화벽" href="rest_firewall.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -41,14 +41,14 @@
         <li class="right" >
           <a href="rest_firewall.html" title="방화벽"
              accesskey="P">이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="ch-rest-router">
 <span id="id1"></span><h1>라우터<a class="headerlink" href="#ch-rest-router" title="제목 주소">¶</a></h1>
@@ -58,11 +58,11 @@
 <h2>단일 테넌트의 동작 예<a class="headerlink" href="#id2" title="제목 주소">¶</a></h2>
 <p>다음과 같은 토폴로지를 만들고 각 스위치 (라우터)에 주소와 경로를
 추가하거나 삭제할 각 호스트 간의 통신 가능 여부를 확인하는 방법을 소개합니다.</p>
-<a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" /></a>
+<a class="reference internal image-reference" href="_images/fig16.png"><img alt="_images/fig16.png" class="align-center" src="_images/fig16.png" style="width: 401.2px; height: 248.0px;" /></a>
 <div class="section" id="id3">
 <h3>환경 구축<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
 <dl class="docutils">
-<dt>우선 Mininet에 환경을 구축합니다. <tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과</dt>
+<dt>우선 Mininet에 환경을 구축합니다. <code class="docutils literal"><span class="pre">mn</span></code> 명령의 매개 변수는 다음과</dt>
 <dd>같습니다.</dd>
 </dl>
 <table border="1" class="docutils">
@@ -101,7 +101,7 @@
 </tbody>
 </table>
 <p>실행 예는 다음과 같습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -123,62 +123,62 @@ mininet&gt;
 </pre></div>
 </div>
 <p>또한 또 다른 컨트롤러의 xterm을 시작합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
-mininet&gt;
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">xterm</span> <span class="n">c0</span>
+<span class="n">mininet</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>이어 각 라우터에서 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>그런 다음 각 호스트에서 자동으로 할당 된 IP 주소를 삭제하고 새로운 IP 주소를
 설정합니다.</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.10/24 dev h1-eth0</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.10/24 dev h2-eth0</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
-root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h3-eth0
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.10/24 dev h3-eth0</span>
 </pre></div>
 </div>
 <p>마지막으로, 컨트롤러 xterm에서 rest_router을 시작합니다.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
-loading app ryu.app.rest_router
-loading app ryu.controller.ofp_handler
-instantiating app None of DPSet
-creating context dpset
-creating context wsgi
-instantiating app ryu.app.rest_router of RestRouterAPI
-instantiating app ryu.controller.ofp_handler of OFPHandler
-(2212) wsgi starting up on http://0.0.0.0:8080/
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_router</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">dpset</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">wsgi</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span> <span class="n">of</span> <span class="n">RestRouterAPI</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span> <span class="n">of</span> <span class="n">OFPHandler</span>
+<span class="p">(</span><span class="mi">2212</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>Ryu와 라우터 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
-[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
-[RT][INFO] switch_id=0000000000000003: Join as router.
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">SW</span> <span class="n">config</span> <span class="k">for</span> <span class="n">TTL</span> <span class="n">error</span> <span class="n">packet</span> <span class="ow">in</span><span class="o">.</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">ARP</span> <span class="n">handling</span> <span class="p">(</span><span class="n">packet</span> <span class="ow">in</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">L2</span> <span class="n">switching</span> <span class="p">(</span><span class="n">normal</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">default</span> <span class="n">route</span> <span class="p">(</span><span class="n">drop</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Start</span> <span class="n">cyclic</span> <span class="n">routing</span> <span class="n">table</span> <span class="n">update</span><span class="o">.</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">router</span><span class="o">.</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>위 로그 라우터 3 대분이 표시되면 준비 완료입니다.</p>
@@ -194,31 +194,31 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 「 <a class="reference internal" href="#rest-api">REST API 목록</a> 」을 참조하십시오.</p>
 </div>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -228,88 +228,88 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&
 <p>그런 다음 라우터 s2에 주소 「172.16.10.1/24」 「172.16.30.1/24」
 「192.168.10.1/24」을 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=3]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=3]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>또한 라우터 s3에 주소 「192.168.30.1/24」와 「192.168.10.20/24」을 설정
 합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터에 IP 주소를 할당할 수 있기 때문에 각 호스트에 기본 게이트웨이로
 등록합니다.</p>
 <p>host: h1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 </div>
@@ -318,50 +318,50 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24
 <p>각 라우터에 기본 경로를 설정합니다.</p>
 <p>먼저 라우터 s1의 기본 경로로 라우터 s2를 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s2의 기본 경로는 라우터 s1을 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s3의 기본 경로는 라우터 s2를 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -370,143 +370,143 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24
 <p>라우터 s2에 대해 라우터 s3 부하의 호스트 (192.168.30.0/24)에 고정 경로
 를 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>주소 및 경로 설정 상태는 다음과 같습니다.</p>
-<a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" /></a>
+<a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" style="width: 410.4px; height: 288.0px;" /></a>
 </div>
 <div class="section" id="id7">
 <h3>설정 내용 확인<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
 <p>각 라우터에 설정된 내용을 확인합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;internal_network&quot;: [
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;172.16.30.1&quot;
-            }
-          ],
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.20.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;172.16.30.30/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.1&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.20.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.30/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;internal_network&quot;: [
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;172.16.30.30&quot;
-            },
-            {
-              &quot;route_id&quot;: 2,
-              &quot;destination&quot;: &quot;192.168.30.0/24&quot;,
-              &quot;gateway&quot;: &quot;192.168.10.20&quot;
-            }
-          ],
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;172.16.30.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 3,
-              &quot;address&quot;: &quot;192.168.10.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.10.1/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.30&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.30.0/24&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.10.20&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.10.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.10.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl http://localhost:8080/router/0000000000000003
-  [
-    {
-      &quot;internal_network&quot;: [
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;192.168.10.1&quot;
-            }
-          ],
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;192.168.30.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;192.168.10.20/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000003</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.10.1&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.30.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.10.20/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>이 상태에서 ping에 의한 통신을 확인하여보십시오. 먼저 h2에서 h3에 ping을 수행합니다
 입니다. 성공적으로 통신하는 것을 확인할 수 있습니다.</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
-PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-64 bytes from 192.168.30.10: icmp_req=1 ttl=62 time=48.8 ms
-64 bytes from 192.168.30.10: icmp_req=2 ttl=62 time=0.402 ms
-64 bytes from 192.168.30.10: icmp_req=3 ttl=62 time=0.089 ms
-64 bytes from 192.168.30.10: icmp_req=4 ttl=62 time=0.065 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 192.168.30.10</span>
+<span class="n">PING</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="p">(</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">48.8</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.402</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.089</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.065</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>또한 h2에서 h1로 ping을 실행합니다. 이쪽도 제대로 통신할 수 있는지 확인 할 수
 있습니다.</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
-PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
-64 bytes from 172.16.20.10: icmp_req=1 ttl=62 time=43.2 ms
-64 bytes from 172.16.20.10: icmp_req=2 ttl=62 time=0.306 ms
-64 bytes from 172.16.20.10: icmp_req=3 ttl=62 time=0.057 ms
-64 bytes from 172.16.20.10: icmp_req=4 ttl=62 time=0.048 ms
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">43.2</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.306</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.057</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.048</span> <span class="n">ms</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 </div>
@@ -514,64 +514,64 @@ PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
 <h3>정적 경로 삭제<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
 <p>라우터 s2에 설정한 라우터 s3에 정적 경로를 제거합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Delete route [route_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Delete route [route_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s2에 설정된 정보를 확인하여보십시오. 라우터 s3에 고정 경로가
 삭제된 것을 알 수 있습니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
-  [
-    {
-      &quot;internal_network&quot;: [
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;172.16.30.30&quot;
-            }
-          ],
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;172.16.30.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 3,
-              &quot;address&quot;: &quot;192.168.10.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.10.1/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.30&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.10.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.10.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>이 상태에서 ping에 의한 통신을 확인하여보십시오. h2에서 h3까지는 노선 정보가 없어
 때문에 통신할 수 없는 것을 알 수 있습니다.</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 192.168.30.10
-PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
-^C
---- 192.168.30.10 ping statistics ---
-12 packets transmitted, 0 received, 100% packet loss, time 11088ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 192.168.30.10</span>
+<span class="n">PING</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="p">(</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">12</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">11088</span><span class="n">ms</span>
 </pre></div>
 </div>
 </div>
@@ -579,57 +579,57 @@ PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
 <h3>주소 삭제<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
 <p>라우터 s1에 설정 한 주소 「172.16.20.1/24」를 삭제합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;details&quot;: &quot;Delete address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Delete address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s1에 설정된 정보를 확인하여보십시오. 라우터 s1에 설정된 IP 주소
 중 「172.16.20.1/24」가 삭제된 것을 알 수 있습니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
-  [
-    {
-      &quot;internal_network&quot;: [
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;172.16.30.1&quot;
-            }
-          ],
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;172.16.30.30/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.1&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.30.30/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>이 상태에서 ping에 의한 통신을 확인하여보십시오. h2에서 h1으로는 h1에 속한 하위
 인터넷에 대한 정보를 라우터 s1에서 삭제하였기 때문에, 통신할 수 없다는 사실을
 알 수 없습니다.</p>
 <p>host: h2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
-PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
-^C
---- 172.16.20.10 ping statistics ---
-19 packets transmitted, 0 received, 100% packet loss, time 18004ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">19</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">18004</span><span class="n">ms</span>
 </pre></div>
 </div>
 </div>
@@ -639,10 +639,10 @@ PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
 <p>이어 VLAN에 의한 테넌트 구분이 이루어지고 있는 다음과 같은 토폴로지를 만들고 각
 스위치 (라우터)에 주소와 경로를 추가하거나 삭제할 각 호스트 간의 통신
 여부를 확인하는 방법을 소개합니다.</p>
-<a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" class="align-center" src="_images/fig51.png" /></a>
+<a class="reference internal image-reference" href="_images/fig51.png"><img alt="_images/fig51.png" class="align-center" src="_images/fig51.png" style="width: 499.2px; height: 319.6px;" /></a>
 <div class="section" id="id11">
 <h3>환경 구축<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
-<p>우선 Mininet에 환경을 구축합니다. <tt class="docutils literal"><span class="pre">mn</span></tt> 명령의 매개 변수는 다음과 같이
+<p>우선 Mininet에 환경을 구축합니다. <code class="docutils literal"><span class="pre">mn</span></code> 명령의 매개 변수는 다음과 같이
 입니다.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -682,7 +682,7 @@ PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
 </tbody>
 </table>
 <p>실행 예는 다음과 같습니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -703,89 +703,89 @@ mininet&gt;
 </pre></div>
 </div>
 <p>또한 컨트롤러의 xterm을 하나 더 시작합니다.</p>
-<div class="console highlight-python"><div class="highlight"><pre>mininet&gt; xterm c0
-mininet&gt;
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">xterm</span> <span class="n">c0</span>
+<span class="n">mininet</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>이어 각 라우터에서 사용하는 OpenFlow 버전을 1.3으로 설정합니다.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s3 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>그런 다음 각 호스트 인터페이스에 VLAN ID를 설정하고 새로운 IP 주소를 설정
 합니다.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
-root@ryu-vm:~# ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2
-root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0.2
-root@ryu-vm:~# ip link set dev h1s1-eth0.2 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1s1-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.10/24 dev h1s1-eth0.2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s1-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s1-eth0
-root@ryu-vm:~# ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110
-root@ryu-vm:~# ip addr add 172.16.10.11/24 dev h2s1-eth0.110
-root@ryu-vm:~# ip link set dev h2s1-eth0.110 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.4/8 dev h2s1-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.11/24 dev h2s1-eth0.110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s1-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h1s2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
-root@ryu-vm:~# ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2
-root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h1s2-eth0.2
-root@ryu-vm:~# ip link set dev h1s2-eth0.2 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h1s2-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.10/24 dev h1s2-eth0.2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s2-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h2s2-eth0
-root@ryu-vm:~# ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110
-root@ryu-vm:~# ip addr add 192.168.30.11/24 dev h2s2-eth0.110
-root@ryu-vm:~# ip link set dev h2s2-eth0.110 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.5/8 dev h2s2-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.11/24 dev h2s2-eth0.110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s2-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h1s3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h1s3-eth0
-root@ryu-vm:~# ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2
-root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1s3-eth0.2
-root@ryu-vm:~# ip link set dev h1s3-eth0.2 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h1s3-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.10/24 dev h1s3-eth0.2</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s3-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h2s3-eth0
-root@ryu-vm:~# ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110
-root@ryu-vm:~# ip addr add 172.16.20.11/24 dev h2s3-eth0.110
-root@ryu-vm:~# ip link set dev h2s3-eth0.110 up
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.6/8 dev h2s3-eth0</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.11/24 dev h2s3-eth0.110</span>
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s3-eth0.110 up</span>
 </pre></div>
 </div>
 <p>마지막으로, 컨트롤러 xterm에서 rest_router을 시작합니다.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ryu-manager ryu.app.rest_router
-loading app ryu.app.rest_router
-loading app ryu.controller.ofp_handler
-instantiating app None of DPSet
-creating context dpset
-creating context wsgi
-instantiating app ryu.app.rest_router of RestRouterAPI
-instantiating app ryu.controller.ofp_handler of OFPHandler
-(2447) wsgi starting up on http://0.0.0.0:8080/
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_router</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span>
+<span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">dpset</span>
+<span class="n">creating</span> <span class="n">context</span> <span class="n">wsgi</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span> <span class="n">of</span> <span class="n">RestRouterAPI</span>
+<span class="n">instantiating</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span> <span class="n">of</span> <span class="n">OFPHandler</span>
+<span class="p">(</span><span class="mi">2447</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 </pre></div>
 </div>
 <p>Ryu와 라우터 간의 연결에 성공하면 다음 메시지가 표시됩니다.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>[RT][INFO] switch_id=0000000000000003: Set SW config for TTL error packet in.
-[RT][INFO] switch_id=0000000000000003: Set ARP handling (packet in) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Set L2 switching (normal) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Set default route (drop) flow [cookie=0x0]
-[RT][INFO] switch_id=0000000000000003: Start cyclic routing table update.
-[RT][INFO] switch_id=0000000000000003: Join as router.
-...
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">SW</span> <span class="n">config</span> <span class="k">for</span> <span class="n">TTL</span> <span class="n">error</span> <span class="n">packet</span> <span class="ow">in</span><span class="o">.</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">ARP</span> <span class="n">handling</span> <span class="p">(</span><span class="n">packet</span> <span class="ow">in</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">L2</span> <span class="n">switching</span> <span class="p">(</span><span class="n">normal</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Set</span> <span class="n">default</span> <span class="n">route</span> <span class="p">(</span><span class="n">drop</span><span class="p">)</span> <span class="n">flow</span> <span class="p">[</span><span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">]</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Start</span> <span class="n">cyclic</span> <span class="n">routing</span> <span class="n">table</span> <span class="n">update</span><span class="o">.</span>
+<span class="p">[</span><span class="n">RT</span><span class="p">][</span><span class="n">INFO</span><span class="p">]</span> <span class="n">switch_id</span><span class="o">=</span><span class="mi">0000000000000003</span><span class="p">:</span> <span class="n">Join</span> <span class="k">as</span> <span class="n">router</span><span class="o">.</span>
+<span class="o">...</span>
 </pre></div>
 </div>
 <p>위 로그 라우터 3 대분이 표시되면 준비 완료입니다.</p>
@@ -793,327 +793,327 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <div class="section" id="id12">
 <h3>주소 설정<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
 <p>각 라우터에 주소를 설정합니다.</p>
-<p>먼저 라우터 s1 주소 「172.16.20.1/24」와 「10.10.10.1/24」을 설정합니다.
+<p>먼저 라우터 s1 주소 「172.16.10.1/24」와 「10.10.10.1/24」을 설정합니다.
 입니다. 각 VLAN ID마다 설정해야합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>그런 다음 라우터 s2에 주소 「192.168.30.1/24」와 「10.10.10.2/24」을 설정
 합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>또한 라우터 s3에 주소 「172.16.20.1/24」와 「10.10.10.3/24」을 설정합니
 다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add address [address_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add address [address_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터에 IP 주소를 할당할 수 있기 때문에 각 호스트에 기본 게이트웨이로
 등록합니다.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h2s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.10.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h1s2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 <p>host: h2s2:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 192.168.30.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 <p>host: h1s3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>host: h2s3:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ip route add default via 172.16.20.1
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>설정된 주소는 다음과 같습니다.</p>
-<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" /></a>
+<a class="reference internal image-reference" href="_images/fig7.png"><img alt="_images/fig7.png" class="align-center" src="_images/fig7.png" style="width: 480.0px; height: 347.6px;" /></a>
 </div>
 <div class="section" id="id13">
 <h3>기본 경로 및 정적 경로 설정<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
 <p>각 라우터에 기본 경로 및 정적 경로를 설정합니다.</p>
 <p>먼저 라우터 s1의 기본 경로로 라우터 s2를 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s2의 기본 경로는 라우터 s1을 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>라우터 s3의 기본 경로는 라우터 s2를 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 
-root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 110,
-          &quot;details&quot;: &quot;Add route [route_id=1]&quot;
-        }
-      ]
-    }
-  ]
+<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=1]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>이어 라우터 s2에 대해 라우터 s3 부하의 호스트 (172.16.20.0/24)의 정적
 경로를 설정합니다. vlan_id=2 인 경우에만 설정합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2
-  [
-    {
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;,
-      &quot;command_result&quot;: [
-        {
-          &quot;result&quot;: &quot;success&quot;,
-          &quot;vlan_id&quot;: 2,
-          &quot;details&quot;: &quot;Add route [route_id=2]&quot;
-        }
-      ]
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;details&quot;</span><span class="p">:</span> <span class="s2">&quot;Add route [route_id=2]&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -1121,152 +1121,152 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;
 <h3>설정 내용 확인<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
 <p>각 라우터에 설정된 내용을 확인합니다.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# curl http://localhost:8080/router/all/all
-  [
-    {
-      &quot;internal_network&quot;: [
-        {},
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.2&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 2,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.10.1/24&quot;
-            }
-          ]
-        },
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.2&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 110,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.10.1/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000001&quot;
-    },
-    {
-      &quot;internal_network&quot;: [
-        {},
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 2,
-              &quot;destination&quot;: &quot;172.16.20.0/24&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.3&quot;
-            },
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.1&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 2,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.2/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;192.168.30.1/24&quot;
-            }
-          ]
-        },
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.1&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 110,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.2/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;192.168.30.1/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000002&quot;
-    },
-    {
-      &quot;internal_network&quot;: [
-        {},
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.2&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 2,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.20.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.3/24&quot;
-            }
-          ]
-        },
-        {
-          &quot;route&quot;: [
-            {
-              &quot;route_id&quot;: 1,
-              &quot;destination&quot;: &quot;0.0.0.0/0&quot;,
-              &quot;gateway&quot;: &quot;10.10.10.2&quot;
-            }
-          ],
-          &quot;vlan_id&quot;: 110,
-          &quot;address&quot;: [
-            {
-              &quot;address_id&quot;: 1,
-              &quot;address&quot;: &quot;172.16.20.1/24&quot;
-            },
-            {
-              &quot;address_id&quot;: 2,
-              &quot;address&quot;: &quot;10.10.10.3/24&quot;
-            }
-          ]
-        }
-      ],
-      &quot;switch_id&quot;: &quot;0000000000000003&quot;
-    }
-  ]
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/all/all</span>
+  <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.10.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.10.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.20.0/24&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.3&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.1&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.30.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.1&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;192.168.30.1/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.20.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.3/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;route&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;route_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.0.0/0&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;gateway&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.2&quot;</span>
+            <span class="p">}</span>
+          <span class="p">],</span>
+          <span class="s2">&quot;vlan_id&quot;</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span>
+          <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;172.16.20.1/24&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="s2">&quot;address_id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+              <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;10.10.10.3/24&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
 </pre></div>
 </div>
 <p>각 라우터의 설정 내용을 표로 나타내면 다음과 같이 됩니다.</p>
@@ -1328,25 +1328,25 @@ root@ryu-vm:~# curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;
 <p>h1s1에서 h1s3에 대해 ping을 시도합니다. 같은 vlan_id=2의 호스트끼리이며,
 라우터 s2에 s3에게 고정 경로가 설정되어 있기 때문에 통신이 가능합니다.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.10
-PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
-64 bytes from 172.16.20.10: icmp_req=1 ttl=61 time=45.9 ms
-64 bytes from 172.16.20.10: icmp_req=2 ttl=61 time=0.257 ms
-64 bytes from 172.16.20.10: icmp_req=3 ttl=61 time=0.059 ms
-64 bytes from 172.16.20.10: icmp_req=4 ttl=61 time=0.182 ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">45.9</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.257</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">3</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.059</span> <span class="n">ms</span>
+<span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">4</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.182</span> <span class="n">ms</span>
 </pre></div>
 </div>
 <p>h2s1에서 h2s3 대해 ping을 시도합니다. 같은 vlan_id=110 호스트끼리이지만,
 라우터 s2에 s3에게 고정 경로가 설정되어 있지 않기 때문에 통신이 불가능합니다.</p>
 <p>host: h2s1:</p>
-<div class="console highlight-python"><div class="highlight"><pre>root@ryu-vm:~# ping 172.16.20.11
-PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
-^C
---- 172.16.20.11 ping statistics ---
-8 packets transmitted, 0 received, 100% packet loss, time 7009ms
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.11</span>
+<span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
+<span class="o">^</span><span class="n">C</span>
+<span class="o">---</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
+<span class="mi">8</span> <span class="n">packets</span> <span class="n">transmitted</span><span class="p">,</span> <span class="mi">0</span> <span class="n">received</span><span class="p">,</span> <span class="mi">100</span><span class="o">%</span> <span class="n">packet</span> <span class="n">loss</span><span class="p">,</span> <span class="n">time</span> <span class="mi">7009</span><span class="n">ms</span>
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" /></a>
+<a class="reference internal image-reference" href="_images/fig8.png"><img alt="_images/fig8.png" class="align-center" src="_images/fig8.png" style="width: 480.0px; height: 347.6px;" /></a>
 <p>이 장에서는 구체적인 예를 들면서 라우터의 사용 방법을 설명했습니다.</p>
 </div>
 </div>
@@ -1517,7 +1517,7 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">목차</a></h3>
   <ul>
@@ -1558,29 +1558,28 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
   <h4>다음 항목</h4>
   <p class="topless"><a href="rest_qos.html"
                         title="다음 장">QoS</a></p>
-  <h3>현재 문서</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/rest_router.txt"
-           rel="nofollow">소스 코드를 보려면</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>현재 문서</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/rest_router.txt"
+            rel="nofollow">소스 코드를 보려면</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>빠른 검색</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="바로 가기" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="바로 가기" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    모듈, 클래스 또는 함수 이름을 입력하십시오.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>탐색</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -1592,11 +1591,11 @@ PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
         <li class="right" >
           <a href="rest_firewall.html" title="방화벽"
              >이전</a> |</li>
-        <li><a href="index.html">Ryubook 1.0 documentation</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 documentation</a> &#187;</li> 
       </ul>
     </div>
-    <div class="footer">
-        &copy; Copyright 2014, RYU project team.
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014, RYU project team.
     </div>
   </body>
 </html>

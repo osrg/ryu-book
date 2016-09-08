@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>REST API &mdash; Ryubook 1.0 說明文件</title>
+    <title>REST API &#8212; Ryubook 1.0 說明文件</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="traffic_monitor.html" title="流量監控（ Traffic Monitor ）"
              accesskey="P">上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -78,7 +78,7 @@
 </li>
 </ol>
 <p>接下來我們來看看程式碼。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">json</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
@@ -90,7 +90,7 @@
 <span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">dpid</span> <span class="k">as</span> <span class="n">dpid_lib</span>
 
 <span class="n">simple_switch_instance_name</span> <span class="o">=</span> <span class="s1">&#39;simple_switch_api_app&#39;</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/simpleswitch/mactable/{dpid}&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;/simpleswitch/mactable/</span><span class="si">{dpid}</span><span class="s1">&#39;</span>
 
 <span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
@@ -181,14 +181,14 @@
 </div>
 <div class="section" id="simpleswitchrest13-class">
 <h2>安裝 SimpleSwitchRest13 class<a class="headerlink" href="#simpleswitchrest13-class" title="本標題的永久連結">¶</a></h2>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchRest13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
 
     <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;wsgi&#39;</span><span class="p">:</span> <span class="n">WSGIApplication</span> <span class="p">}</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>類別變數 <code class="docutils literal"><span class="pre">_CONTEXT</span></code> 是用來製定 Ryu 中所支援的 WSGI 網頁伺服器所對應的類別。因此我們可以透過 <code class="docutils literal"><span class="pre">wsgi</span></code> Key 來取得 WSGI 網頁伺服器的實體。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">switches</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">wsgi</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;wsgi&#39;</span><span class="p">]</span>
@@ -198,7 +198,7 @@
 </div>
 <p>建構子需要取得 <code class="docutils literal"><span class="pre">WSGIApplication</span></code> 的實體用來註冊 Controller 類別。稍後會有更詳細的說明。
 註冊則可以使用 <code class="docutils literal"><span class="pre">register</span></code> 方法。在呼叫 <code class="docutils literal"><span class="pre">register</span></code> 方法的時候，dictionary object 會在名為 <code class="docutils literal"><span class="pre">simple_switch_api_app</span></code> 的 Key 中被傳遞。因此 Controller 的建構子就可以存取到 <code class="docutils literal"><span class="pre">simple_switch_api_app</span></code> 的實體。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchRest13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">switch_features_handler</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
@@ -209,7 +209,7 @@
 </div>
 <p>父類別 <code class="docutils literal"><span class="pre">switch_features_handler</span></code> 已經被覆寫（ overridden ）。
 這個方法會在 SwitchFeatures 事件發生時被觸發，從事件物件 <code class="docutils literal"><span class="pre">ev</span></code> 取得 <code class="docutils literal"><span class="pre">datapath</span></code> 物件後存放至``switches`` 變數中。此時 MAC 位址的初始值將會設定為空白字典（ empty dictionary ）形態。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">set_mac_to_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dpid</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
     <span class="n">mac_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">dpid</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">datapath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">switches</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dpid</span><span class="p">)</span>
 
@@ -258,7 +258,7 @@
 <div class="section" id="simpleswitchcontroller-class">
 <h2>安裝 SimpleSwitchController Class<a class="headerlink" href="#simpleswitchcontroller-class" title="本標題的永久連結">¶</a></h2>
 <p>接下來是控制器類別（ controller class ）中 REST API 的 HTTP request 。 類別名稱是``SimpleSwitchController`` 。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitchController</span><span class="p">(</span><span class="n">ControllerBase</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitchController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">link</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">simple_switch_instance_name</span><span class="p">]</span>
@@ -266,7 +266,7 @@
 </pre></div>
 </div>
 <p>從建構子（ constructor ）中取得 <code class="docutils literal"><span class="pre">SimpleSwitchRest13</span></code> 的實體。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">list_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
@@ -310,7 +310,7 @@ URL(/simpleswitch/mactable/{dpid}) 中 {dpid} 的部分必須與 ryu/lib/dpid.py
 </ul>
 <p>當 REST API 被第二參數所指定的 URL 呼叫時，相對的 HTTP GET <code class="docutils literal"><span class="pre">list_mac_table</span></code> 方法就會被觸發。該方法將會取得 {dpid} 中儲存的 data path ID 以得到 MAC 位址並轉換成 JSON 的格式進行回傳。</p>
 <p>如果連結到 Ryu 的未知交換器 data path ID 被指定時，Ryu 會返回編碼為 404 的回應。</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@route</span><span class="p">(</span><span class="s1">&#39;simpleswitch&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;PUT&#39;</span><span class="p">],</span> <span class="n">requirements</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">DPID_PATTERN</span><span class="p">})</span>
 <span class="k">def</span> <span class="nf">put_mac_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
     <span class="n">simple_switch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simpl_switch_spp</span>
@@ -338,7 +338,7 @@ URL(/simpleswitch/mactable/{dpid}) 中 {dpid} 的部分必須與 ryu/lib/dpid.py
 <h2>執行包含 REST API 的 Switching Hub<a class="headerlink" href="#id2" title="本標題的永久連結">¶</a></h2>
 <p>接著讓我們執行已經加入 REST API 的 switching hub 吧。</p>
 <p>首先執行「 <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">交換器（ Switching Hub ）</span></a> 」和 Mininet。這邊不要忘了設定交換器的 OpenFlow 版本為 OpenFlow13。接著啟動已經加入 REST API 的 switching hub。</p>
-<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~/ryu/ryu/app$ cd ~/ryu/ryu/app
 ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
 ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ./simple_switch_rest_13.py
 loading app ./simple_switch_rest_13.py
@@ -368,7 +368,7 @@ move onto main mode
 </div>
 <p>上述啟動時的訊息中有一行 「(31135) wsgi starting up on <a class="reference external" href="http://0.0.0.0:8080/">http://0.0.0.0:8080/</a>」 ，這是表示網頁伺服器和埠號8080已經被啟動。</p>
 <p>接下來是在 mininet 的 shell 上從 h1 對 h2 執行 ping 的動作。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">84.1</span> <span class="n">ms</span>
 
@@ -378,7 +378,7 @@ move onto main mode
 </pre></div>
 </div>
 <p>這時後會發生三次往 Ryu 方向的 Packet-In 。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
 <span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">ff</span> <span class="mi">1</span>
 <span class="n">EVENT</span> <span class="n">ofp_event</span><span class="o">-&gt;</span><span class="n">SimpleSwitchRest13</span> <span class="n">EventOFPPacketIn</span>
 <span class="n">packet</span> <span class="ow">in</span> <span class="mi">1</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="mi">2</span>
@@ -388,7 +388,7 @@ move onto main mode
 </div>
 <p>再來執行 REST API 以便在 switching hub 中取得 MAC 位址表。
 這次我們使用 curl 指令來驅動 REST API。</p>
-<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
 </pre></div>
 </div>
@@ -396,7 +396,7 @@ move onto main mode
 <p>這次 h1 和 h2 的 MAC 位址表提前在執行 ping 之前被設定好。
 暫時停止 switching hub 和 mininet 的執行。
 然後再次啟動 mininet 並在 OpenFlow 版本設定為 OpenFlow13 之後接著啟動。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="p">(</span><span class="mi">26759</span><span class="p">)</span> <span class="n">wsgi</span> <span class="n">starting</span> <span class="n">up</span> <span class="n">on</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">0.0</span><span class="o">.</span><span class="mf">0.0</span><span class="p">:</span><span class="mi">8080</span><span class="o">/</span>
 <span class="n">connected</span> <span class="n">socket</span><span class="p">:</span><span class="o">&lt;</span><span class="n">eventlet</span><span class="o">.</span><span class="n">greenio</span><span class="o">.</span><span class="n">GreenSocket</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afe6d0</span><span class="o">&gt;</span> <span class="n">address</span><span class="p">:(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">48818</span><span class="p">)</span>
 <span class="n">hello</span> <span class="n">ev</span> <span class="o">&lt;</span><span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPHello</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x2afec10</span><span class="o">&gt;</span>
@@ -409,7 +409,7 @@ move onto main mode
 </div>
 <p>接著在每個 host 上呼叫 MAC 位址表更新的 REST API。
 REST API 呼叫的形式是 {&#8220;mac&#8221; : &#8220;MAC 位址&#8221;, &#8220;port&#8221; : 連接的連接埠號}</p>
-<div class="console highlight-default"><div class="highlight"><pre>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:01&quot;, &quot;port&quot; : 1}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:01&quot;: 1}
 ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quot;, &quot;port&quot; : 2}&#39; http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
 {&quot;00:00:00:00:00:02&quot;: 2, &quot;00:00:00:00:00:01&quot;: 1}
@@ -417,7 +417,7 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 </div>
 <p>執行上述的指令，h1 和 h2 對應的 Flow Entry 會被加入交換器中。</p>
 <p>然後從 h1 對 h2 執行 ping 指令。</p>
-<div class="console highlight-default"><div class="highlight"><pre><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">mininet</span><span class="o">&gt;</span> <span class="n">h1</span> <span class="n">ping</span> <span class="o">-</span><span class="n">c</span> <span class="mi">1</span> <span class="n">h2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">4.62</span> <span class="n">ms</span>
 
@@ -426,7 +426,7 @@ ryu@ryu-vm:~$ curl -X PUT -d &#39;{&quot;mac&quot; : &quot;00:00:00:00:00:02&quo
 <span class="n">rtt</span> <span class="nb">min</span><span class="o">/</span><span class="n">avg</span><span class="o">/</span><span class="nb">max</span><span class="o">/</span><span class="n">mdev</span> <span class="o">=</span> <span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">4.623</span><span class="o">/</span><span class="mf">0.000</span> <span class="n">ms</span>
 </pre></div>
 </div>
-<div class="console highlight-default"><div class="highlight"><pre><span class="o">...</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="n">move</span> <span class="n">onto</span> <span class="n">main</span> <span class="n">mode</span>
 <span class="p">(</span><span class="mi">28293</span><span class="p">)</span> <span class="n">accepted</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="mi">44453</span><span class="p">)</span>
 <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span> <span class="o">-</span> <span class="o">-</span> <span class="p">[</span><span class="mi">19</span><span class="o">/</span><span class="n">Nov</span><span class="o">/</span><span class="mi">2013</span> <span class="mi">19</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">45</span><span class="p">]</span> <span class="s2">&quot;PUT /simpleswitch/mactable/0000000000000001 HTTP/1.1&quot;</span> <span class="mi">200</span> <span class="mi">124</span> <span class="mf">0.002734</span>
@@ -502,12 +502,12 @@ Packet-In 只會發生在當 h1 到 h2 的 ARP 出現且沒有接連發生的封
         <li class="right" >
           <a href="traffic_monitor.html" title="流量監控（ Traffic Monitor ）"
              >上一頁</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 說明文件</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; 版權所有 2014, RYU project team.
-      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4 創建。
+        &#169; Copyright 2014, RYU project team.
+      使用 <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6 創建。
     </div>
   </body>
 </html>
