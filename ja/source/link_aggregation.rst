@@ -113,8 +113,8 @@ MininetのAPIを呼び出すスクリプトを作成し、必要なトポロジ�
 
 ::
 
-    ryu@ryu-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/link_aggregation.py
-    ryu@ryu-vm:~$ sudo ./link_aggregation.py
+    $ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/link_aggregation.py
+    $ sudo ./link_aggregation.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet> net
     c0
@@ -153,7 +153,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# modprobe bonding
+    # modprobe bonding
 
 mode=4はLACPを用いたダイナミックなリンク・アグリゲーションを行うことを表しま
 す。デフォルト値であるためここでは設定を省略していますが、LACPデータユニット
@@ -169,8 +169,8 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link add bond0 type bond
-    root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
+    # ip link add bond0 type bond
+    # ip link set bond0 address 02:01:02:03:04:08
 
 作成した論理インターフェースのグループに、h1-eth0とh1-eth1の物理インター
 フェースを参加させます。このとき、物理インターフェースをダウンさせておく必要
@@ -183,12 +183,12 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set h1-eth0 down
-    root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
-    root@ryu-vm:~# ip link set h1-eth0 master bond0
-    root@ryu-vm:~# ip link set h1-eth1 down
-    root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
-    root@ryu-vm:~# ip link set h1-eth1 master bond0
+    # ip link set h1-eth0 down
+    # ip link set h1-eth0 address 00:00:00:00:00:11
+    # ip link set h1-eth0 master bond0
+    # ip link set h1-eth1 down
+    # ip link set h1-eth1 address 00:00:00:00:00:12
+    # ip link set h1-eth1 master bond0
 
 論理インターフェースにIPアドレスを割り当てます。
 ここでは10.0.0.1を割り当てることにします。また、h1-eth0にIPアドレス
@@ -200,8 +200,8 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+    # ip addr add 10.0.0.1/8 dev bond0
+    # ip addr del 10.0.0.1/8 dev h1-eth0
 
 最後に、論理インターフェースをアップさせます。
 
@@ -211,7 +211,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set bond0 up
+    # ip link set bond0 up
 
 ここで各インターフェースの状態を確認しておきます。
 
@@ -221,7 +221,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ifconfig
+    # ifconfig
     bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
               inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
               UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
@@ -264,7 +264,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# cat /proc/net/bonding/bond0
+    # cat /proc/net/bonding/bond0
     Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
 
     Bonding Mode: IEEE 802.3ad Dynamic link aggregation
@@ -323,7 +323,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 
 スイッチングハブの実行
@@ -340,7 +340,7 @@ Node: c0:
 
 ::
 
-    ryu@ryu-vm:~$ ryu-manager ryu.app.simple_switch_lacp_13
+    $ ryu-manager ryu.app.simple_switch_lacp_13
     loading app ryu.app.simple_switch_lacp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of LacpLib
@@ -420,7 +420,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -456,7 +456,7 @@ Node: h2:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.1
+    # ping 10.0.0.1
     PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
     64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
     64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
@@ -472,7 +472,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -501,7 +501,7 @@ Node: h3:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.1
+    # ping 10.0.0.1
     PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
     64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
     64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
@@ -517,7 +517,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -588,7 +588,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set h1-eth0 nomaster
+    # ip link set h1-eth0 nomaster
 
 h1-eth0が停止したことにより、ホストh3からホストh1へのpingが疎通不可能になり
 ます。無通信監視時間の90秒が経過すると、コントローラの動作
@@ -630,7 +630,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535

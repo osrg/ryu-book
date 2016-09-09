@@ -283,7 +283,7 @@ controller: c0:
 
 ::
 
-    ryu@ryu-vm:~# ryu-manager --verbose ryu.app.simple_monitor_13
+    # ryu-manager --verbose ryu.app.simple_monitor_13
     loading app ryu.app.simple_monitor_13
     loading app ryu.controller.ofp_handler
     instantiating app ryu.app.simple_monitor_13 of SimpleMonitor13
@@ -342,14 +342,14 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping -c1 10.0.0.2
+    # ping -c1 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
 
     --- 10.0.0.2 ping statistics ---
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
-    root@ryu-vm:~# 
+    # 
 
 パケットの転送や、フローエントリが登録され、統計情報
 が変化します。

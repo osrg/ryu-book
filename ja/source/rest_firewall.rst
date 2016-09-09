@@ -42,7 +42,7 @@
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -79,7 +79,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 
@@ -89,7 +89,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    # ryu-manager ryu.app.rest_firewall
     loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -129,7 +129,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+    # curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -140,7 +140,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+    # curl http://localhost:8080/firewall/module/status
       [
         {
           "status": "enable",
@@ -162,7 +162,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.2
+    # ping 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     ^C
     --- 10.0.0.2 ping statistics ---
@@ -200,7 +200,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.1/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"nw_src": "10.0.0.1/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -213,7 +213,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.1/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.1/32", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -234,7 +234,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=823.705s, table=0, n_packets=10, n_bytes=420, priority=65534,arp actions=NORMAL
      cookie=0x0, duration=542.472s, table=0, n_packets=20, n_bytes=1960, priority=0 actions=CONTROLLER:128
@@ -257,7 +257,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -270,7 +270,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -318,7 +318,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d  '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d  '{"nw_src": "10.0.0.2/32", "nw_dst": "10.0.0.3/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -331,7 +331,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d  '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d  '{"nw_src": "10.0.0.3/32", "nw_dst": "10.0.0.2/32", "nw_proto": "ICMP", "actions": "DENY", "priority": "10"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -352,7 +352,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x3, duration=242.155s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.2,nw_dst=10.0.0.3 actions=NORMAL
      cookie=0x4, duration=233.099s, table=0, n_packets=0, n_bytes=0, priority=1,ip,nw_src=10.0.0.3,nw_dst=10.0.0.2 actions=NORMAL
@@ -375,7 +375,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001
+    # curl http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "access_control_list": [
@@ -468,7 +468,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.2
+    # ping 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.419 ms
     64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.047 ms
@@ -485,7 +485,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# wget http://10.0.0.2
+    # wget http://10.0.0.2
     --2013-12-16 15:00:38--  http://10.0.0.2/
     Connecting to 10.0.0.2:80... ^C
 
@@ -508,7 +508,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ssh 10.0.0.3
+    # ssh 10.0.0.3
     ssh: connect to host 10.0.0.3 port 22: Connection refused
 
 h2からh3にpingを実行すると、パケットがfirewallによって遮断された旨ログが出
@@ -520,7 +520,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.3
+    # ping 10.0.0.3
     PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
     ^C
     --- 10.0.0.3 ping statistics ---
@@ -547,7 +547,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "5"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X DELETE -d '{"rule_id": "5"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -560,7 +560,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X DELETE -d '{"rule_id": "6"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X DELETE -d '{"rule_id": "6"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -603,7 +603,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.3
+    # ping 10.0.0.3
     PING 10.0.0.3 (10.0.0.3) 56(84) bytes of data.
     64 bytes from 10.0.0.3: icmp_req=1 ttl=64 time=0.841 ms
     64 bytes from 10.0.0.3: icmp_req=2 ttl=64 time=0.036 ms
@@ -648,7 +648,7 @@ host: h2:
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -677,10 +677,10 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-    root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 10.0.0.1/8 dev h1-eth0.2
-    root@ryu-vm:~# ip link set dev h1-eth0.2 up
+    # ip addr del 10.0.0.1/8 dev h1-eth0
+    # ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+    # ip addr add 10.0.0.1/8 dev h1-eth0.2
+    # ip link set dev h1-eth0.2 up
 
 host: h2:
 
@@ -688,10 +688,10 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-    root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 10.0.0.2/8 dev h2-eth0.2
-    root@ryu-vm:~# ip link set dev h2-eth0.2 up
+    # ip addr del 10.0.0.2/8 dev h2-eth0
+    # ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+    # ip addr add 10.0.0.2/8 dev h2-eth0.2
+    # ip link set dev h2-eth0.2 up
 
 host: h3:
 
@@ -699,10 +699,10 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
-    root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 10.0.0.3/8 dev h3-eth0.110
-    root@ryu-vm:~# ip link set dev h3-eth0.110 up
+    # ip addr del 10.0.0.3/8 dev h3-eth0
+    # ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+    # ip addr add 10.0.0.3/8 dev h3-eth0.110
+    # ip link set dev h3-eth0.110 up
 
 host: h4:
 
@@ -710,10 +710,10 @@ host: h4:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h4-eth0
-    root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 10.0.0.4/8 dev h4-eth0.110
-    root@ryu-vm:~# ip link set dev h4-eth0.110 up
+    # ip addr del 10.0.0.4/8 dev h4-eth0
+    # ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+    # ip addr add 10.0.0.4/8 dev h4-eth0.110
+    # ip link set dev h4-eth0.110 up
 
 さらに、使用するOpenFlowのバージョンを1.3に設定します。
 
@@ -723,7 +723,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 
@@ -733,7 +733,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    # ryu-manager ryu.app.rest_firewall
     loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -765,7 +765,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+    # curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -776,7 +776,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+    # curl http://localhost:8080/firewall/module/status
       [
         {
           "status": "enable",
@@ -805,7 +805,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
+    # curl -X POST -d '{"nw_src": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -819,7 +819,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
+    # curl -X POST -d '{"nw_dst": "10.0.0.0/8", "nw_proto": "ICMP"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -845,7 +845,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+    # curl http://localhost:8080/firewall/rules/0000000000000001/all
       [
         {
           "access_control_list": [
@@ -887,7 +887,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.2
+    # ping 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=0.893 ms
     64 bytes from 10.0.0.2: icmp_req=2 ttl=64 time=0.098 ms
@@ -905,7 +905,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.4
+    # ping 10.0.0.4
     PING 10.0.0.4 (10.0.0.4) 56(84) bytes of data.
     ^C
     --- 10.0.0.4 ping statistics ---
@@ -957,7 +957,7 @@ IPv6アドレスを割り当て、スイッチs1に対してルールの追加�
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -993,7 +993,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 
@@ -1003,7 +1003,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    # ryu-manager ryu.app.rest_firewall
     loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -1035,7 +1035,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+    # curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1046,7 +1046,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+    # curl http://localhost:8080/firewall/module/status
       [
         {
           "status": "enable",
@@ -1077,7 +1077,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1090,7 +1090,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1103,7 +1103,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "ff02::1:ff00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "ipv6_dst": "ff02::1:ff00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1116,7 +1116,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "ff02::1:ff00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "ipv6_dst": "ff02::1:ff00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1141,7 +1141,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+    # curl http://localhost:8080/firewall/rules/0000000000000001/all
       [
         {
           "switch_id": "0000000000000001",
@@ -1199,7 +1199,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:2
+    # ping6 -I h1-eth0 fe80::200:ff:fe00:2
     PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
     64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.954 ms
     64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.047 ms
@@ -1216,7 +1216,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping6 -I h1-eth0 fe80::200:ff:fe00:3
+    # ping6 -I h1-eth0 fe80::200:ff:fe00:3
     PING fe80::200:ff:fe00:3(fe80::200:ff:fe00:3) from fe80::200:ff:fe00:1 h1-eth0: 56 data bytes
     From fe80::200:ff:fe00:1 icmp_seq=1 Destination unreachable: Address unreachable
     From fe80::200:ff:fe00:1 icmp_seq=2 Destination unreachable: Address unreachable
@@ -1271,7 +1271,7 @@ controller: c0 (root):
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -1299,10 +1299,10 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0
-    root@ryu-vm:~# ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2
-    root@ryu-vm:~# ip link set dev h1-eth0.2 up
+    # ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0
+    # ip link add link h1-eth0 name h1-eth0.2 type vlan id 2
+    # ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2
+    # ip link set dev h1-eth0.2 up
 
 host: h2:
 
@@ -1310,10 +1310,10 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0
-    root@ryu-vm:~# ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2
-    root@ryu-vm:~# ip link set dev h2-eth0.2 up
+    # ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0
+    # ip link add link h2-eth0 name h2-eth0.2 type vlan id 2
+    # ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2
+    # ip link set dev h2-eth0.2 up
 
 host: h3:
 
@@ -1321,10 +1321,10 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0
-    root@ryu-vm:~# ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110
-    root@ryu-vm:~# ip link set dev h3-eth0.110 up
+    # ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0
+    # ip link add link h3-eth0 name h3-eth0.110 type vlan id 110
+    # ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110
+    # ip link set dev h3-eth0.110 up
 
 host: h4:
 
@@ -1332,10 +1332,10 @@ host: h4:
 
 ::
 
-    root@ryu-vm:~# ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0
-    root@ryu-vm:~# ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110
-    root@ryu-vm:~# ip link set dev h4-eth0.110 up
+    # ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0
+    # ip link add link h4-eth0 name h4-eth0.110 type vlan id 110
+    # ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110
+    # ip link set dev h4-eth0.110 up
 
 さらに、使用するOpenFlowのバージョンを1.3に設定します。
 
@@ -1345,7 +1345,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 最後に、コントローラのxterm上でrest_firewallを起動させます。
 
@@ -1355,7 +1355,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_firewall
+    # ryu-manager ryu.app.rest_firewall
     loading app ryu.app.rest_firewall
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -1387,7 +1387,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
+    # curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1398,7 +1398,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/module/status
+    # curl http://localhost:8080/firewall/module/status
       [
         {
           "status": "enable",
@@ -1426,7 +1426,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:1", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "command_result": [
@@ -1440,7 +1440,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
+    # curl -X POST -d '{"ipv6_src": "fe80::200:ff:fe00:2", "nw_proto": "ICMPv6"}' http://localhost:8080/firewall/rules/0000000000000001/2
       [
         {
           "command_result": [
@@ -1466,7 +1466,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/firewall/rules/0000000000000001/all
+    # curl http://localhost:8080/firewall/rules/0000000000000001/all
       [
         {
           "switch_id": "0000000000000001",
@@ -1507,7 +1507,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping6 -I h1-eth0.2 fe80::200:ff:fe00:2
+    # ping6 -I h1-eth0.2 fe80::200:ff:fe00:2
     PING fe80::200:ff:fe00:2(fe80::200:ff:fe00:2) from fe80::200:ff:fe00:1 h1-eth0.2: 56 data bytes
     64 bytes from fe80::200:ff:fe00:2: icmp_seq=1 ttl=64 time=0.609 ms
     64 bytes from fe80::200:ff:fe00:2: icmp_seq=2 ttl=64 time=0.046 ms
@@ -1525,7 +1525,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ping6 -I h3-eth0.110 fe80::200:ff:fe00:4
+    # ping6 -I h3-eth0.110 fe80::200:ff:fe00:4
     PING fe80::200:ff:fe00:4(fe80::200:ff:fe00:4) from fe80::200:ff:fe00:3 h3-eth0.110: 56 data bytes
     From fe80::200:ff:fe00:3 icmp_seq=1 Destination unreachable: Address unreachable
     From fe80::200:ff:fe00:3 icmp_seq=2 Destination unreachable: Address unreachable

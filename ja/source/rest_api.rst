@@ -205,8 +205,8 @@ REST APIを追加したスイッチングハブを実行してみましょう。
 
 ::
 
-    ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ryu.app.simple_switch_rest_13
+    $ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    $ ryu-manager --verbose ryu.app.simple_switch_rest_13
     loading app ryu.app.simple_switch_rest_13
     loading app ryu.controller.ofp_handler
     creating context wsgi
@@ -271,7 +271,7 @@ REST APIを追加したスイッチングハブを実行してみましょう。
 
 ::
 
-    ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 h1とh2の二つのホストがMACアドレステーブル上で学習済みであることがわかります。
@@ -302,9 +302,9 @@ REST APIを呼び出す際のデータ形式は、{"mac" : "MACアドレス", "p
 
 ::
 
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:01": 1}
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 これらのコマンドを実行すると、h1,h2に対応したフローエントリがスイッチに登録されます。

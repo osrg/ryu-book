@@ -762,7 +762,7 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl show
+    # ovs-vsctl show
     fdec0957-12b6-4417-9d02-847654e9cc1f
     Bridge "s1"
         Controller "ptcp:6634"
@@ -778,7 +778,7 @@ switch: s1:
             Interface "s1"
                 type: internal
     ovs_version: "1.11.0"
-    root@ryu-vm:~# ovs-dpctl show
+    # ovs-dpctl show
     system@ovs-system:
             lookups: hit:14 missed:14 lost:0
             flows: 0
@@ -787,7 +787,7 @@ switch: s1:
             port 2: s1-eth1
             port 3: s1-eth2
             port 4: s1-eth3
-    root@ryu-vm:~#
+    #
 
 スイッチ(ブリッジ) *s1* ができていて、ホストに対応するポートが
 3つ追加されています。
@@ -800,8 +800,8 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    root@ryu-vm:~#
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    #
 
 空のフローテーブルを確認してみます。
 
@@ -811,9 +811,9 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+    # ovs-ofctl -O OpenFlow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
-    root@ryu-vm:~#
+    #
 
 ovs-ofctlコマンドには、オプションで使用するOpenFlowのバージョンを
 指定する必要があります。デフォルトは *OpenFlow10* です。
@@ -833,7 +833,7 @@ controller: c0:
 
 ::
 
-    root@ryu-vm:~# ryu-manager --verbose ryu.app.example_switch_13
+    # ryu-manager --verbose ryu.app.example_switch_13
     loading app ryu.app.example_switch_13
     loading app ryu.controller.ofp_handler
     instantiating app ryu.app.example_switch_13 of ExampleSwitch13
@@ -882,10 +882,10 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=105.975s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:65535
-    root@ryu-vm:~#
+    #
 
 優先度が0で、マッチがなく、アクションにCONTROLLER、送信データサイズ65535
 (0xffff = OFPCML_NO_BUFFER)が指定されています。
@@ -927,7 +927,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h1-eth0
+    # tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -937,7 +937,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h2-eth0
+    # tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -947,7 +947,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h3-eth0
+    # tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -979,12 +979,12 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=417.838s, table=0, n_packets=3, n_bytes=182, priority=0 actions=CONTROLLER:65535
      cookie=0x0, duration=48.444s, table=0, n_packets=2, n_bytes=140, priority=1,in_port=2,dl_dst=00:00:00:00:00:01 actions=output:1
      cookie=0x0, duration=48.402s, table=0, n_packets=1, n_bytes=42, priority=1,in_port=1,dl_dst=00:00:00:00:00:02 actions=output:2
-    root@ryu-vm:~#
+    #
 
 Table-missフローエントリ以外に、優先度が1のフローエントリが2つ登録されて
 います。
@@ -1037,7 +1037,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h1-eth0
+    # tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.625473 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
@@ -1057,7 +1057,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h2-eth0
+    # tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.637987 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
@@ -1076,7 +1076,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h3-eth0
+    # tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.637954 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28

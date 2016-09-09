@@ -181,7 +181,7 @@ x            なし         xtermを起動する
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo linear,2,3 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo linear,2,3 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -233,7 +233,7 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h1s1-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h1s1-eth0/force_igmp_version
 
 host: h1s2:
 
@@ -241,7 +241,7 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h1s2-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h1s2-eth0/force_igmp_version
 
 host: h2s1:
 
@@ -249,7 +249,7 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h2s1-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h2s1-eth0/force_igmp_version
 
 host: h2s2:
 
@@ -257,7 +257,7 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h2s2-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h2s2-eth0/force_igmp_version
 
 host: h3s1:
 
@@ -265,7 +265,7 @@ host: h3s1:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h3s1-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h3s1-eth0/force_igmp_version
 
 host: h3s2:
 
@@ -273,7 +273,7 @@ host: h3s2:
 
 ::
 
-    root@ryu-vm:~# echo 2 > /proc/sys/net/ipv4/conf/h3s2-eth0/force_igmp_version
+    # echo 2 > /proc/sys/net/ipv4/conf/h3s2-eth0/force_igmp_version
 
 
 IPアドレスの設定
@@ -289,8 +289,8 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0
+    # ip addr del 10.0.0.1/8 dev h1s1-eth0
+    # ip addr add 172.16.10.10/24 dev h1s1-eth0
 
 host: h1s2:
 
@@ -298,8 +298,8 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
-    root@ryu-vm:~# ip addr add 192.168.1.1/24 dev h1s2-eth0
+    # ip addr del 10.0.0.2/8 dev h1s2-eth0
+    # ip addr add 192.168.1.1/24 dev h1s2-eth0
 
 host: h2s1:
 
@@ -307,8 +307,8 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h2s1-eth0
-    root@ryu-vm:~# ip addr add 172.16.20.20/24 dev h2s1-eth0
+    # ip addr del 10.0.0.3/8 dev h2s1-eth0
+    # ip addr add 172.16.20.20/24 dev h2s1-eth0
 
 host: h2s2:
 
@@ -316,8 +316,8 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s2-eth0
-    root@ryu-vm:~# ip addr add 192.168.1.2/24 dev h2s2-eth0
+    # ip addr del 10.0.0.4/8 dev h2s2-eth0
+    # ip addr add 192.168.1.2/24 dev h2s2-eth0
 
 host: h3s1:
 
@@ -325,8 +325,8 @@ host: h3s1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h3s1-eth0
-    root@ryu-vm:~# ip addr add 172.16.30.30/24 dev h3s1-eth0
+    # ip addr del 10.0.0.5/8 dev h3s1-eth0
+    # ip addr add 172.16.30.30/24 dev h3s1-eth0
 
 host: h3s2:
 
@@ -334,8 +334,8 @@ host: h3s2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h3s2-eth0
-    root@ryu-vm:~# ip addr add 192.168.1.3/24 dev h3s2-eth0
+    # ip addr del 10.0.0.6/8 dev h3s2-eth0
+    # ip addr add 192.168.1.3/24 dev h3s2-eth0
 
 
 デフォルトゲートウェイの設定
@@ -350,7 +350,7 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.10.254
+    # ip route add default via 172.16.10.254
 
 host: h1s2:
 
@@ -358,7 +358,7 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.1.254
+    # ip route add default via 192.168.1.254
 
 host: h2s1:
 
@@ -366,7 +366,7 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.20.254
+    # ip route add default via 172.16.20.254
 
 host: h2s2:
 
@@ -374,7 +374,7 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.1.254
+    # ip route add default via 192.168.1.254
 
 host: h3s1:
 
@@ -382,7 +382,7 @@ host: h3s1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.30.254
+    # ip route add default via 172.16.30.254
 
 host: h3s2:
 
@@ -390,7 +390,7 @@ host: h3s2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.1.254
+    # ip route add default via 192.168.1.254
 
 
 OpenFlowバージョンの設定
@@ -405,7 +405,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 switch: s2 (root):
 
@@ -413,7 +413,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
 
 スイッチングハブの実行
@@ -428,7 +428,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.simple_switch_igmp_13
+    # ryu-manager ryu.app.simple_switch_igmp_13
     loading app ryu.app.simple_switch_igmp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of IgmpLib
@@ -495,7 +495,7 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+    # vlc-wrapper udp://@225.0.0.1
 
 スイッチs2はホストh1s2からのIGMP Report Messageをポート1で受信し、マルチキャ
 ストアドレス「225.0.0.1」を受信するグループがポート1の先に存在することを認識
@@ -549,7 +549,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=827.211s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
      cookie=0x0, duration=827.211s, table=0, n_packets=14, n_bytes=644, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
@@ -573,7 +573,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+    # ovs-ofctl -O openflow13 dump-flows s2
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=1463.549s, table=0, n_packets=26, n_bytes=1196, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
      cookie=0x0, duration=1463.548s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=output:1
@@ -602,7 +602,7 @@ host: h3s2:
 
 ::
 
-    root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+    # vlc-wrapper udp://@225.0.0.1
 
 スイッチs2はホストh3s2からのIGMP Report Messageをポート3で受信し、マルチキャ
 ストアドレス「225.0.0.1」を受信するグループの参加ホストがポート1の他にポート3
@@ -629,7 +629,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=1854.016s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
      cookie=0x0, duration=1854.016s, table=0, n_packets=31, n_bytes=1426, priority=65535,ip,in_port=4,nw_dst=225.0.0.1 actions=CONTROLLER:65509
@@ -645,7 +645,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+    # ovs-ofctl -O openflow13 dump-flows s2
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=1910.703s, table=0, n_packets=34, n_bytes=1564, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
      cookie=0x0, duration=162.606s, table=0, n_packets=5, n_bytes=230, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
@@ -678,7 +678,7 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# vlc-wrapper udp://@225.0.0.2
+    # vlc-wrapper udp://@225.0.0.2
 
 スイッチs2はホストh2s2からのIGMP Report Messageをポート2で受信し、マルチキャ
 ストアドレス「225.0.0.2」を受信するグループの参加ホストがポート2の先に存在す
@@ -706,7 +706,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=2289.168s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:4
      cookie=0x0, duration=108.374s, table=0, n_packets=2, n_bytes=92, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
@@ -736,7 +736,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+    # ovs-ofctl -O openflow13 dump-flows s2
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=2379.973s, table=0, n_packets=41, n_bytes=1886, priority=65535,ip,in_port=1,nw_dst=225.0.0.1 actions=CONTROLLER:65509
      cookie=0x0, duration=199.178s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
@@ -774,7 +774,7 @@ host: h3s1:
 
 ::
 
-    root@ryu-vm:~# vlc-wrapper udp://@225.0.0.1
+    # vlc-wrapper udp://@225.0.0.1
 
 ホストh3s1はスイッチs2とは接続していません。したがって、IGMPスヌーピング機能
 の対象とはならず、クエリアとの間で通常のIGMPパケットのやりとりを行います。
@@ -787,7 +787,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=12.85s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
      cookie=0x0, duration=626.33s, table=0, n_packets=10, n_bytes=460, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
@@ -824,7 +824,7 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# vlc-wrapper sample.mov --sout udp:225.0.0.1 --loop
+    # vlc-wrapper sample.mov --sout udp:225.0.0.1 --loop
 
 すると、「225.0.0.1」のマルチキャストグループに参加しているh1s2、h3s2、h3s1
 の各ホストで実行しているVLCに、マルチキャストサーバで配信している動画が再生さ
@@ -875,7 +875,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=1565.13s, table=0, n_packets=1047062, n_bytes=1421910196, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3,output:4
      cookie=0x0, duration=2178.61s, table=0, n_packets=36, n_bytes=1656, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
@@ -894,7 +894,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+    # ovs-ofctl -O openflow13 dump-flows s2
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=2228.528s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
      cookie=0x0, duration=2661.226s, table=0, n_packets=46, n_bytes=2116, priority=65535,ip,in_port=3,nw_dst=225.0.0.1 actions=CONTROLLER:65509
@@ -958,7 +958,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=89.891s, table=0, n_packets=79023, n_bytes=107313234, priority=65535,ip,in_port=2,nw_dst=225.0.0.1 actions=output:3
      cookie=0x0, duration=3823.61s, table=0, n_packets=64, n_bytes=2944, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=CONTROLLER:65509
@@ -993,7 +993,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s2
+    # ovs-ofctl -O openflow13 dump-flows s2
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=4704.052s, table=0, n_packets=0, n_bytes=0, priority=65535,ip,in_port=4,nw_dst=225.0.0.2 actions=output:2
      cookie=0x0, duration=4704.053s, table=0, n_packets=53, n_bytes=2438, priority=65535,ip,in_port=2,nw_dst=225.0.0.2 actions=CONTROLLER:65509

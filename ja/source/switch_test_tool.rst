@@ -253,7 +253,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
+        $ sudo ryu/ryu/tests/switch/run_mininet.py
 
 
     netコマンドの実行結果は次の通りです。
@@ -296,7 +296,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
 
 
     ツールを実行すると次のように表示され、試験対象スイッチと補助スイッチが
@@ -307,7 +307,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
         loading app ryu/ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -329,7 +329,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
         loading app ryu/ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -692,7 +692,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 
 
     試験対象スイッチと補助スイッチがコントローラに接続されると、試験が
@@ -707,7 +707,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
         loading app ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu.controller.ofp_handler of OFPHandler
@@ -743,7 +743,7 @@ VMイメージ利用のための環境設定やログイン方法等は「 :ref:
 
     ::
 
-        root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+        # ovs-ofctl -O OpenFlow13 dump-flows s1
         OFPST_FLOW reply (OF1.3) (xid=0x2):
          cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa->eth_src,set_field:bb:bb:bb:bb:bb:bb->eth_dst,dec_ttl,output:2
 
@@ -969,7 +969,7 @@ Group_modメッセージのテストを実施する場合の印加パケット�
 
     ::
 
-            root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
+            $ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
 
     すると、テストパターンファイルの該当の箇所は、以下のように置き換わってテストツールに解釈されます。
 
