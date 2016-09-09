@@ -50,7 +50,7 @@ An execution example is as follows.
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -87,7 +87,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 switch: s2 (root):
 
@@ -95,7 +95,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
 switch: s3 (root):
 
@@ -103,7 +103,7 @@ switch: s3 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s3 protocols=OpenFlow13
 
 Then, delete the IP address that is assigned automatically on each host and set a new IP address.
 
@@ -113,8 +113,8 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-    root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
+    # ip addr del 10.0.0.1/8 dev h1-eth0
+    # ip addr add 172.16.20.10/24 dev h1-eth0
 
 host: h2:
 
@@ -122,8 +122,8 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
+    # ip addr del 10.0.0.2/8 dev h2-eth0
+    # ip addr add 172.16.10.10/24 dev h2-eth0
 
 host: h3:
 
@@ -131,8 +131,8 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h3-eth0
-    root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h3-eth0
+    # ip addr del 10.0.0.3/8 dev h3-eth0
+    # ip addr add 192.168.30.10/24 dev h3-eth0
 
 Finally, start rest_router on xterm of controller.
 
@@ -142,7 +142,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_router
+    # ryu-manager ryu.app.rest_router
     loading app ryu.app.rest_router
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -188,7 +188,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address":"172.16.20.1/24"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"address":"172.16.20.1/24"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -201,7 +201,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.30.30/24"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"address": "172.16.30.30/24"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -226,7 +226,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address":"172.16.10.1/24"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"address":"172.16.10.1/24"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -239,7 +239,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.30.1/24"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"address": "172.16.30.1/24"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -252,7 +252,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "192.168.10.1/24"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"address": "192.168.10.1/24"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -273,7 +273,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000003
+    # curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -286,7 +286,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "192.168.10.20/24"}' http://localhost:8080/router/0000000000000003
+    # curl -X POST -d '{"address": "192.168.10.20/24"}' http://localhost:8080/router/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -308,7 +308,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.20.1
+    # ip route add default via 172.16.20.1
 
 host: h2:
 
@@ -316,7 +316,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.10.1
+    # ip route add default via 172.16.10.1
 
 host: h3:
 
@@ -324,7 +324,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.30.1
+    # ip route add default via 192.168.30.1
 
 
 Configuring the Default Route
@@ -340,7 +340,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "172.16.30.1"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"gateway": "172.16.30.1"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -361,7 +361,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "172.16.30.30"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"gateway": "172.16.30.30"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -382,7 +382,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "192.168.10.1"}' http://localhost:8080/router/0000000000000003
+    # curl -X POST -d '{"gateway": "192.168.10.1"}' http://localhost:8080/router/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -408,7 +408,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"destination": "192.168.30.0/24", "gateway": "192.168.10.20"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"destination": "192.168.30.0/24", "gateway": "192.168.10.20"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -453,7 +453,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+    # curl http://localhost:8080/router/0000000000000001
       [
         {
           "internal_network": [
@@ -481,7 +481,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+    # curl http://localhost:8080/router/0000000000000002
       [
         {
           "internal_network": [
@@ -518,7 +518,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl http://localhost:8080/router/0000000000000003
+    # curl http://localhost:8080/router/0000000000000003
       [
         {
           "internal_network": [
@@ -554,7 +554,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 192.168.30.10
+    # ping 192.168.30.10
     PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
     64 bytes from 192.168.30.10: icmp_req=1 ttl=62 time=48.8 ms
     64 bytes from 192.168.30.10: icmp_req=2 ttl=62 time=0.402 ms
@@ -570,7 +570,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 172.16.20.10
+    # ping 172.16.20.10
     PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
     64 bytes from 172.16.20.10: icmp_req=1 ttl=62 time=43.2 ms
     64 bytes from 172.16.20.10: icmp_req=2 ttl=62 time=0.306 ms
@@ -590,7 +590,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X DELETE -d '{"route_id": "2"}' http://localhost:8080/router/0000000000000002
+    # curl -X DELETE -d '{"route_id": "2"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -611,7 +611,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/router/0000000000000002
+    # curl http://localhost:8080/router/0000000000000002
       [
         {
           "internal_network": [
@@ -652,7 +652,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 192.168.30.10
+    # ping 192.168.30.10
     PING 192.168.30.10 (192.168.30.10) 56(84) bytes of data.
     ^C
     --- 192.168.30.10 ping statistics ---
@@ -670,7 +670,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X DELETE -d '{"address_id": "1"}' http://localhost:8080/router/0000000000000001
+    # curl -X DELETE -d '{"address_id": "1"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -691,7 +691,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/router/0000000000000001
+    # curl http://localhost:8080/router/0000000000000001
       [
         {
           "internal_network": [
@@ -724,7 +724,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ping 172.16.20.10
+    # ping 172.16.20.10
     PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
     ^C
     --- 172.16.20.10 ping statistics ---
@@ -776,7 +776,7 @@ A execution example is as follows.
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -812,7 +812,7 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 switch: s2 (root):
 
@@ -820,7 +820,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
 switch: s3 (root):
 
@@ -828,7 +828,7 @@ switch: s3 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s3 protocols=OpenFlow13
 
 Then, set the VLAN ID to the interface of each host and set the new IP address.
 
@@ -838,10 +838,10 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1s1-eth0
-    root@ryu-vm:~# ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h1s1-eth0.2
-    root@ryu-vm:~# ip link set dev h1s1-eth0.2 up
+    # ip addr del 10.0.0.1/8 dev h1s1-eth0
+    # ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2
+    # ip addr add 172.16.10.10/24 dev h1s1-eth0.2
+    # ip link set dev h1s1-eth0.2 up
 
 host: h2s1:
 
@@ -849,10 +849,10 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.4/8 dev h2s1-eth0
-    root@ryu-vm:~# ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 172.16.10.11/24 dev h2s1-eth0.110
-    root@ryu-vm:~# ip link set dev h2s1-eth0.110 up
+    # ip addr del 10.0.0.4/8 dev h2s1-eth0
+    # ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110
+    # ip addr add 172.16.10.11/24 dev h2s1-eth0.110
+    # ip link set dev h2s1-eth0.110 up
 
 host: h1s2:
 
@@ -860,10 +860,10 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h1s2-eth0
-    root@ryu-vm:~# ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 192.168.30.10/24 dev h1s2-eth0.2
-    root@ryu-vm:~# ip link set dev h1s2-eth0.2 up
+    # ip addr del 10.0.0.2/8 dev h1s2-eth0
+    # ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2
+    # ip addr add 192.168.30.10/24 dev h1s2-eth0.2
+    # ip link set dev h1s2-eth0.2 up
 
 host: h2s2:
 
@@ -871,10 +871,10 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.5/8 dev h2s2-eth0
-    root@ryu-vm:~# ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 192.168.30.11/24 dev h2s2-eth0.110
-    root@ryu-vm:~# ip link set dev h2s2-eth0.110 up
+    # ip addr del 10.0.0.5/8 dev h2s2-eth0
+    # ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110
+    # ip addr add 192.168.30.11/24 dev h2s2-eth0.110
+    # ip link set dev h2s2-eth0.110 up
 
 host: h1s3:
 
@@ -882,10 +882,10 @@ host: h1s3:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.3/8 dev h1s3-eth0
-    root@ryu-vm:~# ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2
-    root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1s3-eth0.2
-    root@ryu-vm:~# ip link set dev h1s3-eth0.2 up
+    # ip addr del 10.0.0.3/8 dev h1s3-eth0
+    # ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2
+    # ip addr add 172.16.20.10/24 dev h1s3-eth0.2
+    # ip link set dev h1s3-eth0.2 up
 
 host: h2s3:
 
@@ -893,10 +893,10 @@ host: h2s3:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.6/8 dev h2s3-eth0
-    root@ryu-vm:~# ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110
-    root@ryu-vm:~# ip addr add 172.16.20.11/24 dev h2s3-eth0.110
-    root@ryu-vm:~# ip link set dev h2s3-eth0.110 up
+    # ip addr del 10.0.0.6/8 dev h2s3-eth0
+    # ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110
+    # ip addr add 172.16.20.11/24 dev h2s3-eth0.110
+    # ip link set dev h2s3-eth0.110 up
 
 Finally, start rest_router on xterm of controller.
 
@@ -906,7 +906,7 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# ryu-manager ryu.app.rest_router
+    # ryu-manager ryu.app.rest_router
     loading app ryu.app.rest_router
     loading app ryu.controller.ofp_handler
     instantiating app None of DPSet
@@ -948,7 +948,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000001/2
+    # curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -962,7 +962,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.1/24"}' http://localhost:8080/router/0000000000000001/2
+    # curl -X POST -d '{"address": "10.10.10.1/24"}' http://localhost:8080/router/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -976,7 +976,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000001/110
+    # curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000001/110
       [
         {
           "switch_id": "0000000000000001",
@@ -990,7 +990,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.1/24"}' http://localhost:8080/router/0000000000000001/110
+    # curl -X POST -d '{"address": "10.10.10.1/24"}' http://localhost:8080/router/0000000000000001/110
       [
         {
           "switch_id": "0000000000000001",
@@ -1012,7 +1012,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000002/2
+    # curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000002/2
       [
         {
           "switch_id": "0000000000000002",
@@ -1026,7 +1026,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.2/24"}' http://localhost:8080/router/0000000000000002/2
+    # curl -X POST -d '{"address": "10.10.10.2/24"}' http://localhost:8080/router/0000000000000002/2
       [
         {
           "switch_id": "0000000000000002",
@@ -1040,7 +1040,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000002/110
+    # curl -X POST -d '{"address": "192.168.30.1/24"}' http://localhost:8080/router/0000000000000002/110
       [
         {
           "switch_id": "0000000000000002",
@@ -1054,7 +1054,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.2/24"}' http://localhost:8080/router/0000000000000002/110
+    # curl -X POST -d '{"address": "10.10.10.2/24"}' http://localhost:8080/router/0000000000000002/110
       [
         {
           "switch_id": "0000000000000002",
@@ -1076,7 +1076,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000003/2
+    # curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000003/2
       [
         {
           "switch_id": "0000000000000003",
@@ -1090,7 +1090,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.3/24"}' http://localhost:8080/router/0000000000000003/2
+    # curl -X POST -d '{"address": "10.10.10.3/24"}' http://localhost:8080/router/0000000000000003/2
       [
         {
           "switch_id": "0000000000000003",
@@ -1104,7 +1104,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000003/110
+    # curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000003/110
       [
         {
           "switch_id": "0000000000000003",
@@ -1118,7 +1118,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "10.10.10.3/24"}' http://localhost:8080/router/0000000000000003/110
+    # curl -X POST -d '{"address": "10.10.10.3/24"}' http://localhost:8080/router/0000000000000003/110
       [
         {
           "switch_id": "0000000000000003",
@@ -1140,7 +1140,7 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.10.1
+    # ip route add default via 172.16.10.1
 
 host: h2s1:
 
@@ -1148,7 +1148,7 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.10.1
+    # ip route add default via 172.16.10.1
 
 host: h1s2:
 
@@ -1156,7 +1156,7 @@ host: h1s2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.30.1
+    # ip route add default via 192.168.30.1
 
 host: h2s2:
 
@@ -1164,7 +1164,7 @@ host: h2s2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 192.168.30.1
+    # ip route add default via 192.168.30.1
 
 host: h1s3:
 
@@ -1172,7 +1172,7 @@ host: h1s3:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.20.1
+    # ip route add default via 172.16.20.1
 
 host: h2s3:
 
@@ -1180,7 +1180,7 @@ host: h2s3:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.20.1
+    # ip route add default via 172.16.20.1
 
 The addresses that have been set are as follows.
 
@@ -1216,7 +1216,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000001/2
+    # curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000001/2
       [
         {
           "switch_id": "0000000000000001",
@@ -1230,7 +1230,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000001/110
+    # curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000001/110
       [
         {
           "switch_id": "0000000000000001",
@@ -1252,7 +1252,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.1"}' http://localhost:8080/router/0000000000000002/2
+    # curl -X POST -d '{"gateway": "10.10.10.1"}' http://localhost:8080/router/0000000000000002/2
       [
         {
           "switch_id": "0000000000000002",
@@ -1266,7 +1266,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.1"}' http://localhost:8080/router/0000000000000002/110
+    # curl -X POST -d '{"gateway": "10.10.10.1"}' http://localhost:8080/router/0000000000000002/110
       [
         {
           "switch_id": "0000000000000002",
@@ -1288,7 +1288,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000003/2
+    # curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000003/2
       [
         {
           "switch_id": "0000000000000003",
@@ -1302,7 +1302,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000003/110
+    # curl -X POST -d '{"gateway": "10.10.10.2"}' http://localhost:8080/router/0000000000000003/110
       [
         {
           "switch_id": "0000000000000003",
@@ -1325,7 +1325,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"destination": "172.16.20.0/24", "gateway": "10.10.10.3"}' http://localhost:8080/router/0000000000000002/2
+    # curl -X POST -d '{"destination": "172.16.20.0/24", "gateway": "10.10.10.3"}' http://localhost:8080/router/0000000000000002/2
       [
         {
           "switch_id": "0000000000000002",
@@ -1351,7 +1351,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl http://localhost:8080/router/all/all
+    # curl http://localhost:8080/router/all/all
       [
         {
           "internal_network": [
@@ -1519,7 +1519,7 @@ host: h1s1:
 
 ::
 
-    root@ryu-vm:~# ping 172.16.20.10
+    # ping 172.16.20.10
     PING 172.16.20.10 (172.16.20.10) 56(84) bytes of data.
     64 bytes from 172.16.20.10: icmp_req=1 ttl=61 time=45.9 ms
     64 bytes from 172.16.20.10: icmp_req=2 ttl=61 time=0.257 ms
@@ -1534,7 +1534,7 @@ host: h2s1:
 
 ::
 
-    root@ryu-vm:~# ping 172.16.20.11
+    # ping 172.16.20.11
     PING 172.16.20.11 (172.16.20.11) 56(84) bytes of data.
     ^C
     --- 172.16.20.11 ping statistics ---

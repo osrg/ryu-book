@@ -91,8 +91,8 @@ By executing this script, a topology is created in which two links exist between
 
 ::
 
-    ryu@ryu-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/link_aggregation.py
-    ryu@ryu-vm:~$ sudo ./link_aggregation.py
+    $ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/link_aggregation.py
+    $ sudo ./link_aggregation.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet> net
     c0
@@ -129,7 +129,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# modprobe bonding
+    # modprobe bonding
 
 mode=4 indicates that dynamic link aggregation is performed using LACP. Setting is omitted here because it is the default but it has been set so that the exchange interval of the LACP data units is SLOW (30-second intervals) and the sort logic is based on the destination MAC address.
 
@@ -141,8 +141,8 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link add bond0 type bond
-    root@ryu-vm:~# ip link set bond0 address 02:01:02:03:04:08
+    # ip link add bond0 type bond
+    # ip link set bond0 address 02:01:02:03:04:08
 
 Add the physical interfaces of h1-eth0 and h1-eth1 to the created local interface group. At that time, you need to make the physical interface to have been down. Also, rewrite the MAC address of the physical interface, which was randomly decided, to an easy-to-understand value beforehand.
 
@@ -152,12 +152,12 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set h1-eth0 down
-    root@ryu-vm:~# ip link set h1-eth0 address 00:00:00:00:00:11
-    root@ryu-vm:~# ip link set h1-eth0 master bond0
-    root@ryu-vm:~# ip link set h1-eth1 down
-    root@ryu-vm:~# ip link set h1-eth1 address 00:00:00:00:00:12
-    root@ryu-vm:~# ip link set h1-eth1 master bond0
+    # ip link set h1-eth0 down
+    # ip link set h1-eth0 address 00:00:00:00:00:11
+    # ip link set h1-eth0 master bond0
+    # ip link set h1-eth1 down
+    # ip link set h1-eth1 address 00:00:00:00:00:12
+    # ip link set h1-eth1 master bond0
 
 Assign an IP address to the logical interface.
 Here, let's assign 10.0.0.1. Because an IP address has been assigned to h1-eth0, delete this address.
@@ -168,8 +168,8 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr add 10.0.0.1/8 dev bond0
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
+    # ip addr add 10.0.0.1/8 dev bond0
+    # ip addr del 10.0.0.1/8 dev h1-eth0
 
 Finally, make the logical interface up.
 
@@ -179,7 +179,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set bond0 up
+    # ip link set bond0 up
 
 Now, let's check the state of each interface.
 
@@ -189,7 +189,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ifconfig
+    # ifconfig
     bond0     Link encap:Ethernet  HWaddr 02:01:02:03:04:08
               inet addr:10.0.0.1  Bcast:0.0.0.0  Mask:255.0.0.0
               UP BROADCAST RUNNING MASTER MULTICAST  MTU:1500  Metric:1
@@ -230,7 +230,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# cat /proc/net/bonding/bond0
+    # cat /proc/net/bonding/bond0
     Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
 
     Bonding Mode: IEEE 802.3ad Dynamic link aggregation
@@ -285,7 +285,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 
 Executing the Switching Hub
@@ -301,7 +301,7 @@ Node: c0:
 
 ::
 
-    ryu@ryu-vm:~$ ryu-manager ryu.app.simple_switch_lacp_13
+    $ ryu-manager ryu.app.simple_switch_lacp_13
     loading app ryu.app.simple_switch_lacp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of LacpLib
@@ -376,7 +376,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=14.565s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=14.562s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -408,7 +408,7 @@ Node: h2:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.1
+    # ping 10.0.0.1
     PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
     64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=93.0 ms
     64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.266 ms
@@ -424,7 +424,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=22.05s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=22.046s, table=0, n_packets=1, n_bytes=124, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -450,7 +450,7 @@ Node: h3:
 
 ::
 
-    root@ryu-vm:~# ping 10.0.0.1
+    # ping 10.0.0.1
     PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
     64 bytes from 10.0.0.1: icmp_req=1 ttl=64 time=91.2 ms
     64 bytes from 10.0.0.1: icmp_req=2 ttl=64 time=0.256 ms
@@ -466,7 +466,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=99.765s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=99.761s, table=0, n_packets=4, n_bytes=496, idle_timeout=90, send_flow_rem priority=65535,in_port=1,dl_src=00:00:00:00:00:11,dl_type=0x8809 actions=CONTROLLER:65509
@@ -530,7 +530,7 @@ Node: h1:
 
 ::
 
-    root@ryu-vm:~# ip link set h1-eth0 nomaster
+    # ip link set h1-eth0 nomaster
 
 Because h1-eth0 has stopped, pings can no longer be sent from host h3 to host h1. When 90 seconds of no communication monitoring time elapses, the following message is output to the controller's operation log.
 
@@ -566,7 +566,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=364.265s, table=0, n_packets=13, n_bytes=1612, idle_timeout=90, send_flow_rem priority=65535,in_port=2,dl_src=00:00:00:00:00:12,dl_type=0x8809 actions=CONTROLLER:65509
      cookie=0x0, duration=374.521s, table=0, n_packets=25, n_bytes=1830, priority=0 actions=CONTROLLER:65535

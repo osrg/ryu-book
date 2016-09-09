@@ -58,7 +58,7 @@ An execution example is as follows.
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --mac --switch ovsk --controller remote -x
+    $ sudo mn --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -96,8 +96,8 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set-manager ptcp:6632
 
 
 Then, modify simple_switch_13.py used in ":ref:`ch_switching_hub`".
@@ -110,8 +110,8 @@ controller: c0 (root)
 
 ::
 
-    root@ryu-vm:~# sed '/OFPFlowMod(/,/)/s/)/, table_id=1)/' ryu/ryu/app/simple_switch_13.py > ryu/ryu/app/qos_simple_switch_13.py
-    root@ryu-vm:~# cd ryu/; python ./setup.py install
+    # sed '/OFPFlowMod(/,/)/s/)/, table_id=1)/' ryu/ryu/app/simple_switch_13.py > ryu/ryu/app/qos_simple_switch_13.py
+    # cd ryu/; python ./setup.py install
 
 Finally, start rest_qos, qos_simple_switch_13 and rest_conf_switch on xterm of
 controller.
@@ -122,7 +122,7 @@ controller: c0 (root):
 
 ::
 
-    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
+    # ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch
     loading app ryu.app.rest_qos
     loading app ryu.app.qos_simple_switch_13
     loading app ryu.app.rest_conf_switch
@@ -179,8 +179,8 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
-    root@ryu-vm:~#
+    # curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
+    #
 
 Also, execute setting of Queue.
 
@@ -188,7 +188,7 @@ Also, execute setting of Queue.
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"port_name": "s1-eth1", "type": "linux-htb", "max_rate": "1000000", "queues": [{"max_rate": "500000"}, {"min_rate": "800000"}]}' http://localhost:8080/qos/queue/0000000000000001
+    # curl -X POST -d '{"port_name": "s1-eth1", "type": "linux-htb", "max_rate": "1000000", "queues": [{"max_rate": "500000"}, {"min_rate": "800000"}]}' http://localhost:8080/qos/queue/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -231,7 +231,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"nw_dst": "10.0.0.1", "nw_proto": "UDP", "tp_dst": "5002"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"nw_dst": "10.0.0.1", "nw_proto": "UDP", "tp_dst": "5002"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -256,7 +256,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -314,7 +314,7 @@ Node: h1(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -s -u -i 1 -p 5001
+    # iperf -s -u -i 1 -p 5001
     ...
 
 Node: h1(2) (root):
@@ -323,7 +323,7 @@ Node: h1(2) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -s -u -i 1 -p 5002
+    # iperf -s -u -i 1 -p 5002
     ...
 
 Node: h2(1) (root):
@@ -332,7 +332,7 @@ Node: h2(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 1M
+    # iperf -c 10.0.0.1 -p 5001 -u -b 1M
     ...
 
 Node: h2(2) (root):
@@ -341,7 +341,7 @@ Node: h2(2) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 1M
+    # iperf -c 10.0.0.1 -p 5002 -u -b 1M
     ...
 
 
@@ -468,7 +468,7 @@ An execution example is as follows.
 
 ::
 
-    ryu@ryu-vm:~$ sudo mn --topo linear,2 --mac --switch ovsk --controller remote -x
+    $ sudo mn --topo linear,2 --mac --switch ovsk --controller remote -x
     *** Creating network
     *** Adding controller
     Unable to contact the remote controller at 127.0.0.1:6633
@@ -506,8 +506,8 @@ switch: s1 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    root@ryu-vm:~# ovs-vsctl set-manager ptcp:6632
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set-manager ptcp:6632
 
 switch: s2 (root):
 
@@ -515,7 +515,7 @@ switch: s2 (root):
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
 Then, delete the IP address that is assigned automatically on each host and
 set a new IP address.
@@ -526,8 +526,8 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.1/8 dev h1-eth0
-    root@ryu-vm:~# ip addr add 172.16.20.10/24 dev h1-eth0
+    # ip addr del 10.0.0.1/8 dev h1-eth0
+    # ip addr add 172.16.20.10/24 dev h1-eth0
 
 host: h2:
 
@@ -535,8 +535,8 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip addr del 10.0.0.2/8 dev h2-eth0
-    root@ryu-vm:~# ip addr add 172.16.10.10/24 dev h2-eth0
+    # ip addr del 10.0.0.2/8 dev h2-eth0
+    # ip addr add 172.16.10.10/24 dev h2-eth0
 
 And, modify rest_router.py used in ":ref:`ch_rest_router`".
 rest_qos.py suppose to be processed on Flow Table pipeline processing,
@@ -548,8 +548,8 @@ controller: c0 (root):
 
 ::
 
-    root@ryu-vm:~# sed '/OFPFlowMod(/,/)/s/0, cmd/1, cmd/' ryu/ryu/app/rest_router.py > ryu/ryu/app/qos_rest_router.py
-    root@ryu-vm:~# cd ryu/; python ./setup.py install
+    # sed '/OFPFlowMod(/,/)/s/0, cmd/1, cmd/' ryu/ryu/app/rest_router.py > ryu/ryu/app/qos_rest_router.py
+    # cd ryu/; python ./setup.py install
 
 Finally, start rest_qos, qos_rest_router and rest_conf_switch on xterm of
 controller.
@@ -560,7 +560,7 @@ controller: c0 (root):
 
 ::
 
-    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_rest_router ryu.app.rest_conf_switch
+    # ryu-manager ryu.app.rest_qos ryu.app.qos_rest_router ryu.app.rest_conf_switch
     loading app ryu.app.rest_qos
     loading app ryu.app.qos_rest_router
     loading app ryu.app.rest_conf_switch
@@ -630,8 +630,8 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
-    root@ryu-vm:~#
+    # curl -X PUT -d '"tcp:127.0.0.1:6632"' http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr
+    #
 
 Also, execute setting of Queue.
 
@@ -639,7 +639,7 @@ Also, execute setting of Queue.
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"port_name": "s1-eth1", "type": "linux-htb", "max_rate": "1000000", "queues":[{"max_rate": "1000000"}, {"min_rate": "200000"}, {"min_rate": "500000"}]}' http://localhost:8080/qos/queue/0000000000000001
+    # curl -X POST -d '{"port_name": "s1-eth1", "type": "linux-htb", "max_rate": "1000000", "queues":[{"max_rate": "1000000"}, {"min_rate": "200000"}, {"min_rate": "500000"}]}' http://localhost:8080/qos/queue/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -679,7 +679,7 @@ Set the IP address and the default route for each router.
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"address": "172.16.20.1/24"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -692,7 +692,7 @@ Set the IP address and the default route for each router.
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.30.10/24"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"address": "172.16.30.10/24"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -705,7 +705,7 @@ Set the IP address and the default route for each router.
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "172.16.30.1"}' http://localhost:8080/router/0000000000000001
+    # curl -X POST -d '{"gateway": "172.16.30.1"}' http://localhost:8080/router/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -718,7 +718,7 @@ Set the IP address and the default route for each router.
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"address": "172.16.10.1/24"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -731,7 +731,7 @@ Set the IP address and the default route for each router.
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"address": "172.16.30.1/24"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"address": "172.16.30.1/24"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -744,7 +744,7 @@ Set the IP address and the default route for each router.
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"gateway": "172.16.30.10"}' http://localhost:8080/router/0000000000000002
+    # curl -X POST -d '{"gateway": "172.16.30.10"}' http://localhost:8080/router/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -767,7 +767,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.20.1
+    # ip route add default via 172.16.20.1
 
 host: h2:
 
@@ -775,7 +775,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# ip route add default via 172.16.10.1
+    # ip route add default via 172.16.10.1
 
 
 QoS Setting
@@ -797,7 +797,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "26"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "26"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -810,7 +810,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "34"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "34"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -839,7 +839,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"nw_dst": "172.16.20.10", "nw_proto": "UDP", "tp_dst": "5002"}, "actions":{"mark": "26"}}' http://localhost:8080/qos/rules/0000000000000002
+    # curl -X POST -d '{"match": {"nw_dst": "172.16.20.10", "nw_proto": "UDP", "tp_dst": "5002"}, "actions":{"mark": "26"}}' http://localhost:8080/qos/rules/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -852,7 +852,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"nw_dst": "172.16.20.10", "nw_proto": "UDP", "tp_dst": "5003"}, "actions":{"mark": "34"}}' http://localhost:8080/qos/rules/0000000000000002
+    # curl -X POST -d '{"match": {"nw_dst": "172.16.20.10", "nw_proto": "UDP", "tp_dst": "5003"}, "actions":{"mark": "34"}}' http://localhost:8080/qos/rules/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -877,7 +877,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -912,7 +912,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000002
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -976,11 +976,11 @@ Node: h1(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -s -u -p 5002 &
+    # iperf -s -u -p 5002 &
     ...
-    root@ryu-vm:~# iperf -s -u -p 5003 &
+    # iperf -s -u -p 5003 &
     ...
-    root@ryu-vm:~# iperf -s -u -i 1 5001
+    # iperf -s -u -i 1 5001
     ------------------------------------------------------------
     Server listening on UDP port 5001
     Receiving 1470 byte datagrams
@@ -993,7 +993,7 @@ Node: h2(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5001 -u -b 1M
+    # iperf -c 172.16.20.10 -p 5001 -u -b 1M
     ...
 
 Node: h2(2) (root):
@@ -1002,7 +1002,7 @@ Node: h2(2) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5002 -u -b 300K
+    # iperf -c 172.16.20.10 -p 5002 -u -b 300K
     ------------------------------------------------------------
     Client connecting to 172.16.20.10, UDP port 5002
     Sending 1470 byte datagrams
@@ -1021,7 +1021,7 @@ Node: h2(3) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 172.16.20.10 -p 5003 -u -b 600K
+    # iperf -c 172.16.20.10 -p 5003 -u -b 600K
     ------------------------------------------------------------
     Client connecting to 172.16.20.10, UDP port 5003
     Sending 1470 byte datagrams
@@ -1177,8 +1177,8 @@ An execution example is as follows.
 
 ::
 
-    mininet@mininet-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/qos_sample_topology.py
-    mininet@mininet-vm:~$ sudo python ./qos_sample_topology.py
+    $ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/qos_sample_topology.py
+    $ sudo python ./qos_sample_topology.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet>
 
@@ -1202,8 +1202,8 @@ controller: c0 (root)
 
 ::
 
-    root@ryu-vm:~# sed '/OFPFlowMod(/,/)/s/)/, table_id=1)/' ryu/ryu/app/simple_switch_13.py > ryu/ryu/app/qos_simple_switch_13.py
-    root@ryu-vm:~# cd ryu/; python ./setup.py install
+    # sed '/OFPFlowMod(/,/)/s/)/, table_id=1)/' ryu/ryu/app/simple_switch_13.py > ryu/ryu/app/qos_simple_switch_13.py
+    # cd ryu/; python ./setup.py install
 
 Finally, start rest_qos and qos_simple_switch_13 on xterm of controller.
 
@@ -1213,7 +1213,7 @@ controller: c0 (root):
 
 ::
 
-    root@mininet-vm:~/ryu# ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13
+    # ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13
     loading app ryu.app.rest_qos
     loading app ryu.app.qos_simple_switch_13
     loading app ryu.controller.ofp_handler
@@ -1262,7 +1262,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "0", "in_port": "2"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "0", "in_port": "2"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1275,7 +1275,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "10", "in_port": "2"}, "actions":{"queue": "3"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "10", "in_port": "2"}, "actions":{"queue": "3"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1288,7 +1288,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "12", "in_port": "2"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "12", "in_port": "2"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1301,7 +1301,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "0", "in_port": "3"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "0", "in_port": "3"}, "actions":{"queue": "1"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1314,7 +1314,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "10", "in_port": "3"}, "actions":{"queue": "3"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "10", "in_port": "3"}, "actions":{"queue": "3"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1327,7 +1327,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "12", "in_port": "3"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
+    # curl -X POST -d '{"match": {"ip_dscp": "12", "in_port": "3"}, "actions":{"queue": "2"}}' http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1360,7 +1360,7 @@ Meter ID  Flags   Bands
 
 ::
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "10"}, "actions":{"meter": "1"}}' http://localhost:8080/qos/rules/0000000000000002
+    # curl -X POST -d '{"match": {"ip_dscp": "10"}, "actions":{"meter": "1"}}' http://localhost:8080/qos/rules/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1373,7 +1373,7 @@ Meter ID  Flags   Bands
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
+    # curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1386,7 +1386,7 @@ Meter ID  Flags   Bands
         }
       ]
 
-    root@ryu-vm:~# curl -X POST -d '{"match": {"ip_dscp": "10"}, "actions":{"meter": "1"}}' http://localhost:8080/qos/rules/0000000000000003
+    # curl -X POST -d '{"match": {"ip_dscp": "10"}, "actions":{"meter": "1"}}' http://localhost:8080/qos/rules/0000000000000003
     [
       {
         "switch_id": "0000000000000003",
@@ -1399,7 +1399,7 @@ Meter ID  Flags   Bands
       }
     ]
 
-    root@ryu-vm:~# curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
+    # curl -X POST -d '{"meter_id": "1", "flags": "KBPS", "bands":[{"type":"DSCP_REMARK", "rate": "400", "prec_level": "1"}]}' http://localhost:8080/qos/meter/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -1423,7 +1423,7 @@ Node: c0 (root):
 
 ::
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000001
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000001
       [
         {
           "switch_id": "0000000000000001",
@@ -1506,7 +1506,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000002
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000002
       [
         {
           "switch_id": "0000000000000002",
@@ -1530,7 +1530,7 @@ Node: c0 (root):
         }
       ]
 
-    root@ryu-vm:~# curl -X GET http://localhost:8080/qos/rules/0000000000000003
+    # curl -X GET http://localhost:8080/qos/rules/0000000000000003
       [
         {
           "switch_id": "0000000000000003",
@@ -1580,9 +1580,9 @@ Node: h1(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -s -u -p 5001 &
-    root@ryu-vm:~# iperf -s -u -p 5002 &
-    root@ryu-vm:~# iperf -s -u -p 5003 &
+    # iperf -s -u -p 5001 &
+    # iperf -s -u -p 5002 &
+    # iperf -s -u -p 5003 &
     ...
 
 Best-effort traffic & AF11 excess traffic
@@ -1594,7 +1594,7 @@ Node: h2 (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 800K
+    # iperf -c 10.0.0.1 -p 5001 -u -b 800K
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5001
     Sending 1470 byte datagrams
@@ -1613,7 +1613,7 @@ Node: h3(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
+    # iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
@@ -1639,7 +1639,7 @@ Node: h2 (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+    # iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5001
     Sending 1470 byte datagrams
@@ -1659,7 +1659,7 @@ Node: h3(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 500K
+    # iperf -c 10.0.0.1 -p 5002 -u -b 500K
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams
@@ -1679,7 +1679,7 @@ Node: h3(2) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
+    # iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5003
     Sending 1470 byte datagrams
@@ -1703,7 +1703,7 @@ Node: h2 (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
+    # iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5001
     Sending 1470 byte datagrams
@@ -1723,7 +1723,7 @@ Node: h3(1) (root):
 
 ::
 
-    root@ryu-vm:~# iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
+    # iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28
     ------------------------------------------------------------
     Client connecting to 10.0.0.1, UDP port 5002
     Sending 1470 byte datagrams

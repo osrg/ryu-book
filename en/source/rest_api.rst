@@ -181,8 +181,8 @@ Then, start the switching hub added with REST API.
 
 ::
 
-    ryu@ryu-vm:~/ryu/ryu/app$ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    ryu@ryu-vm:~/ryu/ryu/app$ ryu-manager --verbose ryu.app.simple_switch_rest_13
+    $ sudo ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    $ ryu-manager --verbose ryu.app.simple_switch_rest_13
     loading app ryu.app.simple_switch_rest_13
     loading app ryu.controller.ofp_handler
     creating context wsgi
@@ -246,7 +246,7 @@ This time, use the curl command to call REST API.
 
 ::
 
-    ryu@ryu-vm:~$ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X GET http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 You can find that two hosts host 1 and host 2 have been learned on the MAC address table.
@@ -275,9 +275,9 @@ The data format when calling REST API shall be {"mac" : "MAC address", "port" : 
 
 ::
 
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X PUT -d '{"mac" : "00:00:00:00:00:01", "port" : 1}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:01": 1}
-    ryu@ryu-vm:~$ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
+    $ curl -X PUT -d '{"mac" : "00:00:00:00:00:02", "port" : 2}' http://127.0.0.1:8080/simpleswitch/mactable/0000000000000001
     {"00:00:00:00:00:02": 2, "00:00:00:00:00:01": 1}
 
 When those commands are executed, the flow entry corresponding to host 1 and host 2 are registered.

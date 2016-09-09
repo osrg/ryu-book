@@ -255,8 +255,8 @@ The execution result of the net command is as follows:
 
 ::
 
-    ryu@ryu-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/spanning_tree.py
-    ryu@ryu-vm:~$ sudo ./spanning_tree.py
+    $ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/spanning_tree.py
+    $ sudo ./spanning_tree.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet> net
     c0
@@ -281,7 +281,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
 
 
 Node: s2:
@@ -290,7 +290,7 @@ Node: s2:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s2 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s2 protocols=OpenFlow13
 
 
 Node: s3:
@@ -299,7 +299,7 @@ Node: s3:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s3 protocols=OpenFlow13
+    # ovs-vsctl set Bridge s3 protocols=OpenFlow13
 
 
 
@@ -316,7 +316,7 @@ Node: c0:
 
 ::
 
-    root@ryu-vm:~$ ryu-manager ryu.app.simple_switch_stp_13
+    $ ryu-manager ryu.app.simple_switch_stp_13
     loading app ryu.app.simple_switch_stp_13
     loading app ryu.controller.ofp_handler
     instantiating app None of Stp
@@ -458,7 +458,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s1-eth2 arp
+    # tcpdump -i s1-eth2 arp
 
 
 Node: s2:
@@ -467,7 +467,7 @@ Node: s2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s2-eth2 arp
+    # tcpdump -i s2-eth2 arp
 
 
 Node: s3:
@@ -476,7 +476,7 @@ Node: s3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s3-eth2 arp
+    # tcpdump -i s3-eth2 arp
 
 
 On the console where the topology configuration script is executed, execute the following commands to issue a ping from host 1 to host 2.
@@ -514,7 +514,7 @@ Node: s1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s1-eth2 arp
+    # tcpdump -i s1-eth2 arp
     tcpdump: WARNING: s1-eth2: no IPv4 address assigned
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on s1-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -532,7 +532,7 @@ Node: s2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s2-eth2 arp
+    # tcpdump -i s2-eth2 arp
     tcpdump: WARNING: s2-eth2: no IPv4 address assigned
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on s2-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -548,7 +548,7 @@ Node: s3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -i s3-eth2 arp
+    # tcpdump -i s3-eth2 arp
     tcpdump: WARNING: s3-eth2: no IPv4 address assigned
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on s3-eth2, link-type EN10MB (Ethernet), capture size 65535 bytes
@@ -569,7 +569,7 @@ Node: s2:
 
 ::
 
-    root@ryu-vm:~# ifconfig s2-eth2 down
+    # ifconfig s2-eth2 down
 
 
 
@@ -659,7 +659,7 @@ Node: s2:
 
 ::
 
-    root@ryu-vm:~# ifconfig s2-eth2 up
+    # ifconfig s2-eth2 up
 
 
 
