@@ -91,6 +91,7 @@ By executing this script, a topology is created in which two links exist between
 
 ::
 
+    ryu@ryu-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/link_aggregation.py
     ryu@ryu-vm:~$ sudo ./link_aggregation.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet> net

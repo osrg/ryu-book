@@ -1177,7 +1177,8 @@ An execution example is as follows.
 
 ::
 
-    mininet@mininet-vm:~$ sudo python qos_sample_topology.py
+    mininet@mininet-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/qos_sample_topology.py
+    mininet@mininet-vm:~$ sudo python ./qos_sample_topology.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet>
 
