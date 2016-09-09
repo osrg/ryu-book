@@ -286,7 +286,8 @@ netコマンドの実行結果は以下の通りです。
 
 ::
 
-    ryu@ryu-vm:~$ sudo ./spanning_tree.py 
+    ryu@ryu-vm:~$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/spanning_tree.py
+    ryu@ryu-vm:~$ sudo ./spanning_tree.py
     Unable to contact the remote controller at 127.0.0.1:6633
     mininet> net
     c0
