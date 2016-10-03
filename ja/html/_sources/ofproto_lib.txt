@@ -16,14 +16,12 @@ ofprotoライブラリはOpenFlowプロトコルのメッセージの作成・�
 定数モジュール(ofproto_vX_Y)と
 パーサーモジュール(ofproto_vX_Y_parser)が用意されています。
 各OpenFlowバージョンの実装は基本的に独立しています。
+OpenFlow 1.3 の場合は下記になります。
 
 ================== ======================== ===============================
 OpenFlowバージョン 定数モジュール           パーサーモジュール
 ================== ======================== ===============================
-1.0.x              ryu.ofproto.ofproto_v1_0 ryu.ofproto.ofproto_v1_0_parser
-1.2.x              ryu.ofproto.ofproto_v1_2 ryu.ofproto.ofproto_v1_2_parser
 1.3.x              ryu.ofproto.ofproto_v1_3 ryu.ofproto.ofproto_v1_3_parser
-1.4.x              ryu.ofproto.ofproto_v1_4 ryu.ofproto.ofproto_v1_4_parser
 ================== ======================== ===============================
 
 定数モジュール

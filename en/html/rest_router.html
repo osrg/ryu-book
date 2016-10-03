@@ -23,6 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
     <link rel="next" title="QoS" href="rest_qos.html" />
     <link rel="prev" title="Firewall" href="rest_firewall.html" /> 
@@ -95,7 +97,7 @@
 </tbody>
 </table>
 <p>An execution example is as follows.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo linear,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -123,36 +125,36 @@ mininet&gt;
 </div>
 <p>Next, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s3 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Then, delete the IP address that is assigned automatically on each host and set a new IP address.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.10/24 dev h1-eth0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
+<span class="c1"># ip addr add 172.16.20.10/24 dev h1-eth0</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.10/24 dev h2-eth0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
+<span class="c1"># ip addr add 172.16.10.10/24 dev h2-eth0</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.10/24 dev h3-eth0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
+<span class="c1"># ip addr add 192.168.30.10/24 dev h3-eth0</span>
 </pre></div>
 </div>
 <p>Finally, start rest_router on xterm of controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_router</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_router</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -185,7 +187,7 @@ mininet&gt;
 <p class="last">For details of REST API used in the following description, see &#8220;<a class="reference internal" href="#rest-api-list">REST API List</a>&#8221; at the end of the section.</p>
 </div>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -198,7 +200,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.30/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -218,7 +220,7 @@ mininet&gt;
 </div>
 <p>Next, set the addresses &#8220;172.16.10.1/24&#8221;, &#8220;172.16.30.1/24&#8221; and &#8220;192.168.10.1/24&#8221; for router s2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;:&quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -231,7 +233,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -244,7 +246,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -260,7 +262,7 @@ mininet&gt;
 </div>
 <p>Then, set the addresses &#8220;192.168.30.1/24&#8221; and &#8220;192.168.10.20/24&#8221; for router s3.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -273,7 +275,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.10.20/24&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -289,15 +291,15 @@ mininet&gt;
 </div>
 <p>IP addresses to the router have been set. Register as the default gateway on each host.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 </div>
@@ -306,7 +308,7 @@ mininet&gt;
 <p>Set the default route for each router.</p>
 <p>First, set router s2 as the default route of router s1.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -322,7 +324,7 @@ mininet&gt;
 </div>
 <p>Set router s1 as the default route of router s2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.30&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -338,7 +340,7 @@ mininet&gt;
 </div>
 <p>Set router s2 as the default route of router s3.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;192.168.10.1&quot;}&#39; http://localhost:8080/router/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -357,7 +359,7 @@ mininet&gt;
 <h3>Setting Static Routes<a class="headerlink" href="#setting-static-routes" title="Permalink to this headline">¶</a></h3>
 <p>For s2 router, set a static route to the host (192.168.30.0/24) under router s3.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;192.168.30.0/24&quot;, &quot;gateway&quot;: &quot;192.168.10.20&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -378,7 +380,7 @@ mininet&gt;
 <h3>Verifying the Setting<a class="headerlink" href="#verifying-the-setting" title="Permalink to this headline">¶</a></h3>
 <p>Check the contents of the setting of each router.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -406,7 +408,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -443,7 +445,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000003</span>
+<span class="c1"># curl http://localhost:8080/router/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -474,7 +476,7 @@ mininet&gt;
 </div>
 <p>Check communication using ping in this state. First, run a ping from h3 to h2. You can verify that it can communicate successfully.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 192.168.30.10</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 192.168.30.10</span>
 <span class="n">PING</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="p">(</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">48.8</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.402</span> <span class="n">ms</span>
@@ -485,7 +487,7 @@ mininet&gt;
 </div>
 <p>Next, run a ping from h2 to h1. You can also verify that it can communicate successfully.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 172.16.20.10</span>
 <span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">43.2</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">62</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.306</span> <span class="n">ms</span>
@@ -499,7 +501,7 @@ mininet&gt;
 <h3>Deleting the Static Route<a class="headerlink" href="#deleting-the-static-route" title="Permalink to this headline">¶</a></h3>
 <p>Delete the static route to router s3 set in router s2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X DELETE -d &#39;{&quot;route_id&quot;: &quot;2&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -515,7 +517,7 @@ mininet&gt;
 </div>
 <p>Check the information that has been configured on router s2. You can see that the static route to router s3 has been deleted.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -550,7 +552,7 @@ mininet&gt;
 </div>
 <p>Check communication using ping. Since the root information from h3 to h2 was deleted, you will find that it cannot communicate.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 192.168.30.10</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 192.168.30.10</span>
 <span class="n">PING</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="p">(</span><span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">30.10</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
@@ -562,7 +564,7 @@ mininet&gt;
 <h3>Deleting an Address<a class="headerlink" href="#deleting-an-address" title="Permalink to this headline">¶</a></h3>
 <p>Delete the address &#8220;172.16.20.1/24&#8221;, which is set in router s1.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X DELETE -d &#39;{&quot;address_id&quot;: &quot;1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -578,7 +580,7 @@ mininet&gt;
 </div>
 <p>Check the information that has been configured on router s1. You can see that of the IP addresses configured on router s1, &#8220;172.16.20.1/24&#8221; has been deleted.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -605,7 +607,7 @@ mininet&gt;
 </div>
 <p>Check communication using ping. Since the information about the subnet to which h1 belongs has been removed from router s1, you can tell that communication from h2 to h1 is not possible.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 172.16.20.10</span>
 <span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
@@ -659,7 +661,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>A execution example is as follows.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo linear,3,2 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -686,63 +688,63 @@ mininet&gt;
 </div>
 <p>Next, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>switch: s3 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Then, set the VLAN ID to the interface of each host and set the new IP address.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1s1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.10/24 dev h1s1-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s1-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.1/8 dev h1s1-eth0</span>
+<span class="c1"># ip link add link h1s1-eth0 name h1s1-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add 172.16.10.10/24 dev h1s1-eth0.2</span>
+<span class="c1"># ip link set dev h1s1-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.4/8 dev h2s1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.11/24 dev h2s1-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s1-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.4/8 dev h2s1-eth0</span>
+<span class="c1"># ip link add link h2s1-eth0 name h2s1-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add 172.16.10.11/24 dev h2s1-eth0.110</span>
+<span class="c1"># ip link set dev h2s1-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h1s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h1s2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.10/24 dev h1s2-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s2-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.2/8 dev h1s2-eth0</span>
+<span class="c1"># ip link add link h1s2-eth0 name h1s2-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add 192.168.30.10/24 dev h1s2-eth0.2</span>
+<span class="c1"># ip link set dev h1s2-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.5/8 dev h2s2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 192.168.30.11/24 dev h2s2-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s2-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.5/8 dev h2s2-eth0</span>
+<span class="c1"># ip link add link h2s2-eth0 name h2s2-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add 192.168.30.11/24 dev h2s2-eth0.110</span>
+<span class="c1"># ip link set dev h2s2-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h1s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h1s3-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.10/24 dev h1s3-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1s3-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.3/8 dev h1s3-eth0</span>
+<span class="c1"># ip link add link h1s3-eth0 name h1s3-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add 172.16.20.10/24 dev h1s3-eth0.2</span>
+<span class="c1"># ip link set dev h1s3-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.6/8 dev h2s3-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.11/24 dev h2s3-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2s3-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.6/8 dev h2s3-eth0</span>
+<span class="c1"># ip link add link h2s3-eth0 name h2s3-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add 172.16.20.11/24 dev h2s3-eth0.110</span>
+<span class="c1"># ip link set dev h2s3-eth0.110 up</span>
 </pre></div>
 </div>
 <p>Finally, start rest_router on xterm of controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_router</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_router</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_router</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -771,7 +773,7 @@ mininet&gt;
 <p>Set the address for each router.</p>
 <p>First, set the addresses &#8220;172.16.10.1/24&#8221; and &#8220;10.10.10.1/24&#8221; to router s1. They must be set to each VLAN ID respectively.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -785,7 +787,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -799,7 +801,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -813,7 +815,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -830,7 +832,7 @@ mininet&gt;
 </div>
 <p>Next, set the addresses &#8220;192.168.30.1/24&#8221; and &#8220;10.10.10.2/24&#8221; to router s2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -844,7 +846,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -858,7 +860,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;192.168.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -872,7 +874,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.2/24&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -889,7 +891,7 @@ mininet&gt;
 </div>
 <p>Then, set the addresses &#8220;172.16.20.1/24&#8221; and &#8220;10.10.10.3/24&#8221; to router s3.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -903,7 +905,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -917,7 +919,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -931,7 +933,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;10.10.10.3/24&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -948,27 +950,27 @@ mininet&gt;
 </div>
 <p>IP addresses to the routers have been set. Register as the default gateway on each host.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h2s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 <p>host: h1s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 <p>host: h2s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 192.168.30.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 192.168.30.1</span>
 </pre></div>
 </div>
 <p>host: h1s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>host: h2s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>The addresses that have been set are as follows.</p>
@@ -979,7 +981,7 @@ mininet&gt;
 <p>Set static routes and the default route for each router.</p>
 <p>First, set router s2 as the default route of router s1.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -993,7 +995,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000001/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1010,7 +1012,7 @@ mininet&gt;
 </div>
 <p>Set router s1 as the default route of router s2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1024,7 +1026,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.1&quot;}&#39; http://localhost:8080/router/0000000000000002/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1041,7 +1043,7 @@ mininet&gt;
 </div>
 <p>Set router s2 as default route of router s3.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -1055,7 +1057,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;10.10.10.2&quot;}&#39; http://localhost:8080/router/0000000000000003/110</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -1072,7 +1074,7 @@ mininet&gt;
 </div>
 <p>Next, for s2 router, set a static route to the host (172.16.20.0/24) under router s3. Only set if vlan_id=2.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;destination&quot;: &quot;172.16.20.0/24&quot;, &quot;gateway&quot;: &quot;10.10.10.3&quot;}&#39; http://localhost:8080/router/0000000000000002/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1092,7 +1094,7 @@ mininet&gt;
 <h3>Verifying the Settings<a class="headerlink" href="#verifying-the-settings" title="Permalink to this headline">¶</a></h3>
 <p>Check the contents of the settings for each router.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/router/all/all</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/router/all/all</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;internal_network&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1300,7 +1302,7 @@ mininet&gt;
 </table>
 <p>Send a ping from h1s1 to h1s3. Since they&#8217;re the same host of vlan_id=2 and router 2 has a static route set to s3, it can communicate successfully.</p>
 <p>host: h1s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.10</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 172.16.20.10</span>
 <span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">45.9</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">61</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.257</span> <span class="n">ms</span>
@@ -1310,7 +1312,7 @@ mininet&gt;
 </div>
 <p>Send a ping from h2s1 to h2s3. They&#8217;re the same host of vlan_id=2 but since router s2 doesn&#8217;t have a static route set to s3, it cannot communicate successfully.</p>
 <p>host: h2s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 172.16.20.11</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 172.16.20.11</span>
 <span class="n">PING</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span> <span class="p">(</span><span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.11</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>

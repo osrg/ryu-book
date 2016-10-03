@@ -23,6 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
     <link rel="next" title="OpenFlow Protocol" href="openflow_protocol.html" />
     <link rel="prev" title="Link Aggregation" href="link_aggregation.html" /> 
@@ -181,7 +183,7 @@ These ports suppress frame transfer.</p>
 <div class="section" id="executing-the-ryu-application">
 <h2>Executing the Ryu Application<a class="headerlink" href="#executing-the-ryu-application" title="Permalink to this headline">¶</a></h2>
 <p>Let&#8217;s execute the Ryu&#8217;s spanning tree application for which the spanning function is achieved using OpenFlow.</p>
-<p>simple_switch_stp.py provided in Ryu&#8217;s source tree is an application dedicated to OpenFlow 1.0, therefore, we will create simple_switch_stp_13.py, which supports OpenFlow 1.3. This program is an application to which the spanning tree function has been added to the switching hub of &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a> .</p>
+<p>This program is an application to which the spanning tree function has been added to the switching hub of &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a> .</p>
 <p>Source name: <code class="docutils literal"><span class="pre">simple_switch_stp_13.py</span></code></p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.base</span> <span class="k">import</span> <span class="n">app_manager</span>
 <span class="kn">from</span> <span class="nn">ryu.controller</span> <span class="k">import</span> <span class="n">ofp_event</span>
@@ -192,9 +194,10 @@ These ports suppress frame transfer.</p>
 <span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">stplib</span>
 <span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">packet</span>
 <span class="kn">from</span> <span class="nn">ryu.lib.packet</span> <span class="k">import</span> <span class="n">ethernet</span>
+<span class="kn">from</span> <span class="nn">ryu.app</span> <span class="k">import</span> <span class="n">simple_switch_13</span>
 
 
-<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
     <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stplib&#39;</span><span class="p">:</span> <span class="n">stplib</span><span class="o">.</span><span class="n">Stp</span><span class="p">}</span>
 
@@ -206,41 +209,12 @@ These ports suppress frame transfer.</p>
         <span class="c1"># Sample of stplib config.</span>
         <span class="c1">#  please refer to stplib.Stp.set_config() for details.</span>
         <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000001&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
+                  <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
                   <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000002&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
+                  <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
                   <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000003&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
+                  <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stp</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">ofp_event</span><span class="o">.</span><span class="n">EventOFPSwitchFeatures</span><span class="p">,</span> <span class="n">CONFIG_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">switch_features_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">datapath</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="c1"># install table-miss flow entry</span>
-        <span class="c1">#</span>
-        <span class="c1"># We specify NO BUFFER to max_len of the output action due to</span>
-        <span class="c1"># OVS bug. At this moment, if we specify a lesser number, e.g.,</span>
-        <span class="c1"># 128, OVS will send Packet-In with invalid buffer_id and</span>
-        <span class="c1"># truncated packet data. In that case, we cannot output packets</span>
-        <span class="c1"># correctly.</span>
-        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">()</span>
-        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPActionOutput</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_CONTROLLER</span><span class="p">,</span>
-                                          <span class="n">ofproto</span><span class="o">.</span><span class="n">OFPCML_NO_BUFFER</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_flow</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">add_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="p">,</span> <span class="n">match</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="n">inst</span> <span class="o">=</span> <span class="p">[</span><span class="n">parser</span><span class="o">.</span><span class="n">OFPInstructionActions</span><span class="p">(</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPIT_APPLY_ACTIONS</span><span class="p">,</span>
-                                             <span class="n">actions</span><span class="p">)]</span>
-
-        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span><span class="n">datapath</span><span class="o">=</span><span class="n">datapath</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
-                                <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">inst</span><span class="p">)</span>
-        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
         <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
@@ -396,7 +370,8 @@ Installing ryu script to /usr/local/bin
 <p>By executing the program in the VM environment, a topology is created in which a loop exists between switches s1, s2, and s3.</p>
 <a class="reference internal image-reference" href="_images/fig42.png"><img alt="_images/fig42.png" class="align-center" src="_images/fig42.png" style="width: 407.5px; height: 285.5px;" /></a>
 <p>The execution result of the net command is as follows:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo ./spanning_tree.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/spanning_tree.py
+$ sudo ./spanning_tree.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt; net
 c0
@@ -414,15 +389,15 @@ h3 h3-eth0:s3-eth1
 <p>Set the OpenFlow version to 1.3.
 Input this command on xterm of switches s1, s2, and x3.</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s3 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 </div>
@@ -430,13 +405,12 @@ Input this command on xterm of switches s1, s2, and x3.</p>
 <h3>Executing the Switching Hub<a class="headerlink" href="#executing-the-switching-hub" title="Permalink to this headline">¶</a></h3>
 <p>This completes preparation so let&#8217;s move on to executing the Ryu application. Execute the following commands from xterm for which the window title is &#8220;Node: c0 (root)&#8221;.</p>
 <p>Node: c0:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>root@ryu-vm:~$ ryu-manager ./simple_switch_stp_13.py
-loading app simple_switch_stp_13.py
-loading app ryu.controller.ofp_handler
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ ryu-manager ryu.app.simple_switch_stp_13
+loading app ryu.app.simple_switch_stp_13
 loading app ryu.controller.ofp_handler
 instantiating app None of Stp
 creating context stplib
-instantiating app simple_switch_stp_13.py of SimpleSwitch13
+instantiating app ryu.app.simple_switch_stp_13 of SimpleSwitch13
 instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
@@ -536,15 +510,15 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>Next, in order to confirm that packets are not looped, execute ping from host 1 to host 2.</p>
 <p>Before executing the ping command, execute the tcpdump command.</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s1-eth2 arp</span>
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s2-eth2 arp</span>
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s3-eth2 arp</span>
 </pre></div>
 </div>
 <p>On the console where the topology configuration script is executed, execute the following commands to issue a ping from host 1 to host 2.</p>
@@ -569,7 +543,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </div>
 <p>As a result of tcpdump output, you can confirm that ARP is not looped.</p>
 <p>Node: s1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s1-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s1-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s1</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -580,7 +554,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s2-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s2-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s2</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -591,7 +565,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 </pre></div>
 </div>
 <p>Node: s3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># tcpdump -i s3-eth2 arp</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># tcpdump -i s3-eth2 arp</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">WARNING</span><span class="p">:</span> <span class="n">s3</span><span class="o">-</span><span class="n">eth2</span><span class="p">:</span> <span class="n">no</span> <span class="n">IPv4</span> <span class="n">address</span> <span class="n">assigned</span>
 <span class="n">tcpdump</span><span class="p">:</span> <span class="n">verbose</span> <span class="n">output</span> <span class="n">suppressed</span><span class="p">,</span> <span class="n">use</span> <span class="o">-</span><span class="n">v</span> <span class="ow">or</span> <span class="o">-</span><span class="n">vv</span> <span class="k">for</span> <span class="n">full</span> <span class="n">protocol</span> <span class="n">decode</span>
 <span class="n">listening</span> <span class="n">on</span> <span class="n">s3</span><span class="o">-</span><span class="n">eth2</span><span class="p">,</span> <span class="n">link</span><span class="o">-</span><span class="nb">type</span> <span class="n">EN10MB</span> <span class="p">(</span><span class="n">Ethernet</span><span class="p">),</span> <span class="n">capture</span> <span class="n">size</span> <span class="mi">65535</span> <span class="nb">bytes</span>
@@ -604,7 +578,7 @@ instantiating app ryu.controller.ofp_handler of OFPHandler
 <p>Next, let&#8217;s check re-calculation operation of STP in case of link down.
 In the state in which STP calculation has been completed after each OpenFlow switch starts, execute the following commands to make the port down.</p>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 down</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ifconfig s2-eth2 down</span>
 </pre></div>
 </div>
 <p>Link down is detected and recalculation of STP is executed.</p>
@@ -660,7 +634,7 @@ In the state in which STP calculation has been completed after each OpenFlow swi
 <h4>Recalculation of STP At Failure Recovery<a class="headerlink" href="#recalculation-of-stp-at-failure-recovery" title="Permalink to this headline">¶</a></h4>
 <p>Next, check operation of recalculation of STP when link down is recovered. To start the port execute the following commands while the link is down.</p>
 <p>Node: s2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ifconfig s2-eth2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ifconfig s2-eth2 up</span>
 </pre></div>
 </div>
 <p>Link recovery is detected and STP re-calculation is executed.</p>
@@ -798,14 +772,10 @@ By issuing a Port Modification message to the OpenFlow switch, it is possible to
 The spanning tree source code is in the Ryu&#8217;s source tree.</p>
 <blockquote>
 <div><p>ryu/lib/stplib.py</p>
-<p>ryu/app/simple_switch_stp.py</p>
+<p>ryu/app/simple_switch_stp_13.py</p>
 </div></blockquote>
 <p>stplib.py is a library that provides spanning tree functions such as BPDU packet exchange and management of rules, and the status of each port.
-The simple_switch_stp.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.</p>
-<div class="admonition attention">
-<p class="first admonition-title">Attention</p>
-<p class="last">simple_switch_stp.py is an application dedicated to OpenFlow 1.0; this section describes details of the application based on simple_switch_stp_13.py, which supports OpenFlow 1.3, indicated in &#8220;<a class="reference internal" href="#executing-the-ryu-application">Executing the Ryu Application</a> &#8221;.</p>
-</div>
+The simple_switch_stp_13.py is an application program in which the spanning tree function is added to the switching hub application using the spanning tree library.</p>
 <div class="section" id="implementing-the-library">
 <h3>Implementing the Library<a class="headerlink" href="#implementing-the-library" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="library-overview">
@@ -901,36 +871,105 @@ LEARN status</td>
 <h4>Sending BPDU Packet<a class="headerlink" href="#sending-bpdu-packet" title="Permalink to this headline">¶</a></h4>
 <p>BPDU packets are sent by the BPDU packet send thread (<code class="docutils literal"><span class="pre">Port.send_bpdu_thread</span></code>) of the Port class. When the port role is the designated port (<code class="docutils literal"><span class="pre">DESIGNATED_PORT</span></code>), a BPDU packet is generated (<code class="docutils literal"><span class="pre">Port._generate_config_bpdu()</span></code>) at the hello time (<code class="docutils literal"><span class="pre">Port.port_times.hello_time</span></code>: by default, 2 seconds) notified by the root bridge and the BPDU packet is sent (<code class="docutils literal"><span class="pre">Port.ofctl.send_packet_out()</span></code>).</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
                  <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dp</span> <span class="o">=</span> <span class="n">dp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;dpid&#39;</span><span class="p">:</span> <span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_enable</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;enable&#39;</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_VALUE</span><span class="p">[</span><span class="s1">&#39;enable&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_event</span> <span class="o">=</span> <span class="n">send_ev_func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_timeout</span> <span class="o">=</span> <span class="n">timeout_func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology_change_notify</span> <span class="o">=</span> <span class="n">topology_change_func</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ofctl</span> <span class="o">=</span> <span class="p">(</span><span class="n">OfCtl_v1_0</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span> <span class="k">if</span> <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span> <span class="o">==</span> <span class="n">ofproto_v1_0</span>
+                      <span class="k">else</span> <span class="n">OfCtl_v1_2later</span><span class="p">(</span><span class="n">dp</span><span class="p">))</span>
 
-        <span class="c1"># ...</span>
-
+        <span class="c1"># Bridge data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span> <span class="o">=</span> <span class="n">bridge_id</span>
+        <span class="c1"># Root bridge data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port_times</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># ofproto_v1_X_parser.OFPPhyPort data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span> <span class="o">=</span> <span class="n">ofport</span>
+        <span class="c1"># Port data</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_VALUE</span>
+        <span class="n">path_costs</span> <span class="o">=</span> <span class="p">{</span><span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_10MB_HD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_10MB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_10MB_FD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_10MB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_100MB_HD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_100MB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_100MB_FD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_100MB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_1GB_HD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_1GB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_1GB_FD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_1GB</span><span class="p">,</span>
+                      <span class="n">dp</span><span class="o">.</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPPF_10GB_FD</span><span class="p">:</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">PORT_PATH_COST_10GB</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">rate</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">path_costs</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ofport</span><span class="o">.</span><span class="n">curr</span> <span class="o">&amp;</span> <span class="n">rate</span><span class="p">:</span>
+                <span class="n">values</span><span class="p">[</span><span class="s1">&#39;path_cost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path_costs</span><span class="p">[</span><span class="n">rate</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port_id</span> <span class="o">=</span> <span class="n">PortId</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="s1">&#39;priority&#39;</span><span class="p">],</span> <span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_cost</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s1">&#39;path_cost&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_enable</span> <span class="k">else</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Receive BPDU data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># BPDU handling threads</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send_bpdu_thread</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transmit_bpdu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_thread</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_bpdu_timer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_flg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># State machine thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_machine</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_machine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="c1"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">DESIGNATED_PORT</span><span class="p">,</span>
+                <span class="n">Priority</span><span class="p">(</span><span class="n">bridge_id</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">bridge_times</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_machine</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] Start port state machine.&#39;</span><span class="p">,</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_transmit_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="c1"># Send config BPDU packet if port role is DESIGNATED_PORT.</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">DESIGNATED_PORT</span><span class="p">:</span>
+                <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_timer</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_timer</span> <span class="o">&lt;</span> <span class="n">now</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_timer</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_flg</span> <span class="o">=</span> <span class="kc">False</span>
 
-                <span class="c1"># ...</span>
-
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tc_flg</span><span class="p">:</span>
+                    <span class="n">flags</span> <span class="o">=</span> <span class="mb">0b00000000</span>
+                    <span class="n">log_msg</span> <span class="o">=</span> <span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] Send Config BPDU.&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">flags</span> <span class="o">=</span> <span class="mb">0b00000001</span>
+                    <span class="n">log_msg</span> <span class="o">=</span> <span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] Send TopologyChange BPDU.&#39;</span>
                 <span class="n">bpdu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_config_bpdu</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">ofctl</span><span class="o">.</span><span class="n">send_packet_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">bpdu_data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">log_msg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
+                                  <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
 
-                <span class="c1"># ...</span>
+            <span class="c1"># Send Topology Change Notification BPDU until receive Ack.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span><span class="p">:</span>
+                <span class="n">bpdu_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_tcn_bpdu</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ofctl</span><span class="o">.</span><span class="n">send_packet_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">bpdu_data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] Send TopologyChangeNotify BPDU.&#39;</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
 
             <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">hello_time</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>BPDU packets to be sent are configured based on the port information (<code class="docutils literal"><span class="pre">Port.ofport</span></code>) collected when the controller is connected to OpenFlow switches or the root bridge information (<code class="docutils literal"><span class="pre">Port.port_priority,</span> <span class="pre">Port.port_times</span></code>) set in the received BPDU packets.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_generate_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flags</span><span class="p">):</span>
         <span class="n">src_mac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">hw_addr</span>
         <span class="n">dst_mac</span> <span class="o">=</span> <span class="n">bpdu</span><span class="o">.</span><span class="n">BRIDGE_GROUP_ADDRESS</span>
@@ -943,12 +982,12 @@ LEARN status</td>
             <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span>
             <span class="n">root_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
             <span class="n">root_mac_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_id</span><span class="o">.</span><span class="n">mac_addr</span><span class="p">,</span>
-            <span class="n">root_path_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_path_cost</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">path_cost</span><span class="p">,</span>
+            <span class="n">root_path_cost</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_priority</span><span class="o">.</span><span class="n">root_path_cost</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_cost</span><span class="p">,</span>
             <span class="n">bridge_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
             <span class="n">bridge_mac_address</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bridge_id</span><span class="o">.</span><span class="n">mac_addr</span><span class="p">,</span>
             <span class="n">port_priority</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_id</span><span class="o">.</span><span class="n">priority</span><span class="p">,</span>
             <span class="n">port_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
-            <span class="n">message_age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">message_age</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">message_age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">message_age</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
             <span class="n">max_age</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
             <span class="n">hello_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">hello_time</span><span class="p">,</span>
             <span class="n">forward_delay</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">)</span>
@@ -969,7 +1008,7 @@ LEARN status</td>
 For implementation of the event handler, refer to &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a>&#8221;.</p>
 <p>The port that receives a BPDU packet compares (<code class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></code>) the bridge ID of previously received BPDU packets and the BPDU packet received this time to determine the need for STP re-calculation. If a superior BPDU (<code class="docutils literal"><span class="pre">SUPERIOR</span></code>) than the previously received BPDU is received, it means there is a change in the network topology such as &#8220;a new root bridge is added&#8221;, which is a a trigger for STP re-calculation.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
         <span class="c1"># Check received BPDU is superior to currently held BPDU.</span>
         <span class="n">root_id</span> <span class="o">=</span> <span class="n">BridgeId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_priority</span><span class="p">,</span>
@@ -993,8 +1032,33 @@ For implementation of the event handler, refer to &#8220;<a class="reference int
         <span class="n">rcv_info</span> <span class="o">=</span> <span class="n">Stp</span><span class="o">.</span><span class="n">compare_bpdu_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span><span class="p">,</span>
                                          <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span><span class="p">,</span>
                                          <span class="n">msg_priority</span><span class="p">,</span> <span class="n">msg_times</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">SUPERIOR</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span> <span class="o">=</span> <span class="n">msg_priority</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span> <span class="o">=</span> <span class="n">msg_times</span>
 
-        <span class="c1"># ...</span>
+        <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">SUPERIOR</span> <span class="ow">or</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">REPEATED</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">ROOT_PORT</span>
+                     <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">NON_DESIGNATED_PORT</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_wait_bpdu_timer</span><span class="p">()</span>
+            <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">INFERIOR</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">DESIGNATED_PORT</span><span class="p">:</span>
+            <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Check TopologyChange flag.</span>
+        <span class="n">rcv_tc</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">chk_flg</span><span class="p">:</span>
+            <span class="n">tc_flag_mask</span> <span class="o">=</span> <span class="mb">0b00000001</span>
+            <span class="n">tcack_flag_mask</span> <span class="o">=</span> <span class="mb">0b10000000</span>
+            <span class="k">if</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">tc_flag_mask</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] receive TopologyChange BPDU.&#39;</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+                <span class="n">rcv_tc</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">tcack_flag_mask</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] receive TopologyChangeAck BPDU.&#39;</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">return</span> <span class="n">rcv_info</span><span class="p">,</span> <span class="n">rcv_tc</span>
 </pre></div>
@@ -1008,17 +1072,7 @@ For implementation of the event handler, refer to &#8220;<a class="reference int
 <p>For update of the BPDU receive waiting timer and detection of timeout, <code class="docutils literal"><span class="pre">hub.Event</span></code> and <code class="docutils literal"><span class="pre">hub.Timeout</span></code> of the hub module (ryu.lib.hub) are used. <code class="docutils literal"><span class="pre">hub.Event</span></code> enters wait status by <code class="docutils literal"><span class="pre">hub.Event.wait()</span></code> and the thread is suspended until <code class="docutils literal"><span class="pre">hub.Event.set()</span></code> is executed. <code class="docutils literal"><span class="pre">hub.Timeout</span></code> issues an <code class="docutils literal"><span class="pre">hub.Timeout</span></code> exception if processing of the <code class="docutils literal"><span class="pre">try</span></code> clause is not completed within the specified timeout time.
 When <code class="docutils literal"><span class="pre">hub.Event</span></code> enters wait status and <code class="docutils literal"><span class="pre">hub.Event.set()</span></code> is not executed within the timeout time specified in <code class="docutils literal"><span class="pre">hub.Timeout</span></code>, timeout of BPDU packet receive waiting is determined and STP re-calculation processing of the Bridge class is called.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dp</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">send_ev_func</span><span class="p">,</span> <span class="n">timeout_func</span><span class="p">,</span>
-                 <span class="n">topology_change_func</span><span class="p">,</span> <span class="n">bridge_id</span><span class="p">,</span> <span class="n">bridge_times</span><span class="p">,</span> <span class="n">ofport</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Port</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="c1"># ...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_timeout</span> <span class="o">=</span> <span class="n">timeout_func</span>
-        <span class="c1"># ...</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wait_bpdu_thread</span> <span class="o">=</span> <span class="n">PortThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_bpdu_timer</span><span class="p">)</span>
-
-    <span class="c1"># ...</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_wait_bpdu_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">time_exceed</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -1050,26 +1104,70 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 </div>
 <p>When <code class="docutils literal"><span class="pre">SUPERIOR</span></code> or <code class="docutils literal"><span class="pre">REPEATED</span></code> is determined as a result of comparison processing (<code class="docutils literal"><span class="pre">Stp.compare_bpdu_info()</span></code>) of the received BPDU packet, it means that the BPDU packet from the root bridge can be received. Therefore, the BPDU receive waiting timer is updated (<code class="docutils literal"><span class="pre">Port._update_wait_bpdu_timer()</span></code>). By the <code class="docutils literal"><span class="pre">set()</span></code> processing of <code class="docutils literal"><span class="pre">Port.wait_timer_event</span></code>, which is a <code class="docutils literal"><span class="pre">hub.Event</span></code>, the <code class="docutils literal"><span class="pre">Port.wait_timer_event</span></code> is released from wait status and the BPDU packet receive waiting thread (<code class="docutils literal"><span class="pre">Port.wait_bpdu_thread</span></code>) cancels the timer without entering timeout processing of the <code class="docutils literal"><span class="pre">except</span> <span class="pre">hub.Timeout</span></code> clause and sets the timer again to start waiting for the next BPDU packet to be received.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">rcv_config_bpdu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpdu_pkt</span><span class="p">):</span>
-        <span class="c1"># ...</span>
+        <span class="c1"># Check received BPDU is superior to currently held BPDU.</span>
+        <span class="n">root_id</span> <span class="o">=</span> <span class="n">BridgeId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_priority</span><span class="p">,</span>
+                           <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_system_id_extension</span><span class="p">,</span>
+                           <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_mac_address</span><span class="p">)</span>
+        <span class="n">root_path_cost</span> <span class="o">=</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">root_path_cost</span>
+        <span class="n">designated_bridge_id</span> <span class="o">=</span> <span class="n">BridgeId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_priority</span><span class="p">,</span>
+                                        <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_system_id_extension</span><span class="p">,</span>
+                                        <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">bridge_mac_address</span><span class="p">)</span>
+        <span class="n">designated_port_id</span> <span class="o">=</span> <span class="n">PortId</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">port_priority</span><span class="p">,</span>
+                                    <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">port_number</span><span class="p">)</span>
+
+        <span class="n">msg_priority</span> <span class="o">=</span> <span class="n">Priority</span><span class="p">(</span><span class="n">root_id</span><span class="p">,</span> <span class="n">root_path_cost</span><span class="p">,</span>
+                                <span class="n">designated_bridge_id</span><span class="p">,</span>
+                                <span class="n">designated_port_id</span><span class="p">)</span>
+        <span class="n">msg_times</span> <span class="o">=</span> <span class="n">Times</span><span class="p">(</span><span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">message_age</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">max_age</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">hello_time</span><span class="p">,</span>
+                          <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">)</span>
 
         <span class="n">rcv_info</span> <span class="o">=</span> <span class="n">Stp</span><span class="o">.</span><span class="n">compare_bpdu_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span><span class="p">,</span>
                                          <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span><span class="p">,</span>
                                          <span class="n">msg_priority</span><span class="p">,</span> <span class="n">msg_times</span><span class="p">)</span>
-        <span class="c1"># ...</span>
+        <span class="k">if</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">SUPERIOR</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">designated_priority</span> <span class="o">=</span> <span class="n">msg_priority</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">designated_times</span> <span class="o">=</span> <span class="n">msg_times</span>
 
+        <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="p">((</span><span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">SUPERIOR</span> <span class="ow">or</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">REPEATED</span><span class="p">)</span>
                 <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">ROOT_PORT</span>
                      <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">NON_DESIGNATED_PORT</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_wait_bpdu_timer</span><span class="p">()</span>
+            <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rcv_info</span> <span class="ow">is</span> <span class="n">INFERIOR</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">DESIGNATED_PORT</span><span class="p">:</span>
+            <span class="n">chk_flg</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="c1"># ...</span>
+        <span class="c1"># Check TopologyChange flag.</span>
+        <span class="n">rcv_tc</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">chk_flg</span><span class="p">:</span>
+            <span class="n">tc_flag_mask</span> <span class="o">=</span> <span class="mb">0b00000001</span>
+            <span class="n">tcack_flag_mask</span> <span class="o">=</span> <span class="mb">0b10000000</span>
+            <span class="k">if</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">tc_flag_mask</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] receive TopologyChange BPDU.&#39;</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+                <span class="n">rcv_tc</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">bpdu_pkt</span><span class="o">.</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="n">tcack_flag_mask</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] receive TopologyChangeAck BPDU.&#39;</span><span class="p">,</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_tcn_flg</span> <span class="o">=</span> <span class="kc">False</span>
 
+        <span class="k">return</span> <span class="n">rcv_info</span><span class="p">,</span> <span class="n">rcv_tc</span>
+</pre></div>
+</div>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_update_wait_bpdu_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">wait_timer_event</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] Wait BPDU timer is updated.&#39;</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
+        <span class="n">hub</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># For thread switching.</span>
 </pre></div>
 </div>
 </div>
@@ -1079,7 +1177,7 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 <p>In cases where STP calculation is executed, a change in the network topology has occurred and it is possible for packets to be looped. Therefore, by setting all ports to BLOCK state (<code class="docutils literal"><span class="pre">port.down</span></code>) and also notifying the topology change event (<code class="docutils literal"><span class="pre">EventTopologyChange</span></code>) to high order APL, initialization of already learned MAC address information is promoted.</p>
 <p>After that, the root bridge and the role of ports are selected by <code class="docutils literal"><span class="pre">Bridge._spanning_tree_algorithm()</span></code>, and each port is started in LISTEN status (<code class="docutils literal"><span class="pre">port.up</span></code>) to start port status change.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">recalculate_spanning_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Re-calculation of spanning tree. &quot;&quot;&quot;</span>
         <span class="c1"># All port down.</span>
@@ -1098,7 +1196,7 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Root bridge.&#39;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dpid_str</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">:</span>
                 <span class="n">port_roles</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">DESIGNATED_PORT</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="p">(</span><span class="n">port_roles</span><span class="p">,</span>
@@ -1116,7 +1214,7 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 <p>As a result, when the root port is found (the other bridge&#8217;s information received by the port is superior to that of the own bridge), the other bridge is determined to be the root bridge and the designated ports (<code class="docutils literal"><span class="pre">Bridge._select_designated_port</span></code>) and non-designated ports are selected (ports other than the root port/designated ports are selected as non-designated ports).</p>
 <p>On the other hand, if the root port is not found (own bridge information is the most superior), the own bridge is determined to be the root bridge and all other ports are designated ports.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Bridge</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_spanning_tree_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Update tree roles.</span>
 <span class="sd">             - Root bridge:</span>
@@ -1134,7 +1232,7 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
             <span class="n">root_priority</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_priority</span>
             <span class="n">root_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_times</span>
 
-            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">port_no</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
                     <span class="n">port_roles</span><span class="p">[</span><span class="n">port_no</span><span class="p">]</span> <span class="o">=</span> <span class="n">DESIGNATED_PORT</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1162,13 +1260,22 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 <h4>Port Status Change<a class="headerlink" href="#port-status-change" title="Permalink to this headline">¶</a></h4>
 <p>Status change processing of ports is executed by the status change control thread (<code class="docutils literal"><span class="pre">Port.state_machine</span></code>) of the Port class. It uses <code class="docutils literal"><span class="pre">Port._get_timer()</span></code> to get the timer to change to the next status and after the timer elapses, uses <code class="docutils literal"><span class="pre">Port._get_next_state()</span></code> to get the next status to change the status. Also, the status is changed when <code class="docutils literal"><span class="pre">Port._change_status()</span></code> is executed in case that when STP re-calculation occurs and the status is changed to BLOCK status, regardless of the previous port status. This processing is achieved using <code class="docutils literal"><span class="pre">hub.Event</span></code> and <code class="docutils literal"><span class="pre">hub.Timeout</span></code> of the hub module, as with &#8220;<a class="reference internal" href="#detecting-failures">Detecting Failures</a>&#8221;.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_state_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Port state machine.</span>
 <span class="sd">             Change next status when timer is exceeded</span>
 <span class="sd">             or _change_status() method is called.&quot;&quot;&quot;</span>
+        <span class="n">role_str</span> <span class="o">=</span> <span class="p">{</span><span class="n">ROOT_PORT</span><span class="p">:</span> <span class="s1">&#39;ROOT_PORT          &#39;</span><span class="p">,</span>
+                    <span class="n">DESIGNATED_PORT</span><span class="p">:</span> <span class="s1">&#39;DESIGNATED_PORT    &#39;</span><span class="p">,</span>
+                    <span class="n">NON_DESIGNATED_PORT</span><span class="p">:</span> <span class="s1">&#39;NON_DESIGNATED_PORT&#39;</span><span class="p">}</span>
+        <span class="n">state_str</span> <span class="o">=</span> <span class="p">{</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="s1">&#39;DISABLE&#39;</span><span class="p">,</span>
+                     <span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="s1">&#39;BLOCK&#39;</span><span class="p">,</span>
+                     <span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="s1">&#39;LISTEN&#39;</span><span class="p">,</span>
+                     <span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="s1">&#39;LEARN&#39;</span><span class="p">,</span>
+                     <span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="s1">&#39;FORWARD&#39;</span><span class="p">}</span>
 
-        <span class="c1"># ...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="n">PORT_STATE_DISABLE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ofctl</span><span class="o">.</span><span class="n">set_port_status</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;[port=</span><span class="si">%d</span><span class="s1">] </span><span class="si">%s</span><span class="s1"> / </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ofport</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span>
@@ -1193,7 +1300,10 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
                 <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">state_event</span> <span class="o">=</span> <span class="kc">None</span>
-
+</pre></div>
+</div>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_get_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">timer</span> <span class="o">=</span> <span class="p">{</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -1201,7 +1311,10 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
                  <span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">port_times</span><span class="o">.</span><span class="n">forward_delay</span><span class="p">,</span>
                  <span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
         <span class="k">return</span> <span class="n">timer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
-
+</pre></div>
+</div>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Port</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="c1"># ...</span>
     <span class="k">def</span> <span class="nf">_get_next_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">next_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                       <span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -1223,14 +1336,11 @@ When <code class="docutils literal"><span class="pre">hub.Event</span></code> en
 <h4>Setting &#8220;_CONTEXTS&#8221;<a class="headerlink" href="#setting-contexts" title="Permalink to this headline">¶</a></h4>
 <p>As with &#8221; <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><span class="std std-ref">Link Aggregation</span></a> &#8221;, register CONTEXT to use the STP library.</p>
 <div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ryu.lib</span> <span class="k">import</span> <span class="n">stplib</span>
-
 <span class="c1"># ...</span>
-
-<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">simple_switch_13</span><span class="o">.</span><span class="n">SimpleSwitch13</span><span class="p">):</span>
     <span class="n">OFP_VERSIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">ofproto_v1_3</span><span class="o">.</span><span class="n">OFP_VERSION</span><span class="p">]</span>
     <span class="n">_CONTEXTS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;stplib&#39;</span><span class="p">:</span> <span class="n">stplib</span><span class="o">.</span><span class="n">Stp</span><span class="p">}</span>
 
-    <span class="c1"># ...</span>
 </pre></div>
 </div>
 </div>
@@ -1266,24 +1376,20 @@ Here, the following values are set as a sample.</p>
 </tbody>
 </table>
 <p>Using these settings, the bridge ID of the dpid=0000000000000001 OpenFlow switch is always the smallest value and is selected as the root bridge.</p>
-<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitch13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stplib&#39;</span><span class="p">]</span>
 
-    <span class="c1"># ...</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SimpleSwitch13</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;stplib&#39;</span><span class="p">]</span>
-
-        <span class="c1"># Sample of stplib config.</span>
-        <span class="c1">#  please refer to stplib.Stp.set_config() for details.</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000001&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
-                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000002&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
-                  <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000003&#39;</span><span class="p">):</span>
-                     <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stp</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="c1"># Sample of stplib config.</span>
+    <span class="c1">#  please refer to stplib.Stp.set_config() for details.</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000001&#39;</span><span class="p">):</span>
+              <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x8000</span><span class="p">}},</span>
+              <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000002&#39;</span><span class="p">):</span>
+              <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0x9000</span><span class="p">}},</span>
+              <span class="n">dpid_lib</span><span class="o">.</span><span class="n">str_to_dpid</span><span class="p">(</span><span class="s1">&#39;0000000000000003&#39;</span><span class="p">):</span>
+              <span class="p">{</span><span class="s1">&#39;bridge&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;priority&#39;</span><span class="p">:</span> <span class="mh">0xa000</span><span class="p">}}}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stp</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1291,64 +1397,56 @@ Here, the following values are set as a sample.</p>
 <h4>STP Event Processing<a class="headerlink" href="#stp-event-processing" title="Permalink to this headline">¶</a></h4>
 <p>As with &#8221; <a class="reference internal" href="link_aggregation.html#ch-link-aggregation"><span class="std std-ref">Link Aggregation</span></a> &#8221;, prepare the event handler to receive events notified by the STP library.</p>
 <p>By using the <code class="docutils literal"><span class="pre">stplib.EventPacketIn</span></code> event defined in the STP library, it is possible to receive packets other than BPDU packets; therefore, the same packet handling is performed as &#8221; <a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a> &#8221;.</p>
-<blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">msg</span>
+    <span class="n">datapath</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">datapath</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
+    <span class="n">in_port</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">match</span><span class="p">[</span><span class="s1">&#39;in_port&#39;</span><span class="p">]</span>
 
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPacketIn</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_packet_in_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-
-        <span class="c1"># ...</span>
+<span class="c1"># ...</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>The change notification event (<code class="docutils literal"><span class="pre">stplib.EventTopologyChange</span></code>) of the network topology is received and the learned MAC address and registered flow entry are initialized.</p>
-<blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
+    <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
 
-    <span class="k">def</span> <span class="nf">delete_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datapath</span><span class="p">):</span>
-        <span class="n">ofproto</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto</span>
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">datapath</span><span class="o">.</span><span class="n">ofproto_parser</span>
-
-        <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
-            <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
-                <span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
-                <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">,</span> <span class="n">out_group</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPG_ANY</span><span class="p">,</span>
-                <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
-            <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-
-    <span class="c1"># ...</span>
-
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventTopologyChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_topology_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">dp</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">dp</span>
-        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Receive topology change event. Flush MAC table.&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[dpid=</span><span class="si">%s</span><span class="s2">] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpid_str</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">dp</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">delete_flow</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">datapath</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPMatch</span><span class="p">(</span><span class="n">eth_dst</span><span class="o">=</span><span class="n">dst</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">OFPFlowMod</span><span class="p">(</span>
+            <span class="n">datapath</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPFC_DELETE</span><span class="p">,</span>
+            <span class="n">out_port</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPP_ANY</span><span class="p">,</span> <span class="n">out_group</span><span class="o">=</span><span class="n">ofproto</span><span class="o">.</span><span class="n">OFPG_ANY</span><span class="p">,</span>
+            <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="n">match</span><span class="p">)</span>
+        <span class="n">datapath</span><span class="o">.</span><span class="n">send_msg</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventTopologyChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_topology_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">dp</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">dp</span>
+    <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Receive topology change event. Flush MAC table.&#39;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[dpid=</span><span class="si">%s</span><span class="s2">] </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dpid_str</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dp</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete_flow</span><span class="p">(</span><span class="n">dp</span><span class="p">)</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">mac_to_port</span><span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>The change notification event (<code class="docutils literal"><span class="pre">stplib.EventPortStateChange</span></code>) of the port status is received and the debug log of the port status is output.</p>
-<blockquote>
-<div><div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SimpleSwitch13</span><span class="p">(</span><span class="n">app_manager</span><span class="o">.</span><span class="n">RyuApp</span><span class="p">):</span>
-
-    <span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPortStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_port_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
-        <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-        <span class="n">of_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="s1">&#39;DISABLE&#39;</span><span class="p">,</span>
-                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="s1">&#39;BLOCK&#39;</span><span class="p">,</span>
-                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="s1">&#39;LISTEN&#39;</span><span class="p">,</span>
-                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="s1">&#39;LEARN&#39;</span><span class="p">,</span>
-                    <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="s1">&#39;FORWARD&#39;</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[dpid=</span><span class="si">%s</span><span class="s2">][port=</span><span class="si">%d</span><span class="s2">] state=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                          <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
+<div class="sourcecode highlight-default"><div class="highlight"><pre><span></span><span class="nd">@set_ev_cls</span><span class="p">(</span><span class="n">stplib</span><span class="o">.</span><span class="n">EventPortStateChange</span><span class="p">,</span> <span class="n">MAIN_DISPATCHER</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_port_state_change_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>
+    <span class="n">dpid_str</span> <span class="o">=</span> <span class="n">dpid_lib</span><span class="o">.</span><span class="n">dpid_to_str</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">dp</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">of_state</span> <span class="o">=</span> <span class="p">{</span><span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_DISABLE</span><span class="p">:</span> <span class="s1">&#39;DISABLE&#39;</span><span class="p">,</span>
+                <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_BLOCK</span><span class="p">:</span> <span class="s1">&#39;BLOCK&#39;</span><span class="p">,</span>
+                <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LISTEN</span><span class="p">:</span> <span class="s1">&#39;LISTEN&#39;</span><span class="p">,</span>
+                <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_LEARN</span><span class="p">:</span> <span class="s1">&#39;LEARN&#39;</span><span class="p">,</span>
+                <span class="n">stplib</span><span class="o">.</span><span class="n">PORT_STATE_FORWARD</span><span class="p">:</span> <span class="s1">&#39;FORWARD&#39;</span><span class="p">}</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[dpid=</span><span class="si">%s</span><span class="s2">][port=</span><span class="si">%d</span><span class="s2">] state=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                      <span class="n">dpid_str</span><span class="p">,</span> <span class="n">ev</span><span class="o">.</span><span class="n">port_no</span><span class="p">,</span> <span class="n">of_state</span><span class="p">[</span><span class="n">ev</span><span class="o">.</span><span class="n">port_state</span><span class="p">])</span>
 </pre></div>
 </div>
-</div></blockquote>
 <p>As explained above, by using the library that provides the spanning tree function and the application that uses the library, a switching hub application having a spanning tree function is achieved.</p>
 </div>
 </div>

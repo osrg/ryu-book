@@ -230,7 +230,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     ::
 
-        ryu@ryu-vm:~$ sudo ryu/ryu/tests/switch/run_mininet.py
+        $ sudo ryu/ryu/tests/switch/run_mininet.py
 
 
     Execution result of the net command is as follows.
@@ -268,7 +268,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13 ryu/ryu/tests/switch/tester.py
 
 
     When the tool is executed it appears as follows and waits until the test target switch and auxiliary switch is connected to the controller.
@@ -278,7 +278,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
         loading app ryu/ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -299,7 +299,7 @@ In this procedure, the test environment is constructed using the test environmen
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --test-switch-dir ryu/ryu/tests/switch/of13/ ryu/ryu/tests/switch/tester.py
         loading app ryu/ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu/ryu/tests/switch/tester.py of OfTester
@@ -654,7 +654,7 @@ File name: ``sample_test_pattern.json``
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
 
 
     When the test target switch and auxiliary switch is connected to the controller, the test begins.
@@ -666,7 +666,7 @@ File name: ``sample_test_pattern.json``
 
     ::
 
-        root@ryu-vm:~$ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
+        $ ryu-manager --verbose --test-switch-dir ./sample_test_pattern.json ryu/ryu/tests/switch/tester.py
         loading app ryu/tests/switch/tester.py
         loading app ryu.controller.ofp_handler
         instantiating app ryu.controller.ofp_handler of OFPHandler
@@ -701,7 +701,7 @@ File name: ``sample_test_pattern.json``
 
     ::
 
-        root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+        # ovs-ofctl -O OpenFlow13 dump-flows s1
         OFPST_FLOW reply (OF1.3) (xid=0x2):
          cookie=0x0, duration=56.217s, table=0, n_packets=1, n_bytes=73, priority=0,ip,nw_dst=192.168.30.0/24 actions=set_field:aa:aa:aa:aa:aa:aa->eth_src,set_field:bb:bb:bb:bb:bb:bb->eth_dst,dec_ttl,output:2
 
@@ -925,7 +925,7 @@ If you want to change the port number by the above options, please be aware that
 
     ::
 
-            root@ryu-vm:~$ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
+            $ ryu-manager --test-switch-target_send_port_1 30 ryu/ryu/tests/switch/tester.py
 
     Then, the test tool understands the test pattern file as follows.
 

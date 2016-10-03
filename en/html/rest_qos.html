@@ -23,6 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
     <link rel="next" title="OpenFlow Switch Test Tool" href="switch_test_tool.html" />
     <link rel="prev" title="Router" href="rest_router.html" /> 
@@ -101,7 +103,7 @@ follows.</p>
 </tbody>
 </table>
 <p>An execution example is as follows.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -129,22 +131,22 @@ mininet&gt;
 <p>Next, set the version of OpenFlow to be used in each router to version 1.3
 and set to listen on port 6632 to access OVSDB.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set-manager ptcp:6632</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<span class="c1"># ovs-vsctl set-manager ptcp:6632</span>
 </pre></div>
 </div>
 <p>Then, modify simple_switch_13.py used in &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a>&#8221;.
 rest_qos.py suppose to be processed on Flow Table pipeline processing,
 modify simple_switch_13.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root)</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cd ryu/; python ./setup.py install</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py</span>
+<span class="c1"># cd ryu/; python ./setup.py install</span>
 </pre></div>
 </div>
 <p>Finally, start rest_qos, qos_simple_switch_13 and rest_conf_switch on xterm of
 controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@mininet</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~/</span><span class="n">ryu</span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13 ryu.app.rest_conf_switch</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_qos</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">qos_simple_switch_13</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_conf_switch</span>
@@ -204,12 +206,12 @@ message appears.</p>
 </div>
 <p>First, set ovsdb_addr in order to access OVSDB.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr</span>
+<span class="c1">#</span>
 </pre></div>
 </div>
 <p>Also, execute setting of Queue.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;: [{&quot;max_rate&quot;: &quot;500000&quot;}, {&quot;min_rate&quot;: &quot;800000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;: [{&quot;max_rate&quot;: &quot;500000&quot;}, {&quot;min_rate&quot;: &quot;800000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -269,7 +271,7 @@ message appears.</p>
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;10.0.0.1&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5002&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;10.0.0.1&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5002&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -288,7 +290,7 @@ message appears.</p>
 <h3>Verifying the Setting<a class="headerlink" href="#verifying-the-setting" title="Permalink to this headline">¶</a></h3>
 <p>Check the contents of the setting of the switch.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -335,22 +337,22 @@ But this document does not describe how to install iperf and how to use it.</p>
 </pre></div>
 </div>
 <p>Node: h1(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -i 1 -p 5001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -s -u -i 1 -p 5001</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>Node: h1(2) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -i 1 -p 5002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -s -u -i 1 -p 5002</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>Node: h2(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 1M</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 1M</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>Node: h2(2) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 1M</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 1M</span>
 <span class="o">...</span>
 </pre></div>
 </div>
@@ -468,7 +470,7 @@ follows.</p>
 </tbody>
 </table>
 <p>An execution example is as follows.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo linear,2 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo linear,2 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -496,38 +498,38 @@ mininet&gt;
 <p>Next, set the version of OpenFlow to be used in each router to version 1.3
 and set to listen on port 6632 to access OVSDB.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set-manager ptcp:6632</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<span class="c1"># ovs-vsctl set-manager ptcp:6632</span>
 </pre></div>
 </div>
 <p>switch: s2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s2 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Then, delete the IP address that is assigned automatically on each host and
 set a new IP address.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.20.10/24 dev h1-eth0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
+<span class="c1"># ip addr add 172.16.20.10/24 dev h1-eth0</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 172.16.10.10/24 dev h2-eth0</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
+<span class="c1"># ip addr add 172.16.10.10/24 dev h2-eth0</span>
 </pre></div>
 </div>
 <p>And, modify rest_router.py used in &#8220;<a class="reference internal" href="rest_router.html#ch-rest-router"><span class="std std-ref">Router</span></a>&#8221;.
 rest_qos.py suppose to be processed on Flow Table pipeline processing,
 modify rest_router.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/0, cmd/1, cmd/&#39; ryu/ryu/app/rest_router.py &gt; ryu/ryu/app/qos_rest_router.py</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cd ryu/; python ./setup.py install</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/0, cmd/1, cmd/&#39; ryu/ryu/app/rest_router.py &gt; ryu/ryu/app/qos_rest_router.py</span>
+<span class="c1"># cd ryu/; python ./setup.py install</span>
 </pre></div>
 </div>
 <p>Finally, start rest_qos, qos_rest_router and rest_conf_switch on xterm of
 controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@mininet</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~/</span><span class="n">ryu</span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_rest_router ryu.app.rest_conf_switch</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_rest_router ryu.app.rest_conf_switch</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_qos</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">qos_rest_router</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_conf_switch</span>
@@ -609,12 +611,12 @@ message appears.</p>
 </div>
 <p>First, set ovsdb_addr in order to access OVSDB.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1">#</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT -d &#39;&quot;tcp:127.0.0.1:6632&quot;&#39; http://localhost:8080/v1.0/conf/switches/0000000000000001/ovsdb_addr</span>
+<span class="c1">#</span>
 </pre></div>
 </div>
 <p>Also, execute setting of Queue.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;:[{&quot;max_rate&quot;: &quot;1000000&quot;}, {&quot;min_rate&quot;: &quot;200000&quot;}, {&quot;min_rate&quot;: &quot;500000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;port_name&quot;: &quot;s1-eth1&quot;, &quot;type&quot;: &quot;linux-htb&quot;, &quot;max_rate&quot;: &quot;1000000&quot;, &quot;queues&quot;:[{&quot;max_rate&quot;: &quot;1000000&quot;}, {&quot;min_rate&quot;: &quot;200000&quot;}, {&quot;min_rate&quot;: &quot;500000&quot;}]}&#39; http://localhost:8080/qos/queue/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -650,7 +652,7 @@ message appears.</p>
 <div class="section" id="router-setting">
 <h3>Router Setting<a class="headerlink" href="#router-setting" title="Permalink to this headline">¶</a></h3>
 <p>Set the IP address and the default route for each router.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.20.1/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -663,7 +665,7 @@ message appears.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.10/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.10/24&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -676,7 +678,7 @@ message appears.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.1&quot;}&#39; http://localhost:8080/router/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -689,7 +691,7 @@ message appears.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.10.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -702,7 +704,7 @@ message appears.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;address&quot;: &quot;172.16.30.1/24&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -715,7 +717,7 @@ message appears.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;gateway&quot;: &quot;172.16.30.10&quot;}&#39; http://localhost:8080/router/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -733,11 +735,11 @@ message appears.</p>
 <p>The IP address settings for each router are done, register the routers as the
 default gateway to each host.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.20.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.20.1</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip route add default via 172.16.10.1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip route add default via 172.16.10.1</span>
 </pre></div>
 </div>
 </div>
@@ -773,7 +775,7 @@ router (s1).</p>
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;26&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;26&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -786,7 +788,7 @@ router (s1).</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;34&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;34&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -837,7 +839,7 @@ router (s1).</p>
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;172.16.20.10&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5002&quot;}, &quot;actions&quot;:{&quot;mark&quot;: &quot;26&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;172.16.20.10&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5002&quot;}, &quot;actions&quot;:{&quot;mark&quot;: &quot;26&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -850,7 +852,7 @@ router (s1).</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;172.16.20.10&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5003&quot;}, &quot;actions&quot;:{&quot;mark&quot;: &quot;34&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;nw_dst&quot;: &quot;172.16.20.10&quot;, &quot;nw_proto&quot;: &quot;UDP&quot;, &quot;tp_dst&quot;: &quot;5003&quot;}, &quot;actions&quot;:{&quot;mark&quot;: &quot;34&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -869,7 +871,7 @@ router (s1).</p>
 <h3>Verifying the Setting<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p>Check the contents of the setting of each switch.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -904,7 +906,7 @@ router (s1).</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000002</span>
+<span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -958,11 +960,11 @@ traffic to the port 5002 on h1 and 600Kbps UDP traffic to the port 5003.</p>
 </pre></div>
 </div>
 <p>Node: h1(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -p 5002 &amp;</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -s -u -p 5002 &amp;</span>
 <span class="o">...</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -p 5003 &amp;</span>
+<span class="c1"># iperf -s -u -p 5003 &amp;</span>
 <span class="o">...</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -i 1 5001</span>
+<span class="c1"># iperf -s -u -i 1 5001</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Server</span> <span class="n">listening</span> <span class="n">on</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5001</span>
 <span class="n">Receiving</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -971,12 +973,12 @@ traffic to the port 5002 on h1 and 600Kbps UDP traffic to the port 5003.</p>
 </pre></div>
 </div>
 <p>Node: h2(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 172.16.20.10 -p 5001 -u -b 1M</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 172.16.20.10 -p 5001 -u -b 1M</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <p>Node: h2(2) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 172.16.20.10 -p 5002 -u -b 300K</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 172.16.20.10 -p 5002 -u -b 300K</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5002</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -991,7 +993,7 @@ traffic to the port 5002 on h1 and 600Kbps UDP traffic to the port 5003.</p>
 </pre></div>
 </div>
 <p>Node: h2(3) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 172.16.20.10 -p 5003 -u -b 600K</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 172.16.20.10 -p 5003 -u -b 600K</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">172.16</span><span class="o">.</span><span class="mf">20.10</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5003</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1145,7 +1147,8 @@ $ sudo make install
 </div>
 </div>
 <p>An execution example is as follows.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>mininet@mininet-vm:~$ sudo python qos_sample_topology.py
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ curl -O https://raw.githubusercontent.com/osrg/ryu-book/master/sources/qos_sample_topology.py
+$ sudo python ./qos_sample_topology.py
 Unable to contact the remote controller at 127.0.0.1:6633
 mininet&gt;
 </pre></div>
@@ -1159,13 +1162,13 @@ mininet&gt;
 <p>Next, modify the simple_switch_13.py used in &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a>&#8221;.
 rest_qos.py suppose to be processed on Flow Table pipeline processing,modify simple_switch_13.py to register flow entry into table id:1.</p>
 <p>controller: c0 (root)</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># cd ryu/; python ./setup.py install</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># sed &#39;/OFPFlowMod(/,/)/s/)/, table_id=1)/&#39; ryu/ryu/app/simple_switch_13.py &gt; ryu/ryu/app/qos_simple_switch_13.py</span>
+<span class="c1"># cd ryu/; python ./setup.py install</span>
 </pre></div>
 </div>
 <p>Finally, start rest_qos and qos_simple_switch_13 on xterm of controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@mininet</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~/</span><span class="n">ryu</span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_qos ryu.app.qos_simple_switch_13</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_qos</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">qos_simple_switch_13</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
@@ -1227,7 +1230,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;0&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;0&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1240,7 +1243,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;3&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;3&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1253,7 +1256,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;12&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;12&quot;, &quot;in_port&quot;: &quot;2&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1266,7 +1269,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;0&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;0&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1279,7 +1282,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;3&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;3&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1292,7 +1295,7 @@ rest_qos.py suppose to be processed on Flow Table pipeline processing,modify sim
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;12&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;12&quot;, &quot;in_port&quot;: &quot;3&quot;}, &quot;actions&quot;:{&quot;queue&quot;: &quot;2&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1351,7 +1354,7 @@ prec_level:1</td>
 </tr>
 </tbody>
 </table>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;}, &quot;actions&quot;:{&quot;meter&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;}, &quot;actions&quot;:{&quot;meter&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1364,7 +1367,7 @@ prec_level:1</td>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1377,7 +1380,7 @@ prec_level:1</td>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;}, &quot;actions&quot;:{&quot;meter&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000003</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;match&quot;: {&quot;ip_dscp&quot;: &quot;10&quot;}, &quot;actions&quot;:{&quot;meter&quot;: &quot;1&quot;}}&#39; http://localhost:8080/qos/rules/0000000000000003</span>
 <span class="p">[</span>
   <span class="p">{</span>
     <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -1390,7 +1393,7 @@ prec_level:1</td>
   <span class="p">}</span>
 <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;meter_id&quot;: &quot;1&quot;, &quot;flags&quot;: &quot;KBPS&quot;, &quot;bands&quot;:[{&quot;type&quot;:&quot;DSCP_REMARK&quot;, &quot;rate&quot;: &quot;400&quot;, &quot;prec_level&quot;: &quot;1&quot;}]}&#39; http://localhost:8080/qos/meter/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -1409,7 +1412,7 @@ prec_level:1</td>
 <h3>Verifying the Setting<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <p>Check the contents of the setting of each switch.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1492,7 +1495,7 @@ prec_level:1</td>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000002</span>
+<span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000002</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000002&quot;</span><span class="p">,</span>
@@ -1516,7 +1519,7 @@ prec_level:1</td>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000003</span>
+<span class="c1"># curl -X GET http://localhost:8080/qos/rules/0000000000000003</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000003&quot;</span><span class="p">,</span>
@@ -1556,16 +1559,16 @@ h2, h3 (client) sends the traffic of each class addressed to h1.</p>
 </pre></div>
 </div>
 <p>Node: h1(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -p 5001 &amp;</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -p 5002 &amp;</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -s -u -p 5003 &amp;</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -s -u -p 5001 &amp;</span>
+<span class="c1"># iperf -s -u -p 5002 &amp;</span>
+<span class="c1"># iperf -s -u -p 5003 &amp;</span>
 <span class="o">...</span>
 </pre></div>
 </div>
 <div class="section" id="best-effort-traffic-af11-excess-traffic">
 <h4>Best-effort traffic &amp; AF11 excess traffic<a class="headerlink" href="#best-effort-traffic-af11-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 800K</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 800K</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5001</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1580,7 +1583,7 @@ h2, h3 (client) sends the traffic of each class addressed to h1.</p>
 </pre></div>
 </div>
 <p>Node: h3(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5002</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1601,7 +1604,7 @@ AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p
 <div class="section" id="af11-excess-traffic-best-effort-traffic-af11-non-excess-traffic">
 <h4>AF11 excess traffic &amp; Best-effort traffic &amp; AF11 non-excess traffic<a class="headerlink" href="#af11-excess-traffic-best-effort-traffic-af11-non-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5001</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1617,7 +1620,7 @@ AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p
 </pre></div>
 </div>
 <p>Node: h3(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 500K</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 500K</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5002</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1633,7 +1636,7 @@ AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p
 </pre></div>
 </div>
 <p>Node: h3(2) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5003 -u -b 400K --tos 0x28</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5003</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1652,7 +1655,7 @@ AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p
 <div class="section" id="af11-excess-traffic-af11-excess-traffic">
 <h4>AF11 excess traffic &amp; AF11 excess traffic<a class="headerlink" href="#af11-excess-traffic-af11-excess-traffic" title="Permalink to this headline">¶</a></h4>
 <p>Node: h2 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5001 -u -b 600K --tos 0x28</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5001</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>
@@ -1668,7 +1671,7 @@ AF11 is more preferentially guaranteed bandwidth than traffic of best effort.</p
 </pre></div>
 </div>
 <p>Node: h3(1) (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># iperf -c 10.0.0.1 -p 5002 -u -b 600K --tos 0x28</span>
 <span class="o">------------------------------------------------------------</span>
 <span class="n">Client</span> <span class="n">connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">UDP</span> <span class="n">port</span> <span class="mi">5002</span>
 <span class="n">Sending</span> <span class="mi">1470</span> <span class="n">byte</span> <span class="n">datagrams</span>

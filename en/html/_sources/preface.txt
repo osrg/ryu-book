@@ -1,4 +1,4 @@
-﻿.. rst-class:: unnumbered
+.. rst-class:: unnumbered
 
 Preface
 ========

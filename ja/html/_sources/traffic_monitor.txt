@@ -36,9 +36,10 @@
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_monitor.py
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :lines: 16-
 
-SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモニター機能を
+SimpleSwitch13を継承したSimpleMonitor13クラスに、トラフィックモニター機能を
 実装していますので、ここにはパケット転送に関する処理は出てきません。
 
 
@@ -50,24 +51,10 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 
 .. rst-class:: sourcecode
 
-::
-
-    from operator import attrgetter
-    
-    from ryu.app import simple_switch_13
-    from ryu.controller import ofp_event
-    from ryu.controller.handler import MAIN_DISPATCHER, DEAD_DISPATCHER
-    from ryu.controller.handler import set_ev_cls
-    from ryu.lib import hub
-
-
-    class SimpleMonitor(simple_switch_13.SimpleSwitch13):
-
-        def __init__(self, *args, **kwargs):
-            super(SimpleMonitor, self).__init__(*args, **kwargs)
-            self.datapaths = {}
-            self.monitor_thread = hub.spawn(self._monitor)
-    # ...
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :pyobject: SimpleMonitor13
+    :end-before: set_ev_cls
+    :append: # ...
 
 ``ryu.lib.hub`` には、いくつかのeventletのラッパーや基本的なクラスの実装
 があります。ここではスレッドを生成する ``hub.spawn()`` を使用します。
@@ -75,28 +62,13 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 
 .. rst-class:: sourcecode
 
-::
-
-    # ...
-    @set_ev_cls(ofp_event.EventOFPStateChange,
-                [MAIN_DISPATCHER, DEAD_DISPATCHER])
-    def _state_change_handler(self, ev):
-        datapath = ev.datapath
-        if ev.state == MAIN_DISPATCHER:
-            if not datapath.id in self.datapaths:
-                self.logger.debug('register datapath: %016x', datapath.id)
-                self.datapaths[datapath.id] = datapath
-        elif ev.state == DEAD_DISPATCHER:
-            if datapath.id in self.datapaths:
-                self.logger.debug('unregister datapath: %016x', datapath.id)
-                del self.datapaths[datapath.id]
-
-    def _monitor(self):
-        while True:
-            for dp in self.datapaths.values():
-                self._request_stats(dp)
-            hub.sleep(10)
-    # ...
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :dedent: 4
+    :prepend: # ...
+    :pyobject: SimpleMonitor13
+    :start-after: self.monitor_thread = hub.spawn(self._monitor)
+    :end-before: def _request_stats(self, datapath):
+    :append: # ...
 
 スレッド関数 ``_monitor()`` では、登録されたスイッチに対する統計情報取得
 リクエストの発行を10秒間隔で無限に繰り返します。
@@ -110,20 +82,9 @@ SimpleSwitch13を継承したSimpleMonitorクラスに、トラフィックモ�
 
 .. rst-class:: sourcecode
 
-::
-
-    # ...
-    def _request_stats(self, datapath):
-        self.logger.debug('send stats request: %016x', datapath.id)
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        req = parser.OFPFlowStatsRequest(datapath)
-        datapath.send_msg(req)
-
-        req = parser.OFPPortStatsRequest(datapath, 0, ofproto.OFPP_ANY)
-        datapath.send_msg(req)
-    # ...
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :dedent: 4
+    :pyobject: SimpleMonitor13._request_stats
 
 定期的に呼び出される ``_request_stats()`` では、スイッチに
 ``OFPFlowStatsRequest`` と ``OFPPortStatsRequest`` を発行しています。
@@ -143,28 +104,10 @@ FlowStats
 
 .. rst-class:: sourcecode
 
-::
-
-    # ...
-    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
-    def _flow_stats_reply_handler(self, ev):
-        body = ev.msg.body
-
-        self.logger.info('datapath         '
-                         'in-port  eth-dst           '
-                         'out-port packets  bytes')
-        self.logger.info('---------------- '
-                         '-------- ----------------- '
-                         '-------- -------- --------')
-        for stat in sorted([flow for flow in body if flow.priority == 1],
-                           key=lambda flow: (flow.match['in_port'],
-                                             flow.match['eth_dst'])):
-            self.logger.info('%016x %8x %17s %8x %8d %8d',
-                             ev.msg.datapath.id,
-                             stat.match['in_port'], stat.match['eth_dst'],
-                             stat.instructions[0].actions[0].port,
-                             stat.packet_count, stat.byte_count)
-    # ...
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    :pyobject: SimpleMonitor13._flow_stats_reply_handler
 
 ``OPFFlowStatsReply`` クラスの属性 ``body`` は、 ``OFPFlowStats`` のリストで、
 FlowStatsRequestの対象となった各フローエントリの統計情報が格納されています。
@@ -308,24 +251,10 @@ PortStats
 
 .. rst-class:: sourcecode
 
-::
-
-    # ...
-    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
-    def _port_stats_reply_handler(self, ev):
-        body = ev.msg.body
-
-        self.logger.info('datapath         port     '
-                         'rx-pkts  rx-bytes rx-error '
-                         'tx-pkts  tx-bytes tx-error')
-        self.logger.info('---------------- -------- '
-                         '-------- -------- -------- '
-                         '-------- -------- --------')
-        for stat in sorted(body, key=attrgetter('port_no')):
-            self.logger.info('%016x %8x %8d %8d %8d %8d %8d %8d', 
-                             ev.msg.datapath.id, stat.port_no,
-                             stat.rx_packets, stat.rx_bytes, stat.rx_errors,
-                             stat.tx_packets, stat.tx_bytes, stat.tx_errors)
+.. literalinclude:: ../../ryu/app/simple_monitor_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    :pyobject: SimpleMonitor13._port_stats_reply_handler
 
 ``OPFPortStatsReply`` クラスの属性 ``body`` は、``OFPPortStats`` のリストになって
 います。
@@ -354,41 +283,43 @@ controller: c0:
 
 ::
 
-    ryu@ryu-vm:~# ryu-manager --verbose ./simple_monitor.py
-    loading app ./simple_monitor.py
+    # ryu-manager --verbose ryu.app.simple_monitor_13
+    loading app ryu.app.simple_monitor_13
     loading app ryu.controller.ofp_handler
-    instantiating app ./simple_monitor.py
-    instantiating app ryu.controller.ofp_handler
-    BRICK SimpleMonitor
+    instantiating app ryu.app.simple_monitor_13 of SimpleMonitor13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    BRICK SimpleMonitor13
+      CONSUMES EventOFPPacketIn
+      CONSUMES EventOFPPortStatsReply
       CONSUMES EventOFPStateChange
       CONSUMES EventOFPFlowStatsReply
-      CONSUMES EventOFPPortStatsReply
-      CONSUMES EventOFPPacketIn
       CONSUMES EventOFPSwitchFeatures
     BRICK ofp_event
-      PROVIDES EventOFPStateChange TO {'SimpleMonitor': set(['main', 'dead'])}
-      PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPPacketIn TO {'SimpleMonitor': set(['main'])}
-      PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor': set(['config'])}
-      CONSUMES EventOFPErrorMsg
-      CONSUMES EventOFPPortDescStatsReply
-      CONSUMES EventOFPHello
-      CONSUMES EventOFPEchoRequest
+      PROVIDES EventOFPPacketIn TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPPortStatsReply TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPStateChange TO {'SimpleMonitor13': set(['main', 'dead'])}
+      PROVIDES EventOFPFlowStatsReply TO {'SimpleMonitor13': set(['main'])}
+      PROVIDES EventOFPSwitchFeatures TO {'SimpleMonitor13': set(['config'])}
+      CONSUMES EventOFPPortStatus
       CONSUMES EventOFPSwitchFeatures
-    connected socket:<eventlet.greenio.GreenSocket object at 0x343fb10> address:('127.0.0.1', 55598)
-    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x343fed0>
+      CONSUMES EventOFPEchoReply
+      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPErrorMsg
+      CONSUMES EventOFPEchoRequest
+      CONSUMES EventOFPHello
+    connected socket:<eventlet.greenio.base.GreenSocket object at 0x7fbab7189750> address:('127.0.0.1', 37934)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7fbab7179a90>
     move onto config mode
-    EVENT ofp_event->SimpleMonitor EventOFPSwitchFeatures
-    switch features ev version: 0x4 msg_type 0x6 xid 0x7dd2dc58 OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    EVENT ofp_event->SimpleMonitor13 EventOFPSwitchFeatures
+    switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0x21014c5c,OFPSwitchFeatures(auxiliary_id=0,capabilities=79,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
-    EVENT ofp_event->SimpleMonitor EventOFPStateChange
+    EVENT ofp_event->SimpleMonitor13 EventOFPStateChange
     register datapath: 0000000000000001
     send stats request: 0000000000000001
-    EVENT ofp_event->SimpleMonitor EventOFPFlowStatsReply
+    EVENT ofp_event->SimpleMonitor13 EventOFPFlowStatsReply
+    EVENT ofp_event->SimpleMonitor13 EventOFPPortStatsReply
     datapath         in-port  eth-dst           out-port packets  bytes
     ---------------- -------- ----------------- -------- -------- --------
-    EVENT ofp_event->SimpleMonitor EventOFPPortStatsReply
     datapath         port     rx-pkts  rx-bytes rx-error tx-pkts  tx-bytes tx-error
     ---------------- -------- -------- -------- -------- -------- -------- --------
     0000000000000001        1        0        0        0        0        0        0
@@ -397,8 +328,8 @@ controller: c0:
     0000000000000001 fffffffe        0        0        0        0        0        0
 
 「 :ref:`ch_switching_hub` 」では、ryu-managerコマンド
-にSimpleSwitch13のモジュール名(ryu.app.simple_switch_13)を指定しましたが、
-ここでは、SimpleMonitorのファイル名(./simple_monitor.py)を指定しています。
+にSimpleSwitch13のモジュール名(ryu.app.example_switch_13)を指定しましたが、
+ここでは、SimpleMonitor13のモジュール名(ryu.app.simple_monitor_13)を指定しています。
 
 この時点では、フローエントリが無く(Table-missフローエントリは表示して
 いません)、各ポートのカウントもすべて0です。
@@ -411,14 +342,14 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# ping -c1 10.0.0.2
+    # ping -c1 10.0.0.2
     PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.
     64 bytes from 10.0.0.2: icmp_req=1 ttl=64 time=94.4 ms
 
     --- 10.0.0.2 ping statistics ---
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 94.489/94.489/94.489/0.000 ms
-    root@ryu-vm:~# 
+    # 
 
 パケットの転送や、フローエントリが登録され、統計情報
 が変化します。

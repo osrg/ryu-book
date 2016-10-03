@@ -141,7 +141,7 @@ Implementation of Switching Hub Using Ryu
 
 The source code of the switching hub is in Ryu's source tree.
 
-    ryu/app/simple_switch_13.py
+    ryu/app/example_switch_13.py
 
 Other than the above, there are simple_switch.py(OpenFlow 1.0) and simple_switch_12.py(OpenFlow 1.2), depending on the version of OpenFlow but we take a look at implementation supporting OpenFlow 1.3.
 
@@ -149,8 +149,8 @@ The source code is short thus we shown the entire source code below.
 
 .. rst-class:: sourcecode
 
-.. literalinclude:: sources/simple_switch_13.py
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :lines: 16-
 
 Let's examine the respective implementation content.
 
@@ -164,20 +164,12 @@ Also, MAC address table mac_to_port is defined.
 
 In the OpenFlow protocol, some procedures such as handshake required for communication between the OpenFlow switch and the controller have been defined. However, because Ryu's framework takes care of those procedures thus it is not necessary to be aware of those in Ryu applications.
 
-
 .. rst-class:: sourcecode
 
-::
-
-    class SimpleSwitch13(app_manager.RyuApp):
-        OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
-
-        def __init__(self, *args, **kwargs):
-            super(SimpleSwitch13, self).__init__(*args, **kwargs)
-            self.mac_to_port = {}
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :pyobject: ExampleSwitch13
+    :end-before: set_ev_cls
+    :append: # ...
 
 Event Handler
 ^^^^^^^^^^^^^^^^
@@ -213,15 +205,12 @@ Specifically, upon receiving the Switch Features(Features Reply) message, the Ta
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
-    def switch_features_handler(self, ev):
-        datapath = ev.msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :end-before: #
+    :append: # ...
 
 In ``ev.msg``, the instance of the OpenFlow message class corresponding to the event is stored. In this case, it is 
 ``ryu.ofproto.ofproto_v1_3_parser.OFPSwitchFeatures``.
@@ -239,20 +228,12 @@ Attribute name         Explanation
 ============== ==============================================================
 id             ID (data path ID) of the connected OpenFlow switch.
 ofproto        Indicates the ofproto module that supports the OpenFlow version
-               in use. At this point, it is one of the following modules.
-
-               ``ryu.ofproto.ofproto_v1_0``
-
-               ``ryu.ofproto.ofproto_v1_2``
+               in use. In the case of OpenFlow 1.3 format will be following module.
 
                ``ryu.ofproto.ofproto_v1_3``
 
 ofproto_parser Same as ofproto, indicates the ofproto_parser module.
-               At this point, it is one of the following modules.
-
-               ``ryu.ofproto.ofproto_v1_0_parser``
-
-               ``ryu.ofproto.ofproto_v1_2_parser``
+               In the case of OpenFlow 1.3 format will be following module.
 
                ``ryu.ofproto.ofproto_v1_3_parser``
 ============== ==============================================================
@@ -269,31 +250,14 @@ The switching hub does not particularly use the received Switch Features message
 
 .. rst-class:: sourcecode
 
-::
-
-    def switch_features_handler(self, ev):
-        # ...
-
-        # install table-miss flow entry
-        #
-        # We specify NO BUFFER to max_len of the output action due to
-        # OVS bug. At this moment, if we specify a lesser number, e.g.,
-        # 128, OVS will send Packet-In with invalid buffer_id and
-        # truncated packet data. In that case, we cannot output packets
-        # correctly.
-        match = parser.OFPMatch()
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
-                                          ofproto.OFPCML_NO_BUFFER)]
-        self.add_flow(datapath, 0, match, actions)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def switch_features_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13.switch_features_handler
+    :start-after: parser = datapath.ofproto_parser
 
 The Table-miss flow entry has the lowest (0) priority and this entry matches all packets. In the instruction of this entry, by specifying the output action to output to the controller port, in case the received packet does not match any of the normal flow entries, Packet-In is issued.
-
-.. NOTE::
-
-        As of January 2014, Open vSwitch does not fully support OpenFlow 1.3
-        and as with versions prior to OpenFlow1.3, Packet-In is issued by
-        default. Also, the Table-miss flow entry is not supported at this
-        time and is handled as a normal flow entry.
 
 An empty match is generated to match all packets. Match is expressed in the ``OFPMatch`` class.
 
@@ -312,17 +276,12 @@ Create the handler of the Packet-In event handler in order to accept received pa
 
 .. rst-class:: sourcecode
 
-::
-
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def _packet_in_handler(self, ev):
-        msg = ev.msg
-        datapath = msg.datapath
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :end-before: #
+    :append: # ...
 
 Frequently used OFPPacketIn class attributes are as follows:
 
@@ -343,28 +302,14 @@ Updating the MAC Address Table
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        in_port = msg.match['in_port']
-
-        pkt = packet.Packet(msg.data)
-        eth = pkt.get_protocols(ethernet.ethernet)[0]
-
-        dst = eth.dst
-        src = eth.src
-
-        dpid = datapath.id
-        self.mac_to_port.setdefault(dpid, {})
-
-        self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
-
-        # learn a mac address to avoid FLOOD next time.
-        self.mac_to_port[dpid][src] = in_port
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: src = eth_pkt.src
+    :end-before: # if the destination mac address is already learned,
+    :append: # ...
 
 Get the receive port (``in_port``) from the OFPPacketIn match.
 The destination MAC address and sender MAC address are obtained from the Ethernet header of the received packets using Ryu's packet library.
@@ -381,25 +326,14 @@ The corresponding port number is used when the destination MAC address exists in
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        if dst in self.mac_to_port[dpid]:
-            out_port = self.mac_to_port[dpid][dst]
-        else:
-            out_port = ofproto.OFPP_FLOOD
-
-        actions = [parser.OFPActionOutput(out_port)]
-
-        # install a flow to avoid packet_in next time
-        if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst)
-            self.add_flow(datapath, 1, match, actions)
-
-        # ...
-
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.mac_to_port[dpid][src] = in_port
+    :end-before: # construct packet_out message and send it.
+    :append: # ...
 
 If the destination MAC address is found, an entry is added to the flow table of the OpenFlow switch.
 
@@ -426,16 +360,11 @@ Processing of the Packet-In handler has not been done yet but here take a look a
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, priority, match, actions):
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-
-        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
-                                             actions)]
-
-        # ...
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :pyobject: ExampleSwitch13.add_flow
+    :end-before: mod = parser.OFPFlowMod
+    :append: # ...
 
 For flow entries, set match that indicates the target packet conditions, and instruction that indicates the operation on the packet, entry priority level, and effective time.
 
@@ -445,14 +374,12 @@ Finally, add an entry to the flow table by issuing the Flow Mod message.
 
 .. rst-class:: sourcecode
 
-::
-
-    def add_flow(self, datapath, port, dst, actions):
-        # ...
-
-        mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
-                                match=match, instructions=inst)
-        datapath.send_msg(mod)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def add_flow(self, datapath, priority, match, actions):
+              # ...
+    :pyobject: ExampleSwitch13.add_flow
+    :start-after: actions)]
 
 The class corresponding to the Flow Mod message is the ``OFPFlowMod`` class. The instance of the OFPFlowMod class is generated and the message is sent to the OpenFlow switch using the Datapath.send_msg() method.
 
@@ -559,18 +486,12 @@ Regardless whether the destination MAC address is found from the MAC address tab
 
 .. rst-class:: sourcecode
 
-::
-
-    def _packet_in_handler(self, ev):
-        # ...
-
-        data = None
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data
-
-        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
-                                  in_port=in_port, actions=actions, data=data)
-        datapath.send_msg(out)
+.. literalinclude:: ../../ryu/app/example_switch_13.py
+    :dedent: 4
+    :prepend: def _packet_in_handler(self, ev):
+              # ...
+    :pyobject: ExampleSwitch13._packet_in_handler
+    :start-after: self.add_flow(datapath, 1, match, actions)
 
 The class corresponding to the Packet-Out message is ``OFPPacketOut`` class.
 
@@ -725,7 +646,7 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl show
+    # ovs-vsctl show
     fdec0957-12b6-4417-9d02-847654e9cc1f
     Bridge "s1"
         Controller "ptcp:6634"
@@ -741,7 +662,7 @@ switch: s1:
             Interface "s1"
                 type: internal
     ovs_version: "1.11.0"
-    root@ryu-vm:~# ovs-dpctl show
+    # ovs-dpctl show
     system@ovs-system:
             lookups: hit:14 missed:14 lost:0
             flows: 0
@@ -750,7 +671,7 @@ switch: s1:
             port 2: s1-eth1
             port 3: s1-eth2
             port 4: s1-eth3
-    root@ryu-vm:~#
+    #
 
 Switch (bridge) *s1* has been created and three ports corresponding to hosts have been added.
 
@@ -762,8 +683,8 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-vsctl set Bridge s1 protocols=OpenFlow13
-    root@ryu-vm:~#
+    # ovs-vsctl set Bridge s1 protocols=OpenFlow13
+    #
 
 Let's check the empty flow table.
 
@@ -773,9 +694,9 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O OpenFlow13 dump-flows s1
+    # ovs-ofctl -O OpenFlow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
-    root@ryu-vm:~#
+    #
 
 The ovs-ofctl command needs to specify the OpenFlow version to be used as an option. The default is *OpenFlow10*.
 
@@ -793,27 +714,29 @@ controller: c0:
 
 ::
 
-    root@ryu-vm:~# ryu-manager --verbose ryu.app.simple_switch_13
-    loading app ryu.app.simple_switch_13
+    # ryu-manager --verbose ryu.app.example_switch_13
+    loading app ryu.app.example_switch_13
     loading app ryu.controller.ofp_handler
-    instantiating app ryu.app.simple_switch_13
-    instantiating app ryu.controller.ofp_handler
-    BRICK SimpleSwitch13
-      CONSUMES EventOFPSwitchFeatures
+    instantiating app ryu.app.example_switch_13 of ExampleSwitch13
+    instantiating app ryu.controller.ofp_handler of OFPHandler
+    BRICK ExampleSwitch13
       CONSUMES EventOFPPacketIn
+      CONSUMES EventOFPSwitchFeatures
     BRICK ofp_event
-      PROVIDES EventOFPSwitchFeatures TO {'SimpleSwitch13': set(['config'])}
-      PROVIDES EventOFPPacketIn TO {'SimpleSwitch13': set(['main'])}
+      PROVIDES EventOFPPacketIn TO {'ExampleSwitch13': set(['main'])}
+      PROVIDES EventOFPSwitchFeatures TO {'ExampleSwitch13': set(['config'])}
       CONSUMES EventOFPErrorMsg
       CONSUMES EventOFPHello
       CONSUMES EventOFPEchoRequest
-      CONSUMES EventOFPPortDescStatsReply
+      CONSUMES EventOFPEchoReply
+      CONSUMES EventOFPPortStatus
       CONSUMES EventOFPSwitchFeatures
-    connected socket:<eventlet.greenio.GreenSocket object at 0x2e2c050> address:('127.0.0.1', 53937)
-    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x2e2a550>
+      CONSUMES EventOFPPortDescStatsReply
+    connected socket:<eventlet.greenio.base.GreenSocket object at 0x7f1239937a90> address:('127.0.0.1', 37898)
+    hello ev <ryu.controller.ofp_event.EventOFPHello object at 0x7f1239927d50>
     move onto config mode
-    EVENT ofp_event->SimpleSwitch13 EventOFPSwitchFeatures
-    switch features ev version: 0x4 msg_type 0x6 xid 0xff9ad15b OFPSwitchFeatures(auxiliary_id=0,capabilities=71,datapath_id=1,n_buffers=256,n_tables=254)
+    EVENT ofp_event->ExampleSwitch13 EventOFPSwitchFeatures
+    switch features ev version=0x4,msg_type=0x6,msg_len=0x20,xid=0xea43ed30,OFPSwitchFeatures(auxiliary_id=0,capabilities=79,datapath_id=1,n_buffers=256,n_tables=254)
     move onto main mode
 
 It may take time to connect to OVS but after you wait for a while, as shown above...
@@ -839,10 +762,10 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=105.975s, table=0, n_packets=0, n_bytes=0, priority=0 actions=CONTROLLER:65535
-    root@ryu-vm:~#
+    #
 
 The priority level is 0, no match, and CONTROLLER is specified for action, and transfer data size of 65535(0xffff = OFPCML_NO_BUFFER) is specified.
 
@@ -878,7 +801,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h1-eth0
+    # tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -888,7 +811,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h2-eth0
+    # tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -898,7 +821,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h3-eth0
+    # tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
 
@@ -929,12 +852,12 @@ switch: s1:
 
 ::
 
-    root@ryu-vm:~# ovs-ofctl -O openflow13 dump-flows s1
+    # ovs-ofctl -O openflow13 dump-flows s1
     OFPST_FLOW reply (OF1.3) (xid=0x2):
      cookie=0x0, duration=417.838s, table=0, n_packets=3, n_bytes=182, priority=0 actions=CONTROLLER:65535
      cookie=0x0, duration=48.444s, table=0, n_packets=2, n_bytes=140, priority=1,in_port=2,dl_dst=00:00:00:00:00:01 actions=output:1
      cookie=0x0, duration=48.402s, table=0, n_packets=1, n_bytes=42, priority=1,in_port=1,dl_dst=00:00:00:00:00:02 actions=output:2
-    root@ryu-vm:~#
+    #
 
 In addition to the Table-miss flow entry, tow flow entries of priority level 1 have been registered.
 
@@ -948,7 +871,7 @@ Because (1) is a communication from host 2 to host 1, ARP reply and ICMP echo re
 (2) is a communication from host 1 to host 2 and because ARP request is broadcast, this is supposed to be by ICMP echo request.
 
 
-Now, let's look at the log output of simple_switch_13.
+Now, let's look at the log output of example_switch_13.
 
 controller: c0:
 
@@ -956,13 +879,12 @@ controller: c0:
 
 ::
 
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 ff:ff:ff:ff:ff:ff 1
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:02 00:00:00:00:00:01 2
-    EVENT ofp_event->SimpleSwitch13 EventOFPPacketIn
+    EVENT ofp_event->ExampleSwitch13 EventOFPPacketIn
     packet in 1 00:00:00:00:00:01 00:00:00:00:00:02 1
-
 
 The first Packet-In is the ARP request issued by host 1 and is a broadcast, the flow entry is not registered and only Packet-Out is issued.
 
@@ -981,7 +903,7 @@ host: h1:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h1-eth0
+    # tcpdump -en -i h1-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h1-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.625473 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
@@ -999,7 +921,7 @@ host: h2:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h2-eth0
+    # tcpdump -en -i h2-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h2-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.637987 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28
@@ -1016,7 +938,7 @@ host: h3:
 
 ::
 
-    root@ryu-vm:~# tcpdump -en -i h3-eth0
+    # tcpdump -en -i h3-eth0
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on h3-eth0, link-type EN10MB (Ethernet), capture size 65535 bytes
     20:38:04.637954 00:00:00:00:00:01 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.0.0.2 tell 10.0.0.1, length 28

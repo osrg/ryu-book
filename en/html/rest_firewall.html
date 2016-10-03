@@ -23,6 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="top" title="Ryubook 1.0 documentation" href="index.html" />
     <link rel="next" title="Router" href="rest_router.html" />
     <link rel="prev" title="OF-Config Library" href="of_config.html" /> 
@@ -59,7 +61,7 @@
 <div class="section" id="environment-building">
 <h3>Environment Building<a class="headerlink" href="#environment-building" title="Permalink to this headline">¶</a></h3>
 <p>First, build an environment on Mininet. The commands to be entered are the same as &#8220;<a class="reference internal" href="switching_hub.html#ch-switching-hub"><span class="std std-ref">Switching Hub</span></a>&#8220;</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -87,12 +89,12 @@ mininet&gt;
 </div>
 <p>Next, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Finally, start rest_firewall on xterm of the controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -117,7 +119,7 @@ mininet&gt;
 <p class="last">For details of REST API used in the following description, please see &#8220;<a class="reference internal" href="#rest-api-list">REST API List</a>&#8221; at the end of the section.</p>
 </div>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -128,7 +130,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+<span class="c1"># curl http://localhost:8080/firewall/module/status</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
@@ -143,7 +145,7 @@ mininet&gt;
 </div>
 <p>Check ping communication from h1 to h2. Since access permission rules are not set, communication will be blocked.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
@@ -193,7 +195,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -206,7 +208,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.1/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -222,7 +224,7 @@ mininet&gt;
 </div>
 <p>Added rules are registered in the switch as flow entries.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">823.705</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">420</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">65534</span><span class="p">,</span><span class="n">arp</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">542.472</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">1960</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span> <span class="n">actions</span><span class="o">=</span><span class="n">CONTROLLER</span><span class="p">:</span><span class="mi">128</span>
@@ -263,7 +265,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -276,7 +278,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -340,7 +342,7 @@ Set a value greater than 1, which is default value of priority.</p>
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -353,7 +355,7 @@ Set a value greater than 1, which is default value of priority.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d  &#39;{&quot;nw_src&quot;: &quot;10.0.0.3/32&quot;, &quot;nw_dst&quot;: &quot;10.0.0.2/32&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;, &quot;actions&quot;: &quot;DENY&quot;, &quot;priority&quot;: &quot;10&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -369,7 +371,7 @@ Set a value greater than 1, which is default value of priority.</p>
 </div>
 <p>Added rules are registered in the switch as flow entries.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-ofctl -O openflow13 dump-flows s1</span>
 <span class="n">OFPST_FLOW</span> <span class="n">reply</span> <span class="p">(</span><span class="n">OF1</span><span class="o">.</span><span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mh">0x2</span><span class="p">):</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x3</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">242.155</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
  <span class="n">cookie</span><span class="o">=</span><span class="mh">0x4</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">233.099</span><span class="n">s</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_packets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ip</span><span class="p">,</span><span class="n">nw_src</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">,</span><span class="n">nw_dst</span><span class="o">=</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="n">actions</span><span class="o">=</span><span class="n">NORMAL</span>
@@ -386,7 +388,7 @@ Set a value greater than 1, which is default value of priority.</p>
 <h3>Confirming Rules<a class="headerlink" href="#confirming-rules" title="Permalink to this headline">¶</a></h3>
 <p>Confirm the rules that have been set.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;access_control_list&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -456,7 +458,7 @@ Set a value greater than 1, which is default value of priority.</p>
 <a class="reference internal image-reference" href="_images/fig21.png"><img alt="_images/fig21.png" class="align-center" src="_images/fig21.png" style="width: 405.2px; height: 295.2px;" /></a>
 <p>Try to send a ping from h1 to h2. Since rules to allow communication are set, the ping will go through.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.419</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.047</span> <span class="n">ms</span>
@@ -467,7 +469,7 @@ Set a value greater than 1, which is default value of priority.</p>
 </div>
 <p>Packets from h1 to h2 other than ping are blocked by the firewall. For example, if you execute wget from h1 to h2, a log is output that packets were blocked.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># wget http://10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># wget http://10.0.0.2</span>
 <span class="o">--</span><span class="mi">2013</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">16</span> <span class="mi">15</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">38</span><span class="o">--</span>  <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="o">/</span>
 <span class="n">Connecting</span> <span class="n">to</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span><span class="mf">80.</span><span class="o">..</span> <span class="o">^</span><span class="n">C</span>
 </pre></div>
@@ -479,13 +481,13 @@ Set a value greater than 1, which is default value of priority.</p>
 </div>
 <p>Between h2 and 3h, packets other than ping can communicate. For example, if you execute ssh from h2 to h3, it will not output a log that packets were blocked. (Since sshd is not operating in h3, communication by ssh will fail.)</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ssh 10.0.0.3</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ssh 10.0.0.3</span>
 <span class="n">ssh</span><span class="p">:</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">host</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">port</span> <span class="mi">22</span><span class="p">:</span> <span class="n">Connection</span> <span class="n">refused</span>
 </pre></div>
 </div>
 <p>If you execute ping from h2 to h3, a log is output that packets were blocked by the firewall.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.3</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.3</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
@@ -502,7 +504,7 @@ Set a value greater than 1, which is default value of priority.</p>
 <h3>Deleting a Rule<a class="headerlink" href="#deleting-a-rule" title="Permalink to this headline">¶</a></h3>
 <p>Delete the &#8220;rule_id:5&#8221; and &#8220;rule_id:6&#8221; rules.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;5&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -515,7 +517,7 @@ Set a value greater than 1, which is default value of priority.</p>
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X DELETE -d &#39;{&quot;rule_id&quot;: &quot;6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -533,7 +535,7 @@ Set a value greater than 1, which is default value of priority.</p>
 <a class="reference internal image-reference" href="_images/fig31.png"><img alt="_images/fig31.png" class="align-center" src="_images/fig31.png" style="width: 405.6px; height: 295.6px;" /></a>
 <p>Let&#8217;s confirm them. Since the rule to block pings (ICMP) between h2 and h3 is deleted, you can see that ping can now communicate.</p>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.3</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.3</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.841</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.3</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.036</span> <span class="n">ms</span>
@@ -551,7 +553,7 @@ Set a value greater than 1, which is default value of priority.</p>
 <div class="section" id="building-an-environment">
 <h3>Building an Environment<a class="headerlink" href="#building-an-environment" title="Permalink to this headline">¶</a></h3>
 <p>As with the example of Single-tenant, build an environment on Mininet and start another xterm for controller. Note that there is one more host to be used than before.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -575,41 +577,41 @@ mininet&gt;
 </div>
 <p>Next, set the VLAN ID to the interface of each host.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1-eth0 name h1-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.1/8 dev h1-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.1/8 dev h1-eth0</span>
+<span class="c1"># ip link add link h1-eth0 name h1-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add 10.0.0.1/8 dev h1-eth0.2</span>
+<span class="c1"># ip link set dev h1-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2-eth0 name h2-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.2/8 dev h2-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.2/8 dev h2-eth0</span>
+<span class="c1"># ip link add link h2-eth0 name h2-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add 10.0.0.2/8 dev h2-eth0.2</span>
+<span class="c1"># ip link set dev h2-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h3-eth0 name h3-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.3/8 dev h3-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h3-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.3/8 dev h3-eth0</span>
+<span class="c1"># ip link add link h3-eth0 name h3-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add 10.0.0.3/8 dev h3-eth0.110</span>
+<span class="c1"># ip link set dev h3-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h4:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del 10.0.0.4/8 dev h4-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h4-eth0 name h4-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add 10.0.0.4/8 dev h4-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h4-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del 10.0.0.4/8 dev h4-eth0</span>
+<span class="c1"># ip link add link h4-eth0 name h4-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add 10.0.0.4/8 dev h4-eth0.110</span>
+<span class="c1"># ip link set dev h4-eth0.110 up</span>
 </pre></div>
 </div>
 <p>Then, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Finally, start rest_firewall on an xterm of the controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -630,7 +632,7 @@ mininet&gt;
 <h3>Changing the Initial State<a class="headerlink" href="#changing-the-initial-state" title="Permalink to this headline">¶</a></h3>
 <p>Enable the firewall.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -641,7 +643,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+<span class="c1"># curl http://localhost:8080/firewall/module/status</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
@@ -694,7 +696,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;nw_src&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -708,7 +710,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;nw_dst&quot;: &quot;10.0.0.0/8&quot;, &quot;nw_proto&quot;: &quot;ICMP&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -728,7 +730,7 @@ mininet&gt;
 <h3>Confirming Rules<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Confirm the rules that have been set.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;access_control_list&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -763,7 +765,7 @@ mininet&gt;
 </div>
 <p>Let&#8217;s confirm them. When you execute ping from h1, which is vlan_id=2, to h2 which is also vlan_id=2, you can see that it can communicate per the rules that were added.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.2</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.893</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.2</span><span class="p">:</span> <span class="n">icmp_req</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.098</span> <span class="n">ms</span>
@@ -774,7 +776,7 @@ mininet&gt;
 </div>
 <p>Since there is no rule between h3 and h4, which are both vlan_id=110, packets are blocked.</p>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping 10.0.0.4</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping 10.0.0.4</span>
 <span class="n">PING</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span> <span class="p">(</span><span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span><span class="p">)</span> <span class="mi">56</span><span class="p">(</span><span class="mi">84</span><span class="p">)</span> <span class="nb">bytes</span> <span class="n">of</span> <span class="n">data</span><span class="o">.</span>
 <span class="o">^</span><span class="n">C</span>
 <span class="o">---</span> <span class="mf">10.0</span><span class="o">.</span><span class="mf">0.4</span> <span class="n">ping</span> <span class="n">statistics</span> <span class="o">---</span>
@@ -796,7 +798,7 @@ mininet&gt;
 <div class="section" id="id2">
 <h3>Environment Building<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>First, build an environment on Mininet. The commands to be entered are the same as &#8220;<a class="reference internal" href="#example-of-operation-of-a-single-tenant-ipv4">Example of operation of a single tenant (IPv4)</a>&#8221;.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo single,3 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -823,12 +825,12 @@ mininet&gt;
 </div>
 <p>Next, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Finally, start rest_firewall on xterm of the controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -849,7 +851,7 @@ mininet&gt;
 <h3>Changing the Initial State<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <p>Enable the firewall.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -860,7 +862,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+<span class="c1"># curl http://localhost:8080/firewall/module/status</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
@@ -923,7 +925,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -936,7 +938,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -949,7 +951,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -962,7 +964,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;ipv6_dst&quot;: &quot;ff02::1:ff00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -981,7 +983,7 @@ mininet&gt;
 <h3>Confirming Rules<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <p>Confirm the rules that have been set.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1033,7 +1035,7 @@ mininet&gt;
 </div>
 <p>Let&#8217;s confirm them. When you execute ping from h1 to h2, you can see that it can communicate per the rules that were added.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping6 -I h1-eth0 fe80::200:ff:fe00:2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping6 -I h1-eth0 fe80::200:ff:fe00:2</span>
 <span class="n">PING</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">(</span><span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">1</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span><span class="p">:</span> <span class="mi">56</span> <span class="n">data</span> <span class="nb">bytes</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.954</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.047</span> <span class="n">ms</span>
@@ -1044,7 +1046,7 @@ mininet&gt;
 </div>
 <p>Since there is no rule between h1 and h3, packets are blocked.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping6 -I h1-eth0 fe80::200:ff:fe00:3</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping6 -I h1-eth0 fe80::200:ff:fe00:3</span>
 <span class="n">PING</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">3</span><span class="p">(</span><span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">1</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span><span class="p">:</span> <span class="mi">56</span> <span class="n">data</span> <span class="nb">bytes</span>
 <span class="n">From</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">1</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">1</span> <span class="n">Destination</span> <span class="n">unreachable</span><span class="p">:</span> <span class="n">Address</span> <span class="n">unreachable</span>
 <span class="n">From</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">1</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">2</span> <span class="n">Destination</span> <span class="n">unreachable</span><span class="p">:</span> <span class="n">Address</span> <span class="n">unreachable</span>
@@ -1069,7 +1071,7 @@ mininet&gt;
 <div class="section" id="id6">
 <h3>Building an Environment<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <p>As with &#8220;<a class="reference internal" href="#example-of-the-operation-of-a-multi-tenant-ipv4">Example of the Operation of a Multi-tenant (IPv4)</a>&#8221;, build an environment on Mininet and start another xterm for controller.</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span>ryu@ryu-vm:~$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
+<div class="console highlight-default"><div class="highlight"><pre><span></span>$ sudo mn --topo single,4 --mac --switch ovsk --controller remote -x
 *** Creating network
 *** Adding controller
 Unable to contact the remote controller at 127.0.0.1:6633
@@ -1092,41 +1094,41 @@ mininet&gt;
 </div>
 <p>Next, set the VLAN ID to the interface of each host.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h1-eth0 name h1-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h1-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del fe80::200:ff:fe00:1/64 dev h1-eth0</span>
+<span class="c1"># ip link add link h1-eth0 name h1-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add fe80::200:ff:fe00:1/64 dev h1-eth0.2</span>
+<span class="c1"># ip link set dev h1-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h2:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h2-eth0 name h2-eth0.2 type vlan id 2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h2-eth0.2 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del fe80::200:ff:fe00:2/64 dev h2-eth0</span>
+<span class="c1"># ip link add link h2-eth0 name h2-eth0.2 type vlan id 2</span>
+<span class="c1"># ip addr add fe80::200:ff:fe00:2/64 dev h2-eth0.2</span>
+<span class="c1"># ip link set dev h2-eth0.2 up</span>
 </pre></div>
 </div>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h3-eth0 name h3-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h3-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del fe80::200:ff:fe00:3/64 dev h3-eth0</span>
+<span class="c1"># ip link add link h3-eth0 name h3-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add fe80::200:ff:fe00:3/64 dev h3-eth0.110</span>
+<span class="c1"># ip link set dev h3-eth0.110 up</span>
 </pre></div>
 </div>
 <p>host: h4:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link add link h4-eth0 name h4-eth0.110 type vlan id 110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110</span>
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ip link set dev h4-eth0.110 up</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ip addr del fe80::200:ff:fe00:4/64 dev h4-eth0</span>
+<span class="c1"># ip link add link h4-eth0 name h4-eth0.110 type vlan id 110</span>
+<span class="c1"># ip addr add fe80::200:ff:fe00:4/64 dev h4-eth0.110</span>
+<span class="c1"># ip link set dev h4-eth0.110 up</span>
 </pre></div>
 </div>
 <p>Then, set the version of OpenFlow to be used in each router to 1.3.</p>
 <p>switch: s1 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ovs-vsctl set Bridge s1 protocols=OpenFlow13</span>
 </pre></div>
 </div>
 <p>Finally, start rest_firewall on an xterm of the controller.</p>
 <p>controller: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ryu-manager ryu.app.rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">rest_firewall</span>
 <span class="n">loading</span> <span class="n">app</span> <span class="n">ryu</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">ofp_handler</span>
 <span class="n">instantiating</span> <span class="n">app</span> <span class="kc">None</span> <span class="n">of</span> <span class="n">DPSet</span>
@@ -1147,7 +1149,7 @@ mininet&gt;
 <h3>Changing the Initial State<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <p>Enable the firewall.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X PUT http://localhost:8080/firewall/module/enable/0000000000000001</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1158,7 +1160,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/module/status</span>
+<span class="c1"># curl http://localhost:8080/firewall/module/status</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enable&quot;</span><span class="p">,</span>
@@ -1211,7 +1213,7 @@ mininet&gt;
 </tbody>
 </table>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:1&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1225,7 +1227,7 @@ mininet&gt;
     <span class="p">}</span>
   <span class="p">]</span>
 
-<span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
+<span class="c1"># curl -X POST -d &#39;{&quot;ipv6_src&quot;: &quot;fe80::200:ff:fe00:2&quot;, &quot;nw_proto&quot;: &quot;ICMPv6&quot;}&#39; http://localhost:8080/firewall/rules/0000000000000001/2</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;command_result&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1245,7 +1247,7 @@ mininet&gt;
 <h3>Confirming Rules<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <p>Confirm the rules that have been set.</p>
 <p>Node: c0 (root):</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># curl http://localhost:8080/firewall/rules/0000000000000001/all</span>
   <span class="p">[</span>
     <span class="p">{</span>
       <span class="s2">&quot;switch_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0000000000000001&quot;</span><span class="p">,</span>
@@ -1280,7 +1282,7 @@ mininet&gt;
 </div>
 <p>Let&#8217;s confirm them. When you execute ping from h1, which is vlan_id=2, to h2 which is also vlan_id=2, you can see that it can communicate per the rules that were added.</p>
 <p>host: h1:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping6 -I h1-eth0.2 fe80::200:ff:fe00:2</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping6 -I h1-eth0.2 fe80::200:ff:fe00:2</span>
 <span class="n">PING</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">(</span><span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">1</span> <span class="n">h1</span><span class="o">-</span><span class="n">eth0</span><span class="o">.</span><span class="mi">2</span><span class="p">:</span> <span class="mi">56</span> <span class="n">data</span> <span class="nb">bytes</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">1</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.609</span> <span class="n">ms</span>
 <span class="mi">64</span> <span class="nb">bytes</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">2</span> <span class="n">ttl</span><span class="o">=</span><span class="mi">64</span> <span class="n">time</span><span class="o">=</span><span class="mf">0.046</span> <span class="n">ms</span>
@@ -1291,7 +1293,7 @@ mininet&gt;
 </div>
 <p>Since there is no rule between h3 and h4, which are both vlan_id=110, packets are blocked.</p>
 <p>host: h3:</p>
-<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@ryu</span><span class="o">-</span><span class="n">vm</span><span class="p">:</span><span class="o">~</span><span class="c1"># ping6 -I h3-eth0.110 fe80::200:ff:fe00:4</span>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ping6 -I h3-eth0.110 fe80::200:ff:fe00:4</span>
 <span class="n">PING</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">4</span><span class="p">(</span><span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">3</span> <span class="n">h3</span><span class="o">-</span><span class="n">eth0</span><span class="o">.</span><span class="mi">110</span><span class="p">:</span> <span class="mi">56</span> <span class="n">data</span> <span class="nb">bytes</span>
 <span class="n">From</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">3</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">1</span> <span class="n">Destination</span> <span class="n">unreachable</span><span class="p">:</span> <span class="n">Address</span> <span class="n">unreachable</span>
 <span class="n">From</span> <span class="n">fe80</span><span class="p">::</span><span class="mi">200</span><span class="p">:</span><span class="n">ff</span><span class="p">:</span><span class="n">fe00</span><span class="p">:</span><span class="mi">3</span> <span class="n">icmp_seq</span><span class="o">=</span><span class="mi">2</span> <span class="n">Destination</span> <span class="n">unreachable</span><span class="p">:</span> <span class="n">Address</span> <span class="n">unreachable</span>
