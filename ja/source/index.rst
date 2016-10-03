@@ -10,6 +10,7 @@ RYU SDN Framework
    :maxdepth: 2
 
    preface.rst
+   installation_guide.rst
    switching_hub.rst
    traffic_monitor.rst
    rest_api.rst
