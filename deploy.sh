@@ -16,7 +16,7 @@ CURRENT_COMMIT=`git rev-parse --verify HEAD`
 echo Current Commit: ${CURRENT_COMMIT}
 
 # clone the gh-pages branch
-git clone --depth=50 --branch=gh-pages https://${GH_TOKEN}@github.com/osrg/ryu-book.git gh-pages
+git clone --depth=50 --branch=gh-pages https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 
 # run our compile script
 echo Targets: ${LANG_DIRS[@]}
