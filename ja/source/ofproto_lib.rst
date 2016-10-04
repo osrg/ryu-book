@@ -1,3 +1,5 @@
+.. _ch_ofproto_lib:
+
 ofprotoライブラリ
 =================
 
