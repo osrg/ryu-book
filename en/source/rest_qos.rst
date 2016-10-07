@@ -1064,9 +1064,9 @@ Node: h1(1) (root):
     [  4] 18.0-19.0 sec   118 KBytes   964 Kbits/sec   0.839 ms    0/   82 (0%)
     [  4]  0.0-19.7 sec  1.19 MBytes   508 Kbits/sec   0.981 ms    0/  852 (0%)
 
-The above result shows the traffic marked with AF41 (sent to the port 5002) is
+The above result shows the traffic marked with AF41 (sent to the port 5003) is
 guaranteed 500Kbps bandwidth, and the traffic marked with AF31 (sent to the
-port 5003) is guaranteed 200Kbps bandwidth.
+port 5002) is guaranteed 200Kbps bandwidth.
 On the other hand, the bandwidth of best-effort traffic is limited while
 the traffic marked with AF class is communicating.
 
