@@ -28,7 +28,7 @@
     <link rel="search" title="検索" href="search.html" />
     <link rel="top" title="Ryubook 1.0 ドキュメント" href="index.html" />
     <link rel="next" title="トラフィックモニター" href="traffic_monitor.html" />
-    <link rel="prev" title="はじめに" href="preface.html" /> 
+    <link rel="prev" title="環境構築" href="installation_guide.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -41,7 +41,7 @@
           <a href="traffic_monitor.html" title="トラフィックモニター"
              accesskey="N">次へ</a> |</li>
         <li class="right" >
-          <a href="preface.html" title="はじめに"
+          <a href="installation_guide.html" title="環境構築"
              accesskey="P">前へ</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &#187;</li> 
       </ul>
@@ -622,56 +622,7 @@
 </div>
 <div class="section" id="id8">
 <h2>Ryuアプリケーションの実行<a class="headerlink" href="#id8" title="このヘッドラインへのパーマリンク">¶</a></h2>
-<p>スイッチングハブの実行のため、OpenFlowスイッチにはOpen vSwitch、実行環境としてmininetを使います。</p>
-<p>Ryu用のOpenFlow Tutorial VMイメージが用意されているので、このVMイメージを利用すると実験環境を簡単に準備することができます。</p>
-<p>VMイメージ</p>
-<blockquote>
-<div><p><a class="reference external" href="http://sourceforge.net/projects/ryu/files/vmimages/OpenFlowTutorial/">http://sourceforge.net/projects/ryu/files/vmimages/OpenFlowTutorial/</a></p>
-<p>OpenFlow_Tutorial_Ryu3.2.ova (約1.4GB)</p>
-</div></blockquote>
-<p>関連ドキュメント(Wikiページ)</p>
-<blockquote>
-<div><a class="reference external" href="https://github.com/osrg/ryu/wiki/OpenFlow_Tutorial">https://github.com/osrg/ryu/wiki/OpenFlow_Tutorial</a></div></blockquote>
-<p>ドキュメントにあるVMイメージは、Open vSwitchとRyuのバージョンが古いためご注意ください。</p>
-<p>このVMイメージを使わず、自分で環境を構築することも当然できます。VMイメージで使用している各ソフトウェアのバージョンは最新版を想定しています。自身で構築する場合は参考にしてください。</p>
-<dl class="docutils">
-<dt>Mininet VM</dt>
-<dd><p class="first"><a class="reference external" href="http://mininet.org/download/">http://mininet.org/download/</a></p>
-<dl class="last docutils">
-<dt>インストール手順(githubページ)</dt>
-<dd><a class="reference external" href="https://github.com/mininet/mininet/blob/master/INSTALL">https://github.com/mininet/mininet/blob/master/INSTALL</a></dd>
-</dl>
-</dd>
-<dt>Open vSwitch</dt>
-<dd><p class="first"><a class="reference external" href="http://openvswitch.org/download/">http://openvswitch.org/download/</a></p>
-<dl class="last docutils">
-<dt>インストール手順(githubページ)</dt>
-<dd><a class="reference external" href="https://github.com/openvswitch/ovs/blob/master/INSTALL.md">https://github.com/openvswitch/ovs/blob/master/INSTALL.md</a></dd>
-</dl>
-</dd>
-<dt>Ryu</dt>
-<dd><p class="first"><a class="reference external" href="https://github.com/osrg/ryu/">https://github.com/osrg/ryu/</a></p>
-<p>インストール手順</p>
-<div class="console last highlight-default"><div class="highlight"><pre><span></span>$ sudo apt-get install git python-dev python-setuptools python-pip
-$ git clone https://github.com/osrg/ryu.git
-$ cd ryu
-$ sudo pip install .
-</pre></div>
-</div>
-</dd>
-</dl>
-<p>ここでは、Ryu用OpenFlow TutorialのVMイメージを利用します。</p>
-<div class="section" id="mininet">
-<h3>Mininetの実行<a class="headerlink" href="#mininet" title="このヘッドラインへのパーマリンク">¶</a></h3>
-<p>mininetからxtermを起動するため、Xが使える環境が必要です。</p>
-<p>ここでは、OpenFlow TutorialのVMを利用しているため、sshでX11 Forwardingを有効にしてログインします。</p>
-<blockquote>
-<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ ssh -X ryu@&lt;VMのアドレス&gt;
-</pre></div>
-</div>
-</div></blockquote>
-<p>ユーザー名は<code class="docutils literal"><span class="pre">ryu</span></code>、パスワードも<code class="docutils literal"><span class="pre">ryu</span></code>です。</p>
-<p>ログインできたら、<code class="docutils literal"><span class="pre">mn</span></code>コマンドによりMininet環境を起動します。</p>
+<p>Mininetからxtermを起動するため、<code class="docutils literal"><span class="pre">mn</span></code>コマンドによりMininet環境を起動します。</p>
 <p>構築する環境は、ホスト3台、スイッチ1台のシンプルな構成です。</p>
 <p>mnコマンドのパラメータは、以下のようになります。</p>
 <table border="1" class="docutils">
@@ -777,7 +728,6 @@ mininet&gt;
 </pre></div>
 </div>
 <p>ovs-ofctlコマンドには、オプションで使用するOpenFlowのバージョンを指定する必要があります。デフォルトは<em>OpenFlow10</em>です。</p>
-</div>
 <div class="section" id="id9">
 <h3>スイッチングハブの実行<a class="headerlink" href="#id9" title="このヘッドラインへのパーマリンク">¶</a></h3>
 <p>準備が整ったので、Ryuアプリケーションを実行します。</p>
@@ -979,7 +929,6 @@ mininet&gt;
 </ul>
 </li>
 <li><a class="reference internal" href="#id8">Ryuアプリケーションの実行</a><ul>
-<li><a class="reference internal" href="#mininet">Mininetの実行</a></li>
 <li><a class="reference internal" href="#id9">スイッチングハブの実行</a></li>
 <li><a class="reference internal" href="#id10">動作の確認</a></li>
 </ul>
@@ -990,8 +939,8 @@ mininet&gt;
 </ul>
 
   <h4>前のトピックへ</h4>
-  <p class="topless"><a href="preface.html"
-                        title="前の章へ">はじめに</a></p>
+  <p class="topless"><a href="installation_guide.html"
+                        title="前の章へ">環境構築</a></p>
   <h4>次のトピックへ</h4>
   <p class="topless"><a href="traffic_monitor.html"
                         title="次の章へ">トラフィックモニター</a></p>
@@ -1026,7 +975,7 @@ mininet&gt;
           <a href="traffic_monitor.html" title="トラフィックモニター"
              >次へ</a> |</li>
         <li class="right" >
-          <a href="preface.html" title="はじめに"
+          <a href="installation_guide.html" title="環境構築"
              >前へ</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Ryubook 1.0 ドキュメント</a> &#187;</li> 
       </ul>
