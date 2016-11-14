@@ -7,7 +7,7 @@ from mininet.node import RemoteController
 from mininet.term import makeTerm
 
 if '__main__' == __name__:
-    net = Mininet(controller=RemoteController)
+    net = Mininet(controller=RemoteController, port=6633)
 
     c0 = net.addController('c0')
 
