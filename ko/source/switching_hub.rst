@@ -277,26 +277,14 @@ Ryu 응용 프로그램에서 사용되는 주요 특성은 다음과 같습니�
 ============== ==============================================================
 id             연결된 OpenFlow 스위치 ID (데이터 경로 ID)입니다. 
 ofproto        사용하는 OpenFlow 버전에 대응하는 ofproto 모듈을 
-               보여줍니다. 현재는 다음 중 하나입니다. 
-
-               ``ryu.ofproto.ofproto_v1_0``
-
-               ``ryu.ofproto.ofproto_v1_2``
+               보여줍니다. OpenFlow 1.3은 다음과 같습니다.
 
                ``ryu.ofproto.ofproto_v1_3``
 
-               ``ryu.ofproto.ofproto_v1_4``
-
 ofproto_parser ofproto와 마찬가지로 ofproto_parser 모듈을 보여줍니다. 
-               현재는 다음 중 하나입니다. 
-
-               ``ryu.ofproto.ofproto_v1_0_parser``
-
-               ``ryu.ofproto.ofproto_v1_2_parser``
+               OpenFlow 1.3은 다음과 같습니다.
 
                ``ryu.ofproto.ofproto_v1_3_parser``
-
-               ``ryu.ofproto.ofproto_v1_4_parser``
 ============== ==============================================================
 
 Ryu 응용 프로그램에서 사용하는 Datapath 클래스의 주요 메서드는 다음과 같습니다. 
