@@ -740,22 +740,35 @@ VM 이미지
 
 
 이 VM 이미지를 사용하지 않고, 스스로 환경을 구축하는 것 또한 당연히 가능합니다.
-스스로 환경을 구축하고자 하는 경우, 참고로, VM 이미지에서 사용하는 각 소프트웨어 버전은 다음과 같습니다.
+VM 이미지에 포함된 각 소프트웨어 버전은 최신판 사용을 가정합니다. 직접 구축하는 경우 아래 사이트를 참고합니다.
 
-Mininet VM 버전 2.0.0
+Mininet VM
   http://mininet.org/download/
 
-Open vSwitch 버전 1.11.0
+  설치 단계 (github 페이지)
+    https://github.com/mininet/mininet/blob/master/INSTALL
+
+
+Open vSwitch
   http://openvswitch.org/download/
 
-Ryu 버전 3.2
+  설치 단계 (github 페이지)
+    https://github.com/openvswitch/ovs/blob/master/INSTALL.md
+
+
+Ryu
   https://github.com/osrg/ryu/
 
-    .. rst-class:: console
+  설치 단계
 
-    ::
+  .. rst-class:: console
 
-        $ sudo pip install ryu
+  ::
+
+      $ sudo apt-get install git python-dev python-setuptools python-pip
+      $ git clone https://github.com/osrg/ryu.git
+      $ cd ryu
+      $ sudo pip install .
 
 
 여기에서는 Ryu 용 OpenFlow Tutorial의 VM 이미지를 사용합니다. 
