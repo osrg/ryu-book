@@ -28,12 +28,8 @@ https://lists.sourceforge.net/lists/listinfo/ryu-devel
 Python
 ^^^^^^
 
-Ryu 는 Python 2.6 이상을 지원 합니다.
-즉, Python 2.7 에서만 사용 가능한 구문 등은 사용하지 마십시오.
-
-Python 3.0 이상 은 당분간 지원 되지 않습니다.
-하지만 소스 코드는 향후 변경이 가능한 적게 되도록 작성함을 
-유의하면 좋을 것입니다.
+Ryu 는 Python 2.7 및 Python 3.4를 지원합니다.
+다른 Python 버전에 대해서는 지원하지 않기 때문에 동작을 보장하지 않습니다.
 
 코딩 스타일
 ^^^^^^^^^^^
