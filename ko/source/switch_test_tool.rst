@@ -16,8 +16,10 @@ OpenFlow 스위치의 패킷 재 작성 및 전송 (또는 삭제)의 처리 결
 테스트 패턴 파일에 포함된 「기대하는 처리 결과」의 비교를 실행하여,
 OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스트 도구입니다.
 
-도구는 OpenFlow 버전 1.3 및 OpenFlow 버전 1.4의 FlowMod 메시지, MeterMod 메시지 및 GroupMod 메시지 
-시험에 대응하고 있습니다. 
+현재 지원하는 OpenFlow 버전은 OpenFlow 1.0, OpenFlow 1.3, 그리고
+OpenFlow 1.4 입니다.
+또한, 이 도구는 FlowMod 메시지, GroupMod 메시지,
+그리고 MeterMod 메시지 시험에 대응하고 있습니다.
 
 
 ============================== ================================
@@ -163,6 +165,7 @@ GroupMod 메시지                모두
     소스 코드                       설명
     =============================== ===============================
     ryu/tests/switch/tester.py      테스트 도구
+    ryu/tests/switch/of10           테스트 패턴 샘플(OpenFlow 1.0용)
     ryu/tests/switch/of13           테스트 패턴 샘플(OpenFlow 1.3용)
     ryu/tests/switch/of14           테스트 패턴 샘플(OpenFlow 1.4용)
     ryu/tests/switch/run_mininet.py 시험 환경 구축 스크립트
@@ -187,9 +190,11 @@ GroupMod 메시지                모두
 ``--test-switch-target``         시험 대상 스위치의 데이터 경로 ID        0000000000000001
 ``--test-switch-tester``         보조 스위치의 데이터 경로 ID             0000000000000002
 ``--test-switch-target-version`` 시험 대상 스위치의 OpenFlow 버전         openflow13
-                                 ("openflow13","openflow14" 지정 가능)
+                                 ("openflow10","openflow13",
+                                 openflow14" 지정 가능)
 ``--test-switch-tester-version`` 보조 스위치의 OpenFlow 버전              openflow13
-                                 ("openflow13","openflow14" 지정 가능)
+                                 ("openflow10","openflow13",
+                                 openflow14" 지정 가능)
 ``--test-switch-dir``            테스트 패턴 파일의 디렉토리 경로         ryu/tests/switch/of13
 ================================ ======================================== =====================
 
@@ -225,8 +230,10 @@ Ryu 소스 트리의 샘플 테스트 패턴 (ryu/tests/switch/of13)을 이용�
     Ryu 소스 트리에는 샘플 테스트 패턴으로 FlowMod 메시지에 대해 
     match/actions로 지정 가능한 각 매개 변수 및 MeterMod 메시지의 
     각 파라미터나 GroupMod 메시지의 각 파라미터가 각각 정상적으로 작동하는지
-    확인하는 테스트 패턴 파일이 OpenFlow 1.3용과 OpenFlow 1.4용으로 
-    준비되어 있습니다. 
+    확인하는 테스트 패턴 파일이 OpenFlow 1.0용, OpenFlow 1.3용 및
+    OpenFlow 1.4용으로 준비되어 있습니다.
+
+        ryu/tests/switch/of10
 
         ryu/tests/switch/of13
 
@@ -361,9 +368,36 @@ VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 :ref
     패킷을 연속적으로 적용하는 테스트 패턴 및 모든 포트에 FLOODING하는 
     type=ALL인 그룹 항목과 분류 조건에 따라 출력 포트를 자동으로 
     변경하는 type=SELECT인 그룹 항목을 등록하여 그룹 항목에 
-    match 패킷을 연속적으로 적용하는 테스트 패턴이 OpenFlow 1.3용과 
-    OpenFlow 1.4용으로 각각 준비되어 있습니다.
+    match 패킷을 연속적으로 적용하는 테스트 패턴이 OpenFlow 1.0용,
+    OpenFlow 1.3용과 OpenFlow 1.4용으로 각각 준비되어 있습니다.
 
+
+    OpenFlow 1.0:
+
+    .. rst-class:: console
+
+    ::
+
+        ryu/tests/switch/of10/action:
+        00_OUTPUT.json        06_SET_NW_SRC.json           09_SET_TP_SRC_IPv6_TCP.json
+        01_SET_VLAN_VID.json  07_SET_NW_DST.json           09_SET_TP_SRC_IPv6_UDP.json
+        02_SET_VLAN_PCP.json  08_SET_NW_TOS_IPv4.json      10_SET_TP_DST_IPv4_TCP.json
+        03_STRIP_VLAN.json    08_SET_NW_TOS_IPv6.json      10_SET_TP_DST_IPv4_UDP.json
+        04_SET_DL_SRC.json    09_SET_TP_SRC_IPv4_TCP.json  10_SET_TP_DST_IPv6_TCP.json
+        05_SET_DL_DST.json    09_SET_TP_SRC_IPv4_UDP.json  10_SET_TP_DST_IPv6_UDP.json
+
+        ryu/tests/switch/of10/match:
+        00_IN_PORT.json      07_NW_PROTO_IPv4.json    10_TP_SRC_IPv6_TCP.json
+        01_DL_SRC.json       07_NW_PROTO_IPv6.json    10_TP_SRC_IPv6_UDP.json
+        02_DL_DST.json       08_NW_SRC.json           11_TP_DST_IPv4_TCP.json
+        03_DL_VLAN.json      08_NW_SRC_Mask.json      11_TP_DST_IPv4_UDP.json
+        04_DL_VLAN_PCP.json  09_NW_DST.json           11_TP_DST_IPv6_TCP.json
+        05_DL_TYPE.json      09_NW_DST_Mask.json      11_TP_DST_IPv6_UDP.json
+        06_NW_TOS_IPv4.json  10_TP_SRC_IPv4_TCP.json
+        06_NW_TOS_IPv6.json  10_TP_SRC_IPv4_UDP.json
+
+
+    OpenFlow 1.3:
 
     .. rst-class:: console
 
@@ -433,6 +467,9 @@ VM 이미지 사용을 위한 환경 설정 및 로그인 방법 등은 「 :ref
         01_DROP_01_PKTPS_00_100.json    02_DSCP_REMARK_01_PKTPS_00_100.json
         01_DROP_01_PKTPS_01_1000.json   02_DSCP_REMARK_01_PKTPS_01_1000.json
         01_DROP_01_PKTPS_02_10000.json  02_DSCP_REMARK_01_PKTPS_02_10000.json
+
+
+    OpenFlow 1.4:
 
    .. rst-class:: console
 
