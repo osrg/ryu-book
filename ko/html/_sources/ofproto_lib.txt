@@ -16,14 +16,12 @@ ofproto 라이브러리는 OpenFlow 프로토콜 메시지의 작성 · 분석�
 상수 모듈 (ofproto_vX_Y)과
 파서 모듈 (ofproto_vX_Y_parser)가 포함되어 있습니다.
 각 OpenFlow 버전의 구현은 기본적으로 독립되어 있습니다. 
+다음은 OpenFlow 1.3 경우에 해당합니다.
 
 ================== ======================== ===============================
 OpenFlow버전       상수 모듈                파서 모듈
 ================== ======================== ===============================
-1.0.x              ryu.ofproto.ofproto_v1_0 ryu.ofproto.ofproto_v1_0_parser
-1.2.x              ryu.ofproto.ofproto_v1_2 ryu.ofproto.ofproto_v1_2_parser
 1.3.x              ryu.ofproto.ofproto_v1_3 ryu.ofproto.ofproto_v1_3_parser
-1.4.x              ryu.ofproto.ofproto_v1_4 ryu.ofproto.ofproto_v1_4_parser
 ================== ======================== ===============================
 
 상수 모듈

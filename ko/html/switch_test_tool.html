@@ -63,8 +63,10 @@
 OpenFlow 스위치의 패킷 재 작성 및 전송 (또는 삭제)의 처리 결과와
 테스트 패턴 파일에 포함된 「기대하는 처리 결과」의 비교를 실행하여,
 OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스트 도구입니다.</p>
-<p>도구는 OpenFlow 버전 1.3 및 OpenFlow 버전 1.4의 FlowMod 메시지, MeterMod 메시지 및 GroupMod 메시지
-시험에 대응하고 있습니다.</p>
+<p>현재 지원하는 OpenFlow 버전은 OpenFlow 1.0, OpenFlow 1.3, 그리고
+OpenFlow 1.4 입니다.
+또한, 이 도구는 FlowMod 메시지, GroupMod 메시지,
+그리고 MeterMod 메시지 시험에 대응하고 있습니다.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="48%" />
@@ -177,13 +179,16 @@ OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스
 <tr class="row-even"><td>ryu/tests/switch/tester.py</td>
 <td>테스트 도구</td>
 </tr>
-<tr class="row-odd"><td>ryu/tests/switch/of13</td>
+<tr class="row-odd"><td>ryu/tests/switch/of10</td>
+<td>테스트 패턴 샘플(OpenFlow 1.0용)</td>
+</tr>
+<tr class="row-even"><td>ryu/tests/switch/of13</td>
 <td>테스트 패턴 샘플(OpenFlow 1.3용)</td>
 </tr>
-<tr class="row-even"><td>ryu/tests/switch/of14</td>
+<tr class="row-odd"><td>ryu/tests/switch/of14</td>
 <td>테스트 패턴 샘플(OpenFlow 1.4용)</td>
 </tr>
-<tr class="row-odd"><td>ryu/tests/switch/run_mininet.py</td>
+<tr class="row-even"><td>ryu/tests/switch/run_mininet.py</td>
 <td>시험 환경 구축 스크립트</td>
 </tr>
 </tbody>
@@ -218,12 +223,14 @@ OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-target-version</span></code></td>
 <td>시험 대상 스위치의 OpenFlow 버전
-(&#8220;openflow13&#8221;,&#8221;openflow14&#8221; 지정 가능)</td>
+(&#8220;openflow10&#8221;,&#8221;openflow13&#8221;,
+openflow14&#8221; 지정 가능)</td>
 <td>openflow13</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">--test-switch-tester-version</span></code></td>
 <td>보조 스위치의 OpenFlow 버전
-(&#8220;openflow13&#8221;,&#8221;openflow14&#8221; 지정 가능)</td>
+(&#8220;openflow10&#8221;,&#8221;openflow13&#8221;,
+openflow14&#8221; 지정 가능)</td>
 <td>openflow13</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">--test-switch-dir</span></code></td>
@@ -256,10 +263,11 @@ OpenFlow 스위치 OpenFlow 사양과 대응되는 상태를 확인하는 테스
 <p>Ryu 소스 트리에는 샘플 테스트 패턴으로 FlowMod 메시지에 대해
 match/actions로 지정 가능한 각 매개 변수 및 MeterMod 메시지의
 각 파라미터나 GroupMod 메시지의 각 파라미터가 각각 정상적으로 작동하는지
-확인하는 테스트 패턴 파일이 OpenFlow 1.3용과 OpenFlow 1.4용으로
-준비되어 있습니다.</p>
+확인하는 테스트 패턴 파일이 OpenFlow 1.0용, OpenFlow 1.3용 및
+OpenFlow 1.4용으로 준비되어 있습니다.</p>
 <blockquote class="last">
-<div><p>ryu/tests/switch/of13</p>
+<div><p>ryu/tests/switch/of10</p>
+<p>ryu/tests/switch/of13</p>
 <p>ryu/tests/switch/of14</p>
 </div></blockquote>
 </div>
@@ -358,8 +366,29 @@ action: 11_COPY_TTL_OUT
 패킷을 연속적으로 적용하는 테스트 패턴 및 모든 포트에 FLOODING하는
 type=ALL인 그룹 항목과 분류 조건에 따라 출력 포트를 자동으로
 변경하는 type=SELECT인 그룹 항목을 등록하여 그룹 항목에
-match 패킷을 연속적으로 적용하는 테스트 패턴이 OpenFlow 1.3용과
-OpenFlow 1.4용으로 각각 준비되어 있습니다.</p>
+match 패킷을 연속적으로 적용하는 테스트 패턴이 OpenFlow 1.0용,
+OpenFlow 1.3용과 OpenFlow 1.4용으로 각각 준비되어 있습니다.</p>
+<p>OpenFlow 1.0:</p>
+<div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of10</span><span class="o">/</span><span class="n">action</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_OUTPUT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">06</span><span class="n">_SET_NW_SRC</span><span class="o">.</span><span class="n">json</span>           <span class="mi">09</span><span class="n">_SET_TP_SRC_IPv6_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_SET_VLAN_VID</span><span class="o">.</span><span class="n">json</span>  <span class="mi">07</span><span class="n">_SET_NW_DST</span><span class="o">.</span><span class="n">json</span>           <span class="mi">09</span><span class="n">_SET_TP_SRC_IPv6_UDP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_SET_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>  <span class="mi">08</span><span class="n">_SET_NW_TOS_IPv4</span><span class="o">.</span><span class="n">json</span>      <span class="mi">10</span><span class="n">_SET_TP_DST_IPv4_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_STRIP_VLAN</span><span class="o">.</span><span class="n">json</span>    <span class="mi">08</span><span class="n">_SET_NW_TOS_IPv6</span><span class="o">.</span><span class="n">json</span>      <span class="mi">10</span><span class="n">_SET_TP_DST_IPv4_UDP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_SET_DL_SRC</span><span class="o">.</span><span class="n">json</span>    <span class="mi">09</span><span class="n">_SET_TP_SRC_IPv4_TCP</span><span class="o">.</span><span class="n">json</span>  <span class="mi">10</span><span class="n">_SET_TP_DST_IPv6_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_SET_DL_DST</span><span class="o">.</span><span class="n">json</span>    <span class="mi">09</span><span class="n">_SET_TP_SRC_IPv4_UDP</span><span class="o">.</span><span class="n">json</span>  <span class="mi">10</span><span class="n">_SET_TP_DST_IPv6_UDP</span><span class="o">.</span><span class="n">json</span>
+
+<span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of10</span><span class="o">/</span><span class="n">match</span><span class="p">:</span>
+<span class="mi">00</span><span class="n">_IN_PORT</span><span class="o">.</span><span class="n">json</span>      <span class="mi">07</span><span class="n">_NW_PROTO_IPv4</span><span class="o">.</span><span class="n">json</span>    <span class="mi">10</span><span class="n">_TP_SRC_IPv6_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">01</span><span class="n">_DL_SRC</span><span class="o">.</span><span class="n">json</span>       <span class="mi">07</span><span class="n">_NW_PROTO_IPv6</span><span class="o">.</span><span class="n">json</span>    <span class="mi">10</span><span class="n">_TP_SRC_IPv6_UDP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">02</span><span class="n">_DL_DST</span><span class="o">.</span><span class="n">json</span>       <span class="mi">08</span><span class="n">_NW_SRC</span><span class="o">.</span><span class="n">json</span>           <span class="mi">11</span><span class="n">_TP_DST_IPv4_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">03</span><span class="n">_DL_VLAN</span><span class="o">.</span><span class="n">json</span>      <span class="mi">08</span><span class="n">_NW_SRC_Mask</span><span class="o">.</span><span class="n">json</span>      <span class="mi">11</span><span class="n">_TP_DST_IPv4_UDP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">04</span><span class="n">_DL_VLAN_PCP</span><span class="o">.</span><span class="n">json</span>  <span class="mi">09</span><span class="n">_NW_DST</span><span class="o">.</span><span class="n">json</span>           <span class="mi">11</span><span class="n">_TP_DST_IPv6_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">05</span><span class="n">_DL_TYPE</span><span class="o">.</span><span class="n">json</span>      <span class="mi">09</span><span class="n">_NW_DST_Mask</span><span class="o">.</span><span class="n">json</span>      <span class="mi">11</span><span class="n">_TP_DST_IPv6_UDP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_NW_TOS_IPv4</span><span class="o">.</span><span class="n">json</span>  <span class="mi">10</span><span class="n">_TP_SRC_IPv4_TCP</span><span class="o">.</span><span class="n">json</span>
+<span class="mi">06</span><span class="n">_NW_TOS_IPv6</span><span class="o">.</span><span class="n">json</span>  <span class="mi">10</span><span class="n">_TP_SRC_IPv4_UDP</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>OpenFlow 1.3:</p>
 <div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of13</span><span class="o">/</span><span class="n">action</span><span class="p">:</span>
 <span class="mi">00</span><span class="n">_OUTPUT</span><span class="o">.</span><span class="n">json</span>              <span class="mi">20</span><span class="n">_POP_MPLS</span><span class="o">.</span><span class="n">json</span>
 <span class="mi">11</span><span class="n">_COPY_TTL_OUT</span><span class="o">.</span><span class="n">json</span>        <span class="mi">23</span><span class="n">_SET_NW_TTL_IPv4</span><span class="o">.</span><span class="n">json</span>
@@ -426,6 +455,7 @@ OpenFlow 1.4용으로 각각 준비되어 있습니다.</p>
 <span class="mi">01</span><span class="n">_DROP_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>  <span class="mi">02</span><span class="n">_DSCP_REMARK_01_PKTPS_02_10000</span><span class="o">.</span><span class="n">json</span>
 </pre></div>
 </div>
+<p>OpenFlow 1.4:</p>
 </div></blockquote>
 <div class="console highlight-default"><div class="highlight"><pre><span></span><span class="n">ryu</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">switch</span><span class="o">/</span><span class="n">of14</span><span class="o">/</span><span class="n">action</span><span class="p">:</span>
 <span class="mi">00</span><span class="n">_OUTPUT</span><span class="o">.</span><span class="n">json</span>              <span class="mi">20</span><span class="n">_POP_MPLS</span><span class="o">.</span><span class="n">json</span>
