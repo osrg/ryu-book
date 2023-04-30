@@ -31,6 +31,14 @@ $ source venv/bin/activate
 (venv) $ bash ./build.sh en
 ```
 
+Alternative build method
+========================
+```bash
+./mk-book.sh
+```
+Will trigger a build using the original Ryu Docker image. The target is controlled in `do-build.sh`.
+Currently the English PDF is produced. After running the command the PDF appears in the `en/` directory.
+
 
 Building Ryu-Book on Travis-CI
 ==============================
